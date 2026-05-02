@@ -66,50 +66,41 @@ export async function POST(request: Request) {
       }
     }
 
-    const userPrompt = buildPrompt(name, watchlist, holdings, accounts, holdingsAgeDays, date);
+    // ─── Parallel chunk generation ──────────────────────────────────────
+    // Instead of one giant Anthropic call (slow — sequential web searches
+    // inside a single call), run 3 focused calls concurrently. Each handles
+    // a related set of cards. Total wall time ≈ slowest single call (~10-
+    // 15s) instead of all of them in series (~2 minutes).
+    //
+    // If a chunk fails, the others still ship — we just return a brief
+    // missing those cards rather than failing the whole request.
+    const tasks = [
+      generateLightChunk(name, holdings, accounts, holdingsAgeDays, date),
+      generatePulseAndEdge(name, watchlist, holdings, date),
+      generateSmartMoneyAndConviction(name, watchlist, holdings, date),
+    ];
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 8000,
-      tools: [
-        {
-          type: "web_search_20250305",
-          name: "web_search",
-          max_uses: 6,
-        } as any,
-      ],
-      messages: [{ role: "user", content: userPrompt }],
-    });
+    const results = await Promise.allSettled(tasks);
+    const merged: any = {};
+    const failures: string[] = [];
+    for (const r of results) {
+      if (r.status === "fulfilled" && r.value) {
+        Object.assign(merged, r.value);
+      } else if (r.status === "rejected") {
+        failures.push(r.reason?.message || "unknown");
+      }
+    }
 
-    // Web search returns multiple content blocks — collect all text blocks
-    const textBlocks = response.content.filter((b) => b.type === "text");
-    const rawText = textBlocks.map((b: any) => b.text || "").join("\n");
-
-    const cleaned = rawText
-      .replace(/```json\s*/gi, "")
-      .replace(/```/g, "")
-      .trim();
-
-    const start = cleaned.indexOf("{");
-    const end = cleaned.lastIndexOf("}");
-    if (start === -1 || end === -1) {
+    // If literally nothing came back, fail the request so the client can
+    // show its demo brief fallback.
+    if (Object.keys(merged).length === 0) {
       return NextResponse.json(
-        { error: "Model returned no JSON object", raw: rawText },
+        { error: `All chunks failed: ${failures.join("; ")}` },
         { status: 502 }
       );
     }
 
-    let brief;
-    try {
-      brief = JSON.parse(cleaned.slice(start, end + 1));
-    } catch (parseErr) {
-      return NextResponse.json(
-        { error: "Model returned invalid JSON", raw: rawText },
-        { status: 502 }
-      );
-    }
-
-    briefCache.set(cacheKey, { brief, storedAt: Date.now() });
+    briefCache.set(cacheKey, { brief: merged, storedAt: Date.now() });
     if (briefCache.size > 100) {
       const now = Date.now();
       for (const [k, v] of briefCache.entries()) {
@@ -117,7 +108,11 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({ brief, cached: false });
+    return NextResponse.json({
+      brief: merged,
+      cached: false,
+      partial: failures.length > 0 ? { failedChunks: failures.length } : undefined,
+    });
   } catch (err: any) {
     console.error("Brief generation failed:", err);
     return NextResponse.json(
@@ -127,6 +122,233 @@ export async function POST(request: Request) {
   }
 }
 
+// ─── Chunk helpers ────────────────────────────────────────────────────
+// Each chunk is a focused Anthropic call. Keep prompts tight so each call
+// runs in 5-15 seconds. Web search is opt-in per chunk to avoid wasting
+// search slots on chunks that don't need them.
+
+const COMMON_PREAMBLE = (name: string, date: string) =>
+  `You are a JSON generator. Output ONLY a single valid JSON object — no prose, no markdown, no code fences. Start with { and end with }.
+
+Generate part of a morning briefing for ${name || "the user"} on ${date}. The reader is a sophisticated multi-account swing trader who knows technical analysis, smart-money signals (13F, STOCK Act, Form 4s), and macro catalysts. No beginner advice. No filler. They invest in: AI infrastructure, semiconductors, quantum computing, crypto-mining-to-HPC, nuclear, rare earths, and speculative biotech.
+`;
+
+async function callJsonChunk(
+  prompt: string,
+  opts: { search?: boolean; maxTokens?: number; maxSearches?: number } = {}
+) {
+  const { search = false, maxTokens = 2500, maxSearches = 3 } = opts;
+  const response = await anthropic.messages.create({
+    model: "claude-sonnet-4-5",
+    max_tokens: maxTokens,
+    ...(search
+      ? {
+          tools: [
+            {
+              type: "web_search_20250305",
+              name: "web_search",
+              max_uses: maxSearches,
+            } as any,
+          ],
+        }
+      : {}),
+    messages: [{ role: "user", content: prompt }],
+  });
+  const textBlocks = response.content.filter((b: any) => b.type === "text");
+  const rawText = textBlocks.map((b: any) => b.text || "").join("\n");
+  const cleaned = rawText.replace(/```json\s*/gi, "").replace(/```/g, "").trim();
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start === -1 || end === -1) {
+    throw new Error("Model returned no JSON object");
+  }
+  return JSON.parse(cleaned.slice(start, end + 1));
+}
+
+// Chunk 1: Light content (no web search) — affirmation, mindset, clarity,
+// power_plate, decisions. Decisions live here too because they only need
+// the user's holdings (already in the prompt) — no fresh web data.
+async function generateLightChunk(
+  name: string,
+  holdings: any[],
+  accounts: any[] | undefined,
+  holdingsAgeDays: number | null,
+  date: string
+) {
+  const holdingsBlock = formatHoldingsBlock(holdings, accounts, holdingsAgeDays);
+  const multiAccount = Array.isArray(accounts) && accounts.length > 1;
+  const accountRule = multiAccount
+    ? `\nMULTI-ACCOUNT REQUIREMENT: User has positions in ${accounts!.length} accounts. EVERY decision MUST name the specific account (e.g., "Trim NVDA in Fidelity TOD: 30 of 75 sh").`
+    : "";
+
+  const prompt = `${COMMON_PREAMBLE(name, date)}${holdingsBlock}
+
+Return ONLY this JSON shape with all fields populated:
+
+{
+  "affirmation": "short sharp opening line, max 12 words",
+  "mindset": {
+    "gratitude": "stimulating affirmation in one of three rotating voices (Stoic warrior / Quiet power / Athlete mindset), max 18 words. Vary by day.",
+    "fuel": "10-min vitality cue, e.g. '2 min mobility · 3 min breathwork · 3 min strength · 2 min stretch.'",
+    "focus": "concrete breath/mental cue, max 10 words"
+  },
+  "clarity": {
+    "contemplation": "ONE present-tense sentence to sit with for 60 seconds, max 22 words",
+    "eastern_wisdom": { "quote": "real attributed quote from Lao Tzu / Rumi / Thich Nhat Hanh / Marcus Aurelius / Buddha / Vedanta / Zen masters, max 30 words", "source": "attribution" },
+    "breath_practice": { "name": "Box / Coherent / 4-7-8 / Bhramari / Nadi Shodhana / Physiological Sigh / Ujjayi", "pattern": "timing pattern", "description": "physiological effect, max 24 words", "rounds": "rounds or duration" }
+  },
+  "power_plate": {
+    "name": "recipe name, max 6 words",
+    "style": "High Protein or Mediterranean or Anti-Inflammatory",
+    "protein_g": 30,
+    "prep_min": 25,
+    "description": "1-2 sentences, max 28 words",
+    "groceries": ["4-6 grocery line items"],
+    "prep_steps": ["4-5 short cooking steps, max 18 words each"]
+  },
+  "decisions": ["3-5 PERSONALIZED, ACTIONABLE trade decisions referencing the user's actual holdings + today's catalysts. Each max 16 words. Format: [Account if multi-account] + [Ticker context] + [Specific action] + [Catalyst]."]
+}
+${accountRule}
+
+GOOD decision examples: "IONQ +45% on 175sh — earnings 5/6. Trim 75 into Friday strength." / "NVDA reports tonight, you hold 75sh. Set $850 stop pre-FOMC."
+BAD examples to avoid: "Review highest-conviction position" / "Confirm cash balance" — too generic.`;
+
+  return callJsonChunk(prompt, { maxTokens: 2500 });
+}
+
+// Chunk 2: Market pulse + today's edge + radar watch (web search needed
+// for premarket data, catalysts, and thematic movers).
+async function generatePulseAndEdge(
+  name: string,
+  watchlist: string[],
+  holdings: any[],
+  date: string
+) {
+  const tickers = (watchlist && watchlist.length) ? watchlist.join(", ") : "general market";
+  const ownedSet = new Set((holdings || []).map((h: any) => h.symbol));
+  const ownedNote = ownedSet.size > 0 ? `\nUser's holdings: ${Array.from(ownedSet).join(", ")}.` : "";
+  const radarExclusion = ownedSet.size > 0
+    ? `\nFor radar_watch: EXCLUDE any tickers the user already owns.`
+    : "";
+
+  const prompt = `${COMMON_PREAMBLE(name, date)}
+Use web_search up to 3 times to fetch TODAY's premarket movement, headlines, macro events, and any earnings/FDA/catalysts in the next 1-2 weeks. Watchlist: ${tickers}.${ownedNote}${radarExclusion}
+
+Return ONLY this JSON:
+
+{
+  "market_pulse": {
+    "tone": "bullish or cautious or bearish",
+    "summary": "ONE short headline sentence, max 14 words",
+    "key_levels": ["4-6 short bullets, max 10 words each — index futures, VIX, key commodities, sector rotation, today's catalysts"]
+  },
+  "todays_edge": {
+    "earnings_alerts": [ { "ticker": "TICKER", "when": "today after close" | "tomorrow before open", "your_shares": 0 } ],
+    "binary_catalysts": [ { "ticker": "TICKER", "event": "event date", "context": "max 12 words" } ],
+    "risk_flags": [ { "ticker": "TICKER", "flag": "max 12 words", "suggested_action": "max 12 words" } ]
+  },
+  "radar_watch": [
+    { "ticker": "TICKER", "theme": "short tag e.g. 'Nuclear · AI energy'", "headline": "max 14 words", "why_now": "max 18 words" }
+  ]
+}
+
+todays_edge: 0-3 alerts total — only if genuinely time-sensitive. Empty arrays are fine.
+radar_watch: 2-4 thematic stocks the user does NOT own.`;
+
+  return callJsonChunk(prompt, { search: true, maxTokens: 3000, maxSearches: 3 });
+}
+
+// Chunk 3: Smart money (13F + congress + insiders) + conviction watch
+// (current technical setup on user's top tickers).
+async function generateSmartMoneyAndConviction(
+  name: string,
+  watchlist: string[],
+  holdings: any[],
+  date: string
+) {
+  const ownedSet = new Set((holdings || []).map((h: any) => h.symbol));
+  const ownedNote = ownedSet.size > 0 ? `\nUser's holdings: ${Array.from(ownedSet).join(", ")}.` : "";
+  const focusTickers = (holdings && holdings.length > 0)
+    ? (holdings as any[]).slice(0, 5).map((h: any) => h.symbol)
+    : (watchlist || []).slice(0, 5);
+  const tickerNote = focusTickers.length > 0
+    ? `\nFor conviction_watch, focus on: ${focusTickers.join(", ")}.`
+    : "";
+
+  const prompt = `${COMMON_PREAMBLE(name, date)}
+Use web_search up to 3 times to fetch the LATEST 13F disclosures, biggest insider Form 4 trades from the past 1-2 weeks, most recent congressional STOCK Act filings, and current technical setup on the focus tickers.${ownedNote}${tickerNote}
+
+Return ONLY this JSON:
+
+{
+  "smart_money": {
+    "summary": {
+      "most_bought": ["TICKER1", "TICKER2"],
+      "most_sold": ["TICKER1", "TICKER2"],
+      "net_bullish_sectors": ["2-3 sector names"],
+      "net_bearish_sectors": ["1-2 sector names"]
+    },
+    "sector_heatmap": [
+      { "sector": "sector name max 22 chars", "direction": "buying or selling or neutral", "intensity": 1 }
+    ],
+    "whale_moves": [ { "text": "named trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ],
+    "congress_moves": [ { "text": "named congressional trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ],
+    "hedge_fund_moves": [ { "text": "named hedge fund trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ]
+  },
+  "conviction_watch": [
+    { "ticker": "TICKER", "signal": "add or hold or trim", "why_now": "1-2 short sentences, max 25 words", "note": "tight summary, max 8 words", "action": "OPTIONAL concrete trade with size, max 12 words — omit for routine holds" }
+  ]
+}
+
+conviction_watch: 3-5 entries.`;
+
+  return callJsonChunk(prompt, { search: true, maxTokens: 3000, maxSearches: 3 });
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────
+
+function formatHoldingsBlock(
+  holdings: any[],
+  accounts: any[] | undefined,
+  holdingsAgeDays: number | null
+) {
+  if (!holdings || holdings.length === 0) return "";
+  const accountLabel: Record<string, string> = {};
+  if (Array.isArray(accounts)) {
+    for (const a of accounts) {
+      if (a && a.id) accountLabel[a.id] = a.name || "Account";
+    }
+  }
+  const groups: Record<string, any[]> = {};
+  for (const h of holdings) {
+    const key = h.accountId || "_unknown";
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(h);
+  }
+  const formatHolding = (h: any) => {
+    const parts = [`${h.symbol}`];
+    if (h.qty != null) parts.push(`${h.qty} sh`);
+    if (h.cost != null) parts.push(`@ $${h.cost.toFixed(2)} cost`);
+    if (h.gainPct != null) {
+      const sign = h.gainPct >= 0 ? "+" : "";
+      parts.push(`${sign}${h.gainPct.toFixed(1)}%`);
+    }
+    return "    • " + parts.join(", ");
+  };
+  const groupBlocks: string[] = [];
+  for (const [accountId, list] of Object.entries(groups)) {
+    const label = accountId === "_unknown"
+      ? "Unlabeled holdings"
+      : (accountLabel[accountId] || "Account");
+    groupBlocks.push(`  Account: ${label}\n${list.map(formatHolding).join("\n")}`);
+  }
+  const ageNote = holdingsAgeDays != null && holdingsAgeDays > 7
+    ? ` (${holdingsAgeDays} days old — % gains approximate)`
+    : "";
+  return `\n\nUSER'S HOLDINGS${ageNote}:\n${groupBlocks.join("\n\n")}\n`;
+}
+
+// Old single-call buildPrompt kept below as a reference but no longer used.
 function buildPrompt(
   name: string,
   watchlist: string[],
