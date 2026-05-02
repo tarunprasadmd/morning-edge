@@ -1914,20 +1914,36 @@ export default function MorningEdge() {
                     </p>
                   </div>
 
-                  <label className="block">
-                    <span className="block font-semibold text-slate-900 mb-1.5">Upload your CSV</span>
+                  <div>
+                    <p className="block font-semibold text-slate-900 mb-1.5">Upload your CSV</p>
                     <input
+                      id="me-csv-file-input"
                       type="file"
                       accept=".csv,text/csv"
                       onChange={handleCsvUpload}
-                      className="block w-full text-xs text-slate-600
-                        file:mr-3 file:py-2 file:px-3 file:rounded-md
-                        file:border-0 file:text-xs file:font-semibold
-                        file:bg-slate-900 file:text-white
-                        hover:file:bg-slate-800 file:cursor-pointer
-                        cursor-pointer"
+                      style={{
+                        position: "absolute",
+                        width: 1,
+                        height: 1,
+                        padding: 0,
+                        margin: -1,
+                        overflow: "hidden",
+                        clip: "rect(0,0,0,0)",
+                        whiteSpace: "nowrap",
+                        border: 0,
+                      }}
                     />
-                  </label>
+                    <label
+                      htmlFor="me-csv-file-input"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-[12px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition cursor-pointer select-none"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Choose CSV file
+                    </label>
+                    <p className="text-[10px] text-slate-500 mt-1.5">
+                      Tap to pick a CSV from your phone or computer.
+                    </p>
+                  </div>
 
                   {/* Account label prompt — appears after CSV is parsed, before commit */}
                   {pendingCsvUpload && (
