@@ -1048,24 +1048,14 @@ export default function MorningEdge() {
 
   const generateBrief = async (opts = {}) => {
     setLoading(true); setError(null);
-    let finalBrief = null;
     try {
-      // Try the streaming path first — cards render progressively
-      try {
-        finalBrief = await callStreamingAPI(opts);
-        if (!finalBrief || Object.keys(finalBrief).length === 0) {
-          throw new Error("Stream returned no cards");
-        }
-      } catch (streamErr) {
-        console.warn("Streaming failed, falling back to JSON:", streamErr);
-        const data = await callAPI(opts);
-        finalBrief = extractJSON(data);
-        setBrief(finalBrief);
-      }
+      const data = await callAPI(opts);
+      const fresh = extractJSON(data);
+      setBrief(fresh);
       // Auto-save brief by date for future history feature
       try {
         const history = (await Store.get("me-briefs")) || {};
-        history[todayKey] = { brief: finalBrief, savedAt: Date.now() };
+        history[todayKey] = { brief: fresh, savedAt: Date.now() };
         // Keep only last 30 days
         const keys = Object.keys(history).sort().slice(-30);
         const trimmed = {};
