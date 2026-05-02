@@ -3023,26 +3023,38 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
       />
 
       <div className="flex items-stretch">
-        {/* Castle tower badge */}
+        {/* Compact ME monogram — matches the app icon, takes minimal space
+            so the ticker has room to breathe. */}
         <div
-          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2.5 border-r border-amber-900/40"
+          className="flex-shrink-0 flex items-center justify-center px-2.5 border-r border-amber-900/40"
           style={{
-            background: "linear-gradient(180deg, rgba(212,165,116,0.15) 0%, rgba(212,165,116,0.05) 100%)",
+            background: "linear-gradient(135deg, rgba(245,208,140,0.18) 0%, rgba(212,165,116,0.08) 100%)",
           }}
         >
-          <Castle className="w-4 h-4" style={{ color: "#F5D08C" }} />
-          <div className="flex flex-col">
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              background: "linear-gradient(135deg, #F5D08C 0%, #D4A574 60%, #B88A4F 100%)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 3px rgba(0,0,0,0.25)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <span
-              className="text-[8px] font-bold tracking-[0.18em] uppercase leading-none"
-              style={{ color: "#F5D08C" }}
+              style={{
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontSize: 14,
+                fontWeight: 700,
+                letterSpacing: "0.02em",
+                color: "#3F2A12",
+                lineHeight: 1,
+              }}
             >
-              Watchtower
+              ME
             </span>
-            {isPersonalized && (
-              <span className="text-[7px] uppercase tracking-wider text-slate-400 mt-0.5 leading-none">
-                Your watch
-              </span>
-            )}
           </div>
         </div>
 
