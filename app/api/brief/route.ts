@@ -50,6 +50,7 @@ export async function POST(request: Request) {
   try {
     const url = new URL(request.url);
     const queryFresh = url.searchParams.get("fresh") === "1";
+    const isStream = url.searchParams.get("stream") === "1";
     const body = await request.json();
     const { name, watchlist, holdings, accounts, holdingsAgeDays, date, forceFresh } = body;
     const fresh = queryFresh || !!forceFresh;
@@ -61,8 +62,130 @@ export async function POST(request: Request) {
       );
     }
 
-    // Cache lookup
     const cacheKey = buildCacheKey({ name, watchlist, holdings, date });
+
+    // ─── STREAMING PATH ─────────────────────────────────────────────────
+    // Generate the brief in parallel chunks and stream each card to the
+    // client as it completes. Total wall time = slowest single chunk.
+    if (isStream) {
+      // Cache short-circuit: if we have a fresh cached brief, replay it as
+      // a stream so the client code path is identical.
+      if (!fresh) {
+        const hit = briefCache.get(cacheKey);
+        if (hit && Date.now() - hit.storedAt < CACHE_TTL_MS) {
+          return new Response(
+            new ReadableStream({
+              start(controller) {
+                const enc = new TextEncoder();
+                const send = (event: string, data: any) => {
+                  controller.enqueue(
+                    enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
+                  );
+                };
+                send("meta", { cached: true });
+                for (const [key, value] of Object.entries(hit.brief)) {
+                  send("card", { key, value });
+                }
+                send("done", {});
+                controller.close();
+              },
+            }),
+            {
+              headers: {
+                "Content-Type": "text/event-stream",
+                "Cache-Control": "no-cache, no-transform",
+                Connection: "keep-alive",
+                "X-Accel-Buffering": "no",
+              },
+            }
+          );
+        }
+      }
+
+      // Live streaming generation. Each chunk is its own Anthropic call,
+      // started concurrently. As each resolves, we push a card event to
+      // the client. Failures are isolated to that chunk — other cards
+      // still arrive.
+      return new Response(
+        new ReadableStream({
+          async start(controller) {
+            const enc = new TextEncoder();
+            const send = (event: string, data: any) => {
+              try {
+                controller.enqueue(
+                  enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
+                );
+              } catch (_e) {
+                /* client disconnected */
+              }
+            };
+
+            send("meta", { cached: false, fresh });
+
+            const accumulated: Record<string, any> = {};
+            const acc = (key: string, value: any) => {
+              accumulated[key] = value;
+              send("card", { key, value });
+            };
+
+            // Wrap a chunk generator: run it, parse JSON, send each
+            // resulting card. Errors are logged but don't bubble up.
+            const runChunk = async (
+              label: string,
+              chunkPromise: Promise<Record<string, any> | null>
+            ) => {
+              try {
+                const result = await chunkPromise;
+                if (result) {
+                  for (const [k, v] of Object.entries(result)) {
+                    acc(k, v);
+                  }
+                }
+              } catch (err: any) {
+                console.error(`Chunk ${label} failed:`, err?.message || err);
+              }
+            };
+
+            const tasks = [
+              runChunk("inspiration", chunkInspiration(name, date)),
+              runChunk("market_pulse", chunkMarketPulse(name, watchlist, date)),
+              runChunk("smart_money", chunkSmartMoney(name, watchlist, holdings, date)),
+              runChunk("todays_edge", chunkTodaysEdgeAndRadar(name, watchlist, holdings, date)),
+              runChunk("conviction_watch", chunkConvictionWatch(name, watchlist, holdings, holdingsAgeDays, date)),
+              runChunk("decisions", chunkDecisions(name, watchlist, holdings, accounts, holdingsAgeDays, date)),
+            ];
+
+            await Promise.allSettled(tasks);
+
+            // Persist the assembled brief so the next plain-JSON GET hits
+            // can use the cache too.
+            if (Object.keys(accumulated).length > 0) {
+              briefCache.set(cacheKey, { brief: accumulated, storedAt: Date.now() });
+              // Light cleanup
+              if (briefCache.size > 100) {
+                const now = Date.now();
+                for (const [k, v] of briefCache.entries()) {
+                  if (now - v.storedAt > CACHE_TTL_MS) briefCache.delete(k);
+                }
+              }
+            }
+
+            send("done", { cardCount: Object.keys(accumulated).length });
+            controller.close();
+          },
+        }),
+        {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache, no-transform",
+            Connection: "keep-alive",
+            "X-Accel-Buffering": "no",
+          },
+        }
+      );
+    }
+
+    // ─── NON-STREAMING FALLBACK (legacy single call) ───────────────────
     if (!fresh) {
       const hit = briefCache.get(cacheKey);
       if (hit && Date.now() - hit.storedAt < CACHE_TTL_MS) {
@@ -131,6 +254,248 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+// ─── Chunk generators (streaming path) ─────────────────────────────────
+// Each chunk is a focused Anthropic call that returns ONE OR MORE keys
+// of the brief. Running them concurrently turns a 30s sequential brief
+// into a ~10s parallel brief, with cards rendering as soon as each
+// chunk lands on the client.
+//
+// Each generator returns an object whose keys map directly into the
+// `brief` shape — e.g. { affirmation: "...", mindset: {...} }.
+// Failures return null so other chunks can still ship.
+
+const COMMON_PREAMBLE = (name: string, date: string) =>
+  `You are a JSON generator. Output ONLY a single valid JSON object — no prose, no markdown, no code fences. Start with { and end with }.
+
+Generate part of a morning briefing for ${name || "the user"} on ${date}. The reader is a sophisticated multi-account swing trader who knows technical analysis, smart-money signals (13F, STOCK Act, Form 4s), and macro catalysts. No beginner advice. No filler. They invest in: AI infrastructure, semiconductors, quantum, crypto-mining-to-HPC pivots, nuclear energy, rare earths, and speculative biotech (GLP-1, oncology).
+`;
+
+async function callJsonChunk(prompt: string, opts: { search?: boolean; maxTokens?: number } = {}) {
+  const { search = false, maxTokens = 2000 } = opts;
+  const response = await anthropic.messages.create({
+    model: "claude-sonnet-4-5",
+    max_tokens: maxTokens,
+    ...(search
+      ? {
+          tools: [
+            {
+              type: "web_search_20250305",
+              name: "web_search",
+              max_uses: 3,
+            } as any,
+          ],
+        }
+      : {}),
+    messages: [{ role: "user", content: prompt }],
+  });
+  const textBlocks = response.content.filter((b: any) => b.type === "text");
+  const rawText = textBlocks.map((b: any) => b.text || "").join("\n");
+  const cleaned = rawText.replace(/```json\s*/gi, "").replace(/```/g, "").trim();
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start === -1 || end === -1) {
+    throw new Error("Model returned no JSON object");
+  }
+  return JSON.parse(cleaned.slice(start, end + 1));
+}
+
+async function chunkInspiration(name: string, date: string) {
+  const prompt = `${COMMON_PREAMBLE(name, date)}
+Generate the morning inspiration block. Return:
+
+{
+  "affirmation": "short sharp opening line, max 12 words",
+  "mindset": {
+    "gratitude": "stimulating affirmation in one of three rotating voices (Stoic warrior / Quiet power / Athlete mindset), max 18 words. Vary by day.",
+    "fuel": "10-min vitality cue, e.g. '2 min mobility · 3 min breathwork · 3 min strength · 2 min stretch.'",
+    "focus": "concrete breath/mental cue, max 10 words"
+  },
+  "clarity": {
+    "contemplation": "ONE present-tense sentence to sit with for 60 seconds, max 22 words, in the user's voice",
+    "eastern_wisdom": { "quote": "real attributed quote from Lao Tzu / Rumi / Thich Nhat Hanh / Marcus Aurelius / Buddha / Vedanta / Zen, max 30 words", "source": "attribution" },
+    "breath_practice": { "name": "Box / Coherent / 4-7-8 / Bhramari / Nadi Shodhana / Physiological Sigh / Ujjayi", "pattern": "timing pattern in plain text", "description": "physiological effect, max 24 words", "rounds": "rounds or duration" }
+  },
+  "power_plate": {
+    "name": "recipe name, max 6 words",
+    "style": "High Protein or Mediterranean or Anti-Inflammatory",
+    "protein_g": 30,
+    "prep_min": 25,
+    "description": "1-2 sentences, max 28 words",
+    "groceries": ["4-6 grocery line items"],
+    "prep_steps": ["4-5 short cooking steps, max 18 words each"]
+  }
+}`;
+  return callJsonChunk(prompt, { maxTokens: 1500 });
+}
+
+async function chunkMarketPulse(name: string, watchlist: string[], date: string) {
+  const tickers = (watchlist && watchlist.length) ? watchlist.join(", ") : "general market";
+  const prompt = `${COMMON_PREAMBLE(name, date)}
+Use web_search up to 3 times to fetch TODAY's premarket movement, headlines, and macro events. Watchlist: ${tickers}.
+
+Return ONLY:
+{
+  "market_pulse": {
+    "tone": "bullish or cautious or bearish",
+    "summary": "ONE short headline sentence, max 14 words",
+    "key_levels": ["4-6 short bullets, max 10 words each — index futures, VIX, key commodities, sector rotation, today's catalysts"]
+  }
+}`;
+  return callJsonChunk(prompt, { search: true, maxTokens: 1200 });
+}
+
+async function chunkSmartMoney(name: string, watchlist: string[], holdings: any[], date: string) {
+  const tickers = (watchlist && watchlist.length) ? watchlist.join(", ") : "general market";
+  const ownedSet = new Set((holdings || []).map((h: any) => h.symbol));
+  const ownedNote = ownedSet.size > 0 ? `\nUser's holdings: ${Array.from(ownedSet).join(", ")}.` : "";
+  const prompt = `${COMMON_PREAMBLE(name, date)}
+Use web_search up to 3 times to fetch the LATEST 13F disclosures, biggest insider Form 4 trades from the past 1-2 weeks, and most recent congressional STOCK Act filings.${ownedNote}
+
+Return ONLY:
+{
+  "smart_money": {
+    "summary": {
+      "most_bought": ["TICKER1", "TICKER2"],
+      "most_sold": ["TICKER1", "TICKER2"],
+      "net_bullish_sectors": ["2-3 sector names"],
+      "net_bearish_sectors": ["1-2 sector names"]
+    },
+    "sector_heatmap": [
+      { "sector": "sector name max 22 chars", "direction": "buying or selling or neutral", "intensity": 1 }
+    ],
+    "whale_moves": [ { "text": "named trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ],
+    "congress_moves": [ { "text": "named congressional trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ],
+    "hedge_fund_moves": [ { "text": "named hedge fund trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ]
+  }
+}`;
+  return callJsonChunk(prompt, { search: true, maxTokens: 2000 });
+}
+
+async function chunkTodaysEdgeAndRadar(name: string, watchlist: string[], holdings: any[], date: string) {
+  const ownedNote = (holdings || []).length > 0
+    ? `\nUser's holdings: ${(holdings as any[]).map((h: any) => `${h.symbol}${h.qty != null ? ` ${h.qty}sh` : ""}`).join(", ")}.`
+    : `\nNo holdings on file. Use the watchlist: ${(watchlist && watchlist.length) ? watchlist.join(", ") : "general market"}.`;
+  const ownedSet = new Set((holdings || []).map((h: any) => h.symbol));
+  const radarExclusion = ownedSet.size > 0
+    ? `\nFor radar_watch: EXCLUDE any tickers the user already owns (${Array.from(ownedSet).join(", ")}).`
+    : "";
+  const prompt = `${COMMON_PREAMBLE(name, date)}
+Use web_search up to 3 times to fetch earnings dates, ex-dividend dates, FDA decisions, and known catalysts in the next 1-2 weeks.${ownedNote}${radarExclusion}
+
+Return ONLY:
+{
+  "todays_edge": {
+    "earnings_alerts": [ { "ticker": "TICKER", "when": "today after close" | "tomorrow before open", "your_shares": 0 } ],
+    "binary_catalysts": [ { "ticker": "TICKER", "event": "event date", "context": "max 12 words" } ],
+    "risk_flags": [ { "ticker": "TICKER", "flag": "max 12 words", "suggested_action": "max 12 words" } ]
+  },
+  "radar_watch": [
+    { "ticker": "TICKER", "theme": "short tag e.g. 'Nuclear · AI energy'", "headline": "max 14 words", "why_now": "max 18 words" }
+  ]
+}
+
+todays_edge: 0-3 alerts total — only include if genuinely time-sensitive. Empty arrays OK.
+radar_watch: 2-4 thematic stocks the user does NOT own.`;
+  return callJsonChunk(prompt, { search: true, maxTokens: 1800 });
+}
+
+async function chunkConvictionWatch(
+  name: string,
+  watchlist: string[],
+  holdings: any[],
+  holdingsAgeDays: number | null,
+  date: string
+) {
+  const focusTickers = (holdings && holdings.length > 0)
+    ? (holdings as any[]).slice(0, 5).map((h: any) => h.symbol)
+    : (watchlist || []).slice(0, 5);
+  const tickerNote = focusTickers.length > 0
+    ? `\nFocus on these tickers: ${focusTickers.join(", ")}.`
+    : "";
+  const prompt = `${COMMON_PREAMBLE(name, date)}
+Use web_search up to 2 times to check current technical setup and catalysts.${tickerNote}
+
+Return ONLY:
+{
+  "conviction_watch": [
+    { "ticker": "TICKER", "signal": "add or hold or trim", "why_now": "1-2 short sentences, max 25 words", "note": "tight summary, max 8 words", "action": "OPTIONAL concrete trade with size, max 12 words — omit for routine holds" }
+  ]
+}
+
+3-5 entries.`;
+  return callJsonChunk(prompt, { search: true, maxTokens: 1500 });
+}
+
+async function chunkDecisions(
+  name: string,
+  watchlist: string[],
+  holdings: any[],
+  accounts: any[] | undefined,
+  holdingsAgeDays: number | null,
+  date: string
+) {
+  // Reuse the same holdings block format from buildPrompt for consistency
+  let holdingsBlock = "";
+  if (holdings && holdings.length > 0) {
+    const accountLabel: Record<string, string> = {};
+    if (Array.isArray(accounts)) {
+      for (const a of accounts) {
+        if (a && a.id) accountLabel[a.id] = a.name || "Account";
+      }
+    }
+    const groups: Record<string, any[]> = {};
+    for (const h of holdings) {
+      const key = h.accountId || "_unknown";
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(h);
+    }
+    const formatHolding = (h: any) => {
+      const parts = [`${h.symbol}`];
+      if (h.qty != null) parts.push(`${h.qty} sh`);
+      if (h.cost != null) parts.push(`@ $${h.cost.toFixed(2)} cost`);
+      if (h.gainPct != null) {
+        const sign = h.gainPct >= 0 ? "+" : "";
+        parts.push(`${sign}${h.gainPct.toFixed(1)}%`);
+      }
+      return "    • " + parts.join(", ");
+    };
+    const groupBlocks: string[] = [];
+    for (const [accountId, list] of Object.entries(groups)) {
+      const label = accountId === "_unknown" ? "Unlabeled" : (accountLabel[accountId] || "Account");
+      groupBlocks.push(`  Account: ${label}\n${list.map(formatHolding).join("\n")}`);
+    }
+    const ageNote = holdingsAgeDays != null && holdingsAgeDays > 7
+      ? ` (${holdingsAgeDays} days old — % gains approximate)`
+      : "";
+    holdingsBlock = `\n\nUSER'S HOLDINGS${ageNote}:\n${groupBlocks.join("\n\n")}\n`;
+  }
+  const multiAccount = Array.isArray(accounts) && accounts.length > 1;
+  const accountRule = multiAccount
+    ? `\nMULTI-ACCOUNT REQUIREMENT: User has positions in ${accounts.length} accounts. EVERY decision MUST name the specific account (e.g., "Trim NVDA in Fidelity TOD: 30 of 75 sh"). Do NOT issue a decision without naming the account.`
+    : "";
+
+  const prompt = `${COMMON_PREAMBLE(name, date)}
+${holdingsBlock}
+Generate 3-5 PERSONALIZED, ACTIONABLE trade decisions for today. Each must reference a SPECIFIC ticker the user holds (or watches), with their actual share count when known, plus a SPECIFIC action with reasoning. Cite real catalysts when relevant.${accountRule}
+
+GOOD examples:
+${multiAccount
+    ? `- "Trim NVDA in Fidelity TOD: 30 of 75 sh into earnings strength."
+- "Add 10 NVDA in Roth on dip below $850 support."`
+    : `- "IONQ +45% on 175 sh — earnings 5/6. Trim 75 into Friday strength."
+- "NVDA reports tonight. You hold 75 sh. Set $850 stop, no add pre-FOMC."`}
+
+BAD (avoid): "Review highest-conviction position" / "Confirm cash balance" / "Pre-decide exits before catalysts" — too generic.
+
+Format: [Account if multi-account] + [Ticker context] + [Specific action] + [Catalyst]. Max 16 words each.
+
+Return ONLY:
+{
+  "decisions": ["3-5 decision strings"]
+}`;
+  return callJsonChunk(prompt, { maxTokens: 1200 });
 }
 
 function buildPrompt(

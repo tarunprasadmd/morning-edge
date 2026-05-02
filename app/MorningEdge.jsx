@@ -950,7 +950,7 @@ export default function MorningEdge() {
   })();
 
   const callAPI = async (opts = {}) => {
-    const { fresh = false } = opts;
+    const fresh = opts && opts.fresh === true;
     const url = fresh ? "/api/brief?fresh=1" : "/api/brief";
     const response = await fetch(url, {
       method: "POST",
@@ -971,6 +971,76 @@ export default function MorningEdge() {
     return response.json();
   };
 
+  // ─── Streaming brief fetch ────────────────────────────────────────
+  // Uses Server-Sent Events from /api/brief?stream=1. The server runs
+  // the brief in parallel chunks and streams each card as it lands.
+  // We merge cards into the brief state progressively, so the page
+  // populates over ~10s instead of a 30s blank wait.
+  //
+  // Falls back to the regular JSON path if streaming fails (older
+  // browsers, network proxies that strip SSE, etc.).
+  const callStreamingAPI = async (opts = {}) => {
+    const fresh = opts && opts.fresh === true;
+    const params = new URLSearchParams();
+    params.set("stream", "1");
+    if (fresh) params.set("fresh", "1");
+    const url = `/api/brief?${params.toString()}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: name || "the user",
+        watchlist: portfolio,
+        holdings: holdings,
+        accounts: accountsState,
+        holdingsAgeDays: holdingsAgeDays,
+        date: today,
+      }),
+    });
+    if (!response.ok || !response.body) {
+      let errBody = ""; try { errBody = await response.text(); } catch {}
+      throw new Error(`Stream API ${response.status}: ${errBody.slice(0, 200)}`);
+    }
+
+    const accumulated = {};
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      // SSE events are separated by a blank line
+      const events = buffer.split(/\n\n/);
+      buffer = events.pop() || ""; // last partial chunk stays in buffer
+
+      for (const block of events) {
+        if (!block.trim()) continue;
+        // Parse "event: <name>\ndata: <json>"
+        let eventName = "message";
+        let dataStr = "";
+        for (const line of block.split(/\n/)) {
+          if (line.startsWith("event:")) eventName = line.slice(6).trim();
+          else if (line.startsWith("data:")) dataStr += line.slice(5).trim();
+        }
+        if (!dataStr) continue;
+        let payload = null;
+        try { payload = JSON.parse(dataStr); } catch { continue; }
+
+        if (eventName === "card" && payload && payload.key) {
+          accumulated[payload.key] = payload.value;
+          // Push partial brief to React state as each card arrives
+          setBrief({ ...accumulated });
+        }
+        // 'meta' and 'done' events are informational; nothing to render
+      }
+    }
+
+    return accumulated;
+  };
+
   const extractJSON = (data) => {
     if (!data || !data.brief) throw new Error("No brief in response");
     return data.brief;
@@ -978,14 +1048,24 @@ export default function MorningEdge() {
 
   const generateBrief = async (opts = {}) => {
     setLoading(true); setError(null);
+    let finalBrief = null;
     try {
-      const data = await callAPI(opts);
-      const fresh = extractJSON(data);
-      setBrief(fresh);
+      // Try the streaming path first — cards render progressively
+      try {
+        finalBrief = await callStreamingAPI(opts);
+        if (!finalBrief || Object.keys(finalBrief).length === 0) {
+          throw new Error("Stream returned no cards");
+        }
+      } catch (streamErr) {
+        console.warn("Streaming failed, falling back to JSON:", streamErr);
+        const data = await callAPI(opts);
+        finalBrief = extractJSON(data);
+        setBrief(finalBrief);
+      }
       // Auto-save brief by date for future history feature
       try {
         const history = (await Store.get("me-briefs")) || {};
-        history[todayKey] = { brief: fresh, savedAt: Date.now() };
+        history[todayKey] = { brief: finalBrief, savedAt: Date.now() };
         // Keep only last 30 days
         const keys = Object.keys(history).sort().slice(-30);
         const trimmed = {};
