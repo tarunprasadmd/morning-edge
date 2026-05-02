@@ -1,17 +1,58 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
+export const dynamic = "force-dynamic";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+// ─── In-memory brief cache (4-hour TTL) ────────────────────────────────
+// Caches the generated brief keyed by a hash of (name + watchlist + holdings
+// fingerprint + 4-hour time bucket). The same user reloading within the
+// same 4-hour window gets an instant response. Vercel warm instances retain
+// this cache; cold starts regenerate, which is acceptable.
+//
+// Bypass with ?fresh=1 (or { forceFresh: true } in body). The user's
+// pull-to-refresh action triggers ?fresh=1 on the client, so manual refresh
+// always gets fresh content.
+const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
+const briefCache = new Map<string, { brief: any; storedAt: number }>();
+
+function buildCacheKey(input: {
+  name: string;
+  watchlist: string[];
+  holdings: any[];
+  date: string;
+}) {
+  // 4-hour bucket so the key naturally rolls every 4 hours
+  const bucket = Math.floor(Date.now() / CACHE_TTL_MS);
+  // Holdings fingerprint: just the symbols + share counts, sorted
+  const holdingsFingerprint = (input.holdings || [])
+    .map((h: any) => `${h.symbol}:${h.qty ?? ""}:${h.accountId ?? ""}`)
+    .sort()
+    .join(",");
+  const watchFingerprint = (input.watchlist || []).slice().sort().join(",");
+  const raw = JSON.stringify({
+    n: input.name || "",
+    w: watchFingerprint,
+    h: holdingsFingerprint,
+    d: input.date || "",
+    b: bucket,
+  });
+  return crypto.createHash("sha256").update(raw).digest("hex");
+}
+
 export async function POST(request: Request) {
   try {
+    const url = new URL(request.url);
+    const queryFresh = url.searchParams.get("fresh") === "1";
     const body = await request.json();
-    const { name, watchlist, holdings, holdingsAgeDays, date } = body;
+    const { name, watchlist, holdings, accounts, holdingsAgeDays, date, forceFresh } = body;
+    const fresh = queryFresh || !!forceFresh;
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(
@@ -20,7 +61,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const userPrompt = buildPrompt(name, watchlist, holdings, holdingsAgeDays, date);
+    // Cache lookup
+    const cacheKey = buildCacheKey({ name, watchlist, holdings, date });
+    if (!fresh) {
+      const hit = briefCache.get(cacheKey);
+      if (hit && Date.now() - hit.storedAt < CACHE_TTL_MS) {
+        return NextResponse.json({ brief: hit.brief, cached: true });
+      }
+    }
+
+    const userPrompt = buildPrompt(name, watchlist, holdings, accounts, holdingsAgeDays, date);
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-5",
@@ -63,7 +113,17 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ brief });
+    // Store in cache
+    briefCache.set(cacheKey, { brief, storedAt: Date.now() });
+    // Light cleanup: prune entries older than TTL when cache grows large
+    if (briefCache.size > 100) {
+      const now = Date.now();
+      for (const [k, v] of briefCache.entries()) {
+        if (now - v.storedAt > CACHE_TTL_MS) briefCache.delete(k);
+      }
+    }
+
+    return NextResponse.json({ brief, cached: false });
   } catch (err: any) {
     console.error("Brief generation failed:", err);
     return NextResponse.json(
@@ -73,13 +133,38 @@ export async function POST(request: Request) {
   }
 }
 
-function buildPrompt(name: string, watchlist: string[], holdings: any[], holdingsAgeDays: number | null, date: string) {
+function buildPrompt(
+  name: string,
+  watchlist: string[],
+  holdings: any[],
+  accounts: any[] | undefined,
+  holdingsAgeDays: number | null,
+  date: string
+) {
   const tickers = (watchlist && watchlist.length) ? watchlist.join(", ") : "general market";
 
   // Build a structured holdings block when available
   let holdingsBlock = "";
   if (holdings && holdings.length > 0) {
-    const lines = holdings.map((h) => {
+    // Build a label map from accountId to human-friendly account name
+    const accountLabel: Record<string, string> = {};
+    if (Array.isArray(accounts)) {
+      for (const a of accounts) {
+        if (a && a.id) accountLabel[a.id] = a.name || "Account";
+      }
+    }
+
+    // Group holdings by account so the prompt clearly conveys which positions
+    // sit in which account. This is what lets Claude write playbook items
+    // like "Trim NVDA in Fidelity TOD: 30 of 75 sh."
+    const groups: Record<string, any[]> = {};
+    for (const h of holdings) {
+      const key = h.accountId || "_unknown";
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(h);
+    }
+
+    const formatHolding = (h: any) => {
       const parts = [`${h.symbol}`];
       if (h.qty != null) parts.push(`${h.qty} sh`);
       if (h.cost != null) parts.push(`@ $${h.cost.toFixed(2)} cost`);
@@ -88,12 +173,25 @@ function buildPrompt(name: string, watchlist: string[], holdings: any[], holding
         const sign = h.gainPct >= 0 ? "+" : "";
         parts.push(`${sign}${h.gainPct.toFixed(1)}%`);
       }
-      return "  • " + parts.join(", ");
-    });
+      return "    • " + parts.join(", ");
+    };
+
+    const groupBlocks: string[] = [];
+    for (const [accountId, list] of Object.entries(groups)) {
+      const label = accountId === "_unknown"
+        ? "Unlabeled holdings"
+        : (accountLabel[accountId] || "Account");
+      groupBlocks.push(`  Account: ${label}\n${list.map(formatHolding).join("\n")}`);
+    }
+
     const ageNote = holdingsAgeDays != null && holdingsAgeDays > 7
       ? ` (NOTE: User's holdings data is ${holdingsAgeDays} days old — prices have shifted; treat % gains as approximate.)`
       : "";
-    holdingsBlock = `\n\nUSER'S ACTUAL HOLDINGS${ageNote}:\n${lines.join("\n")}\n`;
+    const accountCount = Object.keys(groups).length;
+    const accountNote = accountCount > 1
+      ? ` The user holds these positions across ${accountCount} accounts. When writing playbook items, ALWAYS name the specific account (e.g., "Trim NVDA in Fidelity TOD: 30 of 75 sh") so the user knows exactly where to act.`
+      : "";
+    holdingsBlock = `\n\nUSER'S ACTUAL HOLDINGS${ageNote}${accountNote}\n${groupBlocks.join("\n\n")}\n`;
   }
 
   return `You are a JSON generator. Output ONLY a single valid JSON object. No prose. No markdown. Start with { and end with }.
@@ -182,14 +280,16 @@ WRITING STYLE RULES (critical):
 
 8. decisions (Today's Playbook) is THE MOST IMPORTANT FIELD. It must be PERSONALIZED, ACTIONABLE TRADE RECOMMENDATIONS based on the user's actual holdings and today's catalysts — NOT generic principles or to-do lists. The user does not need to be told to "review their portfolio" — they need to be told WHAT TO DO with their specific positions today.
 
-   ${holdings && holdings.length > 0 ? `When holdings are provided, EVERY decision must reference a SPECIFIC ticker the user holds, with their actual share count and gain/loss when known, plus a SPECIFIC action with reasoning. Cite real catalysts (earnings dates, ex-div dates, FOMC, CPI) when relevant.` : `When holdings are NOT provided, reference watchlist tickers and known market catalysts. Encourage user to upload their CSV for fully personalized recommendations.`}
+   ${holdings && holdings.length > 0 ? `When holdings are provided, EVERY decision must reference a SPECIFIC ticker the user holds, with their actual share count and gain/loss when known, plus a SPECIFIC action with reasoning. Cite real catalysts (earnings dates, ex-div dates, FOMC, CPI) when relevant.
+
+   ${accounts && Array.isArray(accounts) && accounts.length > 1 ? `MULTI-ACCOUNT REQUIREMENT: The user holds positions across ${accounts.length} accounts. EVERY decision MUST name the specific account so the user knows exactly where to act. Use the account names exactly as listed in the holdings block above (e.g., "Trim NVDA in Fidelity TOD: 30 of 75 sh"). Do NOT issue a decision without naming the account.` : ""}` : `When holdings are NOT provided, reference watchlist tickers and known market catalysts. Encourage user to upload their CSV for fully personalized recommendations.`}
 
    GOOD examples (personalized, specific):
-   • "IONQ +45% on 175 sh — earnings 5/6. Trim 75 into Friday strength, keep 100."
+   ${accounts && Array.isArray(accounts) && accounts.length > 1 ? `• "Trim NVDA in Fidelity TOD: 30 of 75 sh into earnings strength."
+   • "IONQ in TOD +45% on 175 sh — trim 75 before 5/6 print."
+   • "Add 10 NVDA in Roth on dip below $850 support."` : `• "IONQ +45% on 175 sh — earnings 5/6. Trim 75 into Friday strength, keep 100."
    • "NVDA reports tonight. You hold 75 sh. Set $850 stop, no add pre-FOMC."
-   • "VRT 35sh down 8% — bottom forming. Add ½ unit if $112 holds support."
-   • "MSFT +12% past month. Trim 10 of 40 sh into earnings strength."
-   • "OKLO 100 sh up sharply on nuclear thesis. Hold core, trail stop $43."
+   • "VRT 35sh down 8% — bottom forming. Add ½ unit if $112 holds support."`}
 
    BAD examples to AVOID (generic, work for anyone):
    • "Review highest-conviction position." (which one? what to do?)
@@ -198,7 +298,7 @@ WRITING STYLE RULES (critical):
    • "Trim winners into strength." (which winners? how much?)
    • "Practice gratitude." (not a trade decision)
 
-   For each decision, the format should be: [Ticker context] + [Specific action] + [Reasoning/catalyst]. Maximum 14 words per item to keep it scannable.
+   For each decision, the format should be: [Account if multi-account] + [Ticker context] + [Specific action] + [Reasoning/catalyst]. Maximum 16 words per item to keep it scannable.
 
 9. market_pulse: BULLETS ONLY. The "summary" field should be a SHORT 1-sentence headline (max 14 words). The "key_levels" array should have 4-6 tight bullets (max 10 words each) covering: index futures, VIX, key commodities, sector rotation, and any major catalyst on deck today.
 

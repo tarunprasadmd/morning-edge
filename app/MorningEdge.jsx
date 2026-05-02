@@ -13,7 +13,7 @@ import {
   Pause, ArrowDownRight, ShieldCheck, ShieldAlert,
   ArrowRight, Lock, Crown, LayoutGrid, Briefcase, Share2, CalendarPlus, Play,
   Compass, Telescope, Flower2, Activity, ChevronLeft, ChevronRight, ExternalLink,
-  Utensils, ShoppingBasket, Timer, Flame,
+  Utensils, ShoppingBasket, Timer, Flame, Pencil, Trash2, Check,
 } from "lucide-react";
 
 const SIGNATURE = "Morning Edge · by T-SPOT · Tarun Prasad · 2026";
@@ -137,159 +137,165 @@ const BROKERAGES = [
 // ─── Routine Library ─────────────────────────────────────────────────
 // 7 daily routines (one per day of week), 4 segments each. Total 10 min.
 // Each segment: { title, durationSec, kicker, exercises: [{ name, cue }] }
+// Designed for mid-life users with limited mobility — gentle, plain English,
+// safe at any fitness level. No burpees, push-ups, jumping, or floor work
+// that requires getting up off the ground. All can be done in a chair if
+// needed; cues describe each move in simple step-by-step language.
 const ROUTINES = [
   // Sunday — gentle reset
   {
-    name: "Reset",
+    name: "Easy Sunday Reset",
     segments: [
-      { kicker: "Mobility", title: "Wake the spine", durationSec: 120, exercises: [
-        { name: "Neck rolls", cue: "Slow circles, both directions" },
-        { name: "Shoulder shrugs", cue: "Up, hold 3, down. Repeat" },
-        { name: "Cat-cow", cue: "Inhale arch, exhale round" },
+      { kicker: "Loosen up", title: "Wake the joints", durationSec: 120, exercises: [
+        { name: "Slow neck rolls", cue: "Drop chin to chest. Roll your head slowly in a half circle, ear toward shoulder, then back. 3 each side. No forcing." },
+        { name: "Shoulder shrugs", cue: "Lift both shoulders up toward your ears, hold 3 seconds, drop them down. Repeat 8 times." },
+        { name: "Seated waist twist", cue: "Sit tall. Place hands on your knees. Slowly turn your shoulders right, then left. 5 each side." },
       ]},
-      { kicker: "Breathwork", title: "Box breathing", durationSec: 180, exercises: [
-        { name: "4-4-4-4", cue: "Inhale 4 · hold 4 · exhale 4 · hold 4" },
-        { name: "Through the nose", cue: "Soft jaw, soft shoulders" },
+      { kicker: "Breathe", title: "Slow box breathing", durationSec: 180, exercises: [
+        { name: "In through the nose, 4 counts", cue: "Sit comfortably. Breathe in slowly through your nose while you count to 4." },
+        { name: "Hold gently, 4 counts", cue: "Hold the breath. No tension. Just pause." },
+        { name: "Out through the mouth, 4 counts", cue: "Let the breath out through soft, parted lips while you count to 4." },
+        { name: "Hold empty, 4 counts", cue: "Pause again with empty lungs. Repeat the full cycle 6–8 times." },
       ]},
-      { kicker: "Strength", title: "Core foundation", durationSec: 180, exercises: [
-        { name: "Plank", cue: "Hold 45 sec, rest 15, repeat ×2" },
-        { name: "Glute bridges", cue: "10 reps, squeeze at top" },
+      { kicker: "Steady", title: "Sit-to-stands", durationSec: 180, exercises: [
+        { name: "Chair sit-to-stand", cue: "Sit on a sturdy chair. Cross arms over chest. Stand up using your legs (no rocking), then sit back down with control. 8 reps." },
+        { name: "Heel raises at the counter", cue: "Hold a kitchen counter for balance. Rise up onto the balls of your feet, then lower slowly. 12 reps." },
       ]},
       { kicker: "Stretch", title: "Open and ground", durationSec: 120, exercises: [
-        { name: "Forward fold", cue: "Hang heavy, soft knees" },
-        { name: "Child's pose", cue: "Knees wide, breathe into back" },
+        { name: "Standing forward fold (gentle)", cue: "Stand with knees soft. Hinge at the hips and let your arms hang. Stop wherever it feels easy. Hold 30 seconds." },
+        { name: "Doorway chest opener", cue: "Place forearm on a doorframe at shoulder height. Step the same-side foot forward until you feel a gentle stretch in the chest. 30 seconds each side." },
       ]},
     ],
   },
-  // Monday — power start
+  // Monday — gentle start to the week
   {
-    name: "Power Start",
+    name: "Monday Wake-Up",
     segments: [
-      { kicker: "Mobility", title: "Hip openers", durationSec: 120, exercises: [
-        { name: "World's greatest stretch", cue: "Each side, hold 30 sec" },
-        { name: "Leg swings", cue: "Front-back, side-side" },
+      { kicker: "Loosen up", title: "Hip and ankle mobility", durationSec: 120, exercises: [
+        { name: "Marching in place", cue: "Hold a counter or chair if needed. Lift one knee at a time, slowly. 20 lifts total (10 each side)." },
+        { name: "Ankle circles", cue: "Sit or stand. Lift one foot. Trace a slow circle with your toes. 5 each direction, both feet." },
       ]},
-      { kicker: "Breathwork", title: "Wim Hof rounds", durationSec: 180, exercises: [
-        { name: "30 deep breaths", cue: "Full inhale, passive exhale" },
-        { name: "Hold on empty", cue: "Until urge, then recover" },
+      { kicker: "Breathe", title: "Long exhale breathing", durationSec: 180, exercises: [
+        { name: "Inhale 4, exhale 6", cue: "Breathe in through your nose for 4 counts. Breathe out through your mouth for 6 counts. The longer exhale tells your body it's safe." },
+        { name: "Continue for 2–3 minutes", cue: "Don't worry about counting perfectly. Just keep the exhale a bit longer than the inhale." },
       ]},
-      { kicker: "Strength", title: "Lower body", durationSec: 180, exercises: [
-        { name: "Bodyweight squats", cue: "20 reps, controlled descent" },
-        { name: "Reverse lunges", cue: "10 each leg" },
+      { kicker: "Steady", title: "Lower body strength", durationSec: 180, exercises: [
+        { name: "Wall sit (short)", cue: "Stand with your back against a wall. Slide down only as far as comfortable. Hold for 15 seconds, rest, repeat 3 times." },
+        { name: "Step-ups on the bottom stair", cue: "Hold the railing. Step up with the right foot, bring the left to meet it, step down. 10 reps, then switch leading leg." },
       ]},
-      { kicker: "Stretch", title: "Open the hips", durationSec: 120, exercises: [
-        { name: "Pigeon pose", cue: "Each side, 30-45 sec" },
-        { name: "Standing quad stretch", cue: "Each leg, 30 sec" },
+      { kicker: "Stretch", title: "Hips and hamstrings", durationSec: 120, exercises: [
+        { name: "Seated figure-4 stretch", cue: "Sit on a chair. Cross right ankle over left knee. Sit tall, lean forward gently until you feel a stretch in the hip. 30 seconds each side." },
+        { name: "Standing hamstring stretch", cue: "Place one heel on the bottom stair. Keep that leg straight. Hinge gently at the hips until you feel the back of the leg open. 30 seconds each leg." },
       ]},
     ],
   },
-  // Tuesday — sharpen focus
+  // Tuesday — focus
   {
-    name: "Sharpen",
+    name: "Tuesday Steady Focus",
     segments: [
-      { kicker: "Mobility", title: "Thoracic spine", durationSec: 120, exercises: [
-        { name: "Thread the needle", cue: "Each side, slow rotation" },
-        { name: "Open book", cue: "On side, top arm sweeps over" },
+      { kicker: "Loosen up", title: "Upper back mobility", durationSec: 120, exercises: [
+        { name: "Cat-cow (standing or seated)", cue: "Place hands on knees. Round the back as you exhale. Arch the back gently as you inhale. 8 slow rounds." },
+        { name: "Arm reaches across the body", cue: "Reach right arm across the chest. Use the left hand to gently hug it closer. 20 seconds each side." },
       ]},
-      { kicker: "Breathwork", title: "4-7-8 breathing", durationSec: 180, exercises: [
-        { name: "Inhale 4", cue: "Through the nose" },
-        { name: "Hold 7", cue: "Soft, no tension" },
-        { name: "Exhale 8", cue: "Through the mouth, slow" },
+      { kicker: "Breathe", title: "4-7-8 calming breath", durationSec: 180, exercises: [
+        { name: "Breathe in, 4 counts (nose)", cue: "Lips closed. Breathe in quietly through the nose." },
+        { name: "Hold, 7 counts", cue: "Hold the breath. If 7 is too long, do 5 — work up to 7 over time." },
+        { name: "Out through the mouth, 8 counts", cue: "Exhale fully through the mouth with a soft 'whoosh' sound. Repeat 4 cycles." },
       ]},
-      { kicker: "Strength", title: "Push power", durationSec: 180, exercises: [
-        { name: "Push-ups", cue: "15 reps, full range" },
-        { name: "Pike push-ups", cue: "10 reps, target shoulders" },
+      { kicker: "Steady", title: "Standing balance + core", durationSec: 180, exercises: [
+        { name: "One-foot stand (near a counter)", cue: "Hold the counter lightly. Lift one foot a few inches. Hold 15 seconds. Switch. Try 2 rounds each side." },
+        { name: "Standing knee lifts", cue: "Hold the counter. Lift the right knee up to a comfortable height, lower with control. 10 reps each side." },
       ]},
-      { kicker: "Stretch", title: "Upper body release", durationSec: 120, exercises: [
-        { name: "Doorway chest stretch", cue: "Each arm, 30 sec" },
-        { name: "Cross-body shoulder", cue: "Each side, 30 sec" },
+      { kicker: "Stretch", title: "Shoulder release", durationSec: 120, exercises: [
+        { name: "Doorway chest stretch", cue: "Forearm on doorframe at shoulder height. Step that-side foot forward gently. 30 seconds each side." },
+        { name: "Neck side stretch", cue: "Sit tall. Drop the right ear toward the right shoulder. Place the right hand lightly on top of the head — just the weight of the hand. 20 seconds each side." },
       ]},
     ],
   },
   // Wednesday — even keel
   {
-    name: "Even Keel",
+    name: "Wednesday Even Keel",
     segments: [
-      { kicker: "Mobility", title: "Full body flow", durationSec: 120, exercises: [
-        { name: "Standing roll-down", cue: "Vertebra by vertebra, slow" },
-        { name: "Side bends", cue: "Reach over, breathe wide" },
+      { kicker: "Loosen up", title: "Whole-body warm-up", durationSec: 120, exercises: [
+        { name: "Shoulder rolls", cue: "Roll the shoulders backwards in big slow circles. 10 reps. Then forwards 10 reps." },
+        { name: "Side bends", cue: "Stand tall, feet hip-width. Reach the right arm overhead and lean gently to the left. Switch. 5 each side." },
       ]},
-      { kicker: "Breathwork", title: "Coherent breathing", durationSec: 180, exercises: [
-        { name: "5 sec in, 5 sec out", cue: "Steady, equal rhythm" },
-        { name: "Through the nose", cue: "Settle the nervous system" },
+      { kicker: "Breathe", title: "Coherent breathing", durationSec: 180, exercises: [
+        { name: "Inhale 5, exhale 5", cue: "Breathe in through the nose for 5 counts, out through the nose for 5 counts. Steady, equal rhythm." },
+        { name: "Continue for 3 minutes", cue: "About 6 breaths a minute. Used by athletes and meditators to settle the nervous system." },
       ]},
-      { kicker: "Strength", title: "Posterior chain", durationSec: 180, exercises: [
-        { name: "Single-leg deadlift", cue: "10 each leg, no weight" },
-        { name: "Superman holds", cue: "10 sec × 5" },
+      { kicker: "Steady", title: "Posterior chain (gentle)", durationSec: 180, exercises: [
+        { name: "Hip hinge with chair behind you", cue: "Stand in front of a chair. Push the hips back as if to sit down — but stop before you do. Stand up. 10 reps." },
+        { name: "Standing leg lift to the back", cue: "Hold the counter. Keeping the leg straight, lift one foot a few inches behind you, lower with control. 10 each side." },
       ]},
       { kicker: "Stretch", title: "Decompress", durationSec: 120, exercises: [
-        { name: "Lying spinal twist", cue: "Each side, 30-45 sec" },
-        { name: "Happy baby", cue: "Hold knees, gentle rock" },
+        { name: "Seated forward fold", cue: "Sit on the edge of a chair, feet flat. Hinge at the hips and let the arms hang. Stop wherever feels easy. 30 seconds." },
+        { name: "Seated spinal twist", cue: "Sit tall. Place the right hand on the outside of the left knee. Gently rotate the upper body left. 20 seconds each side." },
       ]},
     ],
   },
-  // Thursday — push day
+  // Thursday — energy without intensity
   {
-    name: "Push Through",
+    name: "Thursday Lift",
     segments: [
-      { kicker: "Mobility", title: "Dynamic warm-up", durationSec: 120, exercises: [
-        { name: "Inchworms", cue: "Walk hands out, walk in. ×6" },
-        { name: "Arm circles", cue: "Forward 30 sec, back 30" },
+      { kicker: "Loosen up", title: "Wake up the body", durationSec: 120, exercises: [
+        { name: "Heel-to-toe walking", cue: "Walk 10 steps placing the heel of the front foot directly in front of the toes of the back foot. Like a slow tightrope. Hold a wall if needed." },
+        { name: "Big arm circles", cue: "Arms out to the sides. Slow forward circles 10 reps. Slow backward circles 10 reps." },
       ]},
-      { kicker: "Breathwork", title: "Energy breath", durationSec: 180, exercises: [
-        { name: "Bellows breath", cue: "30 fast in-out, then rest" },
-        { name: "Recover slowly", cue: "Long exhale, soft eyes" },
+      { kicker: "Breathe", title: "Energizing breath", durationSec: 180, exercises: [
+        { name: "Three quick inhales, one long exhale", cue: "Through the nose: short sniff, sniff, sniff in. Then a long slow exhale through the mouth. Helps shake off morning grogginess. 8 cycles." },
       ]},
-      { kicker: "Strength", title: "Full-body burn", durationSec: 180, exercises: [
-        { name: "Burpees", cue: "8 reps at moderate pace" },
-        { name: "Mountain climbers", cue: "30 sec, controlled" },
+      { kicker: "Steady", title: "Full body, low impact", durationSec: 180, exercises: [
+        { name: "Chair sit-to-stand", cue: "Sit on a sturdy chair. Stand up slowly using leg power. Sit back down with control. 10 reps." },
+        { name: "Wall push-ups", cue: "Stand arm's length from a wall. Place hands on the wall at shoulder height. Bend elbows to bring chest to wall, then push back. 10 reps. Easier on shoulders than floor push-ups." },
       ]},
       { kicker: "Stretch", title: "Cool down", durationSec: 120, exercises: [
-        { name: "Standing forward fold", cue: "Hang, sway gently" },
-        { name: "Seated wide stretch", cue: "Lean forward, breathe" },
+        { name: "Standing quad stretch (with support)", cue: "Hold the counter with left hand. Bend the right knee and reach for the right ankle behind you with the right hand. 20 seconds each side. Skip if it bothers the knee." },
+        { name: "Standing forward fold", cue: "Knees soft. Hinge at hips and let the arms hang. Sway gently side to side. 30 seconds." },
       ]},
     ],
   },
   // Friday — clarity
   {
-    name: "Clarity",
+    name: "Friday Clarity",
     segments: [
-      { kicker: "Mobility", title: "Spinal waves", durationSec: 120, exercises: [
-        { name: "Standing cat-cow", cue: "Hands on knees, articulate" },
-        { name: "Hip circles", cue: "Each direction, 30 sec" },
+      { kicker: "Loosen up", title: "Spine and hips", durationSec: 120, exercises: [
+        { name: "Standing cat-cow", cue: "Hands on knees, slight bend. Round the back, then arch gently. 8 slow rounds." },
+        { name: "Hip circles", cue: "Hands on hips. Make slow circles with the hips, as if drawing on the floor with your tailbone. 5 each direction." },
       ]},
-      { kicker: "Breathwork", title: "Alternate nostril", durationSec: 180, exercises: [
-        { name: "Right thumb closes right", cue: "Inhale left, switch, exhale right" },
-        { name: "Continue switching", cue: "5-6 full cycles" },
+      { kicker: "Breathe", title: "Alternate nostril breathing", durationSec: 180, exercises: [
+        { name: "Right thumb closes right nostril", cue: "Sit tall. Use the right thumb to close the right nostril. Inhale slowly through the left." },
+        { name: "Switch", cue: "Use the right ring finger to close the left nostril. Open the right and exhale through it." },
+        { name: "Continue alternating", cue: "Inhale right, switch, exhale left. 5–6 full cycles. A traditional yogic practice for steady focus." },
       ]},
-      { kicker: "Strength", title: "Core stability", durationSec: 180, exercises: [
-        { name: "Dead bug", cue: "10 each side, slow" },
-        { name: "Side plank", cue: "30 sec each side" },
+      { kicker: "Steady", title: "Core stability", durationSec: 180, exercises: [
+        { name: "Seated dead bug (gentle)", cue: "Sit tall on a chair. Lift the right knee and the left arm at the same time. Lower. Switch sides. 10 each side." },
+        { name: "Wall plank", cue: "Stand arm's length from a wall, place forearms on the wall. Step feet back so the body is at a slight angle. Hold a strong line for 20 seconds. 3 rounds." },
       ]},
       { kicker: "Stretch", title: "Long holds", durationSec: 120, exercises: [
-        { name: "Hamstring stretch", cue: "Each leg, 45 sec" },
-        { name: "Figure-4 stretch", cue: "Each side, 30-45 sec" },
+        { name: "Standing hamstring stretch", cue: "Heel on the bottom stair. Keep leg straight. Hinge gently. 45 seconds each leg." },
+        { name: "Seated figure-4", cue: "Cross right ankle on left knee. Sit tall, lean gently forward. 30 seconds each side." },
       ]},
     ],
   },
-  // Saturday — long flow
+  // Saturday — long calm flow
   {
-    name: "Long Flow",
+    name: "Saturday Long Calm",
     segments: [
-      { kicker: "Mobility", title: "Sun salutation", durationSec: 120, exercises: [
-        { name: "Slow flow", cue: "Mountain → forward fold → plank → up dog → down dog" },
-        { name: "Repeat 3 rounds", cue: "Match breath to movement" },
+      { kicker: "Loosen up", title: "Slow whole-body flow", durationSec: 120, exercises: [
+        { name: "Reach up, fold down", cue: "Stand tall. Inhale, reach both arms overhead. Exhale, fold forward with soft knees. Inhale, roll up to standing. 5 slow rounds." },
+        { name: "Side-to-side gentle lunges", cue: "Wide stance. Shift weight to the right, bending the right knee. Then the left. Hands can rest on thighs for support. 8 slow rounds." },
       ]},
-      { kicker: "Breathwork", title: "Deep belly breathing", durationSec: 180, exercises: [
-        { name: "Hand on belly", cue: "Inhale fills belly first" },
-        { name: "Long slow exhale", cue: "Twice as long as inhale" },
+      { kicker: "Breathe", title: "Belly breathing", durationSec: 180, exercises: [
+        { name: "Hand on belly, hand on chest", cue: "Sit or lie down. Place one hand on the belly, one on the chest. Breathe so only the lower hand moves. The chest stays still." },
+        { name: "Make the exhale twice as long", cue: "Inhale 4 counts, exhale 8 counts. Continue for 3 minutes. Tells the body it's safe to soften." },
       ]},
-      { kicker: "Strength", title: "Mixed circuit", durationSec: 180, exercises: [
-        { name: "Squat → push-up → plank", cue: "5 reps of each, 2 rounds" },
+      { kicker: "Steady", title: "Easy weekend circuit", durationSec: 180, exercises: [
+        { name: "Sit-to-stand × wall push-up × heel raise", cue: "5 sit-to-stands. 5 wall push-ups. 10 heel raises at the counter. Rest. Repeat the circuit twice." },
       ]},
       { kicker: "Stretch", title: "Restorative", durationSec: 120, exercises: [
-        { name: "Legs up the wall", cue: "60-90 seconds" },
-        { name: "Reclined butterfly", cue: "Open hips, breathe deep" },
+        { name: "Legs up the wall (or on a chair seat)", cue: "Lie on your back. Place legs up against a wall — or simply rest the calves on a chair seat. Hands on belly. 60–90 seconds." },
+        { name: "Reclined butterfly (or seated wide-knee)", cue: "Lie down with feet together, knees falling open. (Or sit with knees apart.) Breathe slowly into the belly. 60 seconds." },
       ]},
     ],
   },
@@ -753,10 +759,18 @@ export default function MorningEdge() {
   const [showCsvImport, setShowCsvImport] = useState(false);
   const [csvImportMessage, setCsvImportMessage] = useState(null);
   const [completedDecisions, setCompletedDecisions] = useState({}); // { "2026-04-29": [0, 2] }
+  const [dismissedDecisions, setDismissedDecisions] = useState({}); // { "2026-04-29": [1, 3] }
+  const [accountsState, setAccountsState] = useState([]); // [{ id, name, brokerage, uploadedAt, holdingCount }]
+  const [pendingCsvUpload, setPendingCsvUpload] = useState(null); // { newHoldings, tickers, brokerageGuess } awaiting label
+  const [accountLabelDraft, setAccountLabelDraft] = useState("");
+  const [editingAccountId, setEditingAccountId] = useState(null);
+  const [editingAccountName, setEditingAccountName] = useState("");
   const [routineDays, setRoutineDays] = useState({}); // { "2026-04-29": true }
   const [routineFlowOpen, setRoutineFlowOpen] = useState(false);
   const [expandedMindset, setExpandedMindset] = useState(null); // 'gratitude' | 'fuel' | 'focus' | null
   const [inAppBrowserUrl, setInAppBrowserUrl] = useState(null); // URL to view in modal browser sheet
+  const [pullProgress, setPullProgress] = useState(0); // 0..1 for pull-to-refresh indicator
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -771,15 +785,44 @@ export default function MorningEdge() {
       const progress = await Store.get("me-progress");
       if (progress) {
         setCompletedDecisions(progress.completedDecisions || {});
+        setDismissedDecisions(progress.dismissedDecisions || {});
         setRoutineDays(progress.routineDays || {});
       }
+
+      // Load accounts (multi-account schema)
+      const acctData = await Store.get("me-accounts");
+      let loadedAccounts = (acctData && acctData.accounts) || [];
 
       // Load holdings (full position data)
       const h = await Store.get("me-holdings");
       if (h) {
-        setHoldings(h.holdings || []);
+        let loadedHoldings = h.holdings || [];
+        // Migration: if there are holdings but no accounts, wrap them under a synthetic "Imported earlier" account
+        const hasUntagged = loadedHoldings.some((row) => !row.accountId);
+        if (loadedHoldings.length > 0 && (loadedAccounts.length === 0 || hasUntagged)) {
+          const legacyId = loadedAccounts.find((a) => a.id === "legacy")
+            ? "legacy"
+            : "legacy";
+          if (!loadedAccounts.find((a) => a.id === legacyId)) {
+            loadedAccounts = [
+              ...loadedAccounts,
+              {
+                id: legacyId,
+                name: "Imported earlier",
+                brokerage: "",
+                uploadedAt: h.refreshedAt || Date.now(),
+                holdingCount: loadedHoldings.filter((r) => !r.accountId).length,
+              },
+            ];
+          }
+          loadedHoldings = loadedHoldings.map((row) =>
+            row.accountId ? row : { ...row, accountId: legacyId }
+          );
+        }
+        setHoldings(loadedHoldings);
         setHoldingsRefreshedAt(h.refreshedAt || null);
       }
+      setAccountsState(loadedAccounts);
     })();
   }, []);
 
@@ -788,8 +831,26 @@ export default function MorningEdge() {
   }, [name, portfolio, phase]);
 
   useEffect(() => {
-    if (phase === "app") Store.set("me-progress", { completedDecisions, routineDays });
-  }, [completedDecisions, routineDays, phase]);
+    if (phase === "app") Store.set("me-progress", { completedDecisions, dismissedDecisions, routineDays });
+  }, [completedDecisions, dismissedDecisions, routineDays, phase]);
+
+  useEffect(() => {
+    if (phase === "app") Store.set("me-accounts", { accounts: accountsState });
+  }, [accountsState, phase]);
+
+  // Detect mobile/tablet for device-aware brokerage links.
+  // Width OR coarse pointer (covers iPad-as-laptop edge cases).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const check = () => {
+      const narrow = window.innerWidth < 900;
+      const coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+      setIsMobile(narrow || coarse);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     if (phase === "app" && holdings.length > 0) {
@@ -809,8 +870,49 @@ export default function MorningEdge() {
       const next = list.includes(idx) ? list.filter((x) => x !== idx) : [...list, idx];
       return { ...prev, [todayKey]: next };
     });
+    // If user accepts a decision, also clear it from dismissed for today
+    setDismissedDecisions((prev) => {
+      const list = prev[todayKey] || [];
+      if (!list.includes(idx)) return prev;
+      return { ...prev, [todayKey]: list.filter((x) => x !== idx) };
+    });
   };
   const decisionsDoneToday = completedDecisions[todayKey] || [];
+  const decisionsDismissedToday = dismissedDecisions[todayKey] || [];
+
+  const toggleDismiss = (idx) => {
+    setDismissedDecisions((prev) => {
+      const list = prev[todayKey] || [];
+      const next = list.includes(idx) ? list.filter((x) => x !== idx) : [...list, idx];
+      return { ...prev, [todayKey]: next };
+    });
+    // If user dismisses a decision, also clear it from completed for today
+    setCompletedDecisions((prev) => {
+      const list = prev[todayKey] || [];
+      if (!list.includes(idx)) return prev;
+      return { ...prev, [todayKey]: list.filter((x) => x !== idx) };
+    });
+  };
+
+  // ─── Account helpers (multi-account CSV) ───────────────────────────
+  const accountById = (id) => accountsState.find((a) => a.id === id) || null;
+
+  const renameAccount = (id, newName) => {
+    const trimmed = (newName || "").trim();
+    if (!trimmed) return;
+    setAccountsState((prev) => prev.map((a) => (a.id === id ? { ...a, name: trimmed } : a)));
+  };
+
+  const deleteAccount = (id) => {
+    if (typeof window !== "undefined") {
+      const acct = accountById(id);
+      const label = acct ? acct.name : "this account";
+      const ok = window.confirm(`Remove "${label}"? Holdings from this account will be cleared.`);
+      if (!ok) return;
+    }
+    setAccountsState((prev) => prev.filter((a) => a.id !== id));
+    setHoldings((prev) => prev.filter((h) => h.accountId !== id));
+  };
 
   const toggleRoutineComplete = () => {
     setRoutineDays((prev) => ({ ...prev, [todayKey]: !prev[todayKey] }));
@@ -847,14 +949,17 @@ export default function MorningEdge() {
     return "Good evening";
   })();
 
-  const callAPI = async () => {
-    const response = await fetch("/api/brief", {
+  const callAPI = async (opts = {}) => {
+    const { fresh = false } = opts;
+    const url = fresh ? "/api/brief?fresh=1" : "/api/brief";
+    const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: name || "the user",
         watchlist: portfolio,
-        holdings: holdings, // Full position data (symbol, qty, cost, value, gainPct)
+        holdings: holdings, // Full position data (symbol, qty, cost, value, gainPct, accountId)
+        accounts: accountsState, // [{ id, name, brokerage, ... }] so server can name accounts in decisions
         holdingsAgeDays: holdingsAgeDays,
         date: today,
       }),
@@ -871,10 +976,10 @@ export default function MorningEdge() {
     return data.brief;
   };
 
-  const generateBrief = async () => {
+  const generateBrief = async (opts = {}) => {
     setLoading(true); setError(null);
     try {
-      const data = await callAPI();
+      const data = await callAPI(opts);
       const fresh = extractJSON(data);
       setBrief(fresh);
       // Auto-save brief by date for future history feature
@@ -893,6 +998,68 @@ export default function MorningEdge() {
       setError("Live data unavailable — showing sample brief.");
     } finally { setLoading(false); }
   };
+
+  // ─── Pull-to-refresh ───────────────────────────────────────────────
+  // Touch-driven pull from the top to trigger a fresh brief fetch.
+  // Only active when at scrollY=0, brief exists, and not already loading.
+  // Threshold: ~80px sustained pull. Visual indicator is the existing
+  // RefreshCw spinner, surfaced inline at top while pulling.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (phase !== "app") return;
+
+    let startY = null;
+    let pulling = false;
+
+    const onTouchStart = (e) => {
+      if (window.scrollY > 0) return;
+      if (loading) return;
+      if (!brief) return; // Only enable pull-to-refresh once a brief is present
+      startY = e.touches && e.touches[0] ? e.touches[0].clientY : null;
+      pulling = false;
+    };
+
+    const onTouchMove = (e) => {
+      if (startY == null) return;
+      const y = e.touches && e.touches[0] ? e.touches[0].clientY : startY;
+      const delta = y - startY;
+      if (delta <= 0) {
+        if (pulling) {
+          pulling = false;
+          setPullProgress(0);
+        }
+        return;
+      }
+      if (window.scrollY > 0) return;
+      pulling = true;
+      // Soft rubber-band: show progress 0..1 over 100px pull
+      const progress = Math.min(1, delta / 100);
+      setPullProgress(progress);
+    };
+
+    const onTouchEnd = () => {
+      const triggered = pulling && pullProgress >= 1;
+      pulling = false;
+      startY = null;
+      setPullProgress(0);
+      if (triggered) {
+        generateBrief({ fresh: true });
+      }
+    };
+
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
+    };
+    // pullProgress is intentionally read live (not captured) — the closure reads pulling flag instead
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, brief, loading, pullProgress]);
 
   const showDemo = () => { setError(null); setBrief(buildDemoBrief(name, portfolio, holdings)); };
 
@@ -996,10 +1163,23 @@ export default function MorningEdge() {
   // CSV import — parses common brokerage exports (Fidelity, Schwab, Robinhood, Webull, E*Trade, Vanguard).
   // Extracts symbol + quantity + cost basis + current value + gain%.
   // All data stays on device — never sent to any server beyond the brief generation request.
+  // Multi-account: each upload is staged in pendingCsvUpload, then committed under a user-supplied label.
   const handleCsvUpload = (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     setCsvImportMessage(null);
+    const fileName = file.name || "";
+    // Heuristic: guess brokerage from filename for the default label suggestion
+    const guess = (() => {
+      const lower = fileName.toLowerCase();
+      if (lower.includes("portfolio_position") || lower.includes("fidelity")) return "Fidelity";
+      if (lower.includes("schwab") || lower.includes("positions")) return "Schwab";
+      if (lower.includes("robinhood") || lower.includes("rh_")) return "Robinhood";
+      if (lower.includes("vanguard")) return "Vanguard";
+      if (lower.includes("webull")) return "Webull";
+      if (lower.includes("etrade") || lower.includes("e_trade")) return "E*TRADE";
+      return "";
+    })();
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
@@ -1067,40 +1247,57 @@ export default function MorningEdge() {
           return;
         }
 
-        // Deduplicate holdings: if same symbol uploaded twice, keep the last (newer) entry
-        const merged = {};
-        // Keep prior holdings that aren't being re-uploaded
-        for (const h of holdings) {
-          if (!tickers.has(h.symbol)) merged[h.symbol] = h;
-        }
-        for (const h of newHoldings) merged[h.symbol] = h;
-        const finalHoldings = Object.values(merged);
-
-        setHoldings(finalHoldings);
-        setHoldingsRefreshedAt(Date.now());
-        // Also update tickers-only watchlist for compatibility with rest of app
-        setPortfolio(Array.from(new Set([...portfolio, ...tickers])));
-
-        // Build a friendly success message
-        const withQty = newHoldings.filter((h) => h.qty != null).length;
-        const withCost = newHoldings.filter((h) => h.cost != null).length;
-        let msg = `Imported ${newHoldings.length} position${newHoldings.length === 1 ? "" : "s"}.`;
-        if (withQty === 0) {
-          msg += " Tickers only — couldn't detect share counts.";
-        } else if (withCost === 0) {
-          msg += ` ${withQty} with shares (no cost basis detected).`;
-        } else {
-          msg += ` ${withQty} with shares, ${withCost} with cost basis.`;
-        }
-        setCsvImportMessage({ type: "ok", text: msg });
+        // Stage the upload — user must label the account before commit
+        setPendingCsvUpload({
+          newHoldings,
+          tickers: Array.from(tickers),
+          brokerageGuess: guess,
+          fileName,
+        });
+        setAccountLabelDraft(guess || "");
+        setCsvImportMessage(null);
       } catch (err) {
         setCsvImportMessage({ type: "error", text: "Couldn't parse that file. Make sure it's a CSV." });
       }
     };
     reader.onerror = () => setCsvImportMessage({ type: "error", text: "File read failed." });
     reader.readAsText(file);
-    // Reset input so same file can be re-uploaded
-    e.target.value = "";
+    // Allow same file to be selected again
+    if (e.target) e.target.value = "";
+  };
+
+  // Commit a staged CSV upload under the user-supplied account label.
+  const commitPendingCsvUpload = () => {
+    if (!pendingCsvUpload) return;
+    const label = (accountLabelDraft || "").trim() || pendingCsvUpload.brokerageGuess || "Account";
+    const newAccountId = `acct_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const newAccount = {
+      id: newAccountId,
+      name: label,
+      brokerage: pendingCsvUpload.brokerageGuess || "",
+      uploadedAt: Date.now(),
+      holdingCount: pendingCsvUpload.newHoldings.length,
+    };
+    const tagged = pendingCsvUpload.newHoldings.map((h) => ({ ...h, accountId: newAccountId }));
+
+    setAccountsState((prev) => [...prev, newAccount]);
+    setHoldings((prev) => [...prev, ...tagged]);
+    setHoldingsRefreshedAt(Date.now());
+    setPortfolio((prev) => Array.from(new Set([...prev, ...pendingCsvUpload.tickers])));
+
+    const withQty = pendingCsvUpload.newHoldings.filter((h) => h.qty != null).length;
+    setCsvImportMessage({
+      type: "ok",
+      text: `Added ${pendingCsvUpload.newHoldings.length} position${pendingCsvUpload.newHoldings.length === 1 ? "" : "s"} under "${label}"${withQty ? `. ${withQty} with shares.` : "."}`,
+    });
+    setPendingCsvUpload(null);
+    setAccountLabelDraft("");
+  };
+
+  const cancelPendingCsvUpload = () => {
+    setPendingCsvUpload(null);
+    setAccountLabelDraft("");
+    setCsvImportMessage(null);
   };
 
   // Holdings freshness: how stale is the data?
@@ -1323,8 +1520,22 @@ export default function MorningEdge() {
         <p className="text-[11px] text-slate-600 mt-3 tracking-[0.2em] uppercase font-medium">{today}</p>
       </header>
 
-      {/* Movers ticker tape — streams biggest gainers/losers + unusual flow */}
-      <TickerTape />
+      {/* Pull-to-refresh indicator (mobile) — shows above ticker while user pulls */}
+      {(pullProgress > 0 || (loading && brief)) && (
+        <div className="relative flex items-center justify-center gap-2 -mt-1 pb-1 text-slate-600 text-[11px] font-semibold uppercase tracking-wider">
+          <RefreshCw
+            className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+            style={{ transform: !loading ? `rotate(${pullProgress * 360}deg)` : undefined, opacity: 0.4 + pullProgress * 0.6 }}
+          />
+          <span style={{ opacity: 0.4 + pullProgress * 0.6 }}>
+            {loading ? "Refreshing brief…" : pullProgress >= 1 ? "Release to refresh" : "Pull to refresh"}
+          </span>
+        </div>
+      )}
+
+      {/* Movers ticker tape — streams biggest gainers/losers + unusual flow,
+          enriched with the user's holdings and conviction signals from today's brief. */}
+      <TickerTape userHoldings={holdings} brief={brief} accounts={accountsState} />
 
       {/* Filter pillars (now actual buttons) */}
       <div className="relative px-4 pb-4">
@@ -1380,13 +1591,29 @@ export default function MorningEdge() {
         <InAppBrowser url={inAppBrowserUrl} onClose={() => setInAppBrowserUrl(null)} />
       )}
 
-      {/* Brokerage guide modal — full list of supported brokerages with direct links */}
+      {/* Brokerage guide modal — device-aware. On desktop, broker buttons open
+          the broker login in a new tab. On mobile, an honest notice tells the
+          user to use a computer, since broker CSV exports are essentially
+          desktop-only flows. */}
       {showBrokerageGuide && (
         <BrokerageGuide
+          isMobile={isMobile}
           onClose={() => setShowBrokerageGuide(false)}
-          onOpenLink={(url) => {
+          onOpenLink={(url, opts = {}) => {
+            if (opts.mobileMessage) {
+              setShowBrokerageGuide(false);
+              setShowCsvImport(true);
+              setCsvImportMessage({
+                type: "error",
+                text: `Open Morning Edge on your computer to download your ${opts.brokerName} CSV. Once it's saved, come back here to upload.`,
+              });
+              return;
+            }
             setShowBrokerageGuide(false);
-            setInAppBrowserUrl(url);
+            // Desktop: open in a new tab; no in-app browser needed
+            if (typeof window !== "undefined") {
+              window.open(url, "_blank", "noopener,noreferrer");
+            }
           }}
         />
       )}
@@ -1444,34 +1671,46 @@ export default function MorningEdge() {
         </section>
       )}
 
-      {/* Generate */}
-      <div className="relative px-6 pb-6 space-y-2">
-        <button
-          onClick={generateBrief}
-          disabled={loading}
-          className={`w-full py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 transition shadow-lg ${
-            loading ? "bg-slate-200 text-slate-500 shadow-none"
-              : brief ? "bg-white text-slate-800 border border-slate-200 hover:shadow-xl"
-              : "bg-slate-900 text-white hover:bg-slate-800"
-          }`}
-        >
-          {loading ? <><RefreshCw className="w-4 h-4 animate-spin" />Reading the tape…</>
-          : brief ? <><RefreshCw className="w-4 h-4" />Refresh My Brief</>
-          : <><Sparkles className="w-5 h-5" />Generate Today's Brief</>}
-        </button>
-        {!brief && !loading && (
-          <button onClick={showDemo}
-            className="w-full py-3 rounded-xl bg-white text-slate-700 border border-slate-200 text-sm font-semibold flex items-center justify-center gap-2 shadow-md">
-            <Eye className="w-4 h-4" />View Sample Brief
+      {/* Generate / Refresh — only visible when no brief yet, or while loading.
+          Once a brief is on screen, the refresh button is hidden — the user
+          pulls down from the top of the page to refresh instead (mobile-first
+          pattern, matches iOS native behavior). On desktop, refreshing from
+          the browser also works. */}
+      {(!brief || loading) && (
+        <div className="relative px-6 pb-6 space-y-2">
+          <button
+            onClick={generateBrief}
+            disabled={loading}
+            className={`w-full py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 transition shadow-lg ${
+              loading ? "bg-slate-200 text-slate-500 shadow-none"
+                : "bg-slate-900 text-white hover:bg-slate-800"
+            }`}
+          >
+            {loading ? <><RefreshCw className="w-4 h-4 animate-spin" />Reading the tape…</>
+            : <><Sparkles className="w-5 h-5" />Generate Today's Brief</>}
           </button>
-        )}
-        {error && (
-          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2 text-sm text-amber-800">
+          {!brief && !loading && (
+            <button onClick={showDemo}
+              className="w-full py-3 rounded-xl bg-white text-slate-700 border border-slate-200 text-sm font-semibold flex items-center justify-center gap-2 shadow-md">
+              <Eye className="w-4 h-4" />View Sample Brief
+            </button>
+          )}
+          {error && (
+            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2 text-sm text-amber-800">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span className="break-words">{error}</span>
+            </div>
+          )}
+        </div>
+      )}
+      {error && brief && !loading && (
+        <div className="relative px-6 pb-2">
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2 text-sm text-amber-800">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span className="break-words">{error}</span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Loading skeleton — pretty placeholder cards */}
       {loading && !brief && (
@@ -1558,13 +1797,28 @@ export default function MorningEdge() {
                   <div>
                     <p className="font-semibold text-slate-900 mb-2">Get your CSV from your brokerage</p>
                     <p className="text-[11px] text-slate-600 leading-snug mb-2.5">
-                      Tap to open. Log in, find your positions, save the CSV, then come back to upload.
+                      {isMobile
+                        ? "On a phone, downloading a brokerage CSV is fiddly. Open Morning Edge on your computer, sign in to your broker, save the CSV, then come back here to upload it."
+                        : "Tap to open in a new tab. Log in, find your positions, save the CSV, then come back to upload."}
                     </p>
                     <div className="space-y-1.5">
                       {BROKERAGES.slice(0, 6).map((b) => (
                         <button
                           key={b.name}
-                          onClick={() => setInAppBrowserUrl(b.url)}
+                          onClick={() => {
+                            if (isMobile) {
+                              // On mobile, surface the honest message instead of opening the broker site
+                              setCsvImportMessage({
+                                type: "error",
+                                text: `Open Morning Edge on your computer to download your ${b.name} CSV. Once it's saved, come back here to upload.`,
+                              });
+                            } else {
+                              // Desktop: open broker login in a new tab — clean, no in-app browser
+                              if (typeof window !== "undefined") {
+                                window.open(b.url, "_blank", "noopener,noreferrer");
+                              }
+                            }
+                          }}
                           className="w-full flex items-center gap-2 bg-white border border-amber-200 rounded-lg px-2.5 py-2 hover:border-amber-300 hover:bg-amber-50/60 active:bg-amber-100 transition text-left"
                         >
                           <span className="text-[12px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate" style={{ fontFamily: SERIF }}>
@@ -1585,7 +1839,7 @@ export default function MorningEdge() {
                       <ChevronRight className="w-3 h-3" />
                     </button>
                     <p className="text-[10px] text-slate-500 italic mt-2 leading-snug">
-                      We never see your password. We only read the CSV you upload.
+                      We never see your password. We only read the CSV you upload. Holdings stay on this device until a brief is generated, and are never stored on our servers.
                     </p>
                   </div>
 
@@ -1603,6 +1857,118 @@ export default function MorningEdge() {
                         cursor-pointer"
                     />
                   </label>
+
+                  {/* Account label prompt — appears after CSV is parsed, before commit */}
+                  {pendingCsvUpload && (
+                    <div className="px-3 py-3 rounded-md bg-amber-50 border border-amber-200 space-y-2">
+                      <p className="text-[11px] font-semibold text-amber-900">
+                        Label this account
+                      </p>
+                      <p className="text-[10px] text-amber-800 leading-snug">
+                        Found {pendingCsvUpload.newHoldings.length} position{pendingCsvUpload.newHoldings.length === 1 ? "" : "s"}. Give this upload a name so the Playbook can call it out by account (e.g. "Fidelity TOD", "Roth IRA", "Schwab Joint").
+                      </p>
+                      <input
+                        type="text"
+                        value={accountLabelDraft}
+                        onChange={(e) => setAccountLabelDraft(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") commitPendingCsvUpload(); }}
+                        placeholder={pendingCsvUpload.brokerageGuess ? `e.g. ${pendingCsvUpload.brokerageGuess} TOD` : "Account name"}
+                        className="w-full px-2.5 py-2 rounded-md border border-amber-300 text-[12px] bg-white focus:outline-none focus:border-amber-500"
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={commitPendingCsvUpload}
+                          className="flex-1 px-3 py-2 rounded-md bg-amber-700 text-white text-[11px] font-semibold hover:bg-amber-800 active:bg-amber-900"
+                        >
+                          Save account
+                        </button>
+                        <button
+                          onClick={cancelPendingCsvUpload}
+                          className="px-3 py-2 rounded-md bg-white border border-amber-300 text-amber-800 text-[11px] font-semibold hover:bg-amber-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Account list — shows existing accounts with rename / delete */}
+                  {accountsState.length > 0 && (
+                    <div className="px-3 py-2.5 rounded-md bg-slate-50 border border-slate-200">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                        Your accounts ({accountsState.length})
+                      </p>
+                      <div className="space-y-1.5">
+                        {accountsState.map((acct) => {
+                          const count = holdings.filter((h) => h.accountId === acct.id).length;
+                          const editing = editingAccountId === acct.id;
+                          return (
+                            <div key={acct.id} className="flex items-center gap-2">
+                              {editing ? (
+                                <>
+                                  <input
+                                    type="text"
+                                    value={editingAccountName}
+                                    onChange={(e) => setEditingAccountName(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        renameAccount(acct.id, editingAccountName);
+                                        setEditingAccountId(null);
+                                      } else if (e.key === "Escape") {
+                                        setEditingAccountId(null);
+                                      }
+                                    }}
+                                    className="flex-1 px-2 py-1 rounded border border-slate-300 text-[11px] bg-white focus:outline-none focus:border-slate-500"
+                                    autoFocus
+                                  />
+                                  <button
+                                    onClick={() => { renameAccount(acct.id, editingAccountName); setEditingAccountId(null); }}
+                                    className="p-1 rounded text-emerald-600 hover:bg-emerald-50"
+                                    aria-label="Save name"
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => setEditingAccountId(null)}
+                                    className="p-1 rounded text-slate-500 hover:bg-slate-100"
+                                    aria-label="Cancel rename"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="flex-1 text-[12px] font-semibold text-slate-800 truncate" style={{ fontFamily: SERIF }}>
+                                    {acct.name}
+                                  </span>
+                                  <span className="text-[10px] text-slate-500 flex-shrink-0">
+                                    {count} pos
+                                  </span>
+                                  <button
+                                    onClick={() => { setEditingAccountId(acct.id); setEditingAccountName(acct.name); }}
+                                    className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                                    aria-label="Rename account"
+                                    title="Rename"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => deleteAccount(acct.id)}
+                                    className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                                    aria-label="Remove account"
+                                    title="Remove account"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   {csvImportMessage && (
                     <div className={`px-3 py-2 rounded-md text-[11px] ${
@@ -2253,20 +2619,25 @@ export default function MorningEdge() {
                 <ol className="space-y-4">
                   {brief.decisions.map((d, i) => {
                     const done = decisionsDoneToday.includes(i);
+                    const dismissed = decisionsDismissedToday.includes(i);
                     return (
                       <li key={i}>
                         <div className={`flex items-start gap-2 p-2 -mx-2 rounded-xl transition ${
-                          done ? "bg-emerald-50/60" : "hover:bg-slate-50"
+                          dismissed ? "opacity-60" : done ? "bg-emerald-50/60" : "hover:bg-slate-50"
                         }`}>
                           {/* Main tappable area: number/check + decision text */}
                           <button
                             onClick={() => toggleDecision(i)}
                             className="flex-1 text-left flex items-start gap-3 group min-w-0"
+                            aria-label={done ? "Mark not done" : "Mark done (Accept)"}
+                            title={done ? "Mark not done" : "Accept — mark done"}
                           >
                             {/* Custom checkbox / number */}
                             <span className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition ${
                               done
                                 ? "bg-emerald-500 text-white"
+                                : dismissed
+                                ? "border-2 border-slate-200 text-slate-300"
                                 : "border-2 border-slate-200 text-slate-300 group-hover:border-slate-300"
                             }`}>
                               {done ? (
@@ -2276,11 +2647,28 @@ export default function MorningEdge() {
                               )}
                             </span>
                             <span className={`flex-1 text-base leading-snug pt-1 transition ${
-                              done ? "text-slate-400 line-through" : "text-slate-800"
+                              done ? "text-slate-400 line-through"
+                                : dismissed ? "text-slate-400 line-through"
+                                : "text-slate-800"
                             }`} style={{ fontFamily: SERIF }}>
                               {d}
                             </span>
                           </button>
+                          {/* Dismiss button — gray out without marking done */}
+                          {!done && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); toggleDismiss(i); }}
+                              className={`flex-shrink-0 p-2 rounded-lg transition ${
+                                dismissed
+                                  ? "text-slate-500 bg-slate-100"
+                                  : "text-slate-400 hover:text-rose-600 hover:bg-rose-50 active:bg-rose-100"
+                              }`}
+                              aria-label={dismissed ? "Undismiss" : "Dismiss (skip today)"}
+                              title={dismissed ? "Undismiss" : "Dismiss — skip for today"}
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
                           {/* Add to Calendar button — separate, doesn't toggle done */}
                           <button
                             onClick={(e) => { e.stopPropagation(); addDecisionToCalendar(d, i); }}
@@ -2298,7 +2686,7 @@ export default function MorningEdge() {
 
                 {/* Helper text */}
                 <p className="mt-4 text-[10px] text-slate-400 text-center italic">
-                  Tap a row to mark complete · Tap <CalendarPlus className="w-3 h-3 inline -mt-0.5" /> to add to your calendar
+                  Tap a row to <span className="text-emerald-700">accept ✓</span> · <X className="w-3 h-3 inline -mt-0.5" /> to dismiss · <CalendarPlus className="w-3 h-3 inline -mt-0.5" /> to add to calendar
                 </p>
 
                 {/* Completion celebration */}
@@ -2453,9 +2841,9 @@ function SectorHeatmapBar({ sector, direction, intensity = 3 }) {
   );
 }
 
-function TickerTape() {
-  // Demo data — realistic high-flow movers. Replace with live API in Phase 2.
-  const movers = [
+function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
+  // Default movers (used when nothing user-specific is available).
+  const defaultMovers = [
     { symbol: "NVDA", change: +3.42, flow: "high" },
     { symbol: "TSLA", change: -4.18, flow: "dip" },
     { symbol: "AAPL", change: +1.87, flow: "normal" },
@@ -2473,27 +2861,64 @@ function TickerTape() {
     { symbol: "SMCI", change: +8.21, flow: "high" },
   ];
 
+  // Build a richer list when we have user holdings + a brief: each entry can
+  // carry the gain%, conviction signal (add/hold/trim), and account label so
+  // the ticker tells a story about the user's actual positions, not just symbols.
+  const items = (() => {
+    if (!userHoldings || userHoldings.length === 0) return defaultMovers;
+
+    // Index conviction signals by ticker for quick lookup
+    const convictionByTicker = {};
+    if (brief && Array.isArray(brief.conviction_watch)) {
+      for (const c of brief.conviction_watch) {
+        if (c && c.ticker) convictionByTicker[c.ticker] = c.signal;
+      }
+    }
+    // Build account label map
+    const accountById = {};
+    for (const a of accounts || []) accountById[a.id] = a.name;
+
+    // Sort by absolute % change descending — biggest movers first
+    const sorted = [...userHoldings]
+      .filter((h) => h.symbol)
+      .sort((a, b) => Math.abs(b.gainPct || 0) - Math.abs(a.gainPct || 0))
+      .slice(0, 12);
+
+    if (sorted.length === 0) return defaultMovers;
+
+    return sorted.map((h) => ({
+      symbol: h.symbol,
+      change: h.gainPct != null ? h.gainPct : 0,
+      flow: (h.gainPct || 0) > 5 ? "high" : (h.gainPct || 0) < -5 ? "dip" : "normal",
+      shares: h.qty,
+      accountLabel: h.accountId ? accountById[h.accountId] : null,
+      signal: convictionByTicker[h.symbol] || null, // add | hold | trim | undefined
+    }));
+  })();
+
   // Duplicate the list so the marquee loops seamlessly
-  const stream = [...movers, ...movers];
+  const stream = [...items, ...items];
 
   return (
     <div className="relative -mt-2 mb-3 mx-3 rounded-xl border border-slate-200 bg-white/85 backdrop-blur-sm overflow-hidden shadow-sm">
       <div className="flex items-center">
         {/* Label badge */}
         <div className="flex-shrink-0 px-3 py-2 bg-slate-900 text-white">
-          <p className="text-[9px] font-bold tracking-[0.18em] uppercase">Movers</p>
+          <p className="text-[9px] font-bold tracking-[0.18em] uppercase">
+            {userHoldings && userHoldings.length > 0 ? "Yours" : "Movers"}
+          </p>
         </div>
         {/* Scrolling track */}
         <div className="flex-1 overflow-hidden relative">
           <div
             className="flex items-center gap-5 py-2 whitespace-nowrap"
             style={{
-              animation: "ticker-slide 50s linear infinite",
+              animation: "ticker-slide 60s linear infinite",
               width: "max-content",
             }}
           >
             {stream.map((m, i) => {
-              const up = m.change >= 0;
+              const up = (m.change || 0) >= 0;
               const isHigh = m.flow === "high";
               const isDip = m.flow === "dip";
               return (
@@ -2502,9 +2927,26 @@ function TickerTape() {
                   {isHigh && <span className="text-emerald-600 text-[10px]">▲▲</span>}
                   {isDip && <span className="text-rose-600 text-[10px]">▼▼</span>}
                   <span className="text-slate-900 tracking-tight">{m.symbol}</span>
+                  {m.shares != null && (
+                    <span className="text-slate-500 text-[10px]">{m.shares}sh</span>
+                  )}
                   <span className={up ? "text-emerald-600" : "text-rose-600"}>
-                    {up ? "+" : ""}{m.change.toFixed(2)}%
+                    {up ? "+" : ""}{Number(m.change || 0).toFixed(2)}%
                   </span>
+                  {m.signal && (
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold ${
+                      m.signal === "add"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : m.signal === "trim"
+                        ? "bg-amber-100 text-amber-800"
+                        : "bg-slate-100 text-slate-700"
+                    }`}>
+                      {m.signal}
+                    </span>
+                  )}
+                  {m.accountLabel && (
+                    <span className="text-[9px] text-slate-500">· {m.accountLabel}</span>
+                  )}
                 </div>
               );
             })}
@@ -3251,7 +3693,19 @@ function InAppBrowser({ url, onClose }) {
 // open the brokerage's site in the in-app browser (or external Safari
 // if they block embedding). Pure navigation help — no credential
 // collection, no liability surface.
-function BrokerageGuide({ onClose, onOpenLink }) {
+function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
+  const handleBrokerClick = (b) => {
+    if (isMobile) {
+      // On mobile, opening the broker site doesn't help — most CSV exports
+      // require desktop browser flows. Redirect the user to use a computer.
+      onOpenLink && onOpenLink(b.url, { mobileMessage: true, brokerName: b.name });
+      return;
+    }
+    if (typeof window !== "undefined") {
+      window.open(b.url, "_blank", "noopener,noreferrer");
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex flex-col">
       <div className="flex items-center gap-2 bg-white border-b border-slate-200 px-3 py-3 shadow-sm flex-shrink-0">
@@ -3279,13 +3733,24 @@ function BrokerageGuide({ onClose, onOpenLink }) {
         <div className="px-4 py-4">
           <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-3 mb-4 text-[12px] text-amber-900 leading-relaxed">
             <p className="font-semibold mb-1">How this works</p>
-            <p>
-              Tap any brokerage to open their site. Log in, follow the path shown to
-              find your positions CSV, then save the file to your phone. Come back
-              and upload it in Conviction Watch.
-            </p>
+            {isMobile ? (
+              <p>
+                Brokerage CSV exports are designed for desktop. Open Morning Edge on
+                your computer, sign in to your broker, follow the path shown to find
+                your positions, and save the CSV. Then come back here on this device
+                or your computer and upload it.
+              </p>
+            ) : (
+              <p>
+                Tap any brokerage to open in a new tab. Log in, follow the path shown
+                to find your positions CSV, then save the file to your computer. Come
+                back here and upload it in Conviction Watch.
+              </p>
+            )}
             <p className="mt-2 font-semibold text-amber-900">
-              We never see your password. We only read the CSV you upload.
+              We never see your password. We only read the CSV you upload. Holdings
+              stay on your device until a brief is generated, and are never stored
+              on our servers.
             </p>
           </div>
 
@@ -3293,7 +3758,7 @@ function BrokerageGuide({ onClose, onOpenLink }) {
             {BROKERAGES.map((b) => (
               <button
                 key={b.name}
-                onClick={() => onOpenLink(b.url)}
+                onClick={() => handleBrokerClick(b)}
                 className="w-full text-left bg-white border border-slate-200 rounded-xl px-3.5 py-3 hover:border-amber-300 hover:bg-amber-50/40 active:bg-amber-50 transition"
               >
                 <div className="flex items-start gap-2.5">
