@@ -14,6 +14,7 @@ import {
   ArrowRight, Lock, Crown, LayoutGrid, Briefcase, Share2, CalendarPlus, Play,
   Compass, Telescope, Flower2, Activity, ChevronLeft, ChevronRight, ExternalLink,
   Utensils, ShoppingBasket, Timer, Flame, Pencil, Trash2, Check,
+  Castle, Dumbbell, Move, HeartHandshake,
 } from "lucide-react";
 
 const SIGNATURE = "Morning Edge · by T-SPOT · Tarun Prasad · 2026";
@@ -1065,7 +1066,16 @@ export default function MorningEdge() {
     } catch (e) {
       console.warn("Live API failed:", e);
       setBrief(buildDemoBrief(name, portfolio, holdings));
-      setError("Live data unavailable — showing sample brief.");
+      // Weekend-aware messaging — markets are closed, so "live data
+      // unavailable" sounds wrong. Show a calmer, clearer message that
+      // reflects the actual state of the world.
+      const dow = new Date().getDay();
+      const isWeekend = dow === 0 || dow === 6;
+      setError(
+        isWeekend
+          ? "Markets closed for the weekend — showing a sample brief."
+          : "Live data unavailable — showing sample brief."
+      );
     } finally { setLoading(false); }
   };
 
@@ -2419,11 +2429,16 @@ export default function MorningEdge() {
                 </p>
                 {brief.conviction_watch.map((c, i) => {
                   const hasAction = !!c.action;
+                  // Weekend awareness — markets are closed, "ACTION TODAY"
+                  // is misleading on Saturday/Sunday. Use a horizon-friendly
+                  // label so the user knows it's the next trading session.
+                  const dow = new Date().getDay();
+                  const actionLabel = (dow === 0 || dow === 6) ? "NEXT SESSION" : "ACTION TODAY";
                   const actionAccent = c.signal === "trim"
-                    ? { bar: "bg-rose-500", chip: "bg-rose-100 text-rose-800 border-rose-200", label: "ACTION TODAY" }
+                    ? { bar: "bg-rose-500", chip: "bg-rose-100 text-rose-800 border-rose-200", label: actionLabel }
                     : c.signal === "add"
-                      ? { bar: "bg-emerald-500", chip: "bg-emerald-100 text-emerald-800 border-emerald-200", label: "ACTION TODAY" }
-                      : { bar: "bg-amber-500", chip: "bg-amber-100 text-amber-800 border-amber-200", label: "ACTION TODAY" };
+                      ? { bar: "bg-emerald-500", chip: "bg-emerald-100 text-emerald-800 border-emerald-200", label: actionLabel }
+                      : { bar: "bg-amber-500", chip: "bg-amber-100 text-amber-800 border-amber-200", label: actionLabel };
                   return (
                     <div
                       key={i}
@@ -2442,20 +2457,20 @@ export default function MorningEdge() {
                       {/* High-conviction action callout — only when c.action is set */}
                       {hasAction && (
                         <div className={`mb-2 pl-2`}>
-                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[9px] uppercase tracking-wider font-bold ${actionAccent.chip}`}>
+                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[10px] uppercase tracking-wider font-bold ${actionAccent.chip}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${actionAccent.bar}`} />
                             {actionAccent.label}
                           </div>
-                          <p className="text-[13px] text-slate-900 font-semibold leading-snug mt-1">
+                          <p className="text-[15px] text-slate-900 font-semibold leading-snug mt-1">
                             {c.action}
                           </p>
                         </div>
                       )}
                       {/* Longer "why now" reasoning */}
                       {c.why_now && (
-                        <p className={`text-[13px] text-slate-700 leading-relaxed mb-1 ${hasAction ? "pl-2" : "pl-1"}`}>{c.why_now}</p>
+                        <p className={`text-[15px] text-slate-800 leading-relaxed mb-1 ${hasAction ? "pl-2" : "pl-1"}`}>{c.why_now}</p>
                       )}
-                      <p className={`text-[12px] text-slate-600 leading-snug ${hasAction ? "pl-2" : "pl-1"}`}>{c.note}</p>
+                      <p className={`text-[13px] text-slate-600 leading-snug ${hasAction ? "pl-2" : "pl-1"}`}>{c.note}</p>
                     </div>
                   );
                 })}
@@ -2929,43 +2944,39 @@ function SectorHeatmapBar({ sector, direction, intensity = 3 }) {
 }
 
 function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
-  // Default movers (used when nothing user-specific is available).
+  // Default movers — used when the user hasn't synced any holdings yet.
+  // Each gets a sector tag so even the empty state has a story.
   const defaultMovers = [
-    { symbol: "NVDA", change: +3.42, flow: "high" },
-    { symbol: "TSLA", change: -4.18, flow: "dip" },
-    { symbol: "AAPL", change: +1.87, flow: "normal" },
-    { symbol: "META", change: +2.94, flow: "high" },
-    { symbol: "MSFT", change: -2.11, flow: "dip" },
-    { symbol: "GOOGL", change: +2.35, flow: "high" },
-    { symbol: "AMZN", change: -3.76, flow: "dip" },
-    { symbol: "AMD", change: +5.22, flow: "high" },
-    { symbol: "IONQ", change: -7.88, flow: "dip" },
-    { symbol: "OKLO", change: +6.14, flow: "high" },
-    { symbol: "PLTR", change: +4.05, flow: "high" },
-    { symbol: "COIN", change: -3.41, flow: "dip" },
-    { symbol: "MU", change: +3.89, flow: "high" },
-    { symbol: "VRT", change: -2.67, flow: "dip" },
-    { symbol: "SMCI", change: +8.21, flow: "high" },
+    { symbol: "NVDA", change: +3.42, flow: "high", sector: "AI Infra" },
+    { symbol: "TSLA", change: -4.18, flow: "dip", sector: "EV" },
+    { symbol: "AAPL", change: +1.87, flow: "normal", sector: "Mega Cap" },
+    { symbol: "META", change: +2.94, flow: "high", sector: "Mega Cap" },
+    { symbol: "MSFT", change: -2.11, flow: "dip", sector: "Mega Cap" },
+    { symbol: "GOOGL", change: +2.35, flow: "high", sector: "Mega Cap" },
+    { symbol: "AMZN", change: -3.76, flow: "dip", sector: "Mega Cap" },
+    { symbol: "AMD", change: +5.22, flow: "high", sector: "Semis" },
+    { symbol: "IONQ", change: -7.88, flow: "dip", sector: "Quantum" },
+    { symbol: "OKLO", change: +6.14, flow: "high", sector: "Nuclear" },
+    { symbol: "PLTR", change: +4.05, flow: "high", sector: "AI" },
+    { symbol: "COIN", change: -3.41, flow: "dip", sector: "Crypto" },
+    { symbol: "MU", change: +3.89, flow: "high", sector: "Memory" },
+    { symbol: "VRT", change: -2.67, flow: "dip", sector: "Data Ctr" },
+    { symbol: "SMCI", change: +8.21, flow: "high", sector: "AI Infra" },
   ];
 
-  // Build a richer list when we have user holdings + a brief: each entry can
-  // carry the gain%, conviction signal (add/hold/trim), and account label so
-  // the ticker tells a story about the user's actual positions, not just symbols.
+  // When user holdings exist, build a personalized stream from them.
   const items = (() => {
     if (!userHoldings || userHoldings.length === 0) return defaultMovers;
 
-    // Index conviction signals by ticker for quick lookup
     const convictionByTicker = {};
     if (brief && Array.isArray(brief.conviction_watch)) {
       for (const c of brief.conviction_watch) {
         if (c && c.ticker) convictionByTicker[c.ticker] = c.signal;
       }
     }
-    // Build account label map
     const accountById = {};
     for (const a of accounts || []) accountById[a.id] = a.name;
 
-    // Sort by absolute % change descending — biggest movers first
     const sorted = [...userHoldings]
       .filter((h) => h.symbol)
       .sort((a, b) => Math.abs(b.gainPct || 0) - Math.abs(a.gainPct || 0))
@@ -2979,23 +2990,63 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
       flow: (h.gainPct || 0) > 5 ? "high" : (h.gainPct || 0) < -5 ? "dip" : "normal",
       shares: h.qty,
       accountLabel: h.accountId ? accountById[h.accountId] : null,
-      signal: convictionByTicker[h.symbol] || null, // add | hold | trim | undefined
+      signal: convictionByTicker[h.symbol] || null,
     }));
   })();
 
-  // Duplicate the list so the marquee loops seamlessly
+  // Duplicate so the marquee loops seamlessly
   const stream = [...items, ...items];
+  const isPersonalized = userHoldings && userHoldings.length > 0;
 
   return (
-    <div className="relative -mt-2 mb-3 mx-3 rounded-xl border border-slate-200 bg-white/85 backdrop-blur-sm overflow-hidden shadow-sm">
-      <div className="flex items-center">
-        {/* Label badge */}
-        <div className="flex-shrink-0 px-3 py-2 bg-slate-900 text-white">
-          <p className="text-[9px] font-bold tracking-[0.18em] uppercase">
-            {userHoldings && userHoldings.length > 0 ? "Yours" : "Movers"}
-          </p>
+    <div
+      className="relative -mt-2 mb-3 overflow-hidden shadow-md border-y border-amber-900/30"
+      style={{
+        // Castle wall stone-effect background — layered gradients give a
+        // subtle texture without needing image assets. Warm dark tones to
+        // pair with the gold accents elsewhere in the app.
+        background: `
+          linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.25) 100%),
+          repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 60px, rgba(0,0,0,0.05) 60px 64px, rgba(255,255,255,0.04) 64px 124px, rgba(0,0,0,0.07) 124px 128px),
+          repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0 22px, rgba(255,255,255,0.03) 22px 26px),
+          linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)
+        `,
+      }}
+    >
+      {/* Top crenellation line — gold accent */}
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)",
+        }}
+      />
+
+      <div className="flex items-stretch">
+        {/* Castle tower badge */}
+        <div
+          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2.5 border-r border-amber-900/40"
+          style={{
+            background: "linear-gradient(180deg, rgba(212,165,116,0.15) 0%, rgba(212,165,116,0.05) 100%)",
+          }}
+        >
+          <Castle className="w-4 h-4" style={{ color: "#F5D08C" }} />
+          <div className="flex flex-col">
+            <span
+              className="text-[8px] font-bold tracking-[0.18em] uppercase leading-none"
+              style={{ color: "#F5D08C" }}
+            >
+              Watchtower
+            </span>
+            {isPersonalized && (
+              <span className="text-[7px] uppercase tracking-wider text-slate-400 mt-0.5 leading-none">
+                Your watch
+              </span>
+            )}
+          </div>
         </div>
-        {/* Scrolling track */}
+
+        {/* Scrolling banner — tickers on the wall */}
         <div className="flex-1 overflow-hidden relative">
           <div
             className="flex items-center gap-5 py-2 whitespace-nowrap"
@@ -3009,37 +3060,60 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
               const isHigh = m.flow === "high";
               const isDip = m.flow === "dip";
               return (
-                <div key={i} className="flex items-center gap-1.5 text-xs font-semibold">
-                  {/* Flow kicker symbol */}
-                  {isHigh && <span className="text-emerald-600 text-[10px]">▲▲</span>}
-                  {isDip && <span className="text-rose-600 text-[10px]">▼▼</span>}
-                  <span className="text-slate-900 tracking-tight">{m.symbol}</span>
-                  {m.shares != null && (
-                    <span className="text-slate-500 text-[10px]">{m.shares}sh</span>
-                  )}
-                  <span className={up ? "text-emerald-600" : "text-rose-600"}>
-                    {up ? "+" : ""}{Number(m.change || 0).toFixed(2)}%
-                  </span>
-                  {m.signal && (
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold ${
-                      m.signal === "add"
-                        ? "bg-emerald-100 text-emerald-800"
-                        : m.signal === "trim"
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-slate-100 text-slate-700"
-                    }`}>
-                      {m.signal}
+                <div key={i} className="flex flex-col gap-0.5 text-xs font-semibold py-0.5 px-0.5">
+                  {/* Top row — symbol + change */}
+                  <div className="flex items-center gap-1.5 leading-none">
+                    {isHigh && <span className="text-emerald-400 text-[10px]">▲▲</span>}
+                    {isDip && <span className="text-rose-400 text-[10px]">▼▼</span>}
+                    <span className="text-slate-100 tracking-tight font-bold">
+                      {m.symbol}
                     </span>
-                  )}
-                  {m.accountLabel && (
-                    <span className="text-[9px] text-slate-500">· {m.accountLabel}</span>
-                  )}
+                    {m.shares != null && (
+                      <span className="text-slate-400 text-[10px]">{m.shares}sh</span>
+                    )}
+                    <span className={up ? "text-emerald-400" : "text-rose-400"}>
+                      {up ? "+" : ""}
+                      {Number(m.change || 0).toFixed(2)}%
+                    </span>
+                  </div>
+                  {/* Bottom row — sector / signal / account label */}
+                  <div className="flex items-center gap-1.5 leading-none text-[9px]">
+                    {m.signal && (
+                      <span
+                        className={`px-1 py-0.5 rounded uppercase tracking-wider font-bold ${
+                          m.signal === "add"
+                            ? "bg-emerald-500/30 text-emerald-200"
+                            : m.signal === "trim"
+                            ? "bg-amber-500/30 text-amber-200"
+                            : "bg-slate-500/30 text-slate-200"
+                        }`}
+                      >
+                        {m.signal}
+                      </span>
+                    )}
+                    {m.sector && (
+                      <span className="text-slate-300 uppercase tracking-wider">
+                        {m.sector}
+                      </span>
+                    )}
+                    {m.accountLabel && (
+                      <span className="text-amber-300/80 uppercase tracking-wider">
+                        · {m.accountLabel}
+                      </span>
+                    )}
+                    {!m.signal && !m.sector && !m.accountLabel && (
+                      <span className="text-slate-500 text-[8px] italic">
+                        on watch
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
         </div>
       </div>
+
       <style>{`
         @keyframes ticker-slide {
           0%   { transform: translateX(0); }
@@ -3425,109 +3499,83 @@ function RoutineFlow({ routine, onClose, onComplete }) {
 // rhythm visualizer for breathwork patterns.
 // ────────────────────────────────────────────────────────────────────
 function WorkoutSchematic({ kicker, color = "#0E7490", size = 88 }) {
-  const stroke = color;
-  const fill = "none";
-  const sw = 1.7;
+  // Motivational gradient icon badge — replaces the old stick figures.
+  // Each segment kicker maps to a clean Lucide icon set inside a circular
+  // gradient background with a subtle inner highlight and outer glow.
+  // The visual goal: feel premium and inviting, not clinical or cartoonish,
+  // so the user actually wants to tap "Start" on the routine.
   const k = (kicker || "").toLowerCase();
 
-  // Mobility — rotating torso / arm circles (simple stick figure with arrows)
-  if (k.includes("mobil")) {
-    return (
-      <svg width={size} height={size} viewBox="0 0 100 100" aria-label="Mobility illustration">
-        {/* Head */}
-        <circle cx="50" cy="22" r="7" stroke={stroke} strokeWidth={sw} fill={fill} />
-        {/* Body */}
-        <line x1="50" y1="29" x2="50" y2="62" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        {/* Arms in motion (curved) */}
-        <path d="M 50 38 Q 30 38 26 50" stroke={stroke} strokeWidth={sw} fill={fill} strokeLinecap="round" />
-        <path d="M 50 38 Q 70 38 74 50" stroke={stroke} strokeWidth={sw} fill={fill} strokeLinecap="round" />
-        {/* Legs */}
-        <line x1="50" y1="62" x2="40" y2="84" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        <line x1="50" y1="62" x2="60" y2="84" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        {/* Rotation arrows around body */}
-        <path d="M 22 30 A 14 14 0 0 1 35 18" stroke={stroke} strokeWidth={sw * 0.85} fill={fill} strokeLinecap="round" opacity="0.55" />
-        <polygon points="35,18 32,15 36,13" fill={stroke} opacity="0.55" />
-        <path d="M 78 70 A 14 14 0 0 1 65 82" stroke={stroke} strokeWidth={sw * 0.85} fill={fill} strokeLinecap="round" opacity="0.55" />
-        <polygon points="65,82 68,85 64,87" fill={stroke} opacity="0.55" />
-      </svg>
-    );
+  let Icon = Activity;
+  let from = "#06B6D4";
+  let to = "#0E7490";
+  let label = "Move";
+
+  if (k.includes("loosen") || k.includes("mobil") || k.includes("warm")) {
+    Icon = Activity;
+    from = "#22D3EE"; to = "#0E7490"; label = "Loosen up";
+  } else if (k.includes("breath") || k.includes("breathe")) {
+    Icon = Wind;
+    from = "#A78BFA"; to = "#6D28D9"; label = "Breathe";
+  } else if (k.includes("steady") || k.includes("strength") || k.includes("strong") || k.includes("lift")) {
+    Icon = Dumbbell;
+    from = "#FB923C"; to = "#C2410C"; label = "Steady";
+  } else if (k.includes("stretch") || k.includes("cool") || k.includes("release") || k.includes("decompress")) {
+    Icon = Move;
+    from = "#34D399"; to = "#047857"; label = "Stretch";
+  } else if (k.includes("flow") || k.includes("restorative") || k.includes("calm") || k.includes("long")) {
+    Icon = Flower2;
+    from = "#F0ABFC"; to = "#A21CAF"; label = "Flow";
+  } else {
+    Icon = Sparkles;
+    from = "#94A3B8"; to = "#475569"; label = "Move";
   }
 
-  // Breathwork — lungs with inflation arc
-  if (k.includes("breath")) {
-    return (
-      <svg width={size} height={size} viewBox="0 0 100 100" aria-label="Breathwork illustration">
-        {/* Trachea */}
-        <line x1="50" y1="20" x2="50" y2="42" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        {/* Bronchi split */}
-        <line x1="50" y1="42" x2="38" y2="50" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        <line x1="50" y1="42" x2="62" y2="50" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        {/* Left lung */}
-        <path d="M 38 50 Q 22 56 24 78 Q 30 84 42 80 L 42 50 Z" stroke={stroke} strokeWidth={sw} fill={fill} />
-        {/* Right lung */}
-        <path d="M 62 50 Q 78 56 76 78 Q 70 84 58 80 L 58 50 Z" stroke={stroke} strokeWidth={sw} fill={fill} />
-        {/* Breath waves above */}
-        <path d="M 30 14 Q 40 8 50 14 Q 60 20 70 14" stroke={stroke} strokeWidth={sw * 0.85} fill={fill} strokeLinecap="round" opacity="0.55" />
-      </svg>
-    );
-  }
+  // Smaller versions hide the inner highlight to stay crisp at thumbnail size
+  const showHighlight = size >= 64;
+  const iconSize = Math.round(size * 0.45);
+  const haloSize = Math.round(size * 0.55);
 
-  // Strength — dumbbell + flexed bicep
-  if (k.includes("strength")) {
-    return (
-      <svg width={size} height={size} viewBox="0 0 100 100" aria-label="Strength illustration">
-        {/* Head */}
-        <circle cx="38" cy="22" r="6" stroke={stroke} strokeWidth={sw} fill={fill} />
-        {/* Torso */}
-        <line x1="38" y1="28" x2="38" y2="58" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        {/* Flexed arm (upper to elbow to fist) */}
-        <line x1="38" y1="36" x2="56" y2="38" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        <line x1="56" y1="38" x2="56" y2="22" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        {/* Bicep bulge */}
-        <path d="M 47 31 Q 52 26 56 30" stroke={stroke} strokeWidth={sw * 0.85} fill={fill} />
-        {/* Dumbbell at fist */}
-        <rect x="50" y="14" width="12" height="3.5" stroke={stroke} strokeWidth={sw} fill={fill} />
-        <rect x="48" y="10" width="3.5" height="12" stroke={stroke} strokeWidth={sw} fill={stroke} />
-        <rect x="60.5" y="10" width="3.5" height="12" stroke={stroke} strokeWidth={sw} fill={stroke} />
-        {/* Other arm (down) */}
-        <line x1="38" y1="38" x2="26" y2="52" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        {/* Legs */}
-        <line x1="38" y1="58" x2="30" y2="84" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        <line x1="38" y1="58" x2="46" y2="84" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  // Stretch — forward fold / hamstring stretch
-  if (k.includes("stretch")) {
-    return (
-      <svg width={size} height={size} viewBox="0 0 100 100" aria-label="Stretch illustration">
-        {/* Head folded down */}
-        <circle cx="42" cy="60" r="6" stroke={stroke} strokeWidth={sw} fill={fill} />
-        {/* Torso bent forward */}
-        <path d="M 42 60 Q 40 48 50 38" stroke={stroke} strokeWidth={sw} fill={fill} strokeLinecap="round" />
-        {/* Arms hanging down */}
-        <line x1="42" y1="60" x2="38" y2="78" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        <line x1="46" y1="62" x2="52" y2="80" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        {/* Legs straight */}
-        <line x1="50" y1="38" x2="50" y2="20" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        <line x1="50" y1="38" x2="62" y2="20" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        {/* Ground line */}
-        <line x1="20" y1="86" x2="80" y2="86" stroke={stroke} strokeWidth={sw * 0.7} strokeLinecap="round" opacity="0.4" />
-      </svg>
-    );
-  }
-
-  // Default fallback — simple person silhouette
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" aria-label="Exercise illustration">
-      <circle cx="50" cy="22" r="7" stroke={stroke} strokeWidth={sw} fill={fill} />
-      <line x1="50" y1="29" x2="50" y2="60" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-      <line x1="50" y1="38" x2="32" y2="48" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-      <line x1="50" y1="38" x2="68" y2="48" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-      <line x1="50" y1="60" x2="38" y2="84" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-      <line x1="50" y1="60" x2="62" y2="84" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-    </svg>
+    <div
+      role="img"
+      aria-label={`${label} illustration`}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: `linear-gradient(135deg, ${from} 0%, ${to} 100%)`,
+        boxShadow: `0 ${Math.max(4, size * 0.08)}px ${Math.max(12, size * 0.18)}px -6px ${to}55, inset 0 1px 0 rgba(255,255,255,0.25)`,
+        position: "relative",
+        overflow: "hidden",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      {showHighlight && (
+        <span
+          style={{
+            position: "absolute",
+            top: -size * 0.15,
+            left: -size * 0.05,
+            width: haloSize,
+            height: haloSize,
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.32)",
+            filter: "blur(8px)",
+            pointerEvents: "none",
+          }}
+        />
+      )}
+      <Icon
+        size={iconSize}
+        color="white"
+        strokeWidth={2.2}
+        style={{ position: "relative", zIndex: 1, filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.15))" }}
+      />
+    </div>
   );
 }
 
@@ -3662,10 +3710,33 @@ function SignatureFooter({ verified, hash, compact }) {
   return (
     <footer className={compact ? "pt-6 text-center" : "pt-8 text-center"}>
       {!compact && (
-        <p className="text-[11px] text-slate-700 max-w-md mx-auto leading-relaxed px-4">
+        <p className="text-[12px] text-slate-700 max-w-md mx-auto leading-relaxed px-4">
           Informational only. Not investment, medical, or financial advice. Your data stays on your device.
         </p>
       )}
+
+      {/* Charitable mission — a portion of proceeds supports children and
+          adults with disabilities. Inspired by family who depend on this
+          care every day. */}
+      {!compact && (
+        <div className="mt-5 mx-4 px-4 py-3 rounded-xl border border-amber-200/70 bg-gradient-to-br from-amber-50/80 to-rose-50/60 max-w-md mx-auto">
+          <div className="flex items-start gap-2.5">
+            <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5"
+              style={{ background: "linear-gradient(135deg, #F5D08C 0%, #D4A574 100%)" }}>
+              <HeartHandshake className="w-3.5 h-3.5" style={{ color: "#7C2D12" }} />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-amber-900 mb-0.5">
+                Pay It Forward
+              </p>
+              <p className="text-[11px] text-slate-700 leading-snug">
+                A portion of proceeds supports children and adults with disabilities and the families who care for them.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className={`mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-bold tracking-wider uppercase ${
         verified ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-rose-50 border-rose-200 text-rose-700"
       }`}>
