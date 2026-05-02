@@ -1739,53 +1739,57 @@ export default function MorningEdge() {
       {/* Brief */}
       {brief && (
         <main className="relative px-4 pb-16 space-y-4">
-          {/* Sync Portfolio — black & gold hero treatment at top, always visible regardless of filter */}
-          <div className="relative rounded-2xl shadow-xl overflow-hidden" data-csv-import-anchor
+          {/* Sync Portfolio — compact horizontal hero, ~50% the height of v2.
+              Same black & gold treatment, just denser. Icon left, label + status
+              right, expand caret on the far right. Expanded panel below stays
+              the same as before. */}
+          <div className="relative rounded-2xl shadow-lg overflow-hidden" data-csv-import-anchor
             style={{
               background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
             }}>
             {/* Top gold accent line */}
             <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            {/* Subtle radial glow */}
-            <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full opacity-20"
+            {/* Subtle radial glow — smaller now to match the slimmer hero */}
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-20"
               style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
 
             <button
               onClick={() => setShowCsvImport(!showCsvImport)}
-              className="relative z-10 w-full text-left p-8 transition hover:bg-white/[0.03] active:bg-white/[0.06]"
+              className="relative z-10 w-full text-left px-4 py-3 transition hover:bg-white/[0.03] active:bg-white/[0.06]"
             >
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full mb-5 flex items-center justify-center"
+              <div className="flex items-center gap-3">
+                {/* Briefcase icon, smaller */}
+                <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
                   style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
-                  <Briefcase className="w-5 h-5" style={{ color: "#1E293B" }} />
+                  <Briefcase className="w-4 h-4" style={{ color: "#1E293B" }} />
                 </div>
-                <p className="text-[10px] tracking-[0.35em] uppercase font-semibold mb-3"
-                  style={{ color: "#D4A574" }}>
-                  Sync Portfolio
-                </p>
-                <p className="text-xl leading-snug px-2 mb-3"
-                  style={{ fontFamily: SERIF, fontWeight: 400, color: "#F8FAFC" }}>
-                  {showCsvImport ? "Tap to close" : "Connect your holdings from any brokerage"}
-                </p>
-                {holdings.length > 0 && !showCsvImport && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold"
+
+                {/* Label + status, single line each */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[9px] tracking-[0.25em] uppercase font-semibold leading-none mb-1"
+                    style={{ color: "#D4A574" }}>
+                    Sync Portfolio
+                  </p>
+                  <p className="text-[14px] leading-tight truncate"
+                    style={{ fontFamily: SERIF, fontWeight: 400, color: "#F8FAFC" }}>
+                    {showCsvImport
+                      ? "Tap to close"
+                      : holdings.length > 0
+                      ? `${holdings.length} position${holdings.length === 1 ? "" : "s"} · ${accountsState.length || 1} account${(accountsState.length || 1) === 1 ? "" : "s"}`
+                      : "Connect your holdings from any brokerage"}
+                  </p>
+                </div>
+
+                {/* Status chip on the right */}
+                {!showCsvImport && (
+                  <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold"
                     style={{
                       background: "rgba(212, 165, 116, 0.15)",
                       border: "1px solid rgba(212, 165, 116, 0.4)",
                       color: "#D4A574",
                     }}>
-                    ✓ {holdings.length} position{holdings.length === 1 ? "" : "s"} loaded
-                  </span>
-                )}
-                {!showCsvImport && holdings.length === 0 && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold"
-                    style={{
-                      background: "rgba(212, 165, 116, 0.15)",
-                      border: "1px solid rgba(212, 165, 116, 0.4)",
-                      color: "#D4A574",
-                    }}>
-                    Tap to begin
+                    {holdings.length > 0 ? "✓ Synced" : "Tap to begin"}
                   </span>
                 )}
               </div>
@@ -1797,26 +1801,23 @@ export default function MorningEdge() {
                   <div>
                     <p className="font-semibold text-slate-900 mb-2">Get your CSV from your brokerage</p>
                     <p className="text-[11px] text-slate-600 leading-snug mb-2.5">
-                      {isMobile
-                        ? "On a phone, downloading a brokerage CSV is fiddly. Open Morning Edge on your computer, sign in to your broker, save the CSV, then come back here to upload it."
-                        : "Tap to open in a new tab. Log in, find your positions, save the CSV, then come back to upload."}
+                      Tap to open the broker in a new tab. Log in, find your positions, save the CSV, then come back and upload it.
+                      {isMobile && (
+                        <span className="block mt-1 text-[10px] text-amber-700">
+                          Heads up: brokerage CSV downloads usually work better on a computer.
+                        </span>
+                      )}
                     </p>
                     <div className="space-y-1.5">
                       {BROKERAGES.slice(0, 6).map((b) => (
                         <button
                           key={b.name}
                           onClick={() => {
-                            if (isMobile) {
-                              // On mobile, surface the honest message instead of opening the broker site
-                              setCsvImportMessage({
-                                type: "error",
-                                text: `Open Morning Edge on your computer to download your ${b.name} CSV. Once it's saved, come back here to upload.`,
-                              });
-                            } else {
-                              // Desktop: open broker login in a new tab — clean, no in-app browser
-                              if (typeof window !== "undefined") {
-                                window.open(b.url, "_blank", "noopener,noreferrer");
-                              }
+                            // Always open the broker login in a new tab — both mobile and desktop.
+                            // Mobile users can still try; we just warn them above that CSV saving
+                            // is easier on a computer.
+                            if (typeof window !== "undefined") {
+                              window.open(b.url, "_blank", "noopener,noreferrer");
                             }
                           }}
                           className="w-full flex items-center gap-2 bg-white border border-amber-200 rounded-lg px-2.5 py-2 hover:border-amber-300 hover:bg-amber-50/60 active:bg-amber-100 transition text-left"
@@ -3695,12 +3696,8 @@ function InAppBrowser({ url, onClose }) {
 // collection, no liability surface.
 function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
   const handleBrokerClick = (b) => {
-    if (isMobile) {
-      // On mobile, opening the broker site doesn't help — most CSV exports
-      // require desktop browser flows. Redirect the user to use a computer.
-      onOpenLink && onOpenLink(b.url, { mobileMessage: true, brokerName: b.name });
-      return;
-    }
+    // Always open the broker login in a new tab — works on both mobile and
+    // desktop. The header notes that CSV downloads are easier on a computer.
     if (typeof window !== "undefined") {
       window.open(b.url, "_blank", "noopener,noreferrer");
     }
