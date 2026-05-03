@@ -3181,34 +3181,35 @@ function SmartMoneyRow({ item, onOpenLink, category }) {
   };
 
   const buildUrl = () => {
-    const entity = extractEntity(text);
     const tkr = (ticker || "").toUpperCase();
 
     if (category === "congress") {
-      // Capitol Trades uses numeric internal IDs in their URLs (/issuers/433770
-      // for NVDA), not ticker symbols, so we can't construct a direct link.
-      // Google search with site:capitoltrades.com surfaces the actual trade
-      // page within seconds — Google has indexed every Capitol Trades trade
-      // page, so this routes reliably to the specific named trade.
-      const q = entity && tkr
-        ? `${entity} ${tkr} site:capitoltrades.com`
-        : `${entity || tkr || ""} site:capitoltrades.com`;
-      return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+      // Quiver Quantitative's congressional trading page for this ticker.
+      // Lands on a real, complete list of every disclosed congressional
+      // trade in this stock — including the specific named trade we
+      // mentioned. Free, public, no registration.
+      // Example: "Rep. Nancy Pelosi bought NVDA calls" →
+      //   https://www.quiverquant.com/congresstrading/stock/NVDA
+      // Pelosi's specific trade appears in the list with date and amount.
+      if (tkr) return `https://www.quiverquant.com/congresstrading/stock/${tkr}`;
+      // Fallback: the main congressional trading dashboard
+      return "https://www.quiverquant.com/congresstrading/";
     }
 
     if (category === "whale" || category === "hedge") {
-      // Google search with site:sec.gov filter — surfaces the actual 13F /
-      // 13G / 13D filing for the named firm. We tried direct SEC EDGAR
-      // URLs but their frontend is a single-page app that doesn't always
-      // honor URL params reliably. Google routes to the right filing within
-      // seconds and works on mobile.
-      const q = entity && tkr
-        ? `${entity} ${tkr} 13F filing site:sec.gov`
-        : `${entity || tkr || ""} 13F filing site:sec.gov`;
-      return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+      // WhaleWisdom's stock page lists every 13F filer holding this stock,
+      // including share counts and recent additions/reductions. The named
+      // firm (Soros / Citadel / Buffett's Berkshire / etc.) appears in the
+      // holders list with their actual position.
+      // Example: "Citadel increased NVDA stake" →
+      //   https://whalewisdom.com/stock/NVDA
+      // Citadel appears in the holders list with their actual NVDA position.
+      if (tkr) return `https://whalewisdom.com/stock/${tkr}`;
+      return "https://whalewisdom.com/";
     }
 
-    // Unknown category — fall back to a Google search that's at least useful
+    // Unknown category — Google search fallback (should rarely hit)
+    const entity = extractEntity(text);
     return `https://www.google.com/search?q=${encodeURIComponent(`${entity} ${tkr} filing`)}`;
   };
 
