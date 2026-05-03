@@ -305,6 +305,93 @@ const ROUTINES = [
 // Pick today's routine deterministically by day of week
 const todayRoutine = () => ROUTINES[new Date().getDay() % ROUTINES.length];
 
+// ─── Decision parser ────────────────────────────────────────────────
+// Decisions come from the model as free-form strings like:
+//   "Trim NVDA in Fidelity TOD: 30 of 75 sh before earnings"
+//   "Add VKTX 100sh on dip — GLP-2 catalyst"
+//   "IONQ +45% — decide post-5/6 earnings"
+//   "Set $235 stop on AAPL pre-FOMC"
+// We classify the action type for color coding, extract the most likely
+// ticker (1-5 uppercase letters near the start), and pull out an account
+// label if one is mentioned. The original decision text becomes the
+// "headline" — short version for the card. The full string is preserved
+// for the detail modal.
+//
+// This parser is deliberately forgiving — if it can't classify, we fall
+// back to a neutral "ACT" gray card. Better to render something useful
+// than to crash.
+const KNOWN_ACCOUNT_HINTS = [
+  "Fidelity TOD", "Fidelity",
+  "Schwab IRA", "Charles Schwab", "Schwab",
+  "Robinhood",
+  "E*TRADE", "ETrade",
+  "Vanguard",
+  "Webull",
+  "Merrill", "Merrill Edge",
+  "Interactive Brokers",
+  "Public",
+  "SoFi",
+  "Tastytrade",
+  "Roth IRA", "Roth",
+  "Rollover IRA", "Rollover",
+  "TOD", "IRA", "401K", "401(k)", "529",
+];
+
+function parseDecision(text) {
+  if (!text || typeof text !== "string") {
+    return { type: "act", typeLabel: "ACT", ticker: null, account: null, headline: "", body: text || "" };
+  }
+  const t = text.trim();
+
+  // Detect action type from leading verb / strong keyword
+  const lower = t.toLowerCase();
+  let type = "act"; // default neutral
+  if (/\btrim\b|\bsell\b|\breduce\b|\bcut\b|\boffload\b|\bexit\b|\btake (some|profit)/i.test(t))
+    type = "trim";
+  else if (/\badd\b|\bbuy\b|\bnibble\b|\baccumulate\b|\binitiate\b|\benter\b|\bopen\b/i.test(t))
+    type = "add";
+  else if (/\bset\b.*\bstop\b|\bprotect\b|\bhedge\b|\binsulate\b|\bguard\b/i.test(t))
+    type = "protect";
+  else if (/\bwatch\b|\bmonitor\b|\bdecide\b|\bwait\b|\bhold\b|\breview\b|\bcheck\b/i.test(t))
+    type = "watch";
+
+  // Extract first plausible ticker (uppercase 1-5 chars, optional dot or dash inside)
+  const tickerMatch = t.match(/\b([A-Z]{1,5}(?:[.\-][A-Z])?)\b/);
+  const ticker = tickerMatch ? tickerMatch[1] : null;
+
+  // Detect account — pick the longest matching hint (so "Fidelity TOD" beats "Fidelity")
+  let account = null;
+  for (const hint of KNOWN_ACCOUNT_HINTS) {
+    if (new RegExp(`\\b${hint.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(t)) {
+      if (!account || hint.length > account.length) account = hint;
+    }
+  }
+
+  // Headline = first ~50 chars or up to first colon/em dash, whichever is shorter
+  let headline = t;
+  const cutChars = [": ", " — ", " - "];
+  for (const c of cutChars) {
+    const idx = t.indexOf(c);
+    if (idx > 4 && idx < 60) { headline = t.slice(0, idx); break; }
+  }
+  if (headline.length > 60) headline = headline.slice(0, 57).trim() + "…";
+
+  const typeLabel = { trim: "TRIM", add: "ADD", watch: "WATCH", protect: "PROTECT", act: "ACT" }[type];
+
+  return { type, typeLabel, ticker, account, headline, body: t };
+}
+
+// Theme palette for action cards — lighter background, darker accent.
+// Each maps to a tailwind+inline color set so the cards are vibrant
+// but readable.
+const DECISION_THEMES = {
+  trim:    { bg: "linear-gradient(135deg, #fef2f2 0%, #fde3e3 100%)", border: "#fca5a5", iconBg: "#dc2626", labelText: "#7f1d1d", accentText: "#991b1b", chevron: "#7f1d1d", shadow: "rgba(220,38,38,0.18)" },
+  add:     { bg: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)", border: "#6ee7b7", iconBg: "#059669", labelText: "#064e3b", accentText: "#047857", chevron: "#064e3b", shadow: "rgba(5,150,105,0.18)" },
+  watch:   { bg: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)", border: "#fcd34d", iconBg: "#d97706", labelText: "#78350f", accentText: "#92400e", chevron: "#78350f", shadow: "rgba(217,119,6,0.18)" },
+  protect: { bg: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)", border: "#93c5fd", iconBg: "#2563eb", labelText: "#1e3a8a", accentText: "#1e40af", chevron: "#1e3a8a", shadow: "rgba(37,99,235,0.18)" },
+  act:     { bg: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)", border: "#cbd5e1", iconBg: "#475569", labelText: "#0f172a", accentText: "#334155", chevron: "#0f172a", shadow: "rgba(71,85,105,0.18)" },
+};
+
 // ─── Demo brief ─────────────────────────────────────────────────────
 const buildDemoBrief = (name, portfolio, holdings = []) => ({
   affirmation: "Steady hands. Clear eyes. The plan beats the impulse.",
@@ -749,7 +836,9 @@ export default function MorningEdge() {
   const [holdingsRefreshedAt, setHoldingsRefreshedAt] = useState(null); // ms timestamp
   const [brief, setBrief] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingStatusIdx, setLoadingStatusIdx] = useState(0); // rotates through personalized status messages while brief loads
   const [error, setError] = useState(null);
+  const [openDecisionIdx, setOpenDecisionIdx] = useState(null); // null when closed; otherwise the index of the decision being viewed in the detail modal
   const [showSettings, setShowSettings] = useState(false);
   const [showBrokerageGuide, setShowBrokerageGuide] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
@@ -858,6 +947,20 @@ export default function MorningEdge() {
       Store.set("me-holdings", { holdings, refreshedAt: holdingsRefreshedAt });
     }
   }, [holdings, holdingsRefreshedAt, phase]);
+
+  // Rotate the loading status message every 2.2s while a brief is being
+  // generated. Makes the wait feel personalized and active rather than
+  // a static spinner — the user sees the app is doing real work for them.
+  useEffect(() => {
+    if (!loading) {
+      setLoadingStatusIdx(0);
+      return;
+    }
+    const id = setInterval(() => {
+      setLoadingStatusIdx((i) => i + 1);
+    }, 2200);
+    return () => clearInterval(id);
+  }, [loading]);
 
   // Helpers for daily key
   const todayKey = useMemo(() => {
@@ -1048,7 +1151,33 @@ export default function MorningEdge() {
   };
 
   const generateBrief = async (opts = {}) => {
-    setLoading(true); setError(null);
+    setError(null);
+
+    // ─── Optimistic load ─────────────────────────────────────────────
+    // If we have a previously-saved brief in local history, render it
+    // immediately so the user has something to read while the fresh brief
+    // is still being generated. The fresh brief will swap in when ready.
+    // Even a brief from yesterday is more useful than 30 seconds of a
+    // spinning loader — they can start reading their playbook now while
+    // today's news refreshes in the background.
+    let showedOptimistic = false;
+    try {
+      const history = (await Store.get("me-briefs")) || {};
+      const dateKeys = Object.keys(history).sort();
+      // Try today's brief first (in case they reload), then most recent
+      const todaySaved = history[todayKey];
+      const mostRecent = dateKeys.length ? history[dateKeys[dateKeys.length - 1]] : null;
+      const fallbackBrief = todaySaved?.brief || mostRecent?.brief;
+      if (fallbackBrief) {
+        setBrief(fallbackBrief);
+        showedOptimistic = true;
+      }
+    } catch {}
+
+    // setLoading(true) happens AFTER the optimistic render so the spinner
+    // overlay shows in addition to the cached brief, not instead of it.
+    setLoading(true);
+
     try {
       const data = await callAPI(opts);
       const fresh = extractJSON(data);
@@ -1057,7 +1186,6 @@ export default function MorningEdge() {
       try {
         const history = (await Store.get("me-briefs")) || {};
         history[todayKey] = { brief: fresh, savedAt: Date.now() };
-        // Keep only last 30 days
         const keys = Object.keys(history).sort().slice(-30);
         const trimmed = {};
         keys.forEach((k) => { trimmed[k] = history[k]; });
@@ -1065,10 +1193,12 @@ export default function MorningEdge() {
       } catch {}
     } catch (e) {
       console.warn("Live API failed:", e);
-      setBrief(buildDemoBrief(name, portfolio, holdings));
-      // Weekend-aware messaging — markets are closed, so "live data
-      // unavailable" sounds wrong. Show a calmer, clearer message that
-      // reflects the actual state of the world.
+      // Only fall back to demo brief if we didn't already show a cached one.
+      // If they have yesterday's brief on screen, leave it there rather than
+      // wiping it for the demo.
+      if (!showedOptimistic) {
+        setBrief(buildDemoBrief(name, portfolio, holdings));
+      }
       const dow = new Date().getDay();
       const isWeekend = dow === 0 || dow === 6;
       setError(
@@ -1600,16 +1730,53 @@ export default function MorningEdge() {
         <p className="text-[12px] text-slate-600 mt-3 tracking-[0.2em] uppercase font-medium">{today}</p>
       </header>
 
-      {/* Pull-to-refresh indicator (mobile) — shows above ticker while user pulls */}
+      {/* Pull-to-refresh + background-refresh indicator. When a brief is
+          being generated while a cached one is on screen, show a rotating
+          set of personalized status messages so the user sees the app is
+          actively working for them rather than just spinning. */}
       {(pullProgress > 0 || (loading && brief)) && (
-        <div className="relative flex items-center justify-center gap-2 -mt-1 pb-1 text-slate-600 text-[12px] font-semibold uppercase tracking-wider">
-          <RefreshCw
-            className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
-            style={{ transform: !loading ? `rotate(${pullProgress * 360}deg)` : undefined, opacity: 0.4 + pullProgress * 0.6 }}
-          />
-          <span style={{ opacity: 0.4 + pullProgress * 0.6 }}>
-            {loading ? "Refreshing brief…" : pullProgress >= 1 ? "Release to refresh" : "Pull to refresh"}
-          </span>
+        <div className="relative flex items-center justify-center -mt-1 pb-1.5">
+          {loading ? (
+            (() => {
+              const statusMessages = [
+                holdings && holdings.length > 0 ? "Reading the tape for your holdings…" : "Reading the tape…",
+                "Scanning smart money flow…",
+                "Checking earnings & catalysts…",
+                "Tuning your edge…",
+                "Pulling congressional disclosures…",
+                "Almost there…",
+              ];
+              const msg = statusMessages[loadingStatusIdx % statusMessages.length];
+              return (
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-300 shadow-sm">
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-700" />
+                  <span
+                    key={msg}
+                    className="text-[12px] font-semibold uppercase tracking-wider text-amber-800"
+                    style={{ animation: "me-status-fade 0.5s ease-out" }}
+                  >
+                    {msg}
+                  </span>
+                  <style>{`
+                    @keyframes me-status-fade {
+                      0%   { opacity: 0; transform: translateY(2px); }
+                      100% { opacity: 1; transform: translateY(0); }
+                    }
+                  `}</style>
+                </div>
+              );
+            })()
+          ) : (
+            <div className="flex items-center gap-2 text-slate-700 text-[12px] font-semibold uppercase tracking-wider">
+              <RefreshCw
+                className="w-4 h-4"
+                style={{ transform: `rotate(${pullProgress * 360}deg)`, opacity: 0.4 + pullProgress * 0.6 }}
+              />
+              <span style={{ opacity: 0.4 + pullProgress * 0.6 }}>
+                {pullProgress >= 1 ? "Release to refresh" : "Pull to refresh"}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -1669,6 +1836,20 @@ export default function MorningEdge() {
       {/* In-app browser sheet for source links */}
       {inAppBrowserUrl && (
         <InAppBrowser url={inAppBrowserUrl} onClose={() => setInAppBrowserUrl(null)} />
+      )}
+
+      {/* Playbook decision detail modal — opens when user taps an action card */}
+      {openDecisionIdx !== null && brief && brief.decisions && brief.decisions[openDecisionIdx] && (
+        <PlaybookDetailModal
+          decision={brief.decisions[openDecisionIdx]}
+          idx={openDecisionIdx}
+          done={(completedDecisions[todayKey] || []).includes(openDecisionIdx)}
+          dismissed={(dismissedDecisions[todayKey] || []).includes(openDecisionIdx)}
+          onClose={() => setOpenDecisionIdx(null)}
+          onMarkDone={(idx) => toggleDecision(idx)}
+          onDismiss={(idx) => toggleDismiss(idx)}
+          onAddToCalendar={(d, idx) => addDecisionToCalendar(d, idx)}
+        />
       )}
 
       {/* Brokerage guide modal — device-aware. On desktop, broker buttons open
@@ -1751,25 +1932,25 @@ export default function MorningEdge() {
         </section>
       )}
 
-      {/* Generate / Refresh — only visible when no brief yet, or while loading.
-          Once a brief is on screen, the refresh button is hidden — the user
-          pulls down from the top of the page to refresh instead (mobile-first
-          pattern, matches iOS native behavior). On desktop, refreshing from
-          the browser also works. */}
-      {(!brief || loading) && (
+      {/* Generate / Refresh — only visible when no brief yet at all.
+          When a brief IS on screen and we're loading (optimistic refresh
+          from cached brief), the big button stays hidden — the small
+          "Refreshing brief…" banner up top is enough. The user can read
+          the cached brief while the new one loads in background. */}
+      {!brief && (
         <div className="relative px-6 pb-6 space-y-2">
           <button
             onClick={generateBrief}
             disabled={loading}
             className={`w-full py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 transition shadow-lg ${
-              loading ? "bg-slate-200 text-slate-600 shadow-none"
+              loading ? "bg-slate-200 text-slate-700 shadow-none"
                 : "bg-slate-900 text-white hover:bg-slate-800"
             }`}
           >
             {loading ? <><RefreshCw className="w-4 h-4 animate-spin" />Reading the tape…</>
             : <><Sparkles className="w-5 h-5" />Generate Today's Brief</>}
           </button>
-          {!brief && !loading && (
+          {!loading && (
             <button onClick={showDemo}
               className="w-full py-3 rounded-xl bg-white text-slate-700 border border-slate-200 text-sm font-semibold flex items-center justify-center gap-2 shadow-md">
               <Eye className="w-4 h-4" />View Sample Brief
@@ -1818,7 +1999,17 @@ export default function MorningEdge() {
 
       {/* Brief */}
       {brief && (
-        <main className="relative px-4 pb-16 space-y-4">
+        <main
+          className="relative px-4 pb-16 space-y-4"
+          style={{
+            // Subtle dimming + slight pulse on the cached brief while fresh
+            // data loads in the background, so the user senses the brief is
+            // being refreshed but can still read it. When loading ends, this
+            // smoothly fades back to full brightness as the new brief lands.
+            opacity: loading ? 0.85 : 1,
+            transition: "opacity 0.6s ease",
+          }}
+        >
           {/* Sync Portfolio — compact horizontal hero, ~50% the height of v2.
               Same black & gold treatment, just denser. Icon left, label + status
               right, expand caret on the far right. Expanded panel below stays
@@ -2718,77 +2909,27 @@ export default function MorningEdge() {
                   </div>
                 </div>
 
-                <ol className="space-y-4">
+                <ol className="grid grid-cols-2 gap-2.5 list-none p-0 m-0">
                   {brief.decisions.map((d, i) => {
                     const done = decisionsDoneToday.includes(i);
                     const dismissed = decisionsDismissedToday.includes(i);
                     return (
-                      <li key={i}>
-                        <div className={`flex items-start gap-2 p-2 -mx-2 rounded-xl transition ${
-                          dismissed ? "opacity-60" : done ? "bg-emerald-50/60" : "hover:bg-slate-50"
-                        }`}>
-                          {/* Main tappable area: number/check + decision text */}
-                          <button
-                            onClick={() => toggleDecision(i)}
-                            className="flex-1 text-left flex items-start gap-3 group min-w-0"
-                            aria-label={done ? "Mark not done" : "Mark done (Accept)"}
-                            title={done ? "Mark not done" : "Accept — mark done"}
-                          >
-                            {/* Custom checkbox / number */}
-                            <span className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition ${
-                              done
-                                ? "bg-emerald-500 text-white"
-                                : dismissed
-                                ? "border-2 border-slate-200 text-slate-300"
-                                : "border-2 border-slate-200 text-slate-300 group-hover:border-slate-300"
-                            }`}>
-                              {done ? (
-                                <CheckSquare className="w-3.5 h-3.5" />
-                              ) : (
-                                <span className="text-base font-light leading-none" style={{ fontFamily: SERIF }}>{i + 1}</span>
-                              )}
-                            </span>
-                            <span className={`flex-1 text-base leading-snug pt-1 transition ${
-                              done ? "text-slate-500 line-through"
-                                : dismissed ? "text-slate-500 line-through"
-                                : "text-slate-800"
-                            }`} style={{ fontFamily: SERIF }}>
-                              {d}
-                            </span>
-                          </button>
-                          {/* Dismiss button — gray out without marking done */}
-                          {!done && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); toggleDismiss(i); }}
-                              className={`flex-shrink-0 p-2 rounded-lg transition ${
-                                dismissed
-                                  ? "text-slate-600 bg-slate-100"
-                                  : "text-slate-500 hover:text-rose-600 hover:bg-rose-50 active:bg-rose-100"
-                              }`}
-                              aria-label={dismissed ? "Undismiss" : "Dismiss (skip today)"}
-                              title={dismissed ? "Undismiss" : "Dismiss — skip for today"}
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          )}
-                          {/* Add to Calendar button — separate, doesn't toggle done */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); addDecisionToCalendar(d, i); }}
-                            className="flex-shrink-0 p-2 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 active:bg-emerald-100 transition"
-                            aria-label="Add to calendar"
-                            title="Add to calendar"
-                          >
-                            <CalendarPlus className="w-4 h-4" />
-                          </button>
-                        </div>
+                      <li key={i} className="m-0 p-0">
+                        <PlaybookActionCard
+                          decision={d}
+                          idx={i}
+                          done={done}
+                          dismissed={dismissed}
+                          onOpen={(idx) => setOpenDecisionIdx(idx)}
+                        />
                       </li>
                     );
                   })}
                 </ol>
 
                 {/* Helper text */}
-                <p className="mt-4 text-[11px] text-slate-500 text-center italic">
-                  Tap a row to <span className="text-emerald-700">accept ✓</span> · <X className="w-3 h-3 inline -mt-0.5" /> to dismiss · <CalendarPlus className="w-3 h-3 inline -mt-0.5" /> to add to calendar
+                <p className="mt-4 text-[12px] text-slate-600 text-center italic">
+                  Tap any card to see full reasoning and act on it.
                 </p>
 
                 {/* Completion celebration */}
@@ -3626,6 +3767,244 @@ function BreathRhythm({ pattern = "4-4-4-4", color = "#7C3AED" }) {
             {p}s
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Playbook action card grid + detail modal.
+// Replaces the long checkbox list with a 2-up grid of colorful tappable
+// cards. Each card maps to one decision from the brief. Action types
+// (TRIM/ADD/WATCH/PROTECT) drive the color scheme. Tapping a card opens
+// a full-screen detail modal with the longer reasoning, account context,
+// and three actions: Mark done, Dismiss, Open broker.
+// ────────────────────────────────────────────────────────────────────
+
+const ACTION_ICON_MAP = {
+  trim:    ArrowDownRight,
+  add:     Plus,
+  watch:   Eye,
+  protect: ShieldCheck,
+  act:     CheckSquare,
+};
+
+function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
+  const parsed = parseDecision(decision);
+  const theme = DECISION_THEMES[parsed.type] || DECISION_THEMES.act;
+  const Icon = ACTION_ICON_MAP[parsed.type] || CheckSquare;
+
+  // When a card is done, we soften the colors so it visually recedes
+  // without disappearing entirely. Dismissed cards get fully muted.
+  const opacity = dismissed ? 0.4 : done ? 0.7 : 1;
+
+  return (
+    <button
+      onClick={() => onOpen(idx)}
+      className="text-left transition-all duration-150 active:scale-[0.97] hover:shadow-lg"
+      style={{
+        background: theme.bg,
+        border: `1px solid ${theme.border}`,
+        borderRadius: 14,
+        padding: 12,
+        boxShadow: `0 2px 8px -2px ${theme.shadow}`,
+        opacity,
+        minHeight: 120,
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+      }}
+    >
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <div
+          className="flex items-center justify-center"
+          style={{ width: 22, height: 22, borderRadius: 6, background: theme.iconBg }}
+        >
+          <Icon className="w-3 h-3" style={{ color: "white", strokeWidth: 3 }} />
+        </div>
+        <p className="text-[11px] font-bold tracking-[0.15em] uppercase m-0" style={{ color: theme.labelText }}>
+          {parsed.typeLabel}
+        </p>
+        {done && (
+          <span className="ml-auto text-emerald-700">
+            <Check className="w-3.5 h-3.5" strokeWidth={3} />
+          </span>
+        )}
+      </div>
+
+      {parsed.ticker && (
+        <p
+          className="text-[18px] font-bold m-0 mb-1 leading-tight"
+          style={{ color: "#0f172a", fontFamily: SERIF }}
+        >
+          {parsed.ticker}
+        </p>
+      )}
+
+      <p
+        className="text-[13px] leading-snug m-0 mb-2"
+        style={{ color: "#334155", flex: 1, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+      >
+        {parsed.ticker ? parsed.headline.replace(parsed.ticker, "").replace(/^[\s:.\-—]+/, "") : parsed.headline}
+      </p>
+
+      <div className="flex items-center justify-between mt-auto">
+        {parsed.account ? (
+          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: theme.accentText }}>
+            {parsed.account}
+          </span>
+        ) : (
+          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: theme.accentText, opacity: 0.7 }}>
+            Tap for detail
+          </span>
+        )}
+        <ChevronRight className="w-3.5 h-3.5" style={{ color: theme.chevron }} />
+      </div>
+    </button>
+  );
+}
+
+// Full-screen detail modal — opens when a playbook card is tapped.
+// Shows the full decision text, reasoning, and action buttons.
+function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDone, onDismiss, onAddToCalendar }) {
+  if (!decision) return null;
+  const parsed = parseDecision(decision);
+  const theme = DECISION_THEMES[parsed.type] || DECISION_THEMES.act;
+  const Icon = ACTION_ICON_MAP[parsed.type] || CheckSquare;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      style={{ background: "rgba(15,23,42,0.55)", backdropFilter: "blur(4px)" }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full sm:max-w-md bg-white sm:rounded-2xl shadow-2xl overflow-hidden"
+        style={{
+          maxHeight: "90vh",
+          overflowY: "auto",
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Colored header band matching the action type */}
+        <div style={{ background: theme.bg, padding: "16px 18px 14px", borderBottom: `1px solid ${theme.border}` }}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div
+                className="flex items-center justify-center"
+                style={{ width: 28, height: 28, borderRadius: 8, background: theme.iconBg }}
+              >
+                <Icon className="w-4 h-4" style={{ color: "white", strokeWidth: 2.8 }} />
+              </div>
+              <p className="text-[12px] font-bold tracking-[0.18em] uppercase m-0" style={{ color: theme.labelText }}>
+                {parsed.typeLabel} ACTION
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition active:scale-90"
+              style={{ background: "rgba(255,255,255,0.7)" }}
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
+            </button>
+          </div>
+
+          {parsed.ticker && (
+            <p
+              className="text-[28px] font-bold m-0 leading-tight"
+              style={{ color: "#0f172a", fontFamily: SERIF }}
+            >
+              {parsed.ticker}
+            </p>
+          )}
+          {parsed.account && (
+            <p className="text-[13px] m-0 mt-1" style={{ color: theme.accentText }}>
+              {parsed.account}
+            </p>
+          )}
+        </div>
+
+        {/* Body — full reasoning */}
+        <div className="px-5 py-4">
+          <p
+            className="text-[15px] leading-relaxed m-0"
+            style={{ color: "#1e293b", fontFamily: SERIF }}
+          >
+            {parsed.body}
+          </p>
+        </div>
+
+        {/* Status indicators */}
+        {(done || dismissed) && (
+          <div className="px-5 pb-2">
+            {done && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200">
+                <Check className="w-3.5 h-3.5 text-emerald-700" strokeWidth={3} />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Marked done</span>
+              </div>
+            )}
+            {dismissed && !done && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200">
+                <X className="w-3.5 h-3.5 text-slate-600" strokeWidth={2.5} />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Dismissed</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <div className="px-5 pb-5 pt-2 flex flex-col gap-2">
+          <button
+            onClick={() => { onMarkDone(idx); onClose(); }}
+            className="w-full py-3 rounded-xl font-bold text-[14px] tracking-wide transition active:scale-[0.98] flex items-center justify-center gap-2"
+            style={{
+              background: done ? "white" : "#0f172a",
+              color: done ? "#475569" : "white",
+              border: done ? "1px solid #e2e8f0" : "none",
+            }}
+          >
+            {done ? (
+              <>
+                <X className="w-4 h-4" strokeWidth={2.5} />
+                Mark not done
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4" strokeWidth={3} />
+                Mark done
+              </>
+            )}
+          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => { onDismiss(idx); onClose(); }}
+              className="py-2.5 rounded-xl font-semibold text-[13px] transition active:scale-[0.98] flex items-center justify-center gap-1.5"
+              style={{
+                background: "white",
+                color: dismissed ? "#0f172a" : "#475569",
+                border: "1px solid #e2e8f0",
+              }}
+            >
+              <X className="w-3.5 h-3.5" strokeWidth={2.5} />
+              {dismissed ? "Undismiss" : "Dismiss"}
+            </button>
+            <button
+              onClick={() => { onAddToCalendar(decision, idx); }}
+              className="py-2.5 rounded-xl font-semibold text-[13px] transition active:scale-[0.98] flex items-center justify-center gap-1.5"
+              style={{
+                background: "white",
+                color: "#475569",
+                border: "1px solid #e2e8f0",
+              }}
+            >
+              <CalendarPlus className="w-3.5 h-3.5" />
+              Calendar
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
