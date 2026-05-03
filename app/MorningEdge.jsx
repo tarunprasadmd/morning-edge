@@ -4423,7 +4423,7 @@ function SignatureFooter({ verified, hash, compact }) {
                 Pay It Forward
               </p>
               <p className="text-[13px] text-slate-700 leading-snug">
-                A portion of proceeds supports children and adults with disabilities and the families who care for them.
+                A portion of proceeds contributes to U.S. charities supporting children and adults with disabilities and the families who care for them.
               </p>
             </div>
           </div>
