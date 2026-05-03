@@ -135,11 +135,11 @@ Generate part of a morning briefing for ${name || "the user"} on ${date}. The re
 
 async function callJsonChunk(
   prompt: string,
-  opts: { search?: boolean; maxTokens?: number; maxSearches?: number } = {}
+  opts: { search?: boolean; maxTokens?: number; maxSearches?: number; model?: string } = {}
 ) {
-  const { search = false, maxTokens = 2500, maxSearches = 3 } = opts;
+  const { search = false, maxTokens = 2500, maxSearches = 3, model = "claude-sonnet-4-5" } = opts;
   const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-5",
+    model,
     max_tokens: maxTokens,
     ...(search
       ? {
@@ -168,6 +168,7 @@ async function callJsonChunk(
 // Chunk 1: Light content (no web search) — affirmation, mindset, clarity,
 // power_plate, decisions. Decisions live here too because they only need
 // the user's holdings (already in the prompt) — no fresh web data.
+// Uses Haiku for ~3-4s speedup since this chunk has no search dependency.
 async function generateLightChunk(
   name: string,
   holdings: any[],
@@ -213,7 +214,7 @@ ${accountRule}
 GOOD decision examples: "IONQ +45% on 175sh — earnings 5/6. Trim 75 into Friday strength." / "NVDA reports tonight, you hold 75sh. Set $850 stop pre-FOMC."
 BAD examples to avoid: "Review highest-conviction position" / "Confirm cash balance" — too generic.`;
 
-  return callJsonChunk(prompt, { maxTokens: 2500 });
+  return callJsonChunk(prompt, { maxTokens: 2000, model: "claude-haiku-4-5" });
 }
 
 // Chunk 2: Market pulse + today's edge + radar watch (web search needed
@@ -255,7 +256,7 @@ Return ONLY this JSON:
 todays_edge: 0-3 alerts total — only if genuinely time-sensitive. Empty arrays are fine.
 radar_watch: 2-4 thematic stocks the user does NOT own.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 3000, maxSearches: 3 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 2400, maxSearches: 3 });
 }
 
 // Chunk 3: Smart money (13F + congress + insiders) + conviction watch
@@ -300,9 +301,15 @@ Return ONLY this JSON:
   ]
 }
 
-conviction_watch: 3-5 entries.`;
+conviction_watch: 3-5 entries.
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 3000, maxSearches: 3 });
+CRITICAL DATA RULES:
+- NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD", or any all-caps placeholder.
+- For most_bought / most_sold: provide 1-2 ACTUAL ticker symbols based on your search. If you cannot find recent data, return an EMPTY ARRAY: [].
+- For whale_moves / congress_moves / hedge_fund_moves: provide real, named trades with real source URLs from your web search. Each entry must reference a specific person (politician name, fund name, or fund manager). If you cannot find any for a category, return an EMPTY ARRAY: [].
+- Empty arrays are fine — the UI handles them gracefully. Placeholder strings are NOT fine — they break the UI.`;
+
+  return callJsonChunk(prompt, { search: true, maxTokens: 2400, maxSearches: 3 });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────

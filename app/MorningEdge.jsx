@@ -2515,14 +2515,14 @@ export default function MorningEdge() {
                           : brief.smart_money.summary.most_bought
                             ? [brief.smart_money.summary.most_bought]
                             : []
-                        ).slice(0, 2).map((tkr, i) => (
+                        ).filter((t) => t && typeof t === "string" && !/^DATA_UNAVAIL|^N\/?A$|^NONE$|^UNKNOWN$/i.test(t.trim())).slice(0, 2).map((tkr, i) => (
                           <button
                             key={i}
                             onClick={() => setInAppBrowserUrl(`https://stockanalysis.com/stocks/${tkr.toLowerCase()}/`)}
-                            className="w-full flex items-center gap-2 rounded-lg bg-white border border-emerald-200 px-2.5 py-1.5 hover:bg-emerald-50 active:bg-emerald-100 transition text-left"
+                            className="w-full flex items-center gap-2 rounded-lg bg-white border border-emerald-200 px-2.5 py-1.5 hover:bg-emerald-50 active:bg-emerald-100 transition text-left min-w-0 overflow-hidden"
                           >
                             <span className="text-[12px] text-emerald-700 font-semibold flex-shrink-0">#{i + 1}</span>
-                            <span className="text-[16px] font-bold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>
+                            <span className="text-[16px] font-bold text-slate-900 flex-1 truncate" style={{ fontFamily: SERIF }}>
                               {tkr}
                             </span>
                             <ExternalLink className="w-3 h-3 text-emerald-600 flex-shrink-0" />
@@ -2539,14 +2539,14 @@ export default function MorningEdge() {
                           : brief.smart_money.summary.most_sold
                             ? [brief.smart_money.summary.most_sold]
                             : []
-                        ).slice(0, 2).map((tkr, i) => (
+                        ).filter((t) => t && typeof t === "string" && !/^DATA_UNAVAIL|^N\/?A$|^NONE$|^UNKNOWN$/i.test(t.trim())).slice(0, 2).map((tkr, i) => (
                           <button
                             key={i}
                             onClick={() => setInAppBrowserUrl(`https://stockanalysis.com/stocks/${tkr.toLowerCase()}/`)}
-                            className="w-full flex items-center gap-2 rounded-lg bg-white border border-rose-200 px-2.5 py-1.5 hover:bg-rose-50 active:bg-rose-100 transition text-left"
+                            className="w-full flex items-center gap-2 rounded-lg bg-white border border-rose-200 px-2.5 py-1.5 hover:bg-rose-50 active:bg-rose-100 transition text-left min-w-0 overflow-hidden"
                           >
                             <span className="text-[12px] text-rose-700 font-semibold flex-shrink-0">#{i + 1}</span>
-                            <span className="text-[16px] font-bold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>
+                            <span className="text-[16px] font-bold text-slate-900 flex-1 truncate" style={{ fontFamily: SERIF }}>
                               {tkr}
                             </span>
                             <ExternalLink className="w-3 h-3 text-rose-600 flex-shrink-0" />
@@ -2605,11 +2605,20 @@ export default function MorningEdge() {
                       </h3>
                       <span className="text-[9px] text-slate-500 italic">13F filings</span>
                     </div>
-                    <ul className="space-y-1">
-                      {brief.smart_money.whale_moves.map((w, i) => (
-                        <SmartMoneyRow key={i} item={w} onOpenLink={setInAppBrowserUrl} />
-                      ))}
-                    </ul>
+                    {(() => {
+                      const moves = (brief.smart_money.whale_moves || []).filter(
+                        (w) => w && (typeof w === "string" ? !/DATA_UNAVAIL|^N\/?A$|^NONE$/i.test(w) : !/DATA_UNAVAIL|^N\/?A$|^NONE$/i.test(w.text || ""))
+                      );
+                      return moves.length > 0 ? (
+                        <ul className="space-y-1">
+                          {moves.map((w, i) => (
+                            <SmartMoneyRow key={i} item={w} onOpenLink={setInAppBrowserUrl} />
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-[13px] text-slate-600 italic">No notable 13F activity in the latest filing window.</p>
+                      );
+                    })()}
                   </div>
 
                   {/* Congress (STOCK Act disclosures) */}
@@ -2621,30 +2630,46 @@ export default function MorningEdge() {
                       </h3>
                       <span className="text-[9px] text-slate-500 italic">STOCK Act · ~30–45d delay</span>
                     </div>
-                    <ul className="space-y-1">
-                      {brief.smart_money.congress_moves.map((c, i) => (
-                        <SmartMoneyRow key={i} item={c} onOpenLink={setInAppBrowserUrl} />
-                      ))}
-                    </ul>
+                    {(() => {
+                      const moves = (brief.smart_money.congress_moves || []).filter(
+                        (c) => c && (typeof c === "string" ? !/DATA_UNAVAIL|^N\/?A$|^NONE$/i.test(c) : !/DATA_UNAVAIL|^N\/?A$|^NONE$/i.test(c.text || ""))
+                      );
+                      return moves.length > 0 ? (
+                        <ul className="space-y-1">
+                          {moves.map((c, i) => (
+                            <SmartMoneyRow key={i} item={c} onOpenLink={setInAppBrowserUrl} />
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-[13px] text-slate-600 italic">No new STOCK Act disclosures in the latest window.</p>
+                      );
+                    })()}
                   </div>
 
-                  {/* Hedge Funds */}
-                  {brief.smart_money.hedge_fund_moves && brief.smart_money.hedge_fund_moves.length > 0 && (
-                    <div className="rounded-xl border border-amber-200 bg-white/60 p-3.5">
-                      <div className="flex items-center justify-between mb-2.5">
-                        <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
-                          Hedge Funds
-                        </h3>
-                        <span className="text-[9px] text-slate-500 italic">fund-level rotations</span>
-                      </div>
-                      <ul className="space-y-1">
-                        {brief.smart_money.hedge_fund_moves.map((h, i) => (
-                          <SmartMoneyRow key={i} item={h} onOpenLink={setInAppBrowserUrl} />
-                        ))}
-                      </ul>
+                  {/* Hedge Funds — always render so users see the section is intentional */}
+                  <div className="rounded-xl border border-amber-200 bg-white/60 p-3.5">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        Hedge Funds
+                      </h3>
+                      <span className="text-[9px] text-slate-500 italic">fund-level rotations</span>
                     </div>
-                  )}
+                    {(() => {
+                      const moves = (brief.smart_money.hedge_fund_moves || []).filter(
+                        (h) => h && (typeof h === "string" ? !/DATA_UNAVAIL|^N\/?A$|^NONE$/i.test(h) : !/DATA_UNAVAIL|^N\/?A$|^NONE$/i.test(h.text || ""))
+                      );
+                      return moves.length > 0 ? (
+                        <ul className="space-y-1">
+                          {moves.map((h, i) => (
+                            <SmartMoneyRow key={i} item={h} onOpenLink={setInAppBrowserUrl} />
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-[13px] text-slate-600 italic">No major fund rotations flagged today.</p>
+                      );
+                    })()}
+                  </div>
                 </div>
 
                 <p className="mt-5 text-[12px] text-slate-700 leading-relaxed italic">
