@@ -305,11 +305,12 @@ conviction_watch: 3-5 entries.
 
 CRITICAL DATA RULES:
 - NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD", or any all-caps placeholder.
+- whale_moves MUST contain EXACTLY 5 entries. congress_moves MUST contain EXACTLY 5 entries. hedge_fund_moves MUST contain EXACTLY 5 entries. Do not stop short — keep entries terse if needed (max 12 words each) to fit all 5.
 - For most_bought / most_sold: provide 1-2 ACTUAL ticker symbols based on your search. If you cannot find recent data, return an EMPTY ARRAY: [].
-- For whale_moves / congress_moves / hedge_fund_moves: provide real, named trades with real source URLs from your web search. Each entry must reference a specific person (politician name, fund name, or fund manager). If you cannot find any for a category, return an EMPTY ARRAY: [].
-- Empty arrays are fine — the UI handles them gracefully. Placeholder strings are NOT fine — they break the UI.`;
+- For whale_moves / congress_moves / hedge_fund_moves: provide real, named trades with real source URLs from your web search. Each entry must reference a specific person (politician name, fund name, or fund manager). If you genuinely cannot find any for a category after searching, return an EMPTY ARRAY: []. Do not return fewer than 5 if real data exists.
+- Empty arrays are acceptable only when no data exists; placeholder strings are NEVER acceptable.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 2400, maxSearches: 3 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 3200, maxSearches: 3 });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────

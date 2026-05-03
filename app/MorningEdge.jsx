@@ -355,9 +355,16 @@ function parseDecision(text) {
   else if (/\bwatch\b|\bmonitor\b|\bdecide\b|\bwait\b|\bhold\b|\breview\b|\bcheck\b/i.test(t))
     type = "watch";
 
-  // Extract first plausible ticker (uppercase 1-5 chars, optional dot or dash inside)
-  const tickerMatch = t.match(/\b([A-Z]{1,5}(?:[.\-][A-Z])?)\b/);
-  const ticker = tickerMatch ? tickerMatch[1] : null;
+  // Extract first plausible ticker (uppercase 1-5 chars). Skip common
+  // all-caps action verbs that would otherwise match: WATCH, TRIM, ADD, etc.
+  const TICKER_BLACKLIST = new Set([
+    "WATCH","TRIM","ADD","SELL","BUY","HOLD","CUT","SET","STOP","ACT",
+    "TBD","NA","NONE","NEW","OLD","NEXT","GOOD","BAD","HIGH","LOW","BIG",
+    "ALL","ANY","FOR","OR","AND","BUT","THE","AT","ON","IN","TO","UP","DOWN",
+    "USD","EUR","GBP","JPY","CAD","AUD","CNY","INR","CHF","HKD",
+  ]);
+  const tickerMatches = t.match(/\b([A-Z]{1,5}(?:[.\-][A-Z])?)\b/g) || [];
+  const ticker = tickerMatches.find((m) => !TICKER_BLACKLIST.has(m)) || null;
 
   // Detect account — pick the longest matching hint (so "Fidelity TOD" beats "Fidelity")
   let account = null;
@@ -2324,11 +2331,136 @@ export default function MorningEdge() {
             )}
           </div>
 
+          {visible.market_pulse && brief.market_pulse && (() => {
+            // Tone drives the hero color treatment so the card feels alive
+            // rather than dry. Bullish = teal energy, cautious = amber care,
+            // bearish = rose alert. Each tone gets a gradient banner + matching
+            // bullet accent so the eye lands on the energy of today's market.
+            const tone = (brief.market_pulse.tone || "neutral").toLowerCase();
+            const toneTheme =
+              tone.includes("bull") ? {
+                heroBg: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 60%, #a7f3d0 100%)",
+                heroBorder: "#6ee7b7",
+                accent: "#047857",
+                accentDark: "#064e3b",
+                badge: "rgba(5,150,105,0.18)",
+                bulletDot: "linear-gradient(135deg, #34d399, #059669)",
+                emoji: "📈",
+                kicker: "Bullish tape",
+              }
+              : tone.includes("bear") ? {
+                heroBg: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 60%, #fecaca 100%)",
+                heroBorder: "#fca5a5",
+                accent: "#b91c1c",
+                accentDark: "#7f1d1d",
+                badge: "rgba(220,38,38,0.18)",
+                bulletDot: "linear-gradient(135deg, #f87171, #dc2626)",
+                emoji: "📉",
+                kicker: "Bearish tape",
+              }
+              : tone.includes("caut") || tone.includes("mix") ? {
+                heroBg: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 60%, #fde68a 100%)",
+                heroBorder: "#fcd34d",
+                accent: "#b45309",
+                accentDark: "#78350f",
+                badge: "rgba(217,119,6,0.18)",
+                bulletDot: "linear-gradient(135deg, #fbbf24, #d97706)",
+                emoji: "⚖️",
+                kicker: "Cautious tape",
+              }
+              : {
+                heroBg: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 60%, #cbd5e1 100%)",
+                heroBorder: "#94a3b8",
+                accent: "#475569",
+                accentDark: "#1e293b",
+                badge: "rgba(71,85,105,0.18)",
+                bulletDot: "linear-gradient(135deg, #94a3b8, #475569)",
+                emoji: "📊",
+                kicker: "Tape read",
+              };
+
+            return (
+              <Card theme={themes.pulse}>
+                <CardHeader icon={<Sun className="w-4 h-4" />} label="Market Pulse" theme={themes.pulse} />
+
+                {/* Hero — bigger, bolder, more energetic */}
+                <div
+                  className="mx-4 mt-4 rounded-2xl px-5 py-5 relative overflow-hidden"
+                  style={{
+                    background: toneTheme.heroBg,
+                    border: `1.5px solid ${toneTheme.heroBorder}`,
+                    boxShadow: `0 6px 20px -8px ${toneTheme.badge}`,
+                  }}
+                >
+                  <div
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      top: -30,
+                      right: -30,
+                      width: 130,
+                      height: 130,
+                      borderRadius: "50%",
+                      background: `radial-gradient(circle, ${toneTheme.heroBorder} 0%, transparent 70%)`,
+                      opacity: 0.5,
+                      pointerEvents: "none",
+                    }}
+                  />
+                  <div className="relative">
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <span style={{ fontSize: 32, lineHeight: 1 }}>{toneTheme.emoji}</span>
+                      <div className="flex flex-col">
+                        <span
+                          className="text-[12px] font-bold uppercase tracking-[0.2em]"
+                          style={{ color: toneTheme.accent, letterSpacing: "0.18em" }}
+                        >
+                          {toneTheme.kicker}
+                        </span>
+                        <span
+                          style={{ fontFamily: SERIF, fontWeight: 700, color: toneTheme.accentDark, lineHeight: 1, fontSize: 32 }}
+                        >
+                          {brief.market_pulse.tone}
+                        </span>
+                      </div>
+                    </div>
+                    {brief.market_pulse.summary && (
+                      <p
+                        className="text-[17px] leading-relaxed m-0 font-medium"
+                        style={{ fontFamily: SERIF, color: "#0f172a" }}
+                      >
+                        {brief.market_pulse.summary}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Key-level mini-cards — each level gets its own pill, tappable to expand */}
+                <div className="px-5 pt-4 pb-4">
+                  <p
+                    className="text-[12px] font-bold uppercase tracking-[0.2em] mb-3 flex items-center gap-2"
+                    style={{ color: toneTheme.accent }}
+                  >
+                    <span className="inline-block w-6 h-px" style={{ background: toneTheme.accent }}></span>
+                    What's moving
+                    <span className="inline-block flex-1 h-px" style={{ background: toneTheme.accent, opacity: 0.3 }}></span>
+                  </p>
+                  <div className="flex flex-col gap-2.5">
+                    {(brief.market_pulse.key_levels || []).map((k, i) => (
+                      <ExpandableLevelRow key={i} index={i + 1} text={k} theme={toneTheme} />
+                    ))}
+                  </div>
+                </div>
+              </Card>
+            );
+          })()}
           {/* PLAYBOOK — tappable check-offs that persist per day */}
           {visible.decisions && Array.isArray(brief.decisions) && brief.decisions.length > 0 && (
             <Card theme={themes.play}>
               <CardHeader icon={<CheckSquare className="w-4 h-4" />} label="Today's Playbook" theme={themes.play} />
               <div className="px-5 py-6">
+                <p className="text-[13px] text-slate-700 italic mb-4 -mt-2">
+                  Moves to make today, sized to your accounts. Tap any card for full reasoning.
+                </p>
                 {/* Personalization indicator */}
                 {holdings.length > 0 ? (
                   <div className="mb-4 flex items-center gap-2 text-[12px] tracking-wider uppercase font-semibold">
@@ -2426,7 +2558,69 @@ export default function MorningEdge() {
               </div>
             </Card>
           )}
+          {visible.conviction && Array.isArray(brief.conviction_watch) && brief.conviction_watch.length > 0 && (
+            <Card theme={themes.conviction}>
+              <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Holdings · High Conviction Watch" theme={themes.conviction} />
+              <div className="px-3 pt-1 pb-3 space-y-2">
+                <p className="text-[13px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium px-1 mb-1">
+                  Hold · Add · Trim signals on stocks you own
+                </p>
+                <p className="text-[13px] text-slate-700 italic px-1 mb-3">
+                  How to think about each position you own — analytical view, not today's action list.
+                </p>
+                {brief.conviction_watch.filter(Boolean).map((c, i) => {
+                  if (!c || typeof c !== "object") return null;
+                  const hasAction = !!c.action;
+                  // Weekend awareness — markets are closed, "ACTION TODAY"
+                  // is misleading on Saturday/Sunday. Use a horizon-friendly
+                  // label so the user knows it's the next trading session.
+                  const dow = new Date().getDay();
+                  const actionLabel = (dow === 0 || dow === 6) ? "NEXT SESSION" : "ACTION TODAY";
+                  const actionAccent = c.signal === "trim"
+                    ? { bar: "bg-rose-500", chip: "bg-rose-100 text-rose-800 border-rose-200", label: actionLabel }
+                    : c.signal === "add"
+                      ? { bar: "bg-emerald-500", chip: "bg-emerald-100 text-emerald-800 border-emerald-200", label: actionLabel }
+                      : { bar: "bg-amber-500", chip: "bg-amber-100 text-amber-800 border-amber-200", label: actionLabel };
+                  return (
+                    <div
+                      key={i}
+                      className={`relative rounded-xl p-3.5 bg-slate-50 border ${hasAction ? "border-slate-200 shadow-sm" : "border-slate-100"} overflow-hidden`}
+                    >
+                      {/* Colored left-edge bar — only shown when there's a high-conviction action */}
+                      {hasAction && (
+                        <span className={`absolute left-0 top-0 bottom-0 w-1 ${actionAccent.bar}`} aria-hidden="true" />
+                      )}
+                      <div className={`flex items-start gap-3 mb-1.5 ${hasAction ? "pl-2" : ""}`}>
+                        <span className={`px-2.5 py-1 rounded-lg text-[12px] uppercase tracking-wider border font-semibold flex items-center gap-1 flex-shrink-0 ${signalStyle(c.signal)}`}>
+                          {signalIcon(c.signal)}{c.signal}
+                        </span>
+                        <p className="text-base font-semibold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>{c.ticker}</p>
+                      </div>
+                      {/* High-conviction action callout — only when c.action is set */}
+                      {hasAction && (
+                        <div className={`mb-2 pl-2`}>
+                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[12px] uppercase tracking-wider font-bold ${actionAccent.chip}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${actionAccent.bar}`} />
+                            {actionAccent.label}
+                          </div>
+                          <p className="text-[16px] text-slate-900 font-semibold leading-snug mt-1">
+                            {c.action}
+                          </p>
+                        </div>
+                      )}
+                      {/* Longer "why now" reasoning */}
+                      {c.why_now && (
+                        <p className={`text-[16px] text-slate-800 leading-relaxed mb-1 ${hasAction ? "pl-2" : "pl-1"}`}>{c.why_now}</p>
+                      )}
+                      <p className={`text-[16px] text-slate-700 leading-snug ${hasAction ? "pl-2" : "pl-1"}`}>{c.note}</p>
+                    </div>
+                  );
+                })}
+              </div>
 
+              {/* Sync Portfolio button moved to top of brief — see top of <main> */}
+            </Card>
+          )}
           {visible.smart_money && brief.smart_money && (
             <Card theme={themes.money}>
               <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} />
@@ -2697,187 +2891,7 @@ export default function MorningEdge() {
               </div>
             </Card>
           )}
-          {visible.market_pulse && brief.market_pulse && (() => {
-            // Tone drives the hero color treatment so the card feels alive
-            // rather than dry. Bullish = teal energy, cautious = amber care,
-            // bearish = rose alert. Each tone gets a gradient banner + matching
-            // bullet accent so the eye lands on the energy of today's market.
-            const tone = (brief.market_pulse.tone || "neutral").toLowerCase();
-            const toneTheme =
-              tone.includes("bull") ? {
-                heroBg: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 60%, #a7f3d0 100%)",
-                heroBorder: "#6ee7b7",
-                accent: "#047857",
-                accentDark: "#064e3b",
-                badge: "rgba(5,150,105,0.18)",
-                bulletDot: "linear-gradient(135deg, #34d399, #059669)",
-                emoji: "📈",
-                kicker: "Bullish tape",
-              }
-              : tone.includes("bear") ? {
-                heroBg: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 60%, #fecaca 100%)",
-                heroBorder: "#fca5a5",
-                accent: "#b91c1c",
-                accentDark: "#7f1d1d",
-                badge: "rgba(220,38,38,0.18)",
-                bulletDot: "linear-gradient(135deg, #f87171, #dc2626)",
-                emoji: "📉",
-                kicker: "Bearish tape",
-              }
-              : tone.includes("caut") || tone.includes("mix") ? {
-                heroBg: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 60%, #fde68a 100%)",
-                heroBorder: "#fcd34d",
-                accent: "#b45309",
-                accentDark: "#78350f",
-                badge: "rgba(217,119,6,0.18)",
-                bulletDot: "linear-gradient(135deg, #fbbf24, #d97706)",
-                emoji: "⚖️",
-                kicker: "Cautious tape",
-              }
-              : {
-                heroBg: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 60%, #cbd5e1 100%)",
-                heroBorder: "#94a3b8",
-                accent: "#475569",
-                accentDark: "#1e293b",
-                badge: "rgba(71,85,105,0.18)",
-                bulletDot: "linear-gradient(135deg, #94a3b8, #475569)",
-                emoji: "📊",
-                kicker: "Tape read",
-              };
 
-            return (
-              <Card theme={themes.pulse}>
-                <CardHeader icon={<Sun className="w-4 h-4" />} label="Market Pulse" theme={themes.pulse} />
-
-                {/* Hero — bigger, bolder, more energetic */}
-                <div
-                  className="mx-4 mt-4 rounded-2xl px-5 py-5 relative overflow-hidden"
-                  style={{
-                    background: toneTheme.heroBg,
-                    border: `1.5px solid ${toneTheme.heroBorder}`,
-                    boxShadow: `0 6px 20px -8px ${toneTheme.badge}`,
-                  }}
-                >
-                  <div
-                    aria-hidden
-                    style={{
-                      position: "absolute",
-                      top: -30,
-                      right: -30,
-                      width: 130,
-                      height: 130,
-                      borderRadius: "50%",
-                      background: `radial-gradient(circle, ${toneTheme.heroBorder} 0%, transparent 70%)`,
-                      opacity: 0.5,
-                      pointerEvents: "none",
-                    }}
-                  />
-                  <div className="relative">
-                    <div className="flex items-center gap-2.5 mb-3">
-                      <span style={{ fontSize: 32, lineHeight: 1 }}>{toneTheme.emoji}</span>
-                      <div className="flex flex-col">
-                        <span
-                          className="text-[12px] font-bold uppercase tracking-[0.2em]"
-                          style={{ color: toneTheme.accent, letterSpacing: "0.18em" }}
-                        >
-                          {toneTheme.kicker}
-                        </span>
-                        <span
-                          style={{ fontFamily: SERIF, fontWeight: 700, color: toneTheme.accentDark, lineHeight: 1, fontSize: 32 }}
-                        >
-                          {brief.market_pulse.tone}
-                        </span>
-                      </div>
-                    </div>
-                    {brief.market_pulse.summary && (
-                      <p
-                        className="text-[17px] leading-relaxed m-0 font-medium"
-                        style={{ fontFamily: SERIF, color: "#0f172a" }}
-                      >
-                        {brief.market_pulse.summary}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Key-level mini-cards — each level gets its own pill, tappable to expand */}
-                <div className="px-5 pt-4 pb-4">
-                  <p
-                    className="text-[12px] font-bold uppercase tracking-[0.2em] mb-3 flex items-center gap-2"
-                    style={{ color: toneTheme.accent }}
-                  >
-                    <span className="inline-block w-6 h-px" style={{ background: toneTheme.accent }}></span>
-                    What's moving
-                    <span className="inline-block flex-1 h-px" style={{ background: toneTheme.accent, opacity: 0.3 }}></span>
-                  </p>
-                  <div className="flex flex-col gap-2.5">
-                    {(brief.market_pulse.key_levels || []).map((k, i) => (
-                      <ExpandableLevelRow key={i} index={i + 1} text={k} theme={toneTheme} />
-                    ))}
-                  </div>
-                </div>
-              </Card>
-            );
-          })()}
-          {visible.conviction && Array.isArray(brief.conviction_watch) && brief.conviction_watch.length > 0 && (
-            <Card theme={themes.conviction}>
-              <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Conviction Watch" theme={themes.conviction} />
-              <div className="px-3 pt-1 pb-3 space-y-2">
-                <p className="text-[13px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium px-1 mb-3">
-                  Hold · Add · Trim signals on stocks you own
-                </p>
-                {brief.conviction_watch.map((c, i) => {
-                  const hasAction = !!c.action;
-                  // Weekend awareness — markets are closed, "ACTION TODAY"
-                  // is misleading on Saturday/Sunday. Use a horizon-friendly
-                  // label so the user knows it's the next trading session.
-                  const dow = new Date().getDay();
-                  const actionLabel = (dow === 0 || dow === 6) ? "NEXT SESSION" : "ACTION TODAY";
-                  const actionAccent = c.signal === "trim"
-                    ? { bar: "bg-rose-500", chip: "bg-rose-100 text-rose-800 border-rose-200", label: actionLabel }
-                    : c.signal === "add"
-                      ? { bar: "bg-emerald-500", chip: "bg-emerald-100 text-emerald-800 border-emerald-200", label: actionLabel }
-                      : { bar: "bg-amber-500", chip: "bg-amber-100 text-amber-800 border-amber-200", label: actionLabel };
-                  return (
-                    <div
-                      key={i}
-                      className={`relative rounded-xl p-3.5 bg-slate-50 border ${hasAction ? "border-slate-200 shadow-sm" : "border-slate-100"} overflow-hidden`}
-                    >
-                      {/* Colored left-edge bar — only shown when there's a high-conviction action */}
-                      {hasAction && (
-                        <span className={`absolute left-0 top-0 bottom-0 w-1 ${actionAccent.bar}`} aria-hidden="true" />
-                      )}
-                      <div className={`flex items-start gap-3 mb-1.5 ${hasAction ? "pl-2" : ""}`}>
-                        <span className={`px-2.5 py-1 rounded-lg text-[12px] uppercase tracking-wider border font-semibold flex items-center gap-1 flex-shrink-0 ${signalStyle(c.signal)}`}>
-                          {signalIcon(c.signal)}{c.signal}
-                        </span>
-                        <p className="text-base font-semibold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>{c.ticker}</p>
-                      </div>
-                      {/* High-conviction action callout — only when c.action is set */}
-                      {hasAction && (
-                        <div className={`mb-2 pl-2`}>
-                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[12px] uppercase tracking-wider font-bold ${actionAccent.chip}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${actionAccent.bar}`} />
-                            {actionAccent.label}
-                          </div>
-                          <p className="text-[16px] text-slate-900 font-semibold leading-snug mt-1">
-                            {c.action}
-                          </p>
-                        </div>
-                      )}
-                      {/* Longer "why now" reasoning */}
-                      {c.why_now && (
-                        <p className={`text-[16px] text-slate-800 leading-relaxed mb-1 ${hasAction ? "pl-2" : "pl-1"}`}>{c.why_now}</p>
-                      )}
-                      <p className={`text-[16px] text-slate-700 leading-snug ${hasAction ? "pl-2" : "pl-1"}`}>{c.note}</p>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Sync Portfolio button moved to top of brief — see top of <main> */}
-            </Card>
-          )}
 
           {visible.radar && Array.isArray(brief.radar_watch) && brief.radar_watch.length > 0 && (
             <Card theme={themes.radar}>
@@ -2887,7 +2901,7 @@ export default function MorningEdge() {
                   Thematic stocks moving today · Not in your portfolio
                 </p>
                 <div className="space-y-3">
-                  {brief.radar_watch.map((r, i) => (
+                  {brief.radar_watch.filter((r) => r && typeof r === "object").map((r, i) => (
                     <div key={i} className="rounded-xl p-3 bg-gradient-to-br from-cyan-50/50 to-teal-50/30 border border-cyan-100/70">
                       <div className="flex items-start gap-3">
                         <span className="px-2 py-1 rounded-md text-[12px] font-bold tracking-wider bg-cyan-100 text-cyan-800 border border-cyan-200 flex-shrink-0">
