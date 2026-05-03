@@ -1425,7 +1425,7 @@ export default function MorningEdge() {
   if (phase === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-100 to-slate-200" style={{ fontFamily: SANS }}>
-        <Sparkles className="w-8 h-8 text-slate-500 animate-pulse" />
+        <Sparkles className="w-8 h-8 text-slate-600 animate-pulse" />
       </div>
     );
   }
@@ -1444,7 +1444,7 @@ export default function MorningEdge() {
             <span className="text-white text-2xl font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic" }}>ME</span>
           </div>
           <p className="text-base font-bold text-slate-900 tracking-wide mb-1" style={{ fontFamily: SERIF }}>Morning Edge</p>
-          <p className="text-[11px] tracking-[0.25em] uppercase font-semibold text-slate-700 mb-8">by T-SPOT</p>
+          <p className="text-[12px] tracking-[0.25em] uppercase font-semibold text-slate-700 mb-8">by T-SPOT</p>
 
           <div className="flex gap-2 mb-8">
             <div className={`h-1.5 rounded-full transition-all ${phase === "onboard-1" ? "w-8 bg-slate-900" : "w-2 bg-slate-400"}`} />
@@ -1456,10 +1456,10 @@ export default function MorningEdge() {
               <h1 className="text-3xl text-slate-900 mb-2 leading-tight" style={{ fontFamily: SERIF, fontWeight: 500 }}>
                 Welcome <span className="italic text-slate-700">aboard.</span>
               </h1>
-              <p className="text-sm text-slate-500 mb-5 leading-relaxed">
+              <p className="text-sm text-slate-600 mb-5 leading-relaxed">
                 30-second setup. Your data stays on your device.
               </p>
-              <label className="text-[11px] uppercase tracking-widest text-slate-500 font-semibold mb-2 block">What should we call you?</label>
+              <label className="text-[12px] uppercase tracking-widest text-slate-600 font-semibold mb-2 block">What should we call you?</label>
               <input
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
@@ -1472,7 +1472,7 @@ export default function MorningEdge() {
                 onClick={() => tempName.trim() && setPhase("onboard-2")}
                 disabled={!tempName.trim()}
                 className={`w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition ${
-                  tempName.trim() ? "bg-slate-900 text-white hover:bg-slate-800" : "bg-slate-200 text-slate-400"
+                  tempName.trim() ? "bg-slate-900 text-white hover:bg-slate-800" : "bg-slate-200 text-slate-500"
                 }`}
               >
                 Continue <ArrowRight className="w-4 h-4" />
@@ -1485,7 +1485,7 @@ export default function MorningEdge() {
               <h1 className="text-3xl text-slate-900 mb-2 leading-tight" style={{ fontFamily: SERIF, fontWeight: 500 }}>
                 Build your <span className="italic text-slate-700">watchlist.</span>
               </h1>
-              <p className="text-sm text-slate-500 mb-5">Add tickers you track. Edit anytime.</p>
+              <p className="text-sm text-slate-600 mb-5">Add tickers you track. Edit anytime.</p>
               <div className="flex gap-2 mb-3">
                 <input
                   value={tickerInput}
@@ -1508,7 +1508,7 @@ export default function MorningEdge() {
                   }}
                   className="px-4 py-2.5 bg-slate-900 text-white rounded-xl font-semibold text-sm">Add</button>
               </div>
-              <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">Suggestions</p>
+              <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-2">Suggestions</p>
               <div className="flex flex-wrap gap-1.5 mb-4">
                 {SUGGESTED.filter((s) => !tempPortfolio.includes(s)).map((s) => (
                   <button key={s} onClick={() => setTempPortfolio([...tempPortfolio, s])}
@@ -1519,7 +1519,7 @@ export default function MorningEdge() {
               </div>
               {tempPortfolio.length > 0 && (
                 <>
-                  <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">Your picks ({tempPortfolio.length})</p>
+                  <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-2">Your picks ({tempPortfolio.length})</p>
                   <div className="flex flex-wrap gap-1.5 mb-5">
                     {tempPortfolio.map((t) => (
                       <span key={t} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg text-xs text-slate-800 font-medium">
@@ -1537,11 +1537,11 @@ export default function MorningEdge() {
                 <Sparkles className="w-4 h-4" /> Begin
               </button>
               <button onClick={() => setPhase("onboard-1")}
-                className="w-full py-2 mt-2 text-sm text-slate-500 hover:text-slate-900">← Back</button>
+                className="w-full py-2 mt-2 text-sm text-slate-600 hover:text-slate-900">← Back</button>
             </div>
           )}
 
-          <p className="text-[10px] text-slate-700 mt-6 text-center max-w-xs leading-relaxed">
+          <p className="text-[11px] text-slate-700 mt-6 text-center max-w-xs leading-relaxed">
             Informational only — not investment, medical, or financial advice.
           </p>
         </div>
@@ -1569,7 +1569,7 @@ export default function MorningEdge() {
             </div>
             <div>
               <p className="text-base font-bold text-slate-900 tracking-wide leading-tight" style={{ fontFamily: SERIF }}>Morning Edge</p>
-              <p className="text-[10px] tracking-[0.25em] uppercase font-semibold text-slate-600">by T-SPOT</p>
+              <p className="text-[11px] tracking-[0.25em] uppercase font-semibold text-slate-600">by T-SPOT</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -1597,12 +1597,12 @@ export default function MorningEdge() {
           {greeting}{name ? `, ${name}` : ""},<br />
           <span className="italic text-slate-700">your morning edge.</span>
         </h1>
-        <p className="text-[11px] text-slate-600 mt-3 tracking-[0.2em] uppercase font-medium">{today}</p>
+        <p className="text-[12px] text-slate-600 mt-3 tracking-[0.2em] uppercase font-medium">{today}</p>
       </header>
 
       {/* Pull-to-refresh indicator (mobile) — shows above ticker while user pulls */}
       {(pullProgress > 0 || (loading && brief)) && (
-        <div className="relative flex items-center justify-center gap-2 -mt-1 pb-1 text-slate-600 text-[11px] font-semibold uppercase tracking-wider">
+        <div className="relative flex items-center justify-center gap-2 -mt-1 pb-1 text-slate-600 text-[12px] font-semibold uppercase tracking-wider">
           <RefreshCw
             className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
             style={{ transform: !loading ? `rotate(${pullProgress * 360}deg)` : undefined, opacity: 0.4 + pullProgress * 0.6 }}
@@ -1649,7 +1649,7 @@ export default function MorningEdge() {
             accent={{ bg: "bg-indigo-600", text: "text-white", ring: "ring-indigo-200", dot: "bg-indigo-500" }}
           />
         </div>
-        <p className="text-[10px] text-slate-600 mt-2 italic text-center">Tap a pillar to focus your view.</p>
+        <p className="text-[11px] text-slate-600 mt-2 italic text-center">Tap a pillar to focus your view.</p>
       </div>
 
       {/* Premium modal */}
@@ -1703,19 +1703,19 @@ export default function MorningEdge() {
         <section className="relative mx-4 mb-6 p-5 rounded-2xl bg-white shadow-md border border-slate-100">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-slate-900">Settings</h2>
-            <button onClick={() => setShowSettings(false)} className="text-slate-500 hover:text-slate-900">
+            <button onClick={() => setShowSettings(false)} className="text-slate-600 hover:text-slate-900">
               <X className="w-4 h-4" />
             </button>
           </div>
           <div className="mb-4">
-            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-1 block">Your name</label>
+            <label className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-1 block">Your name</label>
             <input value={name} onChange={(e) => setName(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-slate-900 focus:bg-white" />
           </div>
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Watchlist</label>
-              <span className="text-xs text-slate-500">{portfolio.length} tickers</span>
+              <label className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold">Watchlist</label>
+              <span className="text-xs text-slate-600">{portfolio.length} tickers</span>
             </div>
             <div className="flex gap-2 mb-3">
               <input value={tickerInput} onChange={(e) => setTickerInput(e.target.value)}
@@ -1762,7 +1762,7 @@ export default function MorningEdge() {
             onClick={generateBrief}
             disabled={loading}
             className={`w-full py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 transition shadow-lg ${
-              loading ? "bg-slate-200 text-slate-500 shadow-none"
+              loading ? "bg-slate-200 text-slate-600 shadow-none"
                 : "bg-slate-900 text-white hover:bg-slate-800"
             }`}
           >
@@ -1880,10 +1880,10 @@ export default function MorningEdge() {
                 <div className="px-3 py-3 rounded-lg bg-white text-xs text-slate-700 space-y-3 shadow-inner">
                   <div>
                     <p className="font-semibold text-slate-900 mb-2">Get your CSV from your brokerage</p>
-                    <p className="text-[11px] text-slate-600 leading-snug mb-2.5">
+                    <p className="text-[12px] text-slate-600 leading-snug mb-2.5">
                       Tap to open the broker in a new tab. Log in, find your positions, save the CSV, then come back and upload it.
                       {isMobile && (
-                        <span className="block mt-1 text-[10px] text-amber-700">
+                        <span className="block mt-1 text-[11px] text-amber-700">
                           Heads up: brokerage CSV downloads usually work better on a computer.
                         </span>
                       )}
@@ -1902,10 +1902,10 @@ export default function MorningEdge() {
                           }}
                           className="w-full flex items-center gap-2 bg-white border border-amber-200 rounded-lg px-2.5 py-2 hover:border-amber-300 hover:bg-amber-50/60 active:bg-amber-100 transition text-left"
                         >
-                          <span className="text-[12px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate" style={{ fontFamily: SERIF }}>
+                          <span className="text-[13px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate" style={{ fontFamily: SERIF }}>
                             {b.name}
                           </span>
-                          <span className="text-[10px] text-slate-600 flex-1 truncate">
+                          <span className="text-[11px] text-slate-600 flex-1 truncate">
                             {b.path}
                           </span>
                           <ExternalLink className="w-3 h-3 text-amber-600 flex-shrink-0" />
@@ -1914,12 +1914,12 @@ export default function MorningEdge() {
                     </div>
                     <button
                       onClick={() => setShowBrokerageGuide(true)}
-                      className="w-full mt-2 px-2.5 py-2 rounded-lg border border-amber-300 bg-white text-[11px] font-semibold text-amber-800 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-center gap-1.5"
+                      className="w-full mt-2 px-2.5 py-2 rounded-lg border border-amber-300 bg-white text-[12px] font-semibold text-amber-800 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-center gap-1.5"
                     >
                       See all {BROKERAGES.length} brokerages
                       <ChevronRight className="w-3 h-3" />
                     </button>
-                    <p className="text-[10px] text-slate-500 italic mt-2 leading-snug">
+                    <p className="text-[11px] text-slate-600 italic mt-2 leading-snug">
                       We never see your password. We only read the CSV you upload. Holdings stay on this device until a brief is generated, and are never stored on our servers.
                     </p>
                   </div>
@@ -1945,12 +1945,12 @@ export default function MorningEdge() {
                     />
                     <label
                       htmlFor="me-csv-file-input"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-[12px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition cursor-pointer select-none"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-[13px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition cursor-pointer select-none"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Choose CSV file
                     </label>
-                    <p className="text-[10px] text-slate-500 mt-1.5">
+                    <p className="text-[11px] text-slate-600 mt-1.5">
                       Tap to pick a CSV from your phone or computer.
                     </p>
                   </div>
@@ -1958,10 +1958,10 @@ export default function MorningEdge() {
                   {/* Account label prompt — appears after CSV is parsed, before commit */}
                   {pendingCsvUpload && (
                     <div className="px-3 py-3 rounded-md bg-amber-50 border border-amber-200 space-y-2">
-                      <p className="text-[11px] font-semibold text-amber-900">
+                      <p className="text-[12px] font-semibold text-amber-900">
                         Label this account
                       </p>
-                      <p className="text-[10px] text-amber-800 leading-snug">
+                      <p className="text-[11px] text-amber-800 leading-snug">
                         Found {pendingCsvUpload.newHoldings.length} position{pendingCsvUpload.newHoldings.length === 1 ? "" : "s"}. Give this upload a name so the Playbook can call it out by account (e.g. "Fidelity TOD", "Roth IRA", "Schwab Joint").
                       </p>
                       <input
@@ -1970,19 +1970,19 @@ export default function MorningEdge() {
                         onChange={(e) => setAccountLabelDraft(e.target.value)}
                         onKeyDown={(e) => { if (e.key === "Enter") commitPendingCsvUpload(); }}
                         placeholder={pendingCsvUpload.brokerageGuess ? `e.g. ${pendingCsvUpload.brokerageGuess} TOD` : "Account name"}
-                        className="w-full px-2.5 py-2 rounded-md border border-amber-300 text-[12px] bg-white focus:outline-none focus:border-amber-500"
+                        className="w-full px-2.5 py-2 rounded-md border border-amber-300 text-[13px] bg-white focus:outline-none focus:border-amber-500"
                         autoFocus
                       />
                       <div className="flex gap-2">
                         <button
                           onClick={commitPendingCsvUpload}
-                          className="flex-1 px-3 py-2 rounded-md bg-amber-700 text-white text-[11px] font-semibold hover:bg-amber-800 active:bg-amber-900"
+                          className="flex-1 px-3 py-2 rounded-md bg-amber-700 text-white text-[12px] font-semibold hover:bg-amber-800 active:bg-amber-900"
                         >
                           Save account
                         </button>
                         <button
                           onClick={cancelPendingCsvUpload}
-                          className="px-3 py-2 rounded-md bg-white border border-amber-300 text-amber-800 text-[11px] font-semibold hover:bg-amber-50"
+                          className="px-3 py-2 rounded-md bg-white border border-amber-300 text-amber-800 text-[12px] font-semibold hover:bg-amber-50"
                         >
                           Cancel
                         </button>
@@ -1993,7 +1993,7 @@ export default function MorningEdge() {
                   {/* Account list — shows existing accounts with rename / delete */}
                   {accountsState.length > 0 && (
                     <div className="px-3 py-2.5 rounded-md bg-slate-50 border border-slate-200">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2">
                         Your accounts ({accountsState.length})
                       </p>
                       <div className="space-y-1.5">
@@ -2016,7 +2016,7 @@ export default function MorningEdge() {
                                         setEditingAccountId(null);
                                       }
                                     }}
-                                    className="flex-1 px-2 py-1 rounded border border-slate-300 text-[11px] bg-white focus:outline-none focus:border-slate-500"
+                                    className="flex-1 px-2 py-1 rounded border border-slate-300 text-[12px] bg-white focus:outline-none focus:border-slate-500"
                                     autoFocus
                                   />
                                   <button
@@ -2028,7 +2028,7 @@ export default function MorningEdge() {
                                   </button>
                                   <button
                                     onClick={() => setEditingAccountId(null)}
-                                    className="p-1 rounded text-slate-500 hover:bg-slate-100"
+                                    className="p-1 rounded text-slate-600 hover:bg-slate-100"
                                     aria-label="Cancel rename"
                                   >
                                     <X className="w-3.5 h-3.5" />
@@ -2036,15 +2036,15 @@ export default function MorningEdge() {
                                 </>
                               ) : (
                                 <>
-                                  <span className="flex-1 text-[12px] font-semibold text-slate-800 truncate" style={{ fontFamily: SERIF }}>
+                                  <span className="flex-1 text-[13px] font-semibold text-slate-800 truncate" style={{ fontFamily: SERIF }}>
                                     {acct.name}
                                   </span>
-                                  <span className="text-[10px] text-slate-500 flex-shrink-0">
+                                  <span className="text-[11px] text-slate-600 flex-shrink-0">
                                     {count} pos
                                   </span>
                                   <button
                                     onClick={() => { setEditingAccountId(acct.id); setEditingAccountName(acct.name); }}
-                                    className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                                    className="p-1 rounded text-slate-500 hover:text-slate-700 hover:bg-slate-100"
                                     aria-label="Rename account"
                                     title="Rename"
                                   >
@@ -2052,7 +2052,7 @@ export default function MorningEdge() {
                                   </button>
                                   <button
                                     onClick={() => deleteAccount(acct.id)}
-                                    className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                                    className="p-1 rounded text-slate-500 hover:text-rose-600 hover:bg-rose-50"
                                     aria-label="Remove account"
                                     title="Remove account"
                                   >
@@ -2068,7 +2068,7 @@ export default function MorningEdge() {
                   )}
 
                   {csvImportMessage && (
-                    <div className={`px-3 py-2 rounded-md text-[11px] ${
+                    <div className={`px-3 py-2 rounded-md text-[12px] ${
                       csvImportMessage.type === "ok"
                         ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                         : "bg-rose-100 text-rose-800 border border-rose-200"
@@ -2079,7 +2079,7 @@ export default function MorningEdge() {
 
                   {/* Holdings status — show what's loaded + freshness */}
                   {holdings.length > 0 && (
-                    <div className={`px-3 py-2 rounded-md text-[11px] ${
+                    <div className={`px-3 py-2 rounded-md text-[12px] ${
                       holdingsAgeDays != null && holdingsAgeDays > 7
                         ? "bg-amber-50 border border-amber-200 text-amber-900"
                         : "bg-slate-100 border border-slate-200 text-slate-700"
@@ -2094,19 +2094,19 @@ export default function MorningEdge() {
                         )}
                       </p>
                       {holdingsAgeDays != null && holdingsAgeDays > 7 && (
-                        <p className="text-[10px] mt-1">
+                        <p className="text-[11px] mt-1">
                           ⚠ Data is stale — gain percentages may be off. Re-upload for accurate playbook recommendations.
                         </p>
                       )}
                       {holdingsAgeDays != null && holdingsAgeDays <= 7 && (
-                        <p className="text-[10px] mt-1 text-slate-500">
+                        <p className="text-[11px] mt-1 text-slate-600">
                           Holdings power your personalized playbook. Re-upload weekly for best accuracy.
                         </p>
                       )}
                     </div>
                   )}
 
-                  <p className="text-[10px] text-slate-500 leading-relaxed">
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
                     Holdings stay on your device. We only send them to generate today's brief — never stored on any server.
                   </p>
                 </div>
@@ -2120,7 +2120,7 @@ export default function MorningEdge() {
               <div className="px-5 py-4">
                 <div className="flex items-baseline gap-2 mb-3">
                   <span className={`text-2xl ${toneColor(brief.market_pulse.tone)}`} style={{ fontFamily: SERIF, fontWeight: 600 }}>{brief.market_pulse.tone}</span>
-                  <span className="text-[10px] uppercase tracking-widest text-slate-500">tape read</span>
+                  <span className="text-[11px] uppercase tracking-widest text-slate-600">tape read</span>
                 </div>
                 {/* If summary still exists from older briefs, render it as a single lead bullet for back-compat */}
                 {brief.market_pulse.summary && (
@@ -2144,7 +2144,7 @@ export default function MorningEdge() {
             <Card theme={themes.money}>
               <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} />
               <div className="px-5 pt-1 pb-5">
-                <p className="text-[11px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-4">
+                <p className="text-[12px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-4">
                   Whales · Congress · Hedge Funds
                 </p>
 
@@ -2153,7 +2153,7 @@ export default function MorningEdge() {
                   <div className="mb-5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 px-3.5 py-3">
                     <div className="flex items-center gap-2 mb-1">
                       <Sparkles className="w-3 h-3 text-amber-700" />
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-amber-800 font-bold">
+                      <p className="text-[11px] uppercase tracking-[0.2em] text-amber-800 font-bold">
                         Today's Smart Money Read
                       </p>
                     </div>
@@ -2183,7 +2183,7 @@ export default function MorningEdge() {
                               >
                                 <span className="text-[9px] uppercase tracking-wider font-bold text-rose-800 flex-shrink-0">Earnings</span>
                                 <span className="text-sm font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{e.ticker}</span>
-                                <span className="text-[11px] text-rose-900 flex-1 leading-tight truncate">
+                                <span className="text-[12px] text-rose-900 flex-1 leading-tight truncate">
                                   {e.when}{e.your_shares ? ` · ${e.your_shares} sh` : ""}
                                 </span>
                                 <ExternalLink className="w-3 h-3 text-rose-700 flex-shrink-0" />
@@ -2199,8 +2199,8 @@ export default function MorningEdge() {
                                 <span className="text-[9px] uppercase tracking-wider font-bold text-amber-800 flex-shrink-0">Catalyst</span>
                                 <span className="text-sm font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{c.ticker}</span>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-[11px] text-amber-900 leading-tight font-semibold truncate">{c.event}</p>
-                                  {c.context && <p className="text-[10px] text-amber-800/80 leading-tight truncate">{c.context}</p>}
+                                  <p className="text-[12px] text-amber-900 leading-tight font-semibold truncate">{c.event}</p>
+                                  {c.context && <p className="text-[11px] text-amber-800/80 leading-tight truncate">{c.context}</p>}
                                 </div>
                                 <ExternalLink className="w-3 h-3 text-amber-700 flex-shrink-0" />
                               </button>
@@ -2215,8 +2215,8 @@ export default function MorningEdge() {
                                 <span className="text-[9px] uppercase tracking-wider font-bold text-orange-800 flex-shrink-0">Risk</span>
                                 <span className="text-sm font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{r.ticker}</span>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-[11px] text-orange-900 leading-tight font-semibold truncate">{r.flag}</p>
-                                  {r.suggested_action && <p className="text-[10px] text-orange-800/80 leading-tight truncate">→ {r.suggested_action}</p>}
+                                  <p className="text-[12px] text-orange-900 leading-tight font-semibold truncate">{r.flag}</p>
+                                  {r.suggested_action && <p className="text-[11px] text-orange-800/80 leading-tight truncate">→ {r.suggested_action}</p>}
                                 </div>
                                 <ExternalLink className="w-3 h-3 text-orange-700 flex-shrink-0" />
                               </button>
@@ -2232,7 +2232,7 @@ export default function MorningEdge() {
                     <p className="text-[9px] uppercase tracking-wider text-amber-800 font-bold mb-2">
                       Top Flow · Smart Money
                     </p>
-                    <p className="text-[11px] text-slate-600 leading-snug mb-2.5">
+                    <p className="text-[12px] text-slate-600 leading-snug mb-2.5">
                       The top 2 most-bought and top 2 most-sold names across whales, Congress, and hedge funds today. Tap to view performance.
                     </p>
                     {/* Most bought / sold — top 2 per side, tappable tickers open stockanalysis.com in-app */}
@@ -2253,7 +2253,7 @@ export default function MorningEdge() {
                             onClick={() => setInAppBrowserUrl(`https://stockanalysis.com/stocks/${tkr.toLowerCase()}/`)}
                             className="w-full flex items-center gap-2 rounded-lg bg-white border border-emerald-200 px-2.5 py-1.5 hover:bg-emerald-50 active:bg-emerald-100 transition text-left"
                           >
-                            <span className="text-[10px] text-emerald-700 font-semibold flex-shrink-0">#{i + 1}</span>
+                            <span className="text-[11px] text-emerald-700 font-semibold flex-shrink-0">#{i + 1}</span>
                             <span className="text-sm font-bold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>
                               {tkr}
                             </span>
@@ -2277,7 +2277,7 @@ export default function MorningEdge() {
                             onClick={() => setInAppBrowserUrl(`https://stockanalysis.com/stocks/${tkr.toLowerCase()}/`)}
                             className="w-full flex items-center gap-2 rounded-lg bg-white border border-rose-200 px-2.5 py-1.5 hover:bg-rose-50 active:bg-rose-100 transition text-left"
                           >
-                            <span className="text-[10px] text-rose-700 font-semibold flex-shrink-0">#{i + 1}</span>
+                            <span className="text-[11px] text-rose-700 font-semibold flex-shrink-0">#{i + 1}</span>
                             <span className="text-sm font-bold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>
                               {tkr}
                             </span>
@@ -2293,7 +2293,7 @@ export default function MorningEdge() {
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[9px] uppercase tracking-wider text-emerald-700 font-bold flex-shrink-0">▲ Bullish</span>
                             {brief.smart_money.summary.net_bullish_sectors.map((s, i) => (
-                              <span key={i} className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">
+                              <span key={i} className="text-[12px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">
                                 {s}
                               </span>
                             ))}
@@ -2303,7 +2303,7 @@ export default function MorningEdge() {
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[9px] uppercase tracking-wider text-rose-700 font-bold flex-shrink-0">▼ Bearish</span>
                             {brief.smart_money.summary.net_bearish_sectors.map((s, i) => (
-                              <span key={i} className="text-[11px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-medium">
+                              <span key={i} className="text-[12px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-medium">
                                 {s}
                               </span>
                             ))}
@@ -2317,7 +2317,7 @@ export default function MorningEdge() {
                 {/* Sector heatmap — visual stripe of sector flow direction */}
                 {brief.smart_money.sector_heatmap && brief.smart_money.sector_heatmap.length > 0 && (
                   <div className="mb-5">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2.5">Sector Flow</p>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2.5">Sector Flow</p>
                     <div className="space-y-1.5">
                       {brief.smart_money.sector_heatmap.map((s, i) => (
                         <SectorHeatmapBar key={i} sector={s.sector} direction={s.direction} intensity={s.intensity} />
@@ -2331,11 +2331,11 @@ export default function MorningEdge() {
                   {/* Whales (institutional 13F filings) */}
                   <div className="rounded-xl border border-amber-200 bg-white/60 p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
-                      <h3 className="text-[11px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
+                      <h3 className="text-[12px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
                         Institutional Whales
                       </h3>
-                      <span className="text-[9px] text-slate-400 italic">13F filings</span>
+                      <span className="text-[9px] text-slate-500 italic">13F filings</span>
                     </div>
                     <ul className="space-y-1">
                       {brief.smart_money.whale_moves.map((w, i) => (
@@ -2347,11 +2347,11 @@ export default function MorningEdge() {
                   {/* Congress (STOCK Act disclosures) */}
                   <div className="rounded-xl border border-amber-200 bg-white/60 p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
-                      <h3 className="text-[11px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
+                      <h3 className="text-[12px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
                         Congress
                       </h3>
-                      <span className="text-[9px] text-slate-400 italic">STOCK Act · ~30–45d delay</span>
+                      <span className="text-[9px] text-slate-500 italic">STOCK Act · ~30–45d delay</span>
                     </div>
                     <ul className="space-y-1">
                       {brief.smart_money.congress_moves.map((c, i) => (
@@ -2364,11 +2364,11 @@ export default function MorningEdge() {
                   {brief.smart_money.hedge_fund_moves && brief.smart_money.hedge_fund_moves.length > 0 && (
                     <div className="rounded-xl border border-amber-200 bg-white/60 p-3.5">
                       <div className="flex items-center justify-between mb-2.5">
-                        <h3 className="text-[11px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
+                        <h3 className="text-[12px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
                           Hedge Funds
                         </h3>
-                        <span className="text-[9px] text-slate-400 italic">fund-level rotations</span>
+                        <span className="text-[9px] text-slate-500 italic">fund-level rotations</span>
                       </div>
                       <ul className="space-y-1">
                         {brief.smart_money.hedge_fund_moves.map((h, i) => (
@@ -2379,7 +2379,7 @@ export default function MorningEdge() {
                   )}
                 </div>
 
-                <p className="mt-5 text-[10px] text-slate-500 leading-relaxed italic">
+                <p className="mt-5 text-[11px] text-slate-600 leading-relaxed italic">
                   AI-summarized from public filings. Tap any row to verify the trade. Tap a ticker badge to view performance.
                 </p>
               </div>
@@ -2390,30 +2390,30 @@ export default function MorningEdge() {
             <Card theme={themes.radar}>
               <CardHeader icon={<Telescope className="w-4 h-4" />} label="On Your Radar" theme={themes.radar} />
               <div className="px-5 pt-1 pb-4">
-                <p className="text-[11px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-4">
+                <p className="text-[12px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-4">
                   Thematic stocks moving today · Not in your portfolio
                 </p>
                 <div className="space-y-3">
                   {brief.radar_watch.map((r, i) => (
                     <div key={i} className="rounded-xl p-3 bg-gradient-to-br from-cyan-50/50 to-teal-50/30 border border-cyan-100/70">
                       <div className="flex items-start gap-3">
-                        <span className="px-2 py-1 rounded-md text-[10px] font-bold tracking-wider bg-cyan-100 text-cyan-800 border border-cyan-200 flex-shrink-0">
+                        <span className="px-2 py-1 rounded-md text-[11px] font-bold tracking-wider bg-cyan-100 text-cyan-800 border border-cyan-200 flex-shrink-0">
                           {r.ticker}
                         </span>
                         <div className="flex-1 min-w-0">
                           {r.theme && (
-                            <p className="text-[10px] uppercase tracking-wider text-teal-700 font-semibold mb-1">{r.theme}</p>
+                            <p className="text-[11px] uppercase tracking-wider text-teal-700 font-semibold mb-1">{r.theme}</p>
                           )}
                           <p className="text-[14px] font-semibold text-slate-900 leading-snug" style={{ fontFamily: SERIF }}>{r.headline}</p>
                           {r.why_now && (
-                            <p className="text-[13px] text-slate-700 leading-relaxed mt-1">{r.why_now}</p>
+                            <p className="text-[14px] text-slate-700 leading-relaxed mt-1">{r.why_now}</p>
                           )}
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
-                <p className="mt-4 text-[10px] text-slate-500 leading-relaxed italic">
+                <p className="mt-4 text-[11px] text-slate-600 leading-relaxed italic">
                   Surfaced from your themes (AI · semis · nuclear · quantum · biotech). Watch only — not a recommendation.
                 </p>
               </div>
@@ -2424,7 +2424,7 @@ export default function MorningEdge() {
             <Card theme={themes.conviction}>
               <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Conviction Watch" theme={themes.conviction} />
               <div className="px-3 pt-1 pb-3 space-y-2">
-                <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium px-1 mb-3">
+                <p className="text-[12px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium px-1 mb-3">
                   Hold · Add · Trim signals on stocks you own
                 </p>
                 {brief.conviction_watch.map((c, i) => {
@@ -2449,7 +2449,7 @@ export default function MorningEdge() {
                         <span className={`absolute left-0 top-0 bottom-0 w-1 ${actionAccent.bar}`} aria-hidden="true" />
                       )}
                       <div className={`flex items-start gap-3 mb-1.5 ${hasAction ? "pl-2" : ""}`}>
-                        <span className={`px-2.5 py-1 rounded-lg text-[10px] uppercase tracking-wider border font-semibold flex items-center gap-1 flex-shrink-0 ${signalStyle(c.signal)}`}>
+                        <span className={`px-2.5 py-1 rounded-lg text-[11px] uppercase tracking-wider border font-semibold flex items-center gap-1 flex-shrink-0 ${signalStyle(c.signal)}`}>
                           {signalIcon(c.signal)}{c.signal}
                         </span>
                         <p className="text-base font-semibold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>{c.ticker}</p>
@@ -2457,7 +2457,7 @@ export default function MorningEdge() {
                       {/* High-conviction action callout — only when c.action is set */}
                       {hasAction && (
                         <div className={`mb-2 pl-2`}>
-                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[10px] uppercase tracking-wider font-bold ${actionAccent.chip}`}>
+                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[11px] uppercase tracking-wider font-bold ${actionAccent.chip}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${actionAccent.bar}`} />
                             {actionAccent.label}
                           </div>
@@ -2470,7 +2470,7 @@ export default function MorningEdge() {
                       {c.why_now && (
                         <p className={`text-[15px] text-slate-800 leading-relaxed mb-1 ${hasAction ? "pl-2" : "pl-1"}`}>{c.why_now}</p>
                       )}
-                      <p className={`text-[13px] text-slate-600 leading-snug ${hasAction ? "pl-2" : "pl-1"}`}>{c.note}</p>
+                      <p className={`text-[14px] text-slate-600 leading-snug ${hasAction ? "pl-2" : "pl-1"}`}>{c.note}</p>
                     </div>
                   );
                 })}
@@ -2551,7 +2551,7 @@ export default function MorningEdge() {
                     </div>
                   </div>
                   {routineStreak >= 3 && (
-                    <p className="text-[11px] text-emerald-700 text-center mt-2 italic">
+                    <p className="text-[12px] text-emerald-700 text-center mt-2 italic">
                       🔥 {routineStreak}-day streak. Keep showing up.
                     </p>
                   )}
@@ -2561,7 +2561,7 @@ export default function MorningEdge() {
                 {brief.power_plate && (
                   <div className="pt-5 border-t border-slate-100">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-amber-700 font-semibold flex items-center gap-1.5">
+                      <p className="text-[11px] uppercase tracking-[0.2em] text-amber-700 font-semibold flex items-center gap-1.5">
                         <Utensils className="w-3 h-3" /> Daily Power Plate
                       </p>
                       {brief.power_plate.style && (
@@ -2582,20 +2582,20 @@ export default function MorningEdge() {
             <Card theme={themes.clarity}>
               <CardHeader icon={<Flower2 className="w-4 h-4" />} label="Clarity" theme={themes.clarity} />
               <div className="px-5 pt-1 pb-5">
-                <p className="text-[11px] uppercase tracking-[0.2em] text-violet-700/80 font-medium mb-5">
+                <p className="text-[12px] uppercase tracking-[0.2em] text-violet-700/80 font-medium mb-5">
                   Contemplation · Wisdom · Breath
                 </p>
 
                 {/* Contemplation */}
                 {brief.clarity.contemplation && (
                   <div className="mb-5">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-violet-600 font-semibold mb-2 flex items-center gap-2">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-violet-600 font-semibold mb-2 flex items-center gap-2">
                       <Sparkles className="w-3 h-3" /> Today's Contemplation
                     </p>
                     <p className="text-[15px] text-slate-800 leading-relaxed italic" style={{ fontFamily: SERIF }}>
                       {brief.clarity.contemplation}
                     </p>
-                    <p className="text-[11px] text-slate-500 mt-2 leading-relaxed">
+                    <p className="text-[12px] text-slate-600 mt-2 leading-relaxed">
                       Sit with this for 60 seconds before market open. No phone.
                     </p>
                   </div>
@@ -2604,14 +2604,14 @@ export default function MorningEdge() {
                 {/* Eastern wisdom quote */}
                 {brief.clarity.eastern_wisdom && (
                   <div className="mb-5 pl-4 border-l-2 border-violet-300">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-violet-600 font-semibold mb-2">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-violet-600 font-semibold mb-2">
                       Eastern Wisdom
                     </p>
                     <p className="text-[15px] text-slate-800 leading-relaxed" style={{ fontFamily: SERIF }}>
                       "{brief.clarity.eastern_wisdom.quote || brief.clarity.eastern_wisdom}"
                     </p>
                     {brief.clarity.eastern_wisdom.source && (
-                      <p className="text-[11px] text-violet-700 mt-2 font-medium">
+                      <p className="text-[12px] text-violet-700 mt-2 font-medium">
                         — {brief.clarity.eastern_wisdom.source}
                       </p>
                     )}
@@ -2626,19 +2626,19 @@ export default function MorningEdge() {
                         <Activity className="w-4 h-4 text-violet-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-violet-700 font-semibold mb-1">
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-violet-700 font-semibold mb-1">
                           {brief.clarity.breath_practice.name || "Breath Practice"}
                         </p>
                         <p className="text-[14px] text-slate-800 font-semibold leading-snug mb-1" style={{ fontFamily: SERIF }}>
                           {brief.clarity.breath_practice.pattern || brief.clarity.breath_practice}
                         </p>
                         {brief.clarity.breath_practice.description && (
-                          <p className="text-[12px] text-slate-700 leading-relaxed">
+                          <p className="text-[13px] text-slate-700 leading-relaxed">
                             {brief.clarity.breath_practice.description}
                           </p>
                         )}
                         {brief.clarity.breath_practice.rounds && (
-                          <p className="text-[11px] text-violet-700 font-semibold mt-1.5">
+                          <p className="text-[12px] text-violet-700 font-semibold mt-1.5">
                             {brief.clarity.breath_practice.rounds}
                           </p>
                         )}
@@ -2657,11 +2657,11 @@ export default function MorningEdge() {
               <div className="px-5 py-6">
                 {/* Personalization indicator */}
                 {holdings.length > 0 ? (
-                  <div className="mb-4 flex items-center gap-2 text-[10px] tracking-wider uppercase font-semibold">
+                  <div className="mb-4 flex items-center gap-2 text-[11px] tracking-wider uppercase font-semibold">
                     <span className="px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200">
                       ✓ Personalized
                     </span>
-                    <span className="text-slate-500">
+                    <span className="text-slate-600">
                       Built from your {holdings.length} position{holdings.length === 1 ? "" : "s"}
                     </span>
                   </div>
@@ -2689,7 +2689,7 @@ export default function MorningEdge() {
                         <Briefcase className="w-5 h-5" style={{ color: "#1E293B" }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] tracking-[0.25em] uppercase font-bold mb-1"
+                        <p className="text-[11px] tracking-[0.25em] uppercase font-bold mb-1"
                           style={{ color: "#D4A574" }}>
                           Unlock Personalized Playbook
                         </p>
@@ -2701,7 +2701,7 @@ export default function MorningEdge() {
                       <ArrowRight className="w-5 h-5 flex-shrink-0 transition-transform group-hover:translate-x-0.5"
                         style={{ color: "#D4A574" }} />
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-3 ml-14 leading-relaxed">
+                    <p className="text-[12px] text-slate-500 mt-3 ml-14 leading-relaxed">
                       Tap to open. Upload a CSV from any brokerage. Holdings stay on your device.
                     </p>
                   </button>
@@ -2709,7 +2709,7 @@ export default function MorningEdge() {
 
                 {/* Progress bar */}
                 <div className="flex items-center justify-between mb-5">
-                  <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-slate-500">
+                  <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-slate-600">
                     {decisionsDoneToday.length} of {brief.decisions.length} done
                   </p>
                   <div className="flex-1 ml-3 h-1 rounded-full bg-slate-100 overflow-hidden">
@@ -2749,8 +2749,8 @@ export default function MorningEdge() {
                               )}
                             </span>
                             <span className={`flex-1 text-base leading-snug pt-1 transition ${
-                              done ? "text-slate-400 line-through"
-                                : dismissed ? "text-slate-400 line-through"
+                              done ? "text-slate-500 line-through"
+                                : dismissed ? "text-slate-500 line-through"
                                 : "text-slate-800"
                             }`} style={{ fontFamily: SERIF }}>
                               {d}
@@ -2762,8 +2762,8 @@ export default function MorningEdge() {
                               onClick={(e) => { e.stopPropagation(); toggleDismiss(i); }}
                               className={`flex-shrink-0 p-2 rounded-lg transition ${
                                 dismissed
-                                  ? "text-slate-500 bg-slate-100"
-                                  : "text-slate-400 hover:text-rose-600 hover:bg-rose-50 active:bg-rose-100"
+                                  ? "text-slate-600 bg-slate-100"
+                                  : "text-slate-500 hover:text-rose-600 hover:bg-rose-50 active:bg-rose-100"
                               }`}
                               aria-label={dismissed ? "Undismiss" : "Dismiss (skip today)"}
                               title={dismissed ? "Undismiss" : "Dismiss — skip for today"}
@@ -2774,7 +2774,7 @@ export default function MorningEdge() {
                           {/* Add to Calendar button — separate, doesn't toggle done */}
                           <button
                             onClick={(e) => { e.stopPropagation(); addDecisionToCalendar(d, i); }}
-                            className="flex-shrink-0 p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 active:bg-emerald-100 transition"
+                            className="flex-shrink-0 p-2 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 active:bg-emerald-100 transition"
                             aria-label="Add to calendar"
                             title="Add to calendar"
                           >
@@ -2787,7 +2787,7 @@ export default function MorningEdge() {
                 </ol>
 
                 {/* Helper text */}
-                <p className="mt-4 text-[10px] text-slate-400 text-center italic">
+                <p className="mt-4 text-[11px] text-slate-500 text-center italic">
                   Tap a row to <span className="text-emerald-700">accept ✓</span> · <X className="w-3 h-3 inline -mt-0.5" /> to dismiss · <CalendarPlus className="w-3 h-3 inline -mt-0.5" /> to add to calendar
                 </p>
 
@@ -2821,7 +2821,7 @@ export default function MorningEdge() {
                   style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
                   <Sparkles className="w-5 h-5" style={{ color: "#1E293B" }} />
                 </div>
-                <p className="text-[10px] tracking-[0.35em] uppercase font-semibold mb-4"
+                <p className="text-[11px] tracking-[0.35em] uppercase font-semibold mb-4"
                   style={{ color: "#D4A574" }}>
                   Today's Wisdom
                 </p>
@@ -2846,7 +2846,7 @@ export default function MorningEdge() {
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <p className="text-2xl leading-snug text-slate-800 mb-2">Slow rhythm. <span className="italic">Sharp moves.</span></p>
-            <p className="text-sm text-slate-500" style={{ fontFamily: SANS }}>
+            <p className="text-sm text-slate-600" style={{ fontFamily: SANS }}>
               Today's tape, smart-money flow, and your decision playbook — all in one calm read.
             </p>
           </div>
@@ -2927,7 +2927,7 @@ function SectorHeatmapBar({ sector, direction, intensity = 3 }) {
       : { bar: "bg-slate-400", track: "bg-slate-100", label: "text-slate-600", arrow: "·" };
   return (
     <div className="flex items-center gap-2.5">
-      <span className="text-[11px] text-slate-700 font-medium flex-shrink-0 w-[110px] truncate" title={sector}>
+      <span className="text-[12px] text-slate-700 font-medium flex-shrink-0 w-[110px] truncate" title={sector}>
         {sector}
       </span>
       <div className={`flex-1 h-3 rounded-full ${palette.track} relative overflow-hidden border border-slate-100`}>
@@ -2936,7 +2936,7 @@ function SectorHeatmapBar({ sector, direction, intensity = 3 }) {
           style={{ width: `${widthPct}%`, opacity: 0.55 + (clamped * 0.09) }}
         />
       </div>
-      <span className={`text-[10px] font-bold ${palette.label} flex-shrink-0 w-3 text-center`}>
+      <span className={`text-[11px] font-bold ${palette.label} flex-shrink-0 w-3 text-center`}>
         {palette.arrow}
       </span>
     </div>
@@ -3075,13 +3075,13 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
                 <div key={i} className="flex flex-col gap-0.5 text-xs font-semibold py-0.5 px-0.5">
                   {/* Top row — symbol + change */}
                   <div className="flex items-center gap-1.5 leading-none">
-                    {isHigh && <span className="text-emerald-400 text-[10px]">▲▲</span>}
-                    {isDip && <span className="text-rose-400 text-[10px]">▼▼</span>}
+                    {isHigh && <span className="text-emerald-400 text-[11px]">▲▲</span>}
+                    {isDip && <span className="text-rose-400 text-[11px]">▼▼</span>}
                     <span className="text-slate-100 tracking-tight font-bold">
                       {m.symbol}
                     </span>
                     {m.shares != null && (
-                      <span className="text-slate-400 text-[10px]">{m.shares}sh</span>
+                      <span className="text-slate-500 text-[11px]">{m.shares}sh</span>
                     )}
                     <span className={up ? "text-emerald-400" : "text-rose-400"}>
                       {up ? "+" : ""}
@@ -3114,7 +3114,7 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
                       </span>
                     )}
                     {!m.signal && !m.sector && !m.accountLabel && (
-                      <span className="text-slate-500 text-[8px] italic">
+                      <span className="text-slate-600 text-[8px] italic">
                         on watch
                       </span>
                     )}
@@ -3169,7 +3169,7 @@ function FilterPill({ active, onClick, emoji, icon, label, accent }) {
       <span className={active ? "text-white" : ""}>
         {icon ? React.cloneElement(icon, { className: "w-5 h-5" }) : <span className="text-lg">{emoji}</span>}
       </span>
-      <span className="text-[10px] font-bold uppercase tracking-[0.12em]">{label}</span>
+      <span className="text-[11px] font-bold uppercase tracking-[0.12em]">{label}</span>
     </button>
   );
 }
@@ -3178,7 +3178,7 @@ function PremiumModal({ onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-slate-900">
+        <button onClick={onClose} className="absolute top-4 right-4 text-slate-600 hover:text-slate-900">
           <X className="w-5 h-5" />
         </button>
         <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center shadow-md bg-gradient-to-br from-amber-500 to-orange-500">
@@ -3187,7 +3187,7 @@ function PremiumModal({ onClose }) {
         <h3 className="text-2xl mb-1 text-slate-900" style={{ fontFamily: SERIF, fontWeight: 600 }}>
           Morning Edge <span className="italic">Premium</span>
         </h3>
-        <p className="text-sm text-slate-500 mb-5">Your edge, multiplied.</p>
+        <p className="text-sm text-slate-600 mb-5">Your edge, multiplied.</p>
         <ul className="space-y-3 mb-6">
           {[
             ["Real-time data", "Live pre-market, options flow, Congress disclosures"],
@@ -3202,7 +3202,7 @@ function PremiumModal({ onClose }) {
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-900">{title}</p>
-                <p className="text-xs text-slate-500">{desc}</p>
+                <p className="text-xs text-slate-600">{desc}</p>
               </div>
             </li>
           ))}
@@ -3210,7 +3210,7 @@ function PremiumModal({ onClose }) {
         <button className="w-full py-3.5 rounded-xl font-semibold text-white shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500">
           <Lock className="w-4 h-4" /> Join the waitlist
         </button>
-        <p className="text-[10px] text-slate-500 text-center mt-3">Coming soon.</p>
+        <p className="text-[11px] text-slate-600 text-center mt-3">Coming soon.</p>
       </div>
     </div>
   );
@@ -3231,7 +3231,7 @@ function CardHeader({ icon, label, theme }) {
       <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${theme.gradient} flex items-center justify-center text-white shadow-sm`}>
         {icon}
       </div>
-      <h2 className="text-[11px] uppercase tracking-[0.22em] text-slate-800 font-bold">{label}</h2>
+      <h2 className="text-[12px] uppercase tracking-[0.22em] text-slate-800 font-bold">{label}</h2>
     </div>
   );
 }
@@ -3248,7 +3248,7 @@ function MindsetRow({ icon, kicker, body, color }) {
         {icon}
       </div>
       <div className="flex-1 pt-0.5">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-semibold mb-1">{kicker}</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-600 font-semibold mb-1">{kicker}</p>
         <p className="text-[16px] leading-relaxed text-slate-800" style={{ fontFamily: SERIF }}>{body}</p>
       </div>
     </div>
@@ -3272,7 +3272,7 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
           {icon}
         </div>
         <div className="flex-1 pt-0.5 min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-semibold mb-1 flex items-center gap-2">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-600 font-semibold mb-1 flex items-center gap-2">
             {kicker}
             <span className="text-slate-300 text-base leading-none">{expanded ? "−" : "+"}</span>
           </p>
@@ -3283,19 +3283,19 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
       {expanded && (
         <div className={`mt-2 ml-12 mr-2 p-4 rounded-xl border ${c.panel}`}>
           {detail.intent && (
-            <p className="text-[12px] text-slate-700 leading-relaxed mb-3 italic" style={{ fontFamily: SERIF }}>
+            <p className="text-[13px] text-slate-700 leading-relaxed mb-3 italic" style={{ fontFamily: SERIF }}>
               {detail.intent}
             </p>
           )}
           {detail.why && (
-            <p className="text-[12px] text-slate-700 leading-relaxed mb-3">
+            <p className="text-[13px] text-slate-700 leading-relaxed mb-3">
               {detail.why}
             </p>
           )}
           {detail.segments && (
             <div className="space-y-2 mb-3">
               {detail.segments.map((seg, i) => (
-                <div key={i} className="flex items-center gap-3 text-[12px]">
+                <div key={i} className="flex items-center gap-3 text-[13px]">
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">
                     <WorkoutSchematic kicker={seg.kicker} color="#0F766E" size={32} />
                   </div>
@@ -3310,7 +3310,7 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
             </div>
           )}
           {detail.action && (
-            <p className="text-[11px] text-slate-600 leading-relaxed">
+            <p className="text-[12px] text-slate-600 leading-relaxed">
               → {detail.action}
             </p>
           )}
@@ -3396,13 +3396,13 @@ function RoutineFlow({ routine, onClose, onComplete }) {
         {/* Header */}
         <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100">
           <div>
-            <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-slate-500">
+            <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-slate-600">
               {routine.name} · Step {segIdx + 1} of {routine.segments.length}
             </p>
             <p className="text-base font-bold text-slate-900 mt-0.5">{segment.kicker}</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100" aria-label="Close">
-            <X className="w-5 h-5 text-slate-500" />
+            <X className="w-5 h-5 text-slate-600" />
           </button>
         </div>
 
@@ -3423,7 +3423,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-6">
-          <p className="text-[10px] tracking-[0.25em] uppercase font-semibold mb-1" style={{ color: segColor }}>
+          <p className="text-[11px] tracking-[0.25em] uppercase font-semibold mb-1" style={{ color: segColor }}>
             {segment.kicker}
           </p>
           <h2 className="text-3xl text-slate-900 mb-4" style={{ fontFamily: SERIF, fontWeight: 500 }}>
@@ -3468,13 +3468,13 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           <div className="mt-8 space-y-3">
             {segment.exercises.map((ex, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+                <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
                   style={{ backgroundColor: segColor }}>
                   {i + 1}
                 </span>
                 <div className="flex-1">
                   <p className="text-[14px] font-semibold text-slate-900">{ex.name}</p>
-                  <p className="text-[12px] text-slate-600 mt-0.5">{ex.cue}</p>
+                  <p className="text-[13px] text-slate-600 mt-0.5">{ex.cue}</p>
                 </div>
               </div>
             ))}
@@ -3622,7 +3622,7 @@ function BreathRhythm({ pattern = "4-4-4-4", color = "#7C3AED" }) {
       </div>
       <div className="flex w-full mt-1 px-0.5">
         {parts.map((p, i) => (
-          <div key={i} className="text-[10px] text-center text-slate-500 font-semibold tabular-nums" style={{ width: `${(p / total) * 100}%` }}>
+          <div key={i} className="text-[11px] text-center text-slate-600 font-semibold tabular-nums" style={{ width: `${(p / total) * 100}%` }}>
             {p}s
           </div>
         ))}
@@ -3647,20 +3647,20 @@ function PowerPlateCard({ plate }) {
           {name}
         </p>
         {description && (
-          <p className="text-[12px] text-slate-700 leading-relaxed mb-3">{description}</p>
+          <p className="text-[13px] text-slate-700 leading-relaxed mb-3">{description}</p>
         )}
         {/* Stats row */}
         <div className="flex items-center gap-2 mb-3">
           {protein_g != null && (
             <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
               <Flame className="w-3 h-3" />
-              <span className="text-[11px] font-bold">{protein_g}g protein</span>
+              <span className="text-[12px] font-bold">{protein_g}g protein</span>
             </div>
           )}
           {prep_min != null && (
             <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
               <Timer className="w-3 h-3" />
-              <span className="text-[11px] font-bold">{prep_min} min</span>
+              <span className="text-[12px] font-bold">{prep_min} min</span>
             </div>
           )}
         </div>
@@ -3668,11 +3668,11 @@ function PowerPlateCard({ plate }) {
           onClick={() => setExpanded(!expanded)}
           className="w-full text-left px-3 py-2 rounded-lg bg-white border border-amber-200 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-between"
         >
-          <span className="text-[12px] font-semibold text-slate-800 flex items-center gap-1.5">
+          <span className="text-[13px] font-semibold text-slate-800 flex items-center gap-1.5">
             <ShoppingBasket className="w-3.5 h-3.5 text-amber-700" />
             {expanded ? "Hide grocery list & recipe" : "Show grocery list & recipe"}
           </span>
-          <span className="text-slate-400 text-base leading-none">{expanded ? "−" : "+"}</span>
+          <span className="text-slate-500 text-base leading-none">{expanded ? "−" : "+"}</span>
         </button>
       </div>
 
@@ -3681,12 +3681,12 @@ function PowerPlateCard({ plate }) {
         <div className="px-4 pb-4 pt-1 space-y-4 border-t border-amber-100">
           {groceries.length > 0 && (
             <div>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2 flex items-center gap-1.5">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2 flex items-center gap-1.5">
                 <ShoppingBasket className="w-3 h-3" /> Pick up at the store
               </p>
               <ul className="space-y-1.5">
                 {groceries.map((g, i) => (
-                  <li key={i} className="text-[13px] text-slate-700 leading-snug flex gap-2">
+                  <li key={i} className="text-[14px] text-slate-700 leading-snug flex gap-2">
                     <span className="text-amber-500 font-bold flex-shrink-0">·</span>
                     <span>{g}</span>
                   </li>
@@ -3696,13 +3696,13 @@ function PowerPlateCard({ plate }) {
           )}
           {prep_steps.length > 0 && (
             <div>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2 flex items-center gap-1.5">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2 flex items-center gap-1.5">
                 <Utensils className="w-3 h-3" /> Quick prep
               </p>
               <ol className="space-y-2">
                 {prep_steps.map((s, i) => (
-                  <li key={i} className="text-[13px] text-slate-700 leading-relaxed flex gap-2.5">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold flex items-center justify-center mt-0.5">
+                  <li key={i} className="text-[14px] text-slate-700 leading-relaxed flex gap-2.5">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold flex items-center justify-center mt-0.5">
                       {i + 1}
                     </span>
                     <span className="flex-1">{s}</span>
@@ -3722,7 +3722,7 @@ function SignatureFooter({ verified, hash, compact }) {
   return (
     <footer className={compact ? "pt-6 text-center" : "pt-8 text-center"}>
       {!compact && (
-        <p className="text-[12px] text-slate-700 max-w-md mx-auto leading-relaxed px-4">
+        <p className="text-[13px] text-slate-700 max-w-md mx-auto leading-relaxed px-4">
           Informational only. Not investment, medical, or financial advice. Your data stays on your device.
         </p>
       )}
@@ -3738,10 +3738,10 @@ function SignatureFooter({ verified, hash, compact }) {
               <HeartHandshake className="w-3.5 h-3.5" style={{ color: "#7C2D12" }} />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-amber-900 mb-0.5">
+              <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-amber-900 mb-0.5">
                 Pay It Forward
               </p>
-              <p className="text-[11px] text-slate-700 leading-snug">
+              <p className="text-[12px] text-slate-700 leading-snug">
                 A portion of proceeds supports children and adults with disabilities and the families who care for them.
               </p>
             </div>
@@ -3749,7 +3749,7 @@ function SignatureFooter({ verified, hash, compact }) {
         </div>
       )}
 
-      <div className={`mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-bold tracking-wider uppercase ${
+      <div className={`mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold tracking-wider uppercase ${
         verified ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-rose-50 border-rose-200 text-rose-700"
       }`}>
         {verified ? <ShieldCheck className="w-3 h-3" /> : <ShieldAlert className="w-3 h-3" />}
@@ -3846,7 +3846,7 @@ function InAppBrowser({ url, onClose }) {
             {!autoOpened && (
               <button
                 onClick={onClose}
-                className="text-xs text-slate-500 hover:text-slate-700"
+                className="text-xs text-slate-600 hover:text-slate-700"
               >
                 Cancel
               </button>
@@ -3883,7 +3883,7 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex-1 min-w-0 px-1">
-          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold leading-tight">Brokerage Help</p>
+          <p className="text-[11px] uppercase tracking-wider text-slate-600 font-semibold leading-tight">Brokerage Help</p>
           <p className="text-sm text-slate-900 font-semibold truncate">Where to find your CSV</p>
         </div>
         <button
@@ -3897,7 +3897,7 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
 
       <div className="flex-1 overflow-y-auto bg-slate-50">
         <div className="px-4 py-4">
-          <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-3 mb-4 text-[12px] text-amber-900 leading-relaxed">
+          <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-3 mb-4 text-[13px] text-amber-900 leading-relaxed">
             <p className="font-semibold mb-1">How this works</p>
             {isMobile ? (
               <p>
@@ -3935,11 +3935,11 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
                       </h3>
                       <ExternalLink className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
                     </div>
-                    <p className="text-[11px] text-slate-700 leading-snug font-medium">
+                    <p className="text-[12px] text-slate-700 leading-snug font-medium">
                       {b.path}
                     </p>
                     {b.notes && (
-                      <p className="text-[10px] text-slate-500 leading-snug mt-1 italic">
+                      <p className="text-[11px] text-slate-600 leading-snug mt-1 italic">
                         {b.notes}
                       </p>
                     )}
@@ -3949,7 +3949,7 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
             ))}
           </div>
 
-          <p className="text-[10px] text-slate-500 leading-relaxed italic text-center mt-4">
+          <p className="text-[11px] text-slate-600 leading-relaxed italic text-center mt-4">
             Don't see your brokerage? Most platforms support CSV export under "Statements,"
             "Documents," or "Account History." Look on desktop if you can't find it on mobile.
           </p>
