@@ -1574,7 +1574,7 @@ export default function MorningEdge() {
             <span className="text-white text-2xl font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic" }}>ME</span>
           </div>
           <p className="text-base font-bold text-slate-900 tracking-wide mb-1" style={{ fontFamily: SERIF }}>Morning Edge</p>
-          <p className="text-[12px] tracking-[0.25em] uppercase font-semibold text-slate-700 mb-8">by T-SPOT</p>
+          <p className="text-[13px] tracking-[0.25em] uppercase font-semibold text-slate-700 mb-8">by T-SPOT</p>
 
           <div className="flex gap-2 mb-8">
             <div className={`h-1.5 rounded-full transition-all ${phase === "onboard-1" ? "w-8 bg-slate-900" : "w-2 bg-slate-400"}`} />
@@ -1586,10 +1586,10 @@ export default function MorningEdge() {
               <h1 className="text-3xl text-slate-900 mb-2 leading-tight" style={{ fontFamily: SERIF, fontWeight: 500 }}>
                 Welcome <span className="italic text-slate-700">aboard.</span>
               </h1>
-              <p className="text-sm text-slate-600 mb-5 leading-relaxed">
+              <p className="text-[15px] text-slate-600 mb-5 leading-relaxed">
                 30-second setup. Your data stays on your device.
               </p>
-              <label className="text-[12px] uppercase tracking-widest text-slate-600 font-semibold mb-2 block">What should we call you?</label>
+              <label className="text-[13px] uppercase tracking-widest text-slate-600 font-semibold mb-2 block">What should we call you?</label>
               <input
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
@@ -1615,7 +1615,7 @@ export default function MorningEdge() {
               <h1 className="text-3xl text-slate-900 mb-2 leading-tight" style={{ fontFamily: SERIF, fontWeight: 500 }}>
                 Build your <span className="italic text-slate-700">watchlist.</span>
               </h1>
-              <p className="text-sm text-slate-600 mb-5">Add tickers you track. Edit anytime.</p>
+              <p className="text-[15px] text-slate-600 mb-5">Add tickers you track. Edit anytime.</p>
               <div className="flex gap-2 mb-3">
                 <input
                   value={tickerInput}
@@ -1628,7 +1628,7 @@ export default function MorningEdge() {
                     }
                   }}
                   placeholder="Ticker (e.g. NVDA)"
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-slate-900 focus:bg-white"
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[15px] focus:outline-none focus:border-slate-900 focus:bg-white"
                 />
                 <button
                   onClick={() => {
@@ -1636,23 +1636,23 @@ export default function MorningEdge() {
                     if (t && !tempPortfolio.includes(t)) setTempPortfolio([...tempPortfolio, t]);
                     setTickerInput("");
                   }}
-                  className="px-4 py-2.5 bg-slate-900 text-white rounded-xl font-semibold text-sm">Add</button>
+                  className="px-4 py-2.5 bg-slate-900 text-white rounded-xl font-semibold text-[15px]">Add</button>
               </div>
-              <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-2">Suggestions</p>
+              <p className="text-[12px] uppercase tracking-widest text-slate-600 font-semibold mb-2">Suggestions</p>
               <div className="flex flex-wrap gap-1.5 mb-4">
                 {SUGGESTED.filter((s) => !tempPortfolio.includes(s)).map((s) => (
                   <button key={s} onClick={() => setTempPortfolio([...tempPortfolio, s])}
-                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200">
+                    className="px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200">
                     + {s}
                   </button>
                 ))}
               </div>
               {tempPortfolio.length > 0 && (
                 <>
-                  <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-2">Your picks ({tempPortfolio.length})</p>
+                  <p className="text-[12px] uppercase tracking-widest text-slate-600 font-semibold mb-2">Your picks ({tempPortfolio.length})</p>
                   <div className="flex flex-wrap gap-1.5 mb-5">
                     {tempPortfolio.map((t) => (
-                      <span key={t} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg text-xs text-slate-800 font-medium">
+                      <span key={t} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg text-[13px] text-slate-800 font-medium">
                         {t}
                         <button onClick={() => setTempPortfolio(tempPortfolio.filter((x) => x !== t))} className="hover:text-rose-600">
                           <X className="w-3 h-3" />
@@ -1667,11 +1667,11 @@ export default function MorningEdge() {
                 <Sparkles className="w-4 h-4" /> Begin
               </button>
               <button onClick={() => setPhase("onboard-1")}
-                className="w-full py-2 mt-2 text-sm text-slate-600 hover:text-slate-900">← Back</button>
+                className="w-full py-2 mt-2 text-[15px] text-slate-600 hover:text-slate-900">← Back</button>
             </div>
           )}
 
-          <p className="text-[11px] text-slate-700 mt-6 text-center max-w-xs leading-relaxed">
+          <p className="text-[12px] text-slate-700 mt-6 text-center max-w-xs leading-relaxed">
             Informational only — not investment, medical, or financial advice.
           </p>
         </div>
@@ -1699,7 +1699,7 @@ export default function MorningEdge() {
             </div>
             <div>
               <p className="text-base font-bold text-slate-900 tracking-wide leading-tight" style={{ fontFamily: SERIF }}>Morning Edge</p>
-              <p className="text-[11px] tracking-[0.25em] uppercase font-semibold text-slate-600">by T-SPOT</p>
+              <p className="text-[12px] tracking-[0.25em] uppercase font-semibold text-slate-600">by T-SPOT</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -1727,7 +1727,7 @@ export default function MorningEdge() {
           {greeting}{name ? `, ${name}` : ""},<br />
           <span className="italic text-slate-700">your morning edge.</span>
         </h1>
-        <p className="text-[12px] text-slate-600 mt-3 tracking-[0.2em] uppercase font-medium">{today}</p>
+        <p className="text-[13px] text-slate-600 mt-3 tracking-[0.2em] uppercase font-medium">{today}</p>
       </header>
 
       {/* Pull-to-refresh + background-refresh indicator. When a brief is
@@ -1752,7 +1752,7 @@ export default function MorningEdge() {
                   <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-700" />
                   <span
                     key={msg}
-                    className="text-[12px] font-semibold uppercase tracking-wider text-amber-800"
+                    className="text-[13px] font-semibold uppercase tracking-wider text-amber-800"
                     style={{ animation: "me-status-fade 0.5s ease-out" }}
                   >
                     {msg}
@@ -1767,7 +1767,7 @@ export default function MorningEdge() {
               );
             })()
           ) : (
-            <div className="flex items-center gap-2 text-slate-700 text-[12px] font-semibold uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-slate-700 text-[13px] font-semibold uppercase tracking-wider">
               <RefreshCw
                 className="w-4 h-4"
                 style={{ transform: `rotate(${pullProgress * 360}deg)`, opacity: 0.4 + pullProgress * 0.6 }}
@@ -1816,7 +1816,7 @@ export default function MorningEdge() {
             accent={{ bg: "bg-indigo-600", text: "text-white", ring: "ring-indigo-200", dot: "bg-indigo-500" }}
           />
         </div>
-        <p className="text-[11px] text-slate-600 mt-2 italic text-center">Tap a pillar to focus your view.</p>
+        <p className="text-[12px] text-slate-600 mt-2 italic text-center">Tap a pillar to focus your view.</p>
       </div>
 
       {/* Premium modal */}
@@ -1883,33 +1883,33 @@ export default function MorningEdge() {
       {showSettings && (
         <section className="relative mx-4 mb-6 p-5 rounded-2xl bg-white shadow-md border border-slate-100">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-slate-900">Settings</h2>
+            <h2 className="text-[15px] font-semibold text-slate-900">Settings</h2>
             <button onClick={() => setShowSettings(false)} className="text-slate-600 hover:text-slate-900">
               <X className="w-4 h-4" />
             </button>
           </div>
           <div className="mb-4">
-            <label className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-1 block">Your name</label>
+            <label className="text-[12px] uppercase tracking-widest text-slate-600 font-semibold mb-1 block">Your name</label>
             <input value={name} onChange={(e) => setName(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-slate-900 focus:bg-white" />
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[15px] focus:outline-none focus:border-slate-900 focus:bg-white" />
           </div>
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold">Watchlist</label>
-              <span className="text-xs text-slate-600">{portfolio.length} tickers</span>
+              <label className="text-[12px] uppercase tracking-widest text-slate-600 font-semibold">Watchlist</label>
+              <span className="text-[13px] text-slate-600">{portfolio.length} tickers</span>
             </div>
             <div className="flex gap-2 mb-3">
               <input value={tickerInput} onChange={(e) => setTickerInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && addTicker()}
                 placeholder="Add ticker"
-                className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-slate-900 focus:bg-white" />
-              <button onClick={addTicker} className="px-4 py-2 bg-slate-900 text-white rounded-xl font-semibold text-sm">
+                className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[15px] focus:outline-none focus:border-slate-900 focus:bg-white" />
+              <button onClick={addTicker} className="px-4 py-2 bg-slate-900 text-white rounded-xl font-semibold text-[15px]">
                 <Plus className="w-4 h-4" />
               </button>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {portfolio.map((t) => (
-                <span key={t} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg text-xs text-slate-800 font-medium">
+                <span key={t} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg text-[13px] text-slate-800 font-medium">
                   {t}
                   <button onClick={() => removeTicker(t)} className="hover:text-rose-600">
                     <X className="w-3 h-3" />
@@ -1920,13 +1920,13 @@ export default function MorningEdge() {
           </div>
           <button
             onClick={() => { setShowSettings(false); setShowBrokerageGuide(true); }}
-            className="w-full mb-3 py-2.5 rounded-xl text-xs text-amber-800 hover:bg-amber-50 border border-amber-300 font-semibold flex items-center justify-center gap-1.5"
+            className="w-full mb-3 py-2.5 rounded-xl text-[13px] text-amber-800 hover:bg-amber-50 border border-amber-300 font-semibold flex items-center justify-center gap-1.5"
           >
             <Briefcase className="w-3.5 h-3.5" />
             Brokerage Help — Where to find your CSV
           </button>
           <button onClick={resetAll}
-            className="w-full py-2 rounded-xl text-xs text-rose-600 hover:bg-rose-50 border border-rose-200 font-semibold">
+            className="w-full py-2 rounded-xl text-[13px] text-rose-600 hover:bg-rose-50 border border-rose-200 font-semibold">
             Reset all data
           </button>
         </section>
@@ -1952,12 +1952,12 @@ export default function MorningEdge() {
           </button>
           {!loading && (
             <button onClick={showDemo}
-              className="w-full py-3 rounded-xl bg-white text-slate-700 border border-slate-200 text-sm font-semibold flex items-center justify-center gap-2 shadow-md">
+              className="w-full py-3 rounded-xl bg-white text-slate-700 border border-slate-200 text-[15px] font-semibold flex items-center justify-center gap-2 shadow-md">
               <Eye className="w-4 h-4" />View Sample Brief
             </button>
           )}
           {error && (
-            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2 text-sm text-amber-800">
+            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2 text-[15px] text-amber-800">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span className="break-words">{error}</span>
             </div>
@@ -1966,7 +1966,7 @@ export default function MorningEdge() {
       )}
       {error && brief && !loading && (
         <div className="relative px-6 pb-2">
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2 text-sm text-amber-800">
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2 text-[15px] text-amber-800">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span className="break-words">{error}</span>
           </div>
@@ -2042,7 +2042,7 @@ export default function MorningEdge() {
                     style={{ color: "#D4A574" }}>
                     Sync Portfolio
                   </p>
-                  <p className="text-[14px] leading-tight truncate"
+                  <p className="text-[15px] leading-tight truncate"
                     style={{ fontFamily: SERIF, fontWeight: 400, color: "#F8FAFC" }}>
                     {showCsvImport
                       ? "Tap to close"
@@ -2068,13 +2068,13 @@ export default function MorningEdge() {
 
             {showCsvImport && (
               <div className="relative z-10 px-4 pb-5 pt-1">
-                <div className="px-3 py-3 rounded-lg bg-white text-xs text-slate-700 space-y-3 shadow-inner">
+                <div className="px-3 py-3 rounded-lg bg-white text-[13px] text-slate-700 space-y-3 shadow-inner">
                   <div>
                     <p className="font-semibold text-slate-900 mb-2">Get your CSV from your brokerage</p>
-                    <p className="text-[12px] text-slate-600 leading-snug mb-2.5">
+                    <p className="text-[13px] text-slate-600 leading-snug mb-2.5">
                       Tap to open the broker in a new tab. Log in, find your positions, save the CSV, then come back and upload it.
                       {isMobile && (
-                        <span className="block mt-1 text-[11px] text-amber-700">
+                        <span className="block mt-1 text-[12px] text-amber-700">
                           Heads up: brokerage CSV downloads usually work better on a computer.
                         </span>
                       )}
@@ -2093,10 +2093,10 @@ export default function MorningEdge() {
                           }}
                           className="w-full flex items-center gap-2 bg-white border border-amber-200 rounded-lg px-2.5 py-2 hover:border-amber-300 hover:bg-amber-50/60 active:bg-amber-100 transition text-left"
                         >
-                          <span className="text-[13px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate" style={{ fontFamily: SERIF }}>
+                          <span className="text-[14px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate" style={{ fontFamily: SERIF }}>
                             {b.name}
                           </span>
-                          <span className="text-[11px] text-slate-600 flex-1 truncate">
+                          <span className="text-[12px] text-slate-600 flex-1 truncate">
                             {b.path}
                           </span>
                           <ExternalLink className="w-3 h-3 text-amber-600 flex-shrink-0" />
@@ -2105,12 +2105,12 @@ export default function MorningEdge() {
                     </div>
                     <button
                       onClick={() => setShowBrokerageGuide(true)}
-                      className="w-full mt-2 px-2.5 py-2 rounded-lg border border-amber-300 bg-white text-[12px] font-semibold text-amber-800 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-center gap-1.5"
+                      className="w-full mt-2 px-2.5 py-2 rounded-lg border border-amber-300 bg-white text-[13px] font-semibold text-amber-800 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-center gap-1.5"
                     >
                       See all {BROKERAGES.length} brokerages
                       <ChevronRight className="w-3 h-3" />
                     </button>
-                    <p className="text-[11px] text-slate-600 italic mt-2 leading-snug">
+                    <p className="text-[12px] text-slate-600 italic mt-2 leading-snug">
                       We never see your password. We only read the CSV you upload. Holdings stay on this device until a brief is generated, and are never stored on our servers.
                     </p>
                   </div>
@@ -2136,12 +2136,12 @@ export default function MorningEdge() {
                     />
                     <label
                       htmlFor="me-csv-file-input"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-[13px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition cursor-pointer select-none"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-[14px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition cursor-pointer select-none"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Choose CSV file
                     </label>
-                    <p className="text-[11px] text-slate-600 mt-1.5">
+                    <p className="text-[12px] text-slate-600 mt-1.5">
                       Tap to pick a CSV from your phone or computer.
                     </p>
                   </div>
@@ -2149,10 +2149,10 @@ export default function MorningEdge() {
                   {/* Account label prompt — appears after CSV is parsed, before commit */}
                   {pendingCsvUpload && (
                     <div className="px-3 py-3 rounded-md bg-amber-50 border border-amber-200 space-y-2">
-                      <p className="text-[12px] font-semibold text-amber-900">
+                      <p className="text-[13px] font-semibold text-amber-900">
                         Label this account
                       </p>
-                      <p className="text-[11px] text-amber-800 leading-snug">
+                      <p className="text-[12px] text-amber-800 leading-snug">
                         Found {pendingCsvUpload.newHoldings.length} position{pendingCsvUpload.newHoldings.length === 1 ? "" : "s"}. Give this upload a name so the Playbook can call it out by account (e.g. "Fidelity TOD", "Roth IRA", "Schwab Joint").
                       </p>
                       <input
@@ -2161,19 +2161,19 @@ export default function MorningEdge() {
                         onChange={(e) => setAccountLabelDraft(e.target.value)}
                         onKeyDown={(e) => { if (e.key === "Enter") commitPendingCsvUpload(); }}
                         placeholder={pendingCsvUpload.brokerageGuess ? `e.g. ${pendingCsvUpload.brokerageGuess} TOD` : "Account name"}
-                        className="w-full px-2.5 py-2 rounded-md border border-amber-300 text-[13px] bg-white focus:outline-none focus:border-amber-500"
+                        className="w-full px-2.5 py-2 rounded-md border border-amber-300 text-[14px] bg-white focus:outline-none focus:border-amber-500"
                         autoFocus
                       />
                       <div className="flex gap-2">
                         <button
                           onClick={commitPendingCsvUpload}
-                          className="flex-1 px-3 py-2 rounded-md bg-amber-700 text-white text-[12px] font-semibold hover:bg-amber-800 active:bg-amber-900"
+                          className="flex-1 px-3 py-2 rounded-md bg-amber-700 text-white text-[13px] font-semibold hover:bg-amber-800 active:bg-amber-900"
                         >
                           Save account
                         </button>
                         <button
                           onClick={cancelPendingCsvUpload}
-                          className="px-3 py-2 rounded-md bg-white border border-amber-300 text-amber-800 text-[12px] font-semibold hover:bg-amber-50"
+                          className="px-3 py-2 rounded-md bg-white border border-amber-300 text-amber-800 text-[13px] font-semibold hover:bg-amber-50"
                         >
                           Cancel
                         </button>
@@ -2184,7 +2184,7 @@ export default function MorningEdge() {
                   {/* Account list — shows existing accounts with rename / delete */}
                   {accountsState.length > 0 && (
                     <div className="px-3 py-2.5 rounded-md bg-slate-50 border border-slate-200">
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2">
+                      <p className="text-[12px] font-bold uppercase tracking-wider text-slate-600 mb-2">
                         Your accounts ({accountsState.length})
                       </p>
                       <div className="space-y-1.5">
@@ -2207,7 +2207,7 @@ export default function MorningEdge() {
                                         setEditingAccountId(null);
                                       }
                                     }}
-                                    className="flex-1 px-2 py-1 rounded border border-slate-300 text-[12px] bg-white focus:outline-none focus:border-slate-500"
+                                    className="flex-1 px-2 py-1 rounded border border-slate-300 text-[13px] bg-white focus:outline-none focus:border-slate-500"
                                     autoFocus
                                   />
                                   <button
@@ -2227,10 +2227,10 @@ export default function MorningEdge() {
                                 </>
                               ) : (
                                 <>
-                                  <span className="flex-1 text-[13px] font-semibold text-slate-800 truncate" style={{ fontFamily: SERIF }}>
+                                  <span className="flex-1 text-[14px] font-semibold text-slate-800 truncate" style={{ fontFamily: SERIF }}>
                                     {acct.name}
                                   </span>
-                                  <span className="text-[11px] text-slate-600 flex-shrink-0">
+                                  <span className="text-[12px] text-slate-600 flex-shrink-0">
                                     {count} pos
                                   </span>
                                   <button
@@ -2259,7 +2259,7 @@ export default function MorningEdge() {
                   )}
 
                   {csvImportMessage && (
-                    <div className={`px-3 py-2 rounded-md text-[12px] ${
+                    <div className={`px-3 py-2 rounded-md text-[13px] ${
                       csvImportMessage.type === "ok"
                         ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                         : "bg-rose-100 text-rose-800 border border-rose-200"
@@ -2270,7 +2270,7 @@ export default function MorningEdge() {
 
                   {/* Holdings status — show what's loaded + freshness */}
                   {holdings.length > 0 && (
-                    <div className={`px-3 py-2 rounded-md text-[12px] ${
+                    <div className={`px-3 py-2 rounded-md text-[13px] ${
                       holdingsAgeDays != null && holdingsAgeDays > 7
                         ? "bg-amber-50 border border-amber-200 text-amber-900"
                         : "bg-slate-100 border border-slate-200 text-slate-700"
@@ -2285,19 +2285,19 @@ export default function MorningEdge() {
                         )}
                       </p>
                       {holdingsAgeDays != null && holdingsAgeDays > 7 && (
-                        <p className="text-[11px] mt-1">
+                        <p className="text-[12px] mt-1">
                           ⚠ Data is stale — gain percentages may be off. Re-upload for accurate playbook recommendations.
                         </p>
                       )}
                       {holdingsAgeDays != null && holdingsAgeDays <= 7 && (
-                        <p className="text-[11px] mt-1 text-slate-600">
+                        <p className="text-[12px] mt-1 text-slate-600">
                           Holdings power your personalized playbook. Re-upload weekly for best accuracy.
                         </p>
                       )}
                     </div>
                   )}
 
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                  <p className="text-[12px] text-slate-600 leading-relaxed">
                     Holdings stay on your device. We only send them to generate today's brief — never stored on any server.
                   </p>
                 </div>
@@ -2305,37 +2305,131 @@ export default function MorningEdge() {
             )}
           </div>
 
-          {visible.market_pulse && (
-            <Card theme={themes.pulse}>
-              <CardHeader icon={<Sun className="w-4 h-4" />} label="Market Pulse" theme={themes.pulse} />
-              <div className="px-5 py-4">
-                <div className="flex items-baseline gap-2 mb-3">
-                  <span className={`text-2xl ${toneColor(brief.market_pulse.tone)}`} style={{ fontFamily: SERIF, fontWeight: 600 }}>{brief.market_pulse.tone}</span>
-                  <span className="text-[11px] uppercase tracking-widest text-slate-600">tape read</span>
+          {visible.market_pulse && (() => {
+            // Tone drives the hero color treatment so the card feels alive
+            // rather than dry. Bullish = teal energy, cautious = amber care,
+            // bearish = rose alert. Each tone gets a gradient banner + matching
+            // bullet accent so the eye lands on the energy of today's market.
+            const tone = (brief.market_pulse.tone || "neutral").toLowerCase();
+            const toneTheme =
+              tone.includes("bull") ? {
+                heroBg: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 60%, #a7f3d0 100%)",
+                heroBorder: "#6ee7b7",
+                accent: "#047857",
+                accentDark: "#064e3b",
+                badge: "rgba(5,150,105,0.12)",
+                bulletDot: "linear-gradient(135deg, #34d399, #059669)",
+                emoji: "📈",
+                kicker: "Bullish tape",
+              }
+              : tone.includes("bear") ? {
+                heroBg: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 60%, #fecaca 100%)",
+                heroBorder: "#fca5a5",
+                accent: "#b91c1c",
+                accentDark: "#7f1d1d",
+                badge: "rgba(220,38,38,0.12)",
+                bulletDot: "linear-gradient(135deg, #f87171, #dc2626)",
+                emoji: "📉",
+                kicker: "Bearish tape",
+              }
+              : tone.includes("caut") || tone.includes("mix") ? {
+                heroBg: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 60%, #fde68a 100%)",
+                heroBorder: "#fcd34d",
+                accent: "#b45309",
+                accentDark: "#78350f",
+                badge: "rgba(217,119,6,0.12)",
+                bulletDot: "linear-gradient(135deg, #fbbf24, #d97706)",
+                emoji: "⚖️",
+                kicker: "Cautious tape",
+              }
+              : {
+                heroBg: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 60%, #cbd5e1 100%)",
+                heroBorder: "#94a3b8",
+                accent: "#475569",
+                accentDark: "#1e293b",
+                badge: "rgba(71,85,105,0.12)",
+                bulletDot: "linear-gradient(135deg, #94a3b8, #475569)",
+                emoji: "📊",
+                kicker: "Tape read",
+              };
+
+            return (
+              <Card theme={themes.pulse}>
+                <CardHeader icon={<Sun className="w-4 h-4" />} label="Market Pulse" theme={themes.pulse} />
+
+                <div
+                  className="mx-4 mt-4 rounded-2xl px-4 py-4"
+                  style={{
+                    background: toneTheme.heroBg,
+                    border: `1px solid ${toneTheme.heroBorder}`,
+                    boxShadow: `0 4px 14px -6px ${toneTheme.badge}`,
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span style={{ fontSize: 24, lineHeight: 1 }}>{toneTheme.emoji}</span>
+                    <span
+                      className="text-[13px] font-bold uppercase tracking-[0.2em]"
+                      style={{ color: toneTheme.accentDark }}
+                    >
+                      {toneTheme.kicker}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span
+                      style={{ fontFamily: SERIF, fontWeight: 600, color: toneTheme.accentDark, lineHeight: 1.05, fontSize: 28 }}
+                    >
+                      {brief.market_pulse.tone}
+                    </span>
+                  </div>
+                  {brief.market_pulse.summary && (
+                    <p
+                      className="text-[16px] leading-relaxed m-0"
+                      style={{ fontFamily: SERIF, color: "#0f172a" }}
+                    >
+                      {brief.market_pulse.summary}
+                    </p>
+                  )}
                 </div>
-                {/* If summary still exists from older briefs, render it as a single lead bullet for back-compat */}
-                {brief.market_pulse.summary && (
-                  <p className="text-slate-700 leading-relaxed mb-3 text-[15px]" style={{ fontFamily: SERIF }}>
-                    {brief.market_pulse.summary}
+
+                <div className="px-5 py-4">
+                  <p
+                    className="text-[13px] font-bold uppercase tracking-[0.2em] mb-3"
+                    style={{ color: toneTheme.accent }}
+                  >
+                    What's moving
                   </p>
-                )}
-                <ul className="space-y-2.5">
-                  {brief.market_pulse.key_levels.map((k, i) => (
-                    <li key={i} className="flex gap-2.5 text-[14px] text-slate-700 leading-snug">
-                      <span className="text-sky-500 font-bold flex-shrink-0 mt-0.5">·</span>
-                      <span className="flex-1">{k}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Card>
-          )}
+                  <ul className="space-y-3 m-0 p-0">
+                    {brief.market_pulse.key_levels.map((k, i) => (
+                      <li key={i} className="flex gap-3 m-0 p-0 list-none">
+                        <span
+                          className="flex-shrink-0 mt-1.5"
+                          style={{
+                            width: 9,
+                            height: 9,
+                            borderRadius: "50%",
+                            background: toneTheme.bulletDot,
+                            boxShadow: `0 1px 4px ${toneTheme.badge}`,
+                          }}
+                        />
+                        <span
+                          className="flex-1 text-[16px] leading-snug"
+                          style={{ color: "#0f172a", fontFamily: SERIF }}
+                        >
+                          {k}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Card>
+            );
+          })()}
 
           {visible.smart_money && (
             <Card theme={themes.money}>
               <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} />
               <div className="px-5 pt-1 pb-5">
-                <p className="text-[12px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-4">
+                <p className="text-[13px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-4">
                   Whales · Congress · Hedge Funds
                 </p>
 
@@ -2344,7 +2438,7 @@ export default function MorningEdge() {
                   <div className="mb-5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 px-3.5 py-3">
                     <div className="flex items-center gap-2 mb-1">
                       <Sparkles className="w-3 h-3 text-amber-700" />
-                      <p className="text-[11px] uppercase tracking-[0.2em] text-amber-800 font-bold">
+                      <p className="text-[12px] uppercase tracking-[0.2em] text-amber-800 font-bold">
                         Today's Smart Money Read
                       </p>
                     </div>
@@ -2373,8 +2467,8 @@ export default function MorningEdge() {
                                 className="w-full flex items-center gap-2 rounded-lg bg-rose-100/80 border border-rose-300 px-2.5 py-1.5 hover:bg-rose-200 active:bg-rose-300 transition text-left"
                               >
                                 <span className="text-[9px] uppercase tracking-wider font-bold text-rose-800 flex-shrink-0">Earnings</span>
-                                <span className="text-sm font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{e.ticker}</span>
-                                <span className="text-[12px] text-rose-900 flex-1 leading-tight truncate">
+                                <span className="text-[15px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{e.ticker}</span>
+                                <span className="text-[13px] text-rose-900 flex-1 leading-tight truncate">
                                   {e.when}{e.your_shares ? ` · ${e.your_shares} sh` : ""}
                                 </span>
                                 <ExternalLink className="w-3 h-3 text-rose-700 flex-shrink-0" />
@@ -2388,10 +2482,10 @@ export default function MorningEdge() {
                                 className="w-full flex items-center gap-2 rounded-lg bg-amber-100/80 border border-amber-300 px-2.5 py-1.5 hover:bg-amber-200 active:bg-amber-300 transition text-left"
                               >
                                 <span className="text-[9px] uppercase tracking-wider font-bold text-amber-800 flex-shrink-0">Catalyst</span>
-                                <span className="text-sm font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{c.ticker}</span>
+                                <span className="text-[15px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{c.ticker}</span>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-[12px] text-amber-900 leading-tight font-semibold truncate">{c.event}</p>
-                                  {c.context && <p className="text-[11px] text-amber-800/80 leading-tight truncate">{c.context}</p>}
+                                  <p className="text-[13px] text-amber-900 leading-tight font-semibold truncate">{c.event}</p>
+                                  {c.context && <p className="text-[12px] text-amber-800/80 leading-tight truncate">{c.context}</p>}
                                 </div>
                                 <ExternalLink className="w-3 h-3 text-amber-700 flex-shrink-0" />
                               </button>
@@ -2404,10 +2498,10 @@ export default function MorningEdge() {
                                 className="w-full flex items-center gap-2 rounded-lg bg-orange-100/80 border border-orange-300 px-2.5 py-1.5 hover:bg-orange-200 active:bg-orange-300 transition text-left"
                               >
                                 <span className="text-[9px] uppercase tracking-wider font-bold text-orange-800 flex-shrink-0">Risk</span>
-                                <span className="text-sm font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{r.ticker}</span>
+                                <span className="text-[15px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{r.ticker}</span>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-[12px] text-orange-900 leading-tight font-semibold truncate">{r.flag}</p>
-                                  {r.suggested_action && <p className="text-[11px] text-orange-800/80 leading-tight truncate">→ {r.suggested_action}</p>}
+                                  <p className="text-[13px] text-orange-900 leading-tight font-semibold truncate">{r.flag}</p>
+                                  {r.suggested_action && <p className="text-[12px] text-orange-800/80 leading-tight truncate">→ {r.suggested_action}</p>}
                                 </div>
                                 <ExternalLink className="w-3 h-3 text-orange-700 flex-shrink-0" />
                               </button>
@@ -2423,7 +2517,7 @@ export default function MorningEdge() {
                     <p className="text-[9px] uppercase tracking-wider text-amber-800 font-bold mb-2">
                       Top Flow · Smart Money
                     </p>
-                    <p className="text-[12px] text-slate-600 leading-snug mb-2.5">
+                    <p className="text-[13px] text-slate-600 leading-snug mb-2.5">
                       The top 2 most-bought and top 2 most-sold names across whales, Congress, and hedge funds today. Tap to view performance.
                     </p>
                     {/* Most bought / sold — top 2 per side, tappable tickers open stockanalysis.com in-app */}
@@ -2444,8 +2538,8 @@ export default function MorningEdge() {
                             onClick={() => setInAppBrowserUrl(`https://stockanalysis.com/stocks/${tkr.toLowerCase()}/`)}
                             className="w-full flex items-center gap-2 rounded-lg bg-white border border-emerald-200 px-2.5 py-1.5 hover:bg-emerald-50 active:bg-emerald-100 transition text-left"
                           >
-                            <span className="text-[11px] text-emerald-700 font-semibold flex-shrink-0">#{i + 1}</span>
-                            <span className="text-sm font-bold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>
+                            <span className="text-[12px] text-emerald-700 font-semibold flex-shrink-0">#{i + 1}</span>
+                            <span className="text-[15px] font-bold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>
                               {tkr}
                             </span>
                             <ExternalLink className="w-3 h-3 text-emerald-600 flex-shrink-0" />
@@ -2468,8 +2562,8 @@ export default function MorningEdge() {
                             onClick={() => setInAppBrowserUrl(`https://stockanalysis.com/stocks/${tkr.toLowerCase()}/`)}
                             className="w-full flex items-center gap-2 rounded-lg bg-white border border-rose-200 px-2.5 py-1.5 hover:bg-rose-50 active:bg-rose-100 transition text-left"
                           >
-                            <span className="text-[11px] text-rose-700 font-semibold flex-shrink-0">#{i + 1}</span>
-                            <span className="text-sm font-bold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>
+                            <span className="text-[12px] text-rose-700 font-semibold flex-shrink-0">#{i + 1}</span>
+                            <span className="text-[15px] font-bold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>
                               {tkr}
                             </span>
                             <ExternalLink className="w-3 h-3 text-rose-600 flex-shrink-0" />
@@ -2484,7 +2578,7 @@ export default function MorningEdge() {
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[9px] uppercase tracking-wider text-emerald-700 font-bold flex-shrink-0">▲ Bullish</span>
                             {brief.smart_money.summary.net_bullish_sectors.map((s, i) => (
-                              <span key={i} className="text-[12px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">
+                              <span key={i} className="text-[13px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">
                                 {s}
                               </span>
                             ))}
@@ -2494,7 +2588,7 @@ export default function MorningEdge() {
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[9px] uppercase tracking-wider text-rose-700 font-bold flex-shrink-0">▼ Bearish</span>
                             {brief.smart_money.summary.net_bearish_sectors.map((s, i) => (
-                              <span key={i} className="text-[12px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-medium">
+                              <span key={i} className="text-[13px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-medium">
                                 {s}
                               </span>
                             ))}
@@ -2508,7 +2602,7 @@ export default function MorningEdge() {
                 {/* Sector heatmap — visual stripe of sector flow direction */}
                 {brief.smart_money.sector_heatmap && brief.smart_money.sector_heatmap.length > 0 && (
                   <div className="mb-5">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2.5">Sector Flow</p>
+                    <p className="text-[12px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2.5">Sector Flow</p>
                     <div className="space-y-1.5">
                       {brief.smart_money.sector_heatmap.map((s, i) => (
                         <SectorHeatmapBar key={i} sector={s.sector} direction={s.direction} intensity={s.intensity} />
@@ -2522,7 +2616,7 @@ export default function MorningEdge() {
                   {/* Whales (institutional 13F filings) */}
                   <div className="rounded-xl border border-amber-200 bg-white/60 p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
-                      <h3 className="text-[12px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
+                      <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
                         Institutional Whales
                       </h3>
@@ -2538,7 +2632,7 @@ export default function MorningEdge() {
                   {/* Congress (STOCK Act disclosures) */}
                   <div className="rounded-xl border border-amber-200 bg-white/60 p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
-                      <h3 className="text-[12px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
+                      <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
                         Congress
                       </h3>
@@ -2555,7 +2649,7 @@ export default function MorningEdge() {
                   {brief.smart_money.hedge_fund_moves && brief.smart_money.hedge_fund_moves.length > 0 && (
                     <div className="rounded-xl border border-amber-200 bg-white/60 p-3.5">
                       <div className="flex items-center justify-between mb-2.5">
-                        <h3 className="text-[12px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
+                        <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
                           Hedge Funds
                         </h3>
@@ -2570,7 +2664,7 @@ export default function MorningEdge() {
                   )}
                 </div>
 
-                <p className="mt-5 text-[11px] text-slate-600 leading-relaxed italic">
+                <p className="mt-5 text-[12px] text-slate-600 leading-relaxed italic">
                   AI-summarized from public filings. Tap any row to verify the trade. Tap a ticker badge to view performance.
                 </p>
               </div>
@@ -2581,30 +2675,30 @@ export default function MorningEdge() {
             <Card theme={themes.radar}>
               <CardHeader icon={<Telescope className="w-4 h-4" />} label="On Your Radar" theme={themes.radar} />
               <div className="px-5 pt-1 pb-4">
-                <p className="text-[12px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-4">
+                <p className="text-[13px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-4">
                   Thematic stocks moving today · Not in your portfolio
                 </p>
                 <div className="space-y-3">
                   {brief.radar_watch.map((r, i) => (
                     <div key={i} className="rounded-xl p-3 bg-gradient-to-br from-cyan-50/50 to-teal-50/30 border border-cyan-100/70">
                       <div className="flex items-start gap-3">
-                        <span className="px-2 py-1 rounded-md text-[11px] font-bold tracking-wider bg-cyan-100 text-cyan-800 border border-cyan-200 flex-shrink-0">
+                        <span className="px-2 py-1 rounded-md text-[12px] font-bold tracking-wider bg-cyan-100 text-cyan-800 border border-cyan-200 flex-shrink-0">
                           {r.ticker}
                         </span>
                         <div className="flex-1 min-w-0">
                           {r.theme && (
-                            <p className="text-[11px] uppercase tracking-wider text-teal-700 font-semibold mb-1">{r.theme}</p>
+                            <p className="text-[12px] uppercase tracking-wider text-teal-700 font-semibold mb-1">{r.theme}</p>
                           )}
-                          <p className="text-[14px] font-semibold text-slate-900 leading-snug" style={{ fontFamily: SERIF }}>{r.headline}</p>
+                          <p className="text-[15px] font-semibold text-slate-900 leading-snug" style={{ fontFamily: SERIF }}>{r.headline}</p>
                           {r.why_now && (
-                            <p className="text-[14px] text-slate-700 leading-relaxed mt-1">{r.why_now}</p>
+                            <p className="text-[15px] text-slate-700 leading-relaxed mt-1">{r.why_now}</p>
                           )}
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
-                <p className="mt-4 text-[11px] text-slate-600 leading-relaxed italic">
+                <p className="mt-4 text-[12px] text-slate-600 leading-relaxed italic">
                   Surfaced from your themes (AI · semis · nuclear · quantum · biotech). Watch only — not a recommendation.
                 </p>
               </div>
@@ -2615,7 +2709,7 @@ export default function MorningEdge() {
             <Card theme={themes.conviction}>
               <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Conviction Watch" theme={themes.conviction} />
               <div className="px-3 pt-1 pb-3 space-y-2">
-                <p className="text-[12px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium px-1 mb-3">
+                <p className="text-[13px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium px-1 mb-3">
                   Hold · Add · Trim signals on stocks you own
                 </p>
                 {brief.conviction_watch.map((c, i) => {
@@ -2640,7 +2734,7 @@ export default function MorningEdge() {
                         <span className={`absolute left-0 top-0 bottom-0 w-1 ${actionAccent.bar}`} aria-hidden="true" />
                       )}
                       <div className={`flex items-start gap-3 mb-1.5 ${hasAction ? "pl-2" : ""}`}>
-                        <span className={`px-2.5 py-1 rounded-lg text-[11px] uppercase tracking-wider border font-semibold flex items-center gap-1 flex-shrink-0 ${signalStyle(c.signal)}`}>
+                        <span className={`px-2.5 py-1 rounded-lg text-[12px] uppercase tracking-wider border font-semibold flex items-center gap-1 flex-shrink-0 ${signalStyle(c.signal)}`}>
                           {signalIcon(c.signal)}{c.signal}
                         </span>
                         <p className="text-base font-semibold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>{c.ticker}</p>
@@ -2648,7 +2742,7 @@ export default function MorningEdge() {
                       {/* High-conviction action callout — only when c.action is set */}
                       {hasAction && (
                         <div className={`mb-2 pl-2`}>
-                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[11px] uppercase tracking-wider font-bold ${actionAccent.chip}`}>
+                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[12px] uppercase tracking-wider font-bold ${actionAccent.chip}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${actionAccent.bar}`} />
                             {actionAccent.label}
                           </div>
@@ -2661,7 +2755,7 @@ export default function MorningEdge() {
                       {c.why_now && (
                         <p className={`text-[15px] text-slate-800 leading-relaxed mb-1 ${hasAction ? "pl-2" : "pl-1"}`}>{c.why_now}</p>
                       )}
-                      <p className={`text-[14px] text-slate-600 leading-snug ${hasAction ? "pl-2" : "pl-1"}`}>{c.note}</p>
+                      <p className={`text-[15px] text-slate-600 leading-snug ${hasAction ? "pl-2" : "pl-1"}`}>{c.note}</p>
                     </div>
                   );
                 })}
@@ -2720,7 +2814,7 @@ export default function MorningEdge() {
                   <div className="flex items-center justify-between gap-3">
                     <button
                       onClick={toggleRoutineComplete}
-                      className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 ${
+                      className={`flex-1 px-4 py-2.5 rounded-xl text-[15px] font-semibold transition flex items-center justify-center gap-2 ${
                         routineDoneToday
                           ? "bg-emerald-500 text-white shadow-md"
                           : "bg-slate-100 text-slate-700 hover:bg-slate-200 active:bg-slate-300"
@@ -2742,7 +2836,7 @@ export default function MorningEdge() {
                     </div>
                   </div>
                   {routineStreak >= 3 && (
-                    <p className="text-[12px] text-emerald-700 text-center mt-2 italic">
+                    <p className="text-[13px] text-emerald-700 text-center mt-2 italic">
                       🔥 {routineStreak}-day streak. Keep showing up.
                     </p>
                   )}
@@ -2752,7 +2846,7 @@ export default function MorningEdge() {
                 {brief.power_plate && (
                   <div className="pt-5 border-t border-slate-100">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-[11px] uppercase tracking-[0.2em] text-amber-700 font-semibold flex items-center gap-1.5">
+                      <p className="text-[12px] uppercase tracking-[0.2em] text-amber-700 font-semibold flex items-center gap-1.5">
                         <Utensils className="w-3 h-3" /> Daily Power Plate
                       </p>
                       {brief.power_plate.style && (
@@ -2773,20 +2867,20 @@ export default function MorningEdge() {
             <Card theme={themes.clarity}>
               <CardHeader icon={<Flower2 className="w-4 h-4" />} label="Clarity" theme={themes.clarity} />
               <div className="px-5 pt-1 pb-5">
-                <p className="text-[12px] uppercase tracking-[0.2em] text-violet-700/80 font-medium mb-5">
+                <p className="text-[13px] uppercase tracking-[0.2em] text-violet-700/80 font-medium mb-5">
                   Contemplation · Wisdom · Breath
                 </p>
 
                 {/* Contemplation */}
                 {brief.clarity.contemplation && (
                   <div className="mb-5">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-violet-600 font-semibold mb-2 flex items-center gap-2">
+                    <p className="text-[12px] uppercase tracking-[0.2em] text-violet-600 font-semibold mb-2 flex items-center gap-2">
                       <Sparkles className="w-3 h-3" /> Today's Contemplation
                     </p>
                     <p className="text-[15px] text-slate-800 leading-relaxed italic" style={{ fontFamily: SERIF }}>
                       {brief.clarity.contemplation}
                     </p>
-                    <p className="text-[12px] text-slate-600 mt-2 leading-relaxed">
+                    <p className="text-[13px] text-slate-600 mt-2 leading-relaxed">
                       Sit with this for 60 seconds before market open. No phone.
                     </p>
                   </div>
@@ -2795,14 +2889,14 @@ export default function MorningEdge() {
                 {/* Eastern wisdom quote */}
                 {brief.clarity.eastern_wisdom && (
                   <div className="mb-5 pl-4 border-l-2 border-violet-300">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-violet-600 font-semibold mb-2">
+                    <p className="text-[12px] uppercase tracking-[0.2em] text-violet-600 font-semibold mb-2">
                       Eastern Wisdom
                     </p>
                     <p className="text-[15px] text-slate-800 leading-relaxed" style={{ fontFamily: SERIF }}>
                       "{brief.clarity.eastern_wisdom.quote || brief.clarity.eastern_wisdom}"
                     </p>
                     {brief.clarity.eastern_wisdom.source && (
-                      <p className="text-[12px] text-violet-700 mt-2 font-medium">
+                      <p className="text-[13px] text-violet-700 mt-2 font-medium">
                         — {brief.clarity.eastern_wisdom.source}
                       </p>
                     )}
@@ -2817,19 +2911,19 @@ export default function MorningEdge() {
                         <Activity className="w-4 h-4 text-violet-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] uppercase tracking-[0.2em] text-violet-700 font-semibold mb-1">
+                        <p className="text-[12px] uppercase tracking-[0.2em] text-violet-700 font-semibold mb-1">
                           {brief.clarity.breath_practice.name || "Breath Practice"}
                         </p>
-                        <p className="text-[14px] text-slate-800 font-semibold leading-snug mb-1" style={{ fontFamily: SERIF }}>
+                        <p className="text-[15px] text-slate-800 font-semibold leading-snug mb-1" style={{ fontFamily: SERIF }}>
                           {brief.clarity.breath_practice.pattern || brief.clarity.breath_practice}
                         </p>
                         {brief.clarity.breath_practice.description && (
-                          <p className="text-[13px] text-slate-700 leading-relaxed">
+                          <p className="text-[14px] text-slate-700 leading-relaxed">
                             {brief.clarity.breath_practice.description}
                           </p>
                         )}
                         {brief.clarity.breath_practice.rounds && (
-                          <p className="text-[12px] text-violet-700 font-semibold mt-1.5">
+                          <p className="text-[13px] text-violet-700 font-semibold mt-1.5">
                             {brief.clarity.breath_practice.rounds}
                           </p>
                         )}
@@ -2848,7 +2942,7 @@ export default function MorningEdge() {
               <div className="px-5 py-6">
                 {/* Personalization indicator */}
                 {holdings.length > 0 ? (
-                  <div className="mb-4 flex items-center gap-2 text-[11px] tracking-wider uppercase font-semibold">
+                  <div className="mb-4 flex items-center gap-2 text-[12px] tracking-wider uppercase font-semibold">
                     <span className="px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200">
                       ✓ Personalized
                     </span>
@@ -2880,7 +2974,7 @@ export default function MorningEdge() {
                         <Briefcase className="w-5 h-5" style={{ color: "#1E293B" }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] tracking-[0.25em] uppercase font-bold mb-1"
+                        <p className="text-[12px] tracking-[0.25em] uppercase font-bold mb-1"
                           style={{ color: "#D4A574" }}>
                           Unlock Personalized Playbook
                         </p>
@@ -2892,7 +2986,7 @@ export default function MorningEdge() {
                       <ArrowRight className="w-5 h-5 flex-shrink-0 transition-transform group-hover:translate-x-0.5"
                         style={{ color: "#D4A574" }} />
                     </div>
-                    <p className="text-[12px] text-slate-500 mt-3 ml-14 leading-relaxed">
+                    <p className="text-[13px] text-slate-500 mt-3 ml-14 leading-relaxed">
                       Tap to open. Upload a CSV from any brokerage. Holdings stay on your device.
                     </p>
                   </button>
@@ -2900,7 +2994,7 @@ export default function MorningEdge() {
 
                 {/* Progress bar */}
                 <div className="flex items-center justify-between mb-5">
-                  <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-slate-600">
+                  <p className="text-[12px] tracking-[0.2em] uppercase font-semibold text-slate-600">
                     {decisionsDoneToday.length} of {brief.decisions.length} done
                   </p>
                   <div className="flex-1 ml-3 h-1 rounded-full bg-slate-100 overflow-hidden">
@@ -2909,7 +3003,7 @@ export default function MorningEdge() {
                   </div>
                 </div>
 
-                <ol className="grid grid-cols-2 gap-2.5 list-none p-0 m-0">
+                <ol className="flex flex-col gap-2.5 list-none p-0 m-0">
                   {brief.decisions.map((d, i) => {
                     const done = decisionsDoneToday.includes(i);
                     const dismissed = decisionsDismissedToday.includes(i);
@@ -2928,14 +3022,14 @@ export default function MorningEdge() {
                 </ol>
 
                 {/* Helper text */}
-                <p className="mt-4 text-[12px] text-slate-600 text-center italic">
+                <p className="mt-4 text-[13px] text-slate-600 text-center italic">
                   Tap any card to see full reasoning and act on it.
                 </p>
 
                 {/* Completion celebration */}
                 {brief.decisions.length > 0 && decisionsDoneToday.length === brief.decisions.length && (
                   <div className="mt-5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
-                    <p className="text-sm font-semibold text-emerald-800" style={{ fontFamily: SERIF }}>
+                    <p className="text-[15px] font-semibold text-emerald-800" style={{ fontFamily: SERIF }}>
                       ✓ Day complete. You did the work.
                     </p>
                   </div>
@@ -2962,7 +3056,7 @@ export default function MorningEdge() {
                   style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
                   <Sparkles className="w-5 h-5" style={{ color: "#1E293B" }} />
                 </div>
-                <p className="text-[11px] tracking-[0.35em] uppercase font-semibold mb-4"
+                <p className="text-[12px] tracking-[0.35em] uppercase font-semibold mb-4"
                   style={{ color: "#D4A574" }}>
                   Today's Wisdom
                 </p>
@@ -2987,7 +3081,7 @@ export default function MorningEdge() {
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <p className="text-2xl leading-snug text-slate-800 mb-2">Slow rhythm. <span className="italic">Sharp moves.</span></p>
-            <p className="text-sm text-slate-600" style={{ fontFamily: SANS }}>
+            <p className="text-[15px] text-slate-600" style={{ fontFamily: SANS }}>
               Today's tape, smart-money flow, and your decision playbook — all in one calm read.
             </p>
           </div>
@@ -3009,7 +3103,7 @@ function SmartMoneyRow({ item, onOpenLink }) {
   // Graceful fallback if item is still a string (older briefs)
   if (typeof item === "string") {
     return (
-      <li className="text-sm flex gap-2 text-slate-700">
+      <li className="text-[15px] flex gap-2 text-slate-700">
         <span className="text-amber-500 font-bold">·</span>
         <span>{item}</span>
       </li>
@@ -3043,7 +3137,7 @@ function SmartMoneyRow({ item, onOpenLink }) {
               window.open(source_url, "_blank", "noopener,noreferrer");
             }
           }}
-          className="w-full text-left text-sm flex items-start gap-2 px-2 py-1.5 -mx-2 rounded-lg hover:bg-amber-50 active:bg-amber-100 transition cursor-pointer"
+          className="w-full text-left text-[15px] flex items-start gap-2 px-2 py-1.5 -mx-2 rounded-lg hover:bg-amber-50 active:bg-amber-100 transition cursor-pointer"
         >
           {RowInner}
         </button>
@@ -3051,7 +3145,7 @@ function SmartMoneyRow({ item, onOpenLink }) {
     );
   }
   return (
-    <li className="text-sm flex items-start gap-2 px-2 py-1.5 -mx-2">{RowInner}</li>
+    <li className="text-[15px] flex items-start gap-2 px-2 py-1.5 -mx-2">{RowInner}</li>
   );
 }
 
@@ -3068,7 +3162,7 @@ function SectorHeatmapBar({ sector, direction, intensity = 3 }) {
       : { bar: "bg-slate-400", track: "bg-slate-100", label: "text-slate-600", arrow: "·" };
   return (
     <div className="flex items-center gap-2.5">
-      <span className="text-[12px] text-slate-700 font-medium flex-shrink-0 w-[110px] truncate" title={sector}>
+      <span className="text-[13px] text-slate-700 font-medium flex-shrink-0 w-[110px] truncate" title={sector}>
         {sector}
       </span>
       <div className={`flex-1 h-3 rounded-full ${palette.track} relative overflow-hidden border border-slate-100`}>
@@ -3077,7 +3171,7 @@ function SectorHeatmapBar({ sector, direction, intensity = 3 }) {
           style={{ width: `${widthPct}%`, opacity: 0.55 + (clamped * 0.09) }}
         />
       </div>
-      <span className={`text-[11px] font-bold ${palette.label} flex-shrink-0 w-3 text-center`}>
+      <span className={`text-[12px] font-bold ${palette.label} flex-shrink-0 w-3 text-center`}>
         {palette.arrow}
       </span>
     </div>
@@ -3213,16 +3307,16 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
               const isHigh = m.flow === "high";
               const isDip = m.flow === "dip";
               return (
-                <div key={i} className="flex flex-col gap-0.5 text-xs font-semibold py-0.5 px-0.5">
+                <div key={i} className="flex flex-col gap-0.5 text-[13px] font-semibold py-0.5 px-0.5">
                   {/* Top row — symbol + change */}
                   <div className="flex items-center gap-1.5 leading-none">
-                    {isHigh && <span className="text-emerald-400 text-[11px]">▲▲</span>}
-                    {isDip && <span className="text-rose-400 text-[11px]">▼▼</span>}
+                    {isHigh && <span className="text-emerald-400 text-[12px]">▲▲</span>}
+                    {isDip && <span className="text-rose-400 text-[12px]">▼▼</span>}
                     <span className="text-slate-100 tracking-tight font-bold">
                       {m.symbol}
                     </span>
                     {m.shares != null && (
-                      <span className="text-slate-500 text-[11px]">{m.shares}sh</span>
+                      <span className="text-slate-500 text-[12px]">{m.shares}sh</span>
                     )}
                     <span className={up ? "text-emerald-400" : "text-rose-400"}>
                       {up ? "+" : ""}
@@ -3310,7 +3404,7 @@ function FilterPill({ active, onClick, emoji, icon, label, accent }) {
       <span className={active ? "text-white" : ""}>
         {icon ? React.cloneElement(icon, { className: "w-5 h-5" }) : <span className="text-lg">{emoji}</span>}
       </span>
-      <span className="text-[11px] font-bold uppercase tracking-[0.12em]">{label}</span>
+      <span className="text-[12px] font-bold uppercase tracking-[0.12em]">{label}</span>
     </button>
   );
 }
@@ -3328,7 +3422,7 @@ function PremiumModal({ onClose }) {
         <h3 className="text-2xl mb-1 text-slate-900" style={{ fontFamily: SERIF, fontWeight: 600 }}>
           Morning Edge <span className="italic">Premium</span>
         </h3>
-        <p className="text-sm text-slate-600 mb-5">Your edge, multiplied.</p>
+        <p className="text-[15px] text-slate-600 mb-5">Your edge, multiplied.</p>
         <ul className="space-y-3 mb-6">
           {[
             ["Real-time data", "Live pre-market, options flow, Congress disclosures"],
@@ -3342,8 +3436,8 @@ function PremiumModal({ onClose }) {
                 <Crown className="w-3 h-3 text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-900">{title}</p>
-                <p className="text-xs text-slate-600">{desc}</p>
+                <p className="text-[15px] font-semibold text-slate-900">{title}</p>
+                <p className="text-[13px] text-slate-600">{desc}</p>
               </div>
             </li>
           ))}
@@ -3351,7 +3445,7 @@ function PremiumModal({ onClose }) {
         <button className="w-full py-3.5 rounded-xl font-semibold text-white shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500">
           <Lock className="w-4 h-4" /> Join the waitlist
         </button>
-        <p className="text-[11px] text-slate-600 text-center mt-3">Coming soon.</p>
+        <p className="text-[12px] text-slate-600 text-center mt-3">Coming soon.</p>
       </div>
     </div>
   );
@@ -3372,7 +3466,7 @@ function CardHeader({ icon, label, theme }) {
       <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${theme.gradient} flex items-center justify-center text-white shadow-sm`}>
         {icon}
       </div>
-      <h2 className="text-[12px] uppercase tracking-[0.22em] text-slate-800 font-bold">{label}</h2>
+      <h2 className="text-[13px] uppercase tracking-[0.22em] text-slate-800 font-bold">{label}</h2>
     </div>
   );
 }
@@ -3389,7 +3483,7 @@ function MindsetRow({ icon, kicker, body, color }) {
         {icon}
       </div>
       <div className="flex-1 pt-0.5">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-600 font-semibold mb-1">{kicker}</p>
+        <p className="text-[12px] uppercase tracking-[0.2em] text-slate-600 font-semibold mb-1">{kicker}</p>
         <p className="text-[16px] leading-relaxed text-slate-800" style={{ fontFamily: SERIF }}>{body}</p>
       </div>
     </div>
@@ -3413,7 +3507,7 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
           {icon}
         </div>
         <div className="flex-1 pt-0.5 min-w-0">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-600 font-semibold mb-1 flex items-center gap-2">
+          <p className="text-[12px] uppercase tracking-[0.2em] text-slate-600 font-semibold mb-1 flex items-center gap-2">
             {kicker}
             <span className="text-slate-300 text-base leading-none">{expanded ? "−" : "+"}</span>
           </p>
@@ -3424,19 +3518,19 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
       {expanded && (
         <div className={`mt-2 ml-12 mr-2 p-4 rounded-xl border ${c.panel}`}>
           {detail.intent && (
-            <p className="text-[13px] text-slate-700 leading-relaxed mb-3 italic" style={{ fontFamily: SERIF }}>
+            <p className="text-[14px] text-slate-700 leading-relaxed mb-3 italic" style={{ fontFamily: SERIF }}>
               {detail.intent}
             </p>
           )}
           {detail.why && (
-            <p className="text-[13px] text-slate-700 leading-relaxed mb-3">
+            <p className="text-[14px] text-slate-700 leading-relaxed mb-3">
               {detail.why}
             </p>
           )}
           {detail.segments && (
             <div className="space-y-2 mb-3">
               {detail.segments.map((seg, i) => (
-                <div key={i} className="flex items-center gap-3 text-[13px]">
+                <div key={i} className="flex items-center gap-3 text-[14px]">
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">
                     <WorkoutSchematic kicker={seg.kicker} color="#0F766E" size={32} />
                   </div>
@@ -3451,14 +3545,14 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
             </div>
           )}
           {detail.action && (
-            <p className="text-[12px] text-slate-600 leading-relaxed">
+            <p className="text-[13px] text-slate-600 leading-relaxed">
               → {detail.action}
             </p>
           )}
           {detail.showStartButton && (
             <button
               onClick={detail.onStart}
-              className="mt-3 w-full px-4 py-2.5 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 active:bg-slate-700 transition flex items-center justify-center gap-2"
+              className="mt-3 w-full px-4 py-2.5 rounded-lg bg-slate-900 text-white text-[15px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition flex items-center justify-center gap-2"
             >
               <Play className="w-4 h-4" /> Start guided routine
             </button>
@@ -3537,7 +3631,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
         {/* Header */}
         <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100">
           <div>
-            <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-slate-600">
+            <p className="text-[12px] tracking-[0.2em] uppercase font-semibold text-slate-600">
               {routine.name} · Step {segIdx + 1} of {routine.segments.length}
             </p>
             <p className="text-base font-bold text-slate-900 mt-0.5">{segment.kicker}</p>
@@ -3564,7 +3658,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-6">
-          <p className="text-[11px] tracking-[0.25em] uppercase font-semibold mb-1" style={{ color: segColor }}>
+          <p className="text-[12px] tracking-[0.25em] uppercase font-semibold mb-1" style={{ color: segColor }}>
             {segment.kicker}
           </p>
           <h2 className="text-3xl text-slate-900 mb-4" style={{ fontFamily: SERIF, fontWeight: 500 }}>
@@ -3595,7 +3689,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
             </p>
             <button
               onClick={() => setRunning(!running)}
-              className="mt-4 px-5 py-2.5 rounded-full text-sm font-semibold transition shadow-md"
+              className="mt-4 px-5 py-2.5 rounded-full text-[15px] font-semibold transition shadow-md"
               style={{
                 backgroundColor: running ? "#F1F5F9" : segColor,
                 color: running ? "#0F172A" : "#fff",
@@ -3609,13 +3703,13 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           <div className="mt-8 space-y-3">
             {segment.exercises.map((ex, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
+                <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[13px] font-bold text-white"
                   style={{ backgroundColor: segColor }}>
                   {i + 1}
                 </span>
                 <div className="flex-1">
-                  <p className="text-[14px] font-semibold text-slate-900">{ex.name}</p>
-                  <p className="text-[13px] text-slate-600 mt-0.5">{ex.cue}</p>
+                  <p className="text-[15px] font-semibold text-slate-900">{ex.name}</p>
+                  <p className="text-[14px] text-slate-600 mt-0.5">{ex.cue}</p>
                 </div>
               </div>
             ))}
@@ -3627,7 +3721,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           <button
             onClick={back}
             disabled={segIdx === 0}
-            className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition ${
+            className={`px-4 py-2.5 rounded-xl text-[15px] font-semibold transition ${
               segIdx === 0 ? "text-slate-300" : "text-slate-700 hover:bg-slate-100 active:bg-slate-200"
             }`}
           >
@@ -3635,7 +3729,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           </button>
           <button
             onClick={next}
-            className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition shadow-md"
+            className="flex-1 px-4 py-2.5 rounded-xl text-[15px] font-semibold text-white transition shadow-md"
             style={{ backgroundColor: segColor }}
           >
             {isLast ? "Complete routine" : "Next segment →"}
@@ -3763,7 +3857,7 @@ function BreathRhythm({ pattern = "4-4-4-4", color = "#7C3AED" }) {
       </div>
       <div className="flex w-full mt-1 px-0.5">
         {parts.map((p, i) => (
-          <div key={i} className="text-[11px] text-center text-slate-600 font-semibold tabular-nums" style={{ width: `${(p / total) * 100}%` }}>
+          <div key={i} className="text-[12px] text-center text-slate-600 font-semibold tabular-nums" style={{ width: `${(p / total) * 100}%` }}>
             {p}s
           </div>
         ))}
@@ -3794,72 +3888,74 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
   const theme = DECISION_THEMES[parsed.type] || DECISION_THEMES.act;
   const Icon = ACTION_ICON_MAP[parsed.type] || CheckSquare;
 
-  // When a card is done, we soften the colors so it visually recedes
-  // without disappearing entirely. Dismissed cards get fully muted.
   const opacity = dismissed ? 0.4 : done ? 0.7 : 1;
 
   return (
     <button
       onClick={() => onOpen(idx)}
-      className="text-left transition-all duration-150 active:scale-[0.97] hover:shadow-lg"
+      className="text-left transition-all duration-150 active:scale-[0.99] hover:shadow-md w-full"
       style={{
         background: theme.bg,
         border: `1px solid ${theme.border}`,
-        borderRadius: 14,
-        padding: 12,
-        boxShadow: `0 2px 8px -2px ${theme.shadow}`,
+        borderRadius: 12,
+        padding: "12px 14px",
+        boxShadow: `0 2px 6px -2px ${theme.shadow}`,
         opacity,
-        minHeight: 120,
         display: "flex",
-        flexDirection: "column",
-        position: "relative",
+        alignItems: "center",
+        gap: 12,
       }}
     >
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <div
-          className="flex items-center justify-center"
-          style={{ width: 22, height: 22, borderRadius: 6, background: theme.iconBg }}
-        >
-          <Icon className="w-3 h-3" style={{ color: "white", strokeWidth: 3 }} />
-        </div>
-        <p className="text-[11px] font-bold tracking-[0.15em] uppercase m-0" style={{ color: theme.labelText }}>
-          {parsed.typeLabel}
-        </p>
-        {done && (
-          <span className="ml-auto text-emerald-700">
-            <Check className="w-3.5 h-3.5" strokeWidth={3} />
-          </span>
-        )}
-      </div>
-
-      {parsed.ticker && (
-        <p
-          className="text-[18px] font-bold m-0 mb-1 leading-tight"
-          style={{ color: "#0f172a", fontFamily: SERIF }}
-        >
-          {parsed.ticker}
-        </p>
-      )}
-
-      <p
-        className="text-[13px] leading-snug m-0 mb-2"
-        style={{ color: "#334155", flex: 1, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+      {/* Icon badge */}
+      <div
+        className="flex-shrink-0 flex items-center justify-center"
+        style={{ width: 38, height: 38, borderRadius: 10, background: theme.iconBg }}
       >
-        {parsed.ticker ? parsed.headline.replace(parsed.ticker, "").replace(/^[\s:.\-—]+/, "") : parsed.headline}
-      </p>
-
-      <div className="flex items-center justify-between mt-auto">
-        {parsed.account ? (
-          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: theme.accentText }}>
-            {parsed.account}
-          </span>
-        ) : (
-          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: theme.accentText, opacity: 0.7 }}>
-            Tap for detail
-          </span>
-        )}
-        <ChevronRight className="w-3.5 h-3.5" style={{ color: theme.chevron }} />
+        <Icon className="w-5 h-5" style={{ color: "white", strokeWidth: 2.6 }} />
       </div>
+
+      {/* Center text block */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+          <p className="text-[13px] font-bold tracking-[0.15em] uppercase m-0" style={{ color: theme.labelText }}>
+            {parsed.typeLabel}
+          </p>
+          {parsed.ticker && (
+            <p
+              className="text-[18px] font-bold m-0 leading-tight"
+              style={{ color: "#0f172a", fontFamily: SERIF }}
+            >
+              {parsed.ticker}
+            </p>
+          )}
+          {done && (
+            <span className="ml-1 text-emerald-700 flex-shrink-0">
+              <Check className="w-4 h-4" strokeWidth={3} />
+            </span>
+          )}
+          {dismissed && !done && (
+            <span className="ml-1 text-slate-500 flex-shrink-0">
+              <X className="w-4 h-4" strokeWidth={2.5} />
+            </span>
+          )}
+        </div>
+        <p
+          className="text-[15px] leading-snug m-0"
+          style={{ color: "#1e293b", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+        >
+          {parsed.ticker
+            ? parsed.headline.replace(parsed.ticker, "").replace(/^[\s:.\-—]+/, "")
+            : parsed.headline}
+        </p>
+        {parsed.account && (
+          <p className="text-[12px] font-semibold uppercase tracking-wider mt-0.5 m-0" style={{ color: theme.accentText }}>
+            {parsed.account}
+          </p>
+        )}
+      </div>
+
+      {/* Chevron */}
+      <ChevronRight className="w-5 h-5 flex-shrink-0" style={{ color: theme.chevron }} />
     </button>
   );
 }
@@ -3898,7 +3994,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
               >
                 <Icon className="w-4 h-4" style={{ color: "white", strokeWidth: 2.8 }} />
               </div>
-              <p className="text-[12px] font-bold tracking-[0.18em] uppercase m-0" style={{ color: theme.labelText }}>
+              <p className="text-[13px] font-bold tracking-[0.18em] uppercase m-0" style={{ color: theme.labelText }}>
                 {parsed.typeLabel} ACTION
               </p>
             </div>
@@ -3921,7 +4017,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
             </p>
           )}
           {parsed.account && (
-            <p className="text-[13px] m-0 mt-1" style={{ color: theme.accentText }}>
+            <p className="text-[14px] m-0 mt-1" style={{ color: theme.accentText }}>
               {parsed.account}
             </p>
           )}
@@ -3943,13 +4039,13 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
             {done && (
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200">
                 <Check className="w-3.5 h-3.5 text-emerald-700" strokeWidth={3} />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Marked done</span>
+                <span className="text-[12px] font-bold uppercase tracking-wider text-emerald-800">Marked done</span>
               </div>
             )}
             {dismissed && !done && (
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200">
                 <X className="w-3.5 h-3.5 text-slate-600" strokeWidth={2.5} />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Dismissed</span>
+                <span className="text-[12px] font-bold uppercase tracking-wider text-slate-700">Dismissed</span>
               </div>
             )}
           </div>
@@ -3959,7 +4055,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
         <div className="px-5 pb-5 pt-2 flex flex-col gap-2">
           <button
             onClick={() => { onMarkDone(idx); onClose(); }}
-            className="w-full py-3 rounded-xl font-bold text-[14px] tracking-wide transition active:scale-[0.98] flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl font-bold text-[15px] tracking-wide transition active:scale-[0.98] flex items-center justify-center gap-2"
             style={{
               background: done ? "white" : "#0f172a",
               color: done ? "#475569" : "white",
@@ -3981,7 +4077,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => { onDismiss(idx); onClose(); }}
-              className="py-2.5 rounded-xl font-semibold text-[13px] transition active:scale-[0.98] flex items-center justify-center gap-1.5"
+              className="py-2.5 rounded-xl font-semibold text-[14px] transition active:scale-[0.98] flex items-center justify-center gap-1.5"
               style={{
                 background: "white",
                 color: dismissed ? "#0f172a" : "#475569",
@@ -3993,7 +4089,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
             </button>
             <button
               onClick={() => { onAddToCalendar(decision, idx); }}
-              className="py-2.5 rounded-xl font-semibold text-[13px] transition active:scale-[0.98] flex items-center justify-center gap-1.5"
+              className="py-2.5 rounded-xl font-semibold text-[14px] transition active:scale-[0.98] flex items-center justify-center gap-1.5"
               style={{
                 background: "white",
                 color: "#475569",
@@ -4026,20 +4122,20 @@ function PowerPlateCard({ plate }) {
           {name}
         </p>
         {description && (
-          <p className="text-[13px] text-slate-700 leading-relaxed mb-3">{description}</p>
+          <p className="text-[14px] text-slate-700 leading-relaxed mb-3">{description}</p>
         )}
         {/* Stats row */}
         <div className="flex items-center gap-2 mb-3">
           {protein_g != null && (
             <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
               <Flame className="w-3 h-3" />
-              <span className="text-[12px] font-bold">{protein_g}g protein</span>
+              <span className="text-[13px] font-bold">{protein_g}g protein</span>
             </div>
           )}
           {prep_min != null && (
             <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
               <Timer className="w-3 h-3" />
-              <span className="text-[12px] font-bold">{prep_min} min</span>
+              <span className="text-[13px] font-bold">{prep_min} min</span>
             </div>
           )}
         </div>
@@ -4047,7 +4143,7 @@ function PowerPlateCard({ plate }) {
           onClick={() => setExpanded(!expanded)}
           className="w-full text-left px-3 py-2 rounded-lg bg-white border border-amber-200 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-between"
         >
-          <span className="text-[13px] font-semibold text-slate-800 flex items-center gap-1.5">
+          <span className="text-[14px] font-semibold text-slate-800 flex items-center gap-1.5">
             <ShoppingBasket className="w-3.5 h-3.5 text-amber-700" />
             {expanded ? "Hide grocery list & recipe" : "Show grocery list & recipe"}
           </span>
@@ -4060,12 +4156,12 @@ function PowerPlateCard({ plate }) {
         <div className="px-4 pb-4 pt-1 space-y-4 border-t border-amber-100">
           {groceries.length > 0 && (
             <div>
-              <p className="text-[11px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2 flex items-center gap-1.5">
+              <p className="text-[12px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2 flex items-center gap-1.5">
                 <ShoppingBasket className="w-3 h-3" /> Pick up at the store
               </p>
               <ul className="space-y-1.5">
                 {groceries.map((g, i) => (
-                  <li key={i} className="text-[14px] text-slate-700 leading-snug flex gap-2">
+                  <li key={i} className="text-[15px] text-slate-700 leading-snug flex gap-2">
                     <span className="text-amber-500 font-bold flex-shrink-0">·</span>
                     <span>{g}</span>
                   </li>
@@ -4075,13 +4171,13 @@ function PowerPlateCard({ plate }) {
           )}
           {prep_steps.length > 0 && (
             <div>
-              <p className="text-[11px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2 flex items-center gap-1.5">
+              <p className="text-[12px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2 flex items-center gap-1.5">
                 <Utensils className="w-3 h-3" /> Quick prep
               </p>
               <ol className="space-y-2">
                 {prep_steps.map((s, i) => (
-                  <li key={i} className="text-[14px] text-slate-700 leading-relaxed flex gap-2.5">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold flex items-center justify-center mt-0.5">
+                  <li key={i} className="text-[15px] text-slate-700 leading-relaxed flex gap-2.5">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-800 text-[12px] font-bold flex items-center justify-center mt-0.5">
                       {i + 1}
                     </span>
                     <span className="flex-1">{s}</span>
@@ -4101,7 +4197,7 @@ function SignatureFooter({ verified, hash, compact }) {
   return (
     <footer className={compact ? "pt-6 text-center" : "pt-8 text-center"}>
       {!compact && (
-        <p className="text-[13px] text-slate-700 max-w-md mx-auto leading-relaxed px-4">
+        <p className="text-[14px] text-slate-700 max-w-md mx-auto leading-relaxed px-4">
           Informational only. Not investment, medical, or financial advice. Your data stays on your device.
         </p>
       )}
@@ -4117,10 +4213,10 @@ function SignatureFooter({ verified, hash, compact }) {
               <HeartHandshake className="w-3.5 h-3.5" style={{ color: "#7C2D12" }} />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-amber-900 mb-0.5">
+              <p className="text-[12px] uppercase tracking-[0.2em] font-bold text-amber-900 mb-0.5">
                 Pay It Forward
               </p>
-              <p className="text-[12px] text-slate-700 leading-snug">
+              <p className="text-[13px] text-slate-700 leading-snug">
                 A portion of proceeds supports children and adults with disabilities and the families who care for them.
               </p>
             </div>
@@ -4128,7 +4224,7 @@ function SignatureFooter({ verified, hash, compact }) {
         </div>
       )}
 
-      <div className={`mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold tracking-wider uppercase ${
+      <div className={`mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[12px] font-bold tracking-wider uppercase ${
         verified ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-rose-50 border-rose-200 text-rose-700"
       }`}>
         {verified ? <ShieldCheck className="w-3 h-3" /> : <ShieldAlert className="w-3 h-3" />}
@@ -4196,7 +4292,7 @@ function InAppBrowser({ url, onClose }) {
         {/* Floating Done button — bottom-center, large enough to tap easily */}
         <button
           onClick={onClose}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full bg-slate-900 text-white text-sm font-semibold shadow-2xl flex items-center gap-2 hover:bg-slate-800 active:bg-slate-700 transition z-10"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full bg-slate-900 text-white text-[15px] font-semibold shadow-2xl flex items-center gap-2 hover:bg-slate-800 active:bg-slate-700 transition z-10"
           aria-label="Done — return to Morning Edge"
         >
           <ChevronLeft className="w-4 h-4" /> Back to Morning Edge
@@ -4211,13 +4307,13 @@ function InAppBrowser({ url, onClose }) {
             <h3 className="text-base font-semibold text-slate-900 mb-2">
               {autoOpened ? "Opened in your browser" : "Opening in your browser…"}
             </h3>
-            <p className="text-sm text-slate-600 max-w-sm leading-relaxed mb-5">
+            <p className="text-[15px] text-slate-600 max-w-sm leading-relaxed mb-5">
               <span className="font-semibold">{hostname}</span> doesn't allow embedded viewing. {autoOpened ? "Tap below to return to your brief." : "Redirecting now…"}
             </p>
             {autoOpened && (
               <button
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 active:bg-slate-700 transition flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-slate-900 text-white text-[15px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition flex items-center gap-2"
               >
                 <ChevronLeft className="w-4 h-4" /> Back to Morning Edge
               </button>
@@ -4225,7 +4321,7 @@ function InAppBrowser({ url, onClose }) {
             {!autoOpened && (
               <button
                 onClick={onClose}
-                className="text-xs text-slate-600 hover:text-slate-700"
+                className="text-[13px] text-slate-600 hover:text-slate-700"
               >
                 Cancel
               </button>
@@ -4262,8 +4358,8 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex-1 min-w-0 px-1">
-          <p className="text-[11px] uppercase tracking-wider text-slate-600 font-semibold leading-tight">Brokerage Help</p>
-          <p className="text-sm text-slate-900 font-semibold truncate">Where to find your CSV</p>
+          <p className="text-[12px] uppercase tracking-wider text-slate-600 font-semibold leading-tight">Brokerage Help</p>
+          <p className="text-[15px] text-slate-900 font-semibold truncate">Where to find your CSV</p>
         </div>
         <button
           onClick={onClose}
@@ -4276,7 +4372,7 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
 
       <div className="flex-1 overflow-y-auto bg-slate-50">
         <div className="px-4 py-4">
-          <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-3 mb-4 text-[13px] text-amber-900 leading-relaxed">
+          <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-3 mb-4 text-[14px] text-amber-900 leading-relaxed">
             <p className="font-semibold mb-1">How this works</p>
             {isMobile ? (
               <p>
@@ -4309,16 +4405,16 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
                 <div className="flex items-start gap-2.5">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <h3 className="text-sm font-bold text-slate-900 truncate" style={{ fontFamily: SERIF }}>
+                      <h3 className="text-[15px] font-bold text-slate-900 truncate" style={{ fontFamily: SERIF }}>
                         {b.name}
                       </h3>
                       <ExternalLink className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
                     </div>
-                    <p className="text-[12px] text-slate-700 leading-snug font-medium">
+                    <p className="text-[13px] text-slate-700 leading-snug font-medium">
                       {b.path}
                     </p>
                     {b.notes && (
-                      <p className="text-[11px] text-slate-600 leading-snug mt-1 italic">
+                      <p className="text-[12px] text-slate-600 leading-snug mt-1 italic">
                         {b.notes}
                       </p>
                     )}
@@ -4328,7 +4424,7 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
             ))}
           </div>
 
-          <p className="text-[11px] text-slate-600 leading-relaxed italic text-center mt-4">
+          <p className="text-[12px] text-slate-600 leading-relaxed italic text-center mt-4">
             Don't see your brokerage? Most platforms support CSV export under "Statements,"
             "Documents," or "Account History." Look on desktop if you can't find it on mobile.
           </p>
