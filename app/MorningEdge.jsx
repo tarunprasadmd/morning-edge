@@ -881,6 +881,96 @@ export default function MorningEdge() {
   const [pullProgress, setPullProgress] = useState(0); // 0..1 for pull-to-refresh indicator
   const [isMobile, setIsMobile] = useState(false);
 
+  // ─── Chat feature ─────────────────────────────────────────────────
+  // Live conversational AI about a specific card from the brief. The user
+  // taps "Ask about this" on any card; chatContext gets the card's data
+  // and the chat sheet opens with a pre-filled welcome from Claude.
+  // Conversations persist per card-id in localStorage so the user can
+  // close and re-open the chat without losing thread.
+  const [chatContext, setChatContext] = useState(null); // { id, type, ticker, description } or null when closed
+  const [chatMessages, setChatMessages] = useState([]); // [{ role: 'user' | 'assistant', content: '...' }]
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState(null);
+  const [cashBalance, setCashBalance] = useState(null); // optional user-entered cash to deploy
+
+  // Open the chat sheet with a specific card's context. Restores previous
+  // conversation from localStorage if one exists for this card.
+  const openChat = (ctx) => {
+    if (!ctx || !ctx.id) return;
+    setChatContext(ctx);
+    setChatError(null);
+    setChatInput("");
+    // Try to restore prior conversation for this card
+    try {
+      const stored = localStorage.getItem(`me-chat-${ctx.id}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setChatMessages(parsed);
+          return;
+        }
+      }
+    } catch (_e) { /* ignore */ }
+    setChatMessages([]);
+  };
+
+  const closeChat = () => {
+    setChatContext(null);
+    setChatMessages([]);
+    setChatInput("");
+    setChatError(null);
+  };
+
+  // Persist conversation when it changes
+  useEffect(() => {
+    if (!chatContext || !chatContext.id) return;
+    if (chatMessages.length === 0) return;
+    try {
+      localStorage.setItem(`me-chat-${chatContext.id}`, JSON.stringify(chatMessages));
+    } catch (_e) { /* ignore quota errors */ }
+  }, [chatContext, chatMessages]);
+
+  // Send a chat message. Calls /api/chat with full context.
+  const sendChatMessage = async (text) => {
+    if (!text || !text.trim() || chatLoading) return;
+    const userMsg = { role: "user", content: text.trim() };
+    const newMessages = [...chatMessages, userMsg];
+    setChatMessages(newMessages);
+    setChatInput("");
+    setChatLoading(true);
+    setChatError(null);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: newMessages,
+          cardContext: chatContext,
+          portfolio: {
+            holdings: holdings,
+            cashBalance: cashBalance,
+          },
+          briefSummary: brief?.market_pulse ? {
+            tone: brief.market_pulse.tone,
+            summary: brief.market_pulse.summary,
+            date: new Date().toISOString().slice(0, 10),
+          } : null,
+          userName: name,
+        }),
+      });
+      if (!res.ok) throw new Error(`Chat API ${res.status}`);
+      const data = await res.json();
+      if (!data.reply) throw new Error("Empty reply");
+      setChatMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+    } catch (e) {
+      console.warn("Chat error:", e);
+      setChatError("Couldn't get a response. Try again in a moment.");
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   useEffect(() => {
     (async () => {
       const saved = await Store.get("me-user");
@@ -897,6 +987,15 @@ export default function MorningEdge() {
         setDismissedDecisions(progress.dismissedDecisions || {});
         setRoutineDays(progress.routineDays || {});
       }
+
+      // Load optional cash balance for chat-driven position sizing
+      try {
+        const cashStored = localStorage.getItem("me-cash");
+        if (cashStored) {
+          const parsed = parseFloat(cashStored);
+          if (!isNaN(parsed) && parsed >= 0) setCashBalance(parsed);
+        }
+      } catch (_e) { /* ignore */ }
 
       // Load accounts (multi-account schema)
       const acctData = await Store.get("me-accounts");
@@ -1864,6 +1963,26 @@ export default function MorningEdge() {
         <InAppBrowser url={inAppBrowserUrl} onClose={() => setInAppBrowserUrl(null)} />
       )}
 
+      {/* Conversational chat sheet — opens when user taps "Ask about this"
+          on any card. Provides live AI chat with full context. */}
+      {chatContext && (
+        <ChatSheet
+          context={chatContext}
+          messages={chatMessages}
+          input={chatInput}
+          setInput={setChatInput}
+          loading={chatLoading}
+          error={chatError}
+          cashBalance={cashBalance}
+          onSetCash={(n) => {
+            setCashBalance(n);
+            try { localStorage.setItem("me-cash", String(n)); } catch (_e) {}
+          }}
+          onSend={sendChatMessage}
+          onClose={closeChat}
+        />
+      )}
+
       {/* Playbook decision detail modal — opens when user taps an action card */}
       {openDecisionIdx !== null && brief && brief.decisions && brief.decisions[openDecisionIdx] && (
         <PlaybookDetailModal
@@ -1875,6 +1994,16 @@ export default function MorningEdge() {
           onMarkDone={(idx) => toggleDecision(idx)}
           onDismiss={(idx) => toggleDismiss(idx)}
           onAddToCalendar={(d, idx) => addDecisionToCalendar(d, idx)}
+          onAskAboutThis={(decision, idx) => {
+            const parsed = parseDecision(decision);
+            openChat({
+              id: `playbook-${idx}-${todayKey}`,
+              type: "playbook",
+              ticker: parsed.ticker,
+              description: decision,
+            });
+            setOpenDecisionIdx(null); // close the detail modal so chat is the focus
+          }}
         />
       )}
 
@@ -2613,6 +2742,24 @@ export default function MorningEdge() {
                         <p className={`text-[16px] text-slate-800 leading-relaxed mb-1 ${hasAction ? "pl-2" : "pl-1"}`}>{c.why_now}</p>
                       )}
                       <p className={`text-[16px] text-slate-700 leading-snug ${hasAction ? "pl-2" : "pl-1"}`}>{c.note}</p>
+                      {/* Ask about this — opens chat sheet with this card's context */}
+                      <button
+                        onClick={() => openChat({
+                          id: `conviction-${c.ticker || i}-${todayKey}`,
+                          type: "conviction",
+                          ticker: c.ticker,
+                          description: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}${c.action ? ` — ${c.action}` : ""}${c.why_now ? `. ${c.why_now}` : ""}${c.note ? ` ${c.note}` : ""}`,
+                        })}
+                        className={`mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold transition active:scale-95 ${hasAction ? "ml-2" : "ml-1"}`}
+                        style={{
+                          background: "linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%)",
+                          color: "#5B21B6",
+                          border: "1px solid #C4B5FD",
+                        }}
+                      >
+                        <Sparkles className="w-3.5 h-3.5" strokeWidth={2.5} />
+                        Ask about this
+                      </button>
                     </div>
                   );
                 })}
@@ -2915,6 +3062,23 @@ export default function MorningEdge() {
                           {r.why_now && (
                             <p className="text-[16px] text-slate-700 leading-relaxed mt-1">{r.why_now}</p>
                           )}
+                          <button
+                            onClick={() => openChat({
+                              id: `radar-${r.ticker || i}-${todayKey}`,
+                              type: "radar",
+                              ticker: r.ticker,
+                              description: `${r.ticker}${r.theme ? ` (${r.theme})` : ""}: ${r.headline}${r.why_now ? `. ${r.why_now}` : ""}`,
+                            })}
+                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold transition active:scale-95"
+                            style={{
+                              background: "linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%)",
+                              color: "#5B21B6",
+                              border: "1px solid #C4B5FD",
+                            }}
+                          >
+                            <Sparkles className="w-3.5 h-3.5" strokeWidth={2.5} />
+                            Ask about this
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -3211,15 +3375,15 @@ function SmartMoneyRow({ item, onOpenLink, category }) {
     }
 
     if (category === "whale" || category === "hedge") {
-      // WhaleWisdom's stock page lists every 13F filer holding this stock,
-      // including share counts and recent additions/reductions. The named
-      // firm (Soros / Citadel / Buffett's Berkshire / etc.) appears in the
-      // holders list with their actual position.
+      // Stock Analysis is the cleanest free page showing institutional
+      // holders by ticker. Lists all 13F filers with share counts and
+      // quarterly position changes. The named firm (Citadel, Soros, etc.)
+      // appears in the holders list with their actual position.
       // Example: "Citadel increased NVDA stake" →
-      //   https://whalewisdom.com/stock/NVDA
-      // Citadel appears in the holders list with their actual NVDA position.
-      if (tkr) return `https://whalewisdom.com/stock/${tkr}`;
-      return "https://whalewisdom.com/";
+      //   https://stockanalysis.com/stocks/nvda/holders/
+      // Citadel appears in the holders table with their NVDA position.
+      if (tkr) return `https://stockanalysis.com/stocks/${tkr.toLowerCase()}/holders/`;
+      return "https://stockanalysis.com/";
     }
 
     // Unknown category — Google search fallback (should rarely hit)
@@ -4166,9 +4330,299 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
   );
 }
 
+// ────────────────────────────────────────────────────────────────────
+// ChatSheet — conversational AI sheet that opens when the user taps
+// "Ask about this" on any card. Provides live chat with Claude, fully
+// aware of: the card's content, the user's portfolio, optional cash
+// balance, today's market pulse. Conversations persist per card-id.
+// ────────────────────────────────────────────────────────────────────
+function ChatSheet({
+  context,        // { id, type, ticker, description }
+  messages,       // [{ role, content }]
+  input,          // current input text
+  setInput,       // setter for input
+  loading,        // bool — request in flight
+  error,          // string | null
+  cashBalance,    // number | null
+  onSetCash,      // (n) => void
+  onSend,         // (text) => void
+  onClose,        // () => void
+}) {
+  const scrollRef = React.useRef(null);
+  const inputRef = React.useRef(null);
+  const [showCashInput, setShowCashInput] = React.useState(false);
+  const [cashDraft, setCashDraft] = React.useState(
+    cashBalance != null ? String(cashBalance) : ""
+  );
+
+  // Auto-scroll to bottom when new messages arrive
+  React.useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, loading]);
+
+  // Focus input when sheet opens
+  React.useEffect(() => {
+    if (context && inputRef.current) {
+      // Small delay so the sheet animation completes
+      const t = setTimeout(() => {
+        if (inputRef.current) inputRef.current.focus();
+      }, 200);
+      return () => clearTimeout(t);
+    }
+  }, [context]);
+
+  if (!context) return null;
+
+  // Suggested starter questions based on the card type — gives the user
+  // an obvious jumping-off point if they don't know what to ask.
+  const starterPrompts = (() => {
+    const tkr = context.ticker ? ` ${context.ticker}` : "";
+    if (context.type === "playbook") {
+      return [
+        `Why this move${tkr}?`,
+        `What if I disagree?`,
+        cashBalance != null ? `How many shares can I afford?` : `How should I size this?`,
+        `What's the risk?`,
+      ];
+    }
+    if (context.type === "conviction") {
+      return [
+        `Why this signal${tkr}?`,
+        `Should I add more or wait?`,
+        `What's the bear case?`,
+        `How does it fit my portfolio?`,
+      ];
+    }
+    if (context.type === "radar") {
+      return [
+        cashBalance != null ? `How many shares can I afford?` : `How should I size a starter position?`,
+        `Buy now or wait?`,
+        `Does this fit my themes?`,
+        `What's the risk vs upside?`,
+      ];
+    }
+    if (context.type === "insider") {
+      return [
+        `Why does this trade matter?`,
+        `Should I follow this signal?`,
+        `What's the typical reaction?`,
+        `Does this affect my portfolio?`,
+      ];
+    }
+    return [`Tell me more`, `What should I think about?`, `What's the catch?`];
+  })();
+
+  const submitCash = () => {
+    const parsed = parseFloat(cashDraft.replace(/[$,\s]/g, ""));
+    if (!isNaN(parsed) && parsed >= 0) {
+      onSetCash(parsed);
+      setShowCashInput(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      style={{ background: "rgba(15,23,42,0.55)", backdropFilter: "blur(4px)" }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full sm:max-w-md bg-white shadow-2xl flex flex-col"
+        style={{
+          height: "85vh",
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)" }}>
+              <Sparkles className="w-4 h-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[14px] font-bold text-slate-900 truncate" style={{ fontFamily: SERIF }}>
+                Ask Morning Edge
+              </p>
+              <p className="text-[11px] text-slate-700 truncate uppercase tracking-wider">
+                {context.type}{context.ticker ? ` · ${context.ticker}` : ""}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 active:bg-slate-200 transition"
+            aria-label="Close chat"
+          >
+            <X className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
+          </button>
+        </div>
+
+        {/* Cash balance setter (collapsed pill, expandable) */}
+        <div className="px-4 py-2 bg-slate-50 border-b border-slate-200">
+          {!showCashInput ? (
+            <button
+              onClick={() => { setShowCashInput(true); setCashDraft(cashBalance != null ? String(cashBalance) : ""); }}
+              className="w-full flex items-center justify-between text-[12px] text-slate-700 hover:text-slate-900 transition"
+            >
+              <span className="flex items-center gap-1.5">
+                <Briefcase className="w-3 h-3" />
+                {cashBalance != null
+                  ? <>Cash to deploy: <span className="font-semibold text-slate-900">${cashBalance.toLocaleString()}</span></>
+                  : "Set cash to deploy (optional, helps with sizing math)"
+                }
+              </span>
+              <Pencil className="w-3 h-3" />
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] text-slate-700 flex-shrink-0">Cash $</span>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={cashDraft}
+                onChange={(e) => setCashDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") submitCash(); }}
+                className="flex-1 px-2 py-1 text-[14px] border border-slate-300 rounded outline-none focus:border-violet-500"
+                placeholder="e.g. 5000"
+                autoFocus
+              />
+              <button
+                onClick={submitCash}
+                className="px-3 py-1 text-[12px] font-semibold bg-slate-900 text-white rounded hover:bg-slate-800 active:bg-slate-700"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setShowCashInput(false)}
+                className="text-[12px] text-slate-500 hover:text-slate-700"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Card context preview */}
+        <div className="px-4 py-2.5 bg-violet-50/50 border-b border-violet-100">
+          <p className="text-[11px] uppercase tracking-wider font-bold text-violet-700 mb-0.5">
+            About:
+          </p>
+          <p className="text-[13px] text-slate-700 leading-snug line-clamp-2">
+            {context.description}
+          </p>
+        </div>
+
+        {/* Message list */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3"
+                style={{ background: "linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%)" }}>
+                <Sparkles className="w-6 h-6 text-violet-700" strokeWidth={2} />
+              </div>
+              <p className="text-[15px] text-slate-700 mb-4 max-w-xs leading-relaxed" style={{ fontFamily: SERIF }}>
+                Ask anything about this. I know your portfolio and today's market read.
+              </p>
+              <div className="flex flex-col gap-2 w-full max-w-xs">
+                {starterPrompts.map((q, i) => (
+                  <button
+                    key={i}
+                    onClick={() => onSend(q)}
+                    className="text-left text-[13px] px-3 py-2 rounded-lg border border-violet-200 bg-white hover:bg-violet-50 active:bg-violet-100 transition text-slate-800"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            messages.map((m, i) => (
+              <ChatMessageBubble key={i} role={m.role} content={m.content} />
+            ))
+          )}
+          {loading && (
+            <div className="flex items-center gap-2 text-[13px] text-slate-500 italic px-1">
+              <span className="inline-block w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+              Thinking…
+            </div>
+          )}
+          {error && (
+            <div className="text-[13px] text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">
+              {error}
+            </div>
+          )}
+        </div>
+
+        {/* Input */}
+        <div className="px-3 py-2.5 border-t border-slate-200 bg-white">
+          <div className="flex items-end gap-2">
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (input.trim()) onSend(input);
+                }
+              }}
+              placeholder={loading ? "Waiting…" : "Type your question…"}
+              rows={1}
+              disabled={loading}
+              className="flex-1 px-3 py-2 text-[14px] border border-slate-300 rounded-xl outline-none focus:border-violet-500 resize-none max-h-32"
+              style={{ minHeight: 40 }}
+            />
+            <button
+              onClick={() => { if (input.trim()) onSend(input); }}
+              disabled={loading || !input.trim()}
+              className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition active:scale-95 disabled:opacity-50"
+              style={{
+                background: input.trim() && !loading
+                  ? "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)"
+                  : "#E2E8F0",
+              }}
+              aria-label="Send message"
+            >
+              <ArrowRight className="w-4 h-4 text-white" strokeWidth={3} />
+            </button>
+          </div>
+          <p className="text-[10px] text-slate-500 italic mt-1.5 text-center">
+            Informational only. Not financial advice.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Single chat bubble — user (right, dark) or assistant (left, light).
+function ChatMessageBubble({ role, content }) {
+  const isUser = role === "user";
+  return (
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+      <div
+        className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-[14px] leading-relaxed whitespace-pre-wrap break-words ${
+          isUser
+            ? "bg-slate-900 text-white rounded-br-md"
+            : "bg-violet-50 text-slate-800 border border-violet-100 rounded-bl-md"
+        }`}
+        style={isUser ? {} : { fontFamily: SERIF }}
+      >
+        {content}
+      </div>
+    </div>
+  );
+}
+
 // Full-screen detail modal — opens when a playbook card is tapped.
 // Shows the full decision text, reasoning, and action buttons.
-function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDone, onDismiss, onAddToCalendar }) {
+function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDone, onDismiss, onAddToCalendar, onAskAboutThis }) {
   if (!decision) return null;
   const parsed = parseDecision(decision);
   const theme = DECISION_THEMES[parsed.type] || DECISION_THEMES.act;
@@ -4259,6 +4713,20 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
 
         {/* Action buttons */}
         <div className="px-5 pb-5 pt-2 flex flex-col gap-2">
+          {/* Ask about this — opens conversational chat with full context */}
+          {onAskAboutThis && (
+            <button
+              onClick={() => onAskAboutThis(decision, idx)}
+              className="w-full py-3 rounded-xl font-bold text-[15px] tracking-wide transition active:scale-[0.98] flex items-center justify-center gap-2 text-white"
+              style={{
+                background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
+                boxShadow: "0 4px 12px -2px rgba(99,102,241,0.4)",
+              }}
+            >
+              <Sparkles className="w-4 h-4" strokeWidth={2.5} />
+              Ask about this
+            </button>
+          )}
           <button
             onClick={() => { onMarkDone(idx); onClose(); }}
             className="w-full py-3 rounded-xl font-bold text-[16px] tracking-wide transition active:scale-[0.98] flex items-center justify-center gap-2"
