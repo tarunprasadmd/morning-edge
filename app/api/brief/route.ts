@@ -207,14 +207,22 @@ Return ONLY this JSON shape with all fields populated:
     "groceries": ["4-6 grocery line items"],
     "prep_steps": ["4-5 short cooking steps, max 18 words each"]
   },
-  "decisions": ["3-5 PERSONALIZED, ACTIONABLE trade decisions referencing the user's actual holdings + today's catalysts. Each max 16 words. Format: [Account if multi-account] + [Ticker context] + [Specific action] + [Catalyst]."]
+  "decisions": [
+    "3-5 PERSONALIZED trade decisions referencing the user's actual holdings + today's catalysts. Each STRING max 16 words. Format: [Account if multi-account] + [Ticker context] + [Specific action] + [Catalyst]."
+  ],
+  "decisions_reasoning": [
+    "For EACH decision above (same order, same length), a 130-180 word explanation written for someone NEW to trading. Cover: WHY this matters now (what's happening that triggered the suggestion) — WHY YOU MIGHT WANT TO DO IT (what problem it solves or opportunity it captures) — WHAT TO THINK ABOUT BEFORE DOING IT (your cost basis, how much you own, taxes) — WHY YOU MIGHT NOT WANT TO (the case against). PLAIN ENGLISH RULES: explain any technical term in the same sentence you use it (e.g. 'asymmetric — meaning the upside and downside aren't equal'). Never assume the reader knows trading slang. Use 'you' and 'your' to make it personal. Write like you're explaining to a smart friend who's never invested before. No bullet points. Full paragraphs."
+  ]
 }
 ${accountRule}
 
 GOOD decision examples: "IONQ +45% on 175sh — earnings 5/6. Trim 75 into Friday strength." / "NVDA reports tonight, you hold 75sh. Set $850 stop pre-FOMC."
-BAD examples to avoid: "Review highest-conviction position" / "Confirm cash balance" — too generic.`;
+BAD examples to avoid: "Review highest-conviction position" / "Confirm cash balance" — too generic.
 
-  return callJsonChunk(prompt, { maxTokens: 2000, model: "claude-haiku-4-5" });
+decisions_reasoning EXAMPLE (for a TRIM IONQ decision) — note the simple language:
+"IONQ has gone up 45% in just one month, and the company is reporting earnings on May 6 — that's only days away. Earnings reports are big moments where the stock can swing wildly in either direction. Trimming means selling part of your position to lock in some of those gains, while keeping the rest invested. The reason to consider trimming: the stock has already had a huge run, so a lot of good news may already be 'priced in' (built into the current price). If the earnings disappoint even a little, the stock could drop 15-20% in a single day. Before you sell anything, check your cost basis (what you originally paid). If you're up 200%+, you'll owe taxes on the gains. On the other hand, if you sell and earnings are amazing, you'll miss the next move up. Selling 75 of your 175 shares keeps you in the game with most of your shares while reducing the risk of a big drop."`;
+
+  return callJsonChunk(prompt, { maxTokens: 3500, model: "claude-haiku-4-5" });
 }
 
 // Chunk 2: Market pulse + today's edge + radar watch (web search needed
@@ -249,14 +257,20 @@ Return ONLY this JSON:
     "risk_flags": [ { "ticker": "TICKER", "flag": "max 12 words", "suggested_action": "max 12 words" } ]
   },
   "radar_watch": [
-    { "ticker": "TICKER", "theme": "short tag e.g. 'Nuclear · AI energy'", "headline": "max 14 words", "why_now": "max 18 words" }
+    {
+      "ticker": "TICKER",
+      "theme": "short tag e.g. 'Nuclear · AI energy'",
+      "headline": "max 14 words",
+      "why_now": "max 18 words",
+      "deep_reasoning": "130-180 word explanation written for someone NEW to trading. Explain WHY this stock matters right now (what specific event or trend), WHY IT'S WORTH WATCHING (what could go right), HOW IT FITS the user's interests (AI/semiconductors/nuclear/quantum/biotech — explain what each theme means if used), and WHAT COULD GO WRONG (the risk). PLAIN ENGLISH RULES: any technical term must be defined in the same sentence (e.g. 'capex — short for capital expenditure, the money companies spend on big purchases'). Use 'you' to make it personal. No bullet points. Like explaining to a friend who's curious but new."
+    }
   ]
 }
 
 todays_edge: 0-3 alerts total — only if genuinely time-sensitive. Empty arrays are fine.
-radar_watch: 2-4 thematic stocks the user does NOT own.`;
+radar_watch: 2-4 thematic stocks the user does NOT own. Each entry MUST include the deep_reasoning field — this is what the user reads when they tap to learn more.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 2400, maxSearches: 3 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 3200, maxSearches: 3 });
 }
 
 // Chunk 3: Smart money (13F + congress + insiders) + conviction watch
@@ -297,11 +311,18 @@ Return ONLY this JSON:
     "hedge_fund_moves": [ { "text": "named hedge fund trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ]
   },
   "conviction_watch": [
-    { "ticker": "TICKER", "signal": "add or hold or trim", "why_now": "1-2 short sentences, max 25 words", "note": "tight summary, max 8 words", "action": "OPTIONAL concrete trade with size, max 12 words — omit for routine holds" }
+    {
+      "ticker": "TICKER",
+      "signal": "add or hold or trim",
+      "why_now": "1-2 short sentences, max 25 words",
+      "note": "tight summary, max 8 words",
+      "action": "OPTIONAL concrete trade with size, max 12 words — omit for routine holds",
+      "deep_reasoning": "130-180 word explanation written for someone NEW to trading. Cover: WHY this signal NOW for this stock you own (what's happening that triggered it), WHY YOU MIGHT WANT TO FOLLOW IT (what problem it solves), WHAT TO THINK ABOUT FIRST (your cost basis if known, how much you own as % of portfolio, tax differences between IRA and taxable accounts), WHAT COULD GO WRONG (the case against acting, why doing nothing might be fine). PLAIN ENGLISH RULES: define any technical term in the same sentence (e.g. 'cost basis — what you originally paid'). Never use trading slang without explaining it. Use 'you' and 'your' to make it personal. Like a thoughtful friend explaining over coffee. Full sentences. No bullet points."
+    }
   ]
 }
 
-conviction_watch: 3-5 entries.
+conviction_watch: 3-5 entries. EVERY entry MUST include deep_reasoning — this is what the user reads when they tap the card to learn more.
 
 CRITICAL DATA RULES:
 - NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD", or any all-caps placeholder.

@@ -894,6 +894,15 @@ export default function MorningEdge() {
   const [chatError, setChatError] = useState(null);
   const [cashBalance, setCashBalance] = useState(null); // optional user-entered cash to deploy
 
+  // ─── Reading page state ──────────────────────────────────────────
+  // The reading page is the deep "why" view that opens when the user
+  // taps any card (Playbook, Conviction, Radar). Shows the full
+  // deep_reasoning paragraph in plain English. Has an "Ask about this"
+  // button at the bottom that opens the chat sheet for personalized
+  // follow-up. This is the user's first stop for understanding the
+  // suggestion — chat is the second stop for personal questions.
+  const [readingPage, setReadingPage] = useState(null); // { id, type, ticker, signal, headline, body, deep_reasoning, accountContext, holding } or null
+
   // Open the chat sheet with a specific card's context. Restores previous
   // conversation from localStorage if one exists for this card.
   const openChat = (ctx) => {
@@ -1061,7 +1070,12 @@ export default function MorningEdge() {
   }, []);
 
   useEffect(() => {
-    if (phase === "app" && holdings.length > 0) {
+    // Persist holdings to localStorage on any change, including when
+    // emptied. The previous version only saved when holdings.length > 0,
+    // which meant deleting all holdings left the OLD list in storage —
+    // so on next load the deleted holdings would reappear. Saving on
+    // every change (after onboarding) keeps storage in sync with state.
+    if (phase === "app") {
       Store.set("me-holdings", { holdings, refreshedAt: holdingsRefreshedAt });
     }
   }, [holdings, holdingsRefreshedAt, phase]);
@@ -1133,7 +1147,13 @@ export default function MorningEdge() {
       if (!ok) return;
     }
     setAccountsState((prev) => prev.filter((a) => a.id !== id));
-    setHoldings((prev) => prev.filter((h) => h.accountId !== id));
+    setHoldings((prev) => {
+      const remaining = prev.filter((h) => h.accountId !== id);
+      // If no holdings remain, also clear the "loaded today" timestamp
+      // so the UI doesn't show a stale freshness indicator.
+      if (remaining.length === 0) setHoldingsRefreshedAt(null);
+      return remaining;
+    });
   };
 
   const toggleRoutineComplete = () => {
@@ -1963,6 +1983,28 @@ export default function MorningEdge() {
         <InAppBrowser url={inAppBrowserUrl} onClose={() => setInAppBrowserUrl(null)} />
       )}
 
+      {/* Card reading page — full reading view that opens when user taps
+          "Read why · Ask about this" on Conviction or Radar cards.
+          Shows the deep_reasoning paragraph, then has an Ask button at
+          the bottom that opens the chat sheet for personalized follow-up. */}
+      {readingPage && (
+        <CardReadingPage
+          data={readingPage}
+          onClose={() => setReadingPage(null)}
+          onAskAboutThis={(data) => {
+            // Open chat with the reading page's context, then close the
+            // reading page so chat is the focus.
+            openChat({
+              id: data.id,
+              type: data.type,
+              ticker: data.ticker,
+              description: data.chatDescription || data.headline || data.ticker,
+            });
+            setReadingPage(null);
+          }}
+        />
+      )}
+
       {/* Conversational chat sheet — opens when user taps "Ask about this"
           on any card. Provides live AI chat with full context. */}
       {chatContext && (
@@ -1990,17 +2032,19 @@ export default function MorningEdge() {
           idx={openDecisionIdx}
           done={(completedDecisions[todayKey] || []).includes(openDecisionIdx)}
           dismissed={(dismissedDecisions[todayKey] || []).includes(openDecisionIdx)}
+          deepReasoning={Array.isArray(brief.decisions_reasoning) ? brief.decisions_reasoning[openDecisionIdx] : null}
           onClose={() => setOpenDecisionIdx(null)}
           onMarkDone={(idx) => toggleDecision(idx)}
           onDismiss={(idx) => toggleDismiss(idx)}
           onAddToCalendar={(d, idx) => addDecisionToCalendar(d, idx)}
           onAskAboutThis={(decision, idx) => {
             const parsed = parseDecision(decision);
+            const reasoning = Array.isArray(brief.decisions_reasoning) ? brief.decisions_reasoning[idx] : "";
             openChat({
               id: `playbook-${idx}-${todayKey}`,
               type: "playbook",
               ticker: parsed.ticker,
-              description: decision,
+              description: `${decision}${reasoning ? ` — Reasoning: ${reasoning}` : ""}`,
             });
             setOpenDecisionIdx(null); // close the detail modal so chat is the focus
           }}
@@ -2742,15 +2786,25 @@ export default function MorningEdge() {
                         <p className={`text-[16px] text-slate-800 leading-relaxed mb-1 ${hasAction ? "pl-2" : "pl-1"}`}>{c.why_now}</p>
                       )}
                       <p className={`text-[16px] text-slate-700 leading-snug ${hasAction ? "pl-2" : "pl-1"}`}>{c.note}</p>
-                      {/* Ask about this — opens chat sheet with this card's context */}
+                      {/* Read more — opens the reading page with full deep_reasoning.
+                          From the reading page, user can tap "Ask about this" for chat. */}
                       <button
-                        onClick={() => openChat({
+                        onClick={() => setReadingPage({
                           id: `conviction-${c.ticker || i}-${todayKey}`,
                           type: "conviction",
                           ticker: c.ticker,
-                          description: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}${c.action ? ` — ${c.action}` : ""}${c.why_now ? `. ${c.why_now}` : ""}${c.note ? ` ${c.note}` : ""}`,
+                          signal: c.signal,
+                          headline: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}`,
+                          action: c.action,
+                          why_now: c.why_now,
+                          note: c.note,
+                          deep_reasoning: c.deep_reasoning,
+                          // Find this holding for portfolio context
+                          holding: holdings.find(h => h.symbol === c.ticker),
+                          // Build chat description for when user taps Ask
+                          chatDescription: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}${c.action ? ` — ${c.action}` : ""}${c.why_now ? `. ${c.why_now}` : ""}${c.deep_reasoning ? ` Full reasoning: ${c.deep_reasoning}` : ""}`,
                         })}
-                        className={`mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold transition active:scale-95 ${hasAction ? "ml-2" : "ml-1"}`}
+                        className={`mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-bold transition active:scale-95 ${hasAction ? "ml-2" : "ml-1"}`}
                         style={{
                           background: "linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%)",
                           color: "#5B21B6",
@@ -2758,7 +2812,7 @@ export default function MorningEdge() {
                         }}
                       >
                         <Sparkles className="w-3.5 h-3.5" strokeWidth={2.5} />
-                        Ask about this
+                        Read why · Ask about this
                       </button>
                     </div>
                   );
@@ -3063,13 +3117,17 @@ export default function MorningEdge() {
                             <p className="text-[16px] text-slate-700 leading-relaxed mt-1">{r.why_now}</p>
                           )}
                           <button
-                            onClick={() => openChat({
+                            onClick={() => setReadingPage({
                               id: `radar-${r.ticker || i}-${todayKey}`,
                               type: "radar",
                               ticker: r.ticker,
-                              description: `${r.ticker}${r.theme ? ` (${r.theme})` : ""}: ${r.headline}${r.why_now ? `. ${r.why_now}` : ""}`,
+                              theme: r.theme,
+                              headline: r.headline,
+                              why_now: r.why_now,
+                              deep_reasoning: r.deep_reasoning,
+                              chatDescription: `${r.ticker}${r.theme ? ` (${r.theme})` : ""}: ${r.headline}${r.why_now ? `. ${r.why_now}` : ""}${r.deep_reasoning ? ` Full reasoning: ${r.deep_reasoning}` : ""}`,
                             })}
-                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold transition active:scale-95"
+                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-bold transition active:scale-95"
                             style={{
                               background: "linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%)",
                               color: "#5B21B6",
@@ -3077,7 +3135,7 @@ export default function MorningEdge() {
                             }}
                           >
                             <Sparkles className="w-3.5 h-3.5" strokeWidth={2.5} />
-                            Ask about this
+                            Read why · Ask about this
                           </button>
                         </div>
                       </div>
@@ -4601,6 +4659,164 @@ function ChatSheet({
   );
 }
 
+// ────────────────────────────────────────────────────────────────────
+// CardReadingPage — full-screen reading view that opens when the user
+// taps "Read why · Ask about this" on Conviction Watch or Radar cards.
+// Shows the deep_reasoning paragraph in a clean readable layout, with
+// the original signal/headline at the top and an "Ask about this"
+// button at the bottom for personalized chat follow-up.
+// ────────────────────────────────────────────────────────────────────
+function CardReadingPage({ data, onClose, onAskAboutThis }) {
+  if (!data) return null;
+
+  // Theme by signal/type — match the card's color so the reading page
+  // feels like a natural extension of the card the user tapped.
+  const theme = (() => {
+    if (data.type === "conviction") {
+      const sig = (data.signal || "").toLowerCase();
+      if (sig === "trim") return { bg: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)", border: "#fca5a5", accent: "#b91c1c", accentDark: "#7f1d1d", chipBg: "#fee2e2" };
+      if (sig === "add")  return { bg: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)", border: "#6ee7b7", accent: "#047857", accentDark: "#064e3b", chipBg: "#d1fae5" };
+      return                    { bg: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)", border: "#fcd34d", accent: "#b45309", accentDark: "#78350f", chipBg: "#fef3c7" };
+    }
+    if (data.type === "radar") {
+      return { bg: "linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)", border: "#67e8f9", accent: "#0891b2", accentDark: "#155e75", chipBg: "#cffafe" };
+    }
+    return { bg: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)", border: "#cbd5e1", accent: "#475569", accentDark: "#0f172a", chipBg: "#e2e8f0" };
+  })();
+
+  // Build a portfolio-context line if we know the holding
+  const portfolioContext = (() => {
+    if (!data.holding) return null;
+    const h = data.holding;
+    const parts = [];
+    if (h.qty) parts.push(`${h.qty} sh`);
+    if (h.value) parts.push(`$${h.value.toLocaleString()}`);
+    if (h.gainPct != null) parts.push(`${h.gainPct > 0 ? "+" : ""}${h.gainPct.toFixed(1)}%`);
+    return parts.length > 0 ? parts.join(" · ") : null;
+  })();
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      style={{ background: "rgba(15,23,42,0.55)", backdropFilter: "blur(4px)" }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full sm:max-w-md bg-white shadow-2xl flex flex-col"
+        style={{
+          maxHeight: "92vh",
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Colored header band */}
+        <div style={{ background: theme.bg, padding: "16px 18px 14px", borderBottom: `1px solid ${theme.border}`, borderTopLeftRadius: 20, borderTopRightRadius: 20 }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[12px] font-bold tracking-[0.2em] uppercase m-0" style={{ color: theme.accent }}>
+              {data.type === "conviction" ? "Conviction · Why" : data.type === "radar" ? "Radar · Why" : "Why"}
+            </p>
+            <button
+              onClick={onClose}
+              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition active:scale-90"
+              style={{ background: "rgba(255,255,255,0.7)" }}
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
+            </button>
+          </div>
+
+          {data.headline && (
+            <p className="text-[24px] font-bold m-0 leading-tight" style={{ color: "#0f172a", fontFamily: SERIF }}>
+              {data.headline}
+            </p>
+          )}
+          {!data.headline && data.ticker && (
+            <p className="text-[24px] font-bold m-0 leading-tight" style={{ color: "#0f172a", fontFamily: SERIF }}>
+              {data.ticker}
+            </p>
+          )}
+          {data.theme && (
+            <p className="text-[13px] m-0 mt-1 uppercase tracking-wider" style={{ color: theme.accent, fontWeight: 600 }}>
+              {data.theme}
+            </p>
+          )}
+          {data.action && (
+            <p className="text-[14px] m-0 mt-2" style={{ color: theme.accentDark }}>
+              <span className="font-semibold">Action:</span> {data.action}
+            </p>
+          )}
+          {portfolioContext && (
+            <p className="text-[12px] m-0 mt-2 opacity-80" style={{ color: theme.accentDark }}>
+              Your position: {portfolioContext}
+            </p>
+          )}
+        </div>
+
+        {/* Body — scrollable */}
+        <div className="flex-1 overflow-y-auto px-5 py-5">
+          {/* Quick summary if we have why_now */}
+          {data.why_now && (
+            <div className="mb-4">
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-1.5">
+                Quick read
+              </p>
+              <p className="text-[15px] leading-relaxed m-0" style={{ color: "#1e293b", fontFamily: SERIF }}>
+                {data.why_now}
+              </p>
+            </div>
+          )}
+
+          {/* Deep reasoning — the main content */}
+          {data.deep_reasoning ? (
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-2">
+                Why this · the case · what to consider
+              </p>
+              <p
+                className="text-[16px] leading-relaxed m-0 whitespace-pre-wrap"
+                style={{ color: "#0f172a", fontFamily: SERIF }}
+              >
+                {data.deep_reasoning}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+              <p className="text-[13px] text-amber-900 m-0 leading-relaxed">
+                Deeper reasoning isn't available for this card yet — pull-to-refresh your brief to regenerate, or tap "Ask about this" below to get a custom explanation right now.
+              </p>
+            </div>
+          )}
+
+          {/* Disclaimer */}
+          <p className="text-[11px] text-slate-500 italic mt-5">
+            Educational and informational only. Not financial advice. Verify catalysts and current prices before acting.
+          </p>
+        </div>
+
+        {/* Footer — Ask about this CTA */}
+        <div className="px-5 pt-3 pb-4 border-t border-slate-200 bg-white">
+          <button
+            onClick={() => onAskAboutThis(data)}
+            className="w-full py-3 rounded-xl font-bold text-[15px] tracking-wide transition active:scale-[0.98] flex items-center justify-center gap-2 text-white"
+            style={{
+              background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
+              boxShadow: "0 4px 12px -2px rgba(99,102,241,0.4)",
+            }}
+          >
+            <Sparkles className="w-4 h-4" strokeWidth={2.5} />
+            Ask about this — your situation
+          </button>
+          <p className="text-[11px] text-slate-500 italic text-center mt-2">
+            Talk to AI about how this fits your portfolio, your cash, your concerns.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Single chat bubble — user (right, dark) or assistant (left, light).
 function ChatMessageBubble({ role, content }) {
   const isUser = role === "user";
@@ -4622,7 +4838,7 @@ function ChatMessageBubble({ role, content }) {
 
 // Full-screen detail modal — opens when a playbook card is tapped.
 // Shows the full decision text, reasoning, and action buttons.
-function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDone, onDismiss, onAddToCalendar, onAskAboutThis }) {
+function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDone, onDismiss, onAddToCalendar, onAskAboutThis, deepReasoning }) {
   if (!decision) return null;
   const parsed = parseDecision(decision);
   const theme = DECISION_THEMES[parsed.type] || DECISION_THEMES.act;
@@ -4683,14 +4899,28 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
           )}
         </div>
 
-        {/* Body — full reasoning */}
+        {/* Body — short decision text + full reasoning */}
         <div className="px-5 py-4">
           <p
-            className="text-[16px] leading-relaxed m-0"
+            className="text-[16px] leading-relaxed m-0 font-semibold"
             style={{ color: "#1e293b", fontFamily: SERIF }}
           >
             {parsed.body}
           </p>
+          {/* Deep reasoning paragraph — 130-180 word plain-English explanation */}
+          {deepReasoning && (
+            <div className="mt-4 pt-4 border-t border-slate-200">
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-2">
+                Why this · the case · what to consider
+              </p>
+              <p
+                className="text-[15px] leading-relaxed m-0"
+                style={{ color: "#1e293b", fontFamily: SERIF }}
+              >
+                {deepReasoning}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Status indicators */}
