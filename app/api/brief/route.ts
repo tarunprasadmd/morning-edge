@@ -363,10 +363,21 @@ PRIMARY DECISION INPUT: This brief is the user's main source for "what to do wit
 
 CRITICAL DATA RULES:
 - NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD", or any all-caps placeholder.
-- whale_moves MUST contain EXACTLY 5 entries. congress_moves MUST contain EXACTLY 5 entries. hedge_fund_moves MUST contain EXACTLY 5 entries. Do not stop short — keep entries terse if needed (max 12 words each) to fit all 5.
+- whale_moves, congress_moves, hedge_fund_moves: target 3-5 entries each. QUALITY OVER QUANTITY: better to return 3 real trades than 5 padded with filler. NEVER pad these categories with news, calendar notes, filing schedules, or political headlines. Every entry MUST be a SPECIFIC STOCK TRADE.
+- Each entry in these categories MUST satisfy ALL of these:
+   1. References a specific named person or fund (e.g. "Pelosi", "Citadel", "Buffett's Berkshire") — NOT generic phrases like "Ten members" or "GOP leadership"
+   2. References a specific stock TICKER they bought, sold, added to, or trimmed — NOT a sector, country, or asset class generality
+   3. The "ticker" field must contain a real ticker symbol (NVDA, MSFT, etc.) — NEVER "BTC" for crypto-news, NEVER blank
+   4. The text reads as a TRADE: "Pelosi bought NVDA calls", "Citadel added 2M MSFT shares", "Buffett trimmed AAPL stake by 13%"
+- BAD examples that should NEVER appear (these are news, not trades):
+   * "Violations continue despite STOCK Act 45-day rule" — this is news commentary
+   * "Bridgewater Q1 13F due mid-May" — this is a calendar note, not a trade
+   * "Tiger Global holds US China India exposure" — vague, no ticker, no trade action
+   * "GOP leadership delayed floor vote past Q1" — political news
+   * "Ten members hold $750k-$2M crypto exposure" — generic, no named person, no specific trade
 - For most_bought / most_sold: provide 1-2 ACTUAL ticker symbols based on your search. If you cannot find recent data, return an EMPTY ARRAY: [].
-- For whale_moves / congress_moves / hedge_fund_moves: provide real, named trades with real source URLs from your web search. Each entry must reference a specific person (politician name, fund name, or fund manager). If you genuinely cannot find any for a category after searching, return an EMPTY ARRAY: []. Do not return fewer than 5 if real data exists.
-- Empty arrays are acceptable only when no data exists; placeholder strings are NEVER acceptable.`;
+- If you genuinely cannot find 3 real trades for a category after searching, return whatever you have (1, 2, or 0). Empty array is fine if no data exists.
+- Empty arrays are acceptable; placeholder strings or padding-with-news are NEVER acceptable.`;
 
   return callJsonChunk(prompt, { search: true, maxTokens: 3200, maxSearches: 3 });
 }
@@ -502,9 +513,17 @@ WRITING STYLE RULES (critical):
       - "intensity": 1-5 (1 = light flow, 5 = heavy flow)
       Cover the user's themes (AI / semis / nuclear / quantum / rare earths / biotech) plus any other sectors with notable flow today.
 
-   c. whale_moves: EXACTLY 5 entries — institutional 13F filings from major investors (Berkshire, Bridgewater, Pershing Square, Tepper Appaloosa, Druckenmiller Duquesne, Soros, Tudor Jones, Howard Marks Oaktree, etc.)
-   d. congress_moves: EXACTLY 5 entries — STOCK Act disclosures from named members of Congress (Pelosi, Tuberville, Crenshaw, Greene, Whitehouse, Khanna, etc.)
-   e. hedge_fund_moves: EXACTLY 5 entries — fund-level rotations distinct from the whales above. Use names like Citadel, Renaissance, Two Sigma, Millennium, Coatue, D.E. Shaw, Point72, Tiger Global, Lone Pine.
+   c. whale_moves: 3-5 entries — institutional 13F filings from major investors (Berkshire, Bridgewater, Pershing Square, Tepper Appaloosa, Druckenmiller Duquesne, Soros, Tudor Jones, Howard Marks Oaktree, etc.). QUALITY OVER QUANTITY: better 3 real trades than 5 padded with filler.
+   d. congress_moves: 3-5 entries — STOCK Act disclosures from named members of Congress (Pelosi, Tuberville, Crenshaw, Greene, Whitehouse, Khanna, etc.). EVERY entry must be a SPECIFIC TRADE by a NAMED person — not "ten members hold X" or "GOP delayed vote" or any other news/political headlines. If you can't find 5 real trades, return fewer.
+   e. hedge_fund_moves: 3-5 entries — fund-level rotations distinct from the whales above. Use names like Citadel, Renaissance, Two Sigma, Millennium, Coatue, D.E. Shaw, Point72, Tiger Global, Lone Pine. EVERY entry must be a SPECIFIC TRADE — not "Bridgewater 13F due" or "Tiger Global holds X exposure" (vague), and not filing schedules.
+
+   ABSOLUTE BAD EXAMPLES — these patterns must NEVER appear in any of the 3 categories:
+   * News commentary: "Violations continue despite STOCK Act 45-day rule"
+   * Calendar notes: "Bridgewater Q1 13F due mid-May"
+   * Vague exposure summaries: "Tiger Global holds US China India exposure"
+   * Political headlines: "GOP leadership delayed floor vote past Q1"
+   * Generic crowd statements: "Ten members hold $750k-$2M crypto exposure"
+   Each row MUST be: [Named person/fund] + [bought/sold/added/trimmed] + [specific ticker] + [size or date if known].
 
    IMPORTANT: whale_moves and hedge_fund_moves should NOT overlap — keep institutional 13F filers (Berkshire, Pershing, Tepper) in whale_moves, and quant/multi-strat hedge funds (Citadel, Renaissance, Millennium) in hedge_fund_moves.
 
