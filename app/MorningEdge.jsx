@@ -2868,7 +2868,8 @@ export default function MorningEdge() {
               </div>
             </Card>
           )}
-          {visible.conviction && Array.isArray(brief.conviction_watch) && brief.conviction_watch.length > 0 && (
+          {visible.conviction && (
+            (Array.isArray(brief.conviction_watch) && brief.conviction_watch.length > 0) ? (
             <Card theme={themes.conviction}>
               <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Holdings · High Conviction Watch" theme={themes.conviction} />
               <div className="px-3 pt-1 pb-3 space-y-2">
@@ -2934,6 +2935,27 @@ export default function MorningEdge() {
                 })}
               </div>
             </Card>
+            ) : (
+              // Empty state — when there are no high-conviction signals on
+              // user's holdings today (or holdings aren't synced yet). The
+              // section header still shows so the user knows the feature
+              // exists; the body explains what to do.
+              <Card theme={themes.conviction}>
+                <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Holdings · High Conviction Watch" theme={themes.conviction} />
+                <div className="px-5 pt-1 pb-5">
+                  <p className="text-[13px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-3">
+                    Hold · Add · Trim signals on stocks you own
+                  </p>
+                  <div className="rounded-xl bg-emerald-50/60 border border-emerald-200 p-4">
+                    <p className="text-[14px] text-emerald-900 leading-relaxed m-0">
+                      {(holdings && holdings.length > 0)
+                        ? "Quiet day for your positions — no high-conviction signals today. Sometimes the best move is to do nothing."
+                        : "Sync your portfolio to see hold/add/trim signals tailored to the stocks you actually own."}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )
           )}
           {visible.smart_money && (
             brief.smart_money ? (
@@ -3226,7 +3248,8 @@ export default function MorningEdge() {
           )}
 
 
-          {visible.radar && Array.isArray(brief.radar_watch) && brief.radar_watch.length > 0 && (
+          {visible.radar && (
+            (Array.isArray(brief.radar_watch) && brief.radar_watch.length > 0) ? (
             <Card theme={themes.radar}>
               <CardHeader icon={<Telescope className="w-4 h-4" />} label="On Your Radar" theme={themes.radar} />
               <div className="px-4 pt-1 pb-4">
@@ -3276,6 +3299,24 @@ export default function MorningEdge() {
                 </p>
               </div>
             </Card>
+            ) : (
+              // Empty state for Radar — surfaced when no thematic picks
+              // strong enough to warrant attention today. Honest is better
+              // than padded.
+              <Card theme={themes.radar}>
+                <CardHeader icon={<Telescope className="w-4 h-4" />} label="On Your Radar" theme={themes.radar} />
+                <div className="px-5 pt-1 pb-5">
+                  <p className="text-[13px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-3">
+                    Thematic stocks moving today · Not in your portfolio
+                  </p>
+                  <div className="rounded-xl bg-cyan-50/60 border border-cyan-200 p-4">
+                    <p className="text-[14px] text-cyan-900 leading-relaxed m-0">
+                      No high-conviction thematic picks today. Markets quiet on AI, nuclear, quantum, and biotech themes — sometimes there's no signal worth acting on.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )
           )}
 
 
@@ -3299,15 +3340,36 @@ export default function MorningEdge() {
                   icon={<Coffee className="w-4 h-4" />}
                   kicker="Fuel"
                   color="amber"
-                  body={brief.mindset.fuel}
+                  body={(() => {
+                    // Backwards-compatible: fuel might be a plain string
+                    // (older briefs) or a structured object (newer briefs).
+                    const f = brief.mindset.fuel;
+                    if (typeof f === "string") return f;
+                    if (f && typeof f === "object") return f.headline || "10-min activation: mobility, breath, strength, cooldown";
+                    return "10-min vitality routine";
+                  })()}
                   expanded={expandedMindset === "fuel"}
                   onToggle={() => setExpandedMindset(expandedMindset === "fuel" ? null : "fuel")}
-                  detail={{
-                    intent: `Today's routine: ${todayRoutine().name}. Four segments, ten minutes total.`,
-                    segments: todayRoutine().segments,
-                    showStartButton: true,
-                    onStart: () => setRoutineFlowOpen(true),
-                  }}
+                  detail={(() => {
+                    const f = brief.mindset.fuel;
+                    // Structured fuel — pass through the rich blocks
+                    if (f && typeof f === "object" && Array.isArray(f.blocks)) {
+                      return {
+                        intent: `Today's routine: ${f.headline || "10-min activation"}. ${f.total_min || 10} minutes total.`,
+                        fuelBlocks: f.blocks, // new field consumed by MindsetRowExpandable
+                        tip: f.tip,
+                        showStartButton: true,
+                        onStart: () => setRoutineFlowOpen(true),
+                      };
+                    }
+                    // Legacy string fuel — fall back to the old segment list
+                    return {
+                      intent: `Today's routine: ${todayRoutine().name}. Four segments, ten minutes total.`,
+                      segments: todayRoutine().segments,
+                      showStartButton: true,
+                      onStart: () => setRoutineFlowOpen(true),
+                    };
+                  })()}
                 />
                 <MindsetRowExpandable
                   icon={<Wind className="w-4 h-4" />}
@@ -3945,6 +4007,38 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
                   </span>
                 </div>
               ))}
+            </div>
+          )}
+          {detail.fuelBlocks && Array.isArray(detail.fuelBlocks) && (
+            <div className="space-y-3 mb-3">
+              {detail.fuelBlocks.map((block, i) => (
+                <div key={i} className="rounded-lg bg-white border border-slate-200 p-3">
+                  <p className="text-[12px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-2">
+                    {block.name}
+                  </p>
+                  {Array.isArray(block.moves) && block.moves.length > 0 && (
+                    <ul className="space-y-1.5 mb-2">
+                      {block.moves.map((m, j) => (
+                        <li key={j} className="text-[14px] text-slate-800 leading-snug flex gap-2">
+                          <span className="text-amber-600 font-bold flex-shrink-0">·</span>
+                          <span>{m}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {block.why && (
+                    <p className="text-[12px] text-slate-600 italic leading-snug mt-1.5">
+                      {block.why}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {detail.tip && (
+            <div className="rounded-lg bg-amber-100/60 border border-amber-200 px-3 py-2 mb-3">
+              <p className="text-[10px] uppercase tracking-wider font-bold text-amber-800 mb-0.5">Pro tip</p>
+              <p className="text-[13px] text-amber-900 leading-relaxed m-0">{detail.tip}</p>
             </div>
           )}
           {detail.action && (
@@ -4859,6 +4953,74 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
             </div>
           )}
 
+          {/* Verify · Learn more — source links so users can dive deeper
+              into the stock on their preferred research site. */}
+          {data.ticker && (
+            <div className="mt-5 pt-4 border-t border-slate-200">
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-2">
+                Verify · Learn more about {data.ticker}
+              </p>
+              <div className="space-y-2">
+                <a
+                  href={`https://www.investing.com/search/?q=${data.ticker}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
+                  style={{ borderColor: "#e2e8f0" }}
+                >
+                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                    Investing.com — {data.ticker}
+                  </p>
+                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                    Full quote, charts, news, technical analysis, and earnings — clean dashboard.
+                  </p>
+                </a>
+                <a
+                  href={`https://seekingalpha.com/symbol/${data.ticker}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
+                  style={{ borderColor: "#e2e8f0" }}
+                >
+                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                    Seeking Alpha — {data.ticker}
+                  </p>
+                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                    Analyst articles, earnings analysis, bull/bear takes (some content paywalled).
+                  </p>
+                </a>
+                <a
+                  href={`https://finance.yahoo.com/quote/${data.ticker}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
+                  style={{ borderColor: "#e2e8f0" }}
+                >
+                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                    Yahoo Finance — {data.ticker}
+                  </p>
+                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                    Quick price, news headlines, and basic chart. Always works as a fallback.
+                  </p>
+                </a>
+                <a
+                  href={`https://fintel.io/so/us/${data.ticker.toLowerCase()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
+                  style={{ borderColor: "#e2e8f0" }}
+                >
+                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                    Fintel — {data.ticker} institutional ownership
+                  </p>
+                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                    See which hedge funds and institutions hold this stock. Clean ownership data.
+                  </p>
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* Disclaimer */}
           <p className="text-[11px] text-slate-500 italic mt-5">
             Educational and informational only. Not financial advice. Verify catalysts and current prices before acting.
@@ -4954,8 +5116,20 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
       });
       if (tkr) {
         list.push({
+          name: `Investing.com — ${tkr}`,
+          desc: "Full quote, charts, news, and analysis for context on the stock.",
+          url: `https://www.investing.com/search/?q=${tkr}`,
+          primary: false,
+        });
+        list.push({
+          name: `Seeking Alpha — ${tkr}`,
+          desc: "Analyst takes and earnings coverage (some content paywalled).",
+          url: `https://seekingalpha.com/symbol/${tkr}`,
+          primary: false,
+        });
+        list.push({
           name: `Yahoo Finance — ${tkr} quote`,
-          desc: "Current price, news, and basic chart for the stock itself.",
+          desc: "Quick price + news. Always works as a fallback.",
           url: `https://finance.yahoo.com/quote/${tkr}`,
           primary: false,
         });
@@ -4963,20 +5137,32 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
     } else if (category === "whale") {
       if (tkr) {
         list.push({
-          name: "WhaleWisdom — institutional holders",
-          desc: `Lists every 13F filer holding ${tkr}, with positions and changes. Find the named firm here.`,
-          url: `https://whalewisdom.com/stock/${tkr}`,
+          name: `Fintel — ${tkr} institutional holders`,
+          desc: `Clean view of every 13F filer holding ${tkr}, ranked by position size. Less ad-heavy than WhaleWisdom.`,
+          url: `https://fintel.io/so/us/${tkr.toLowerCase()}`,
           primary: true,
         });
         list.push({
-          name: `Stock Analysis — ${tkr} holders`,
-          desc: "Cleaner ownership table view if WhaleWisdom is too busy.",
-          url: `https://stockanalysis.com/stocks/${tkr.toLowerCase()}/`,
+          name: `Investing.com — ${tkr}`,
+          desc: "Full quote, charts, news, technical analysis, and recent earnings — clean dashboard view.",
+          url: `https://www.investing.com/search/?q=${tkr}`,
+          primary: false,
+        });
+        list.push({
+          name: `Seeking Alpha — ${tkr}`,
+          desc: "Analyst articles, earnings analysis, and bull/bear takes (some content requires subscription).",
+          url: `https://seekingalpha.com/symbol/${tkr}`,
+          primary: false,
+        });
+        list.push({
+          name: "WhaleWisdom — backup view",
+          desc: `Same data as Fintel, more comprehensive but cluttered. Use if Fintel is missing data.`,
+          url: `https://whalewisdom.com/stock/${tkr}`,
           primary: false,
         });
         list.push({
           name: `Yahoo Finance — ${tkr} quote`,
-          desc: "Current price, news, and basic chart for the stock itself.",
+          desc: "Quick price + news. Always works as a fallback.",
           url: `https://finance.yahoo.com/quote/${tkr}`,
           primary: false,
         });
@@ -4985,20 +5171,32 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
       // hedge
       if (tkr) {
         list.push({
-          name: "WhaleWisdom — fund holders",
-          desc: `See every hedge fund holding ${tkr}. The named fund will be in this list with their actual position.`,
-          url: `https://whalewisdom.com/stock/${tkr}`,
+          name: `Fintel — ${tkr} fund holders`,
+          desc: `Clean list of hedge funds holding ${tkr}. The named fund appears with its position size and changes.`,
+          url: `https://fintel.io/so/us/${tkr.toLowerCase()}`,
           primary: true,
         });
         list.push({
-          name: "HedgeFollow — fund tracker",
-          desc: "Detailed pages on individual hedge funds with their full portfolios.",
+          name: `Investing.com — ${tkr}`,
+          desc: "Full quote, charts, news, technical analysis, and earnings.",
+          url: `https://www.investing.com/search/?q=${tkr}`,
+          primary: false,
+        });
+        list.push({
+          name: `Seeking Alpha — ${tkr}`,
+          desc: "Analyst takes, earnings coverage, and quant ratings (some content paywalled).",
+          url: `https://seekingalpha.com/symbol/${tkr}`,
+          primary: false,
+        });
+        list.push({
+          name: "HedgeFollow — fund profiles",
+          desc: "Search by fund name to see their full disclosed portfolio.",
           url: "https://hedgefollow.com/",
           primary: false,
         });
         list.push({
           name: `Yahoo Finance — ${tkr} quote`,
-          desc: "Current price, news, and basic chart for the stock itself.",
+          desc: "Quick price + news. Always works as a fallback.",
           url: `https://finance.yahoo.com/quote/${tkr}`,
           primary: false,
         });

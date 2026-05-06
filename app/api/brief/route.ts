@@ -221,7 +221,33 @@ Return ONLY this JSON shape with all fields populated:
   "affirmation": "short sharp opening line, max 12 words",
   "mindset": {
     "gratitude": "stimulating affirmation in one of three rotating voices (Stoic warrior / Quiet power / Athlete mindset), max 18 words. Vary by day.",
-    "fuel": "10-min vitality cue, e.g. '2 min mobility · 3 min breathwork · 3 min strength · 2 min stretch.'",
+    "fuel": {
+      "headline": "Short summary of the routine in one phrase, max 14 words (e.g. '10-min activation flow: mobility, breath, strength')",
+      "total_min": 10,
+      "blocks": [
+        {
+          "name": "Mobility (2 min)",
+          "moves": ["3-4 specific movements with reps or duration, max 14 words each (e.g. '15 cat-cow flows, slow tempo')"],
+          "why": "1 sentence (max 18 words) on what this block prepares — joint warmup, blood flow, etc."
+        },
+        {
+          "name": "Breathwork (3 min)",
+          "moves": ["2-3 breath patterns with timing (e.g. '8 rounds box breath: 4s in, 4s hold, 4s out, 4s hold')"],
+          "why": "1 sentence on physiological effect — nervous system shift, focus, etc."
+        },
+        {
+          "name": "Strength (3 min)",
+          "moves": ["3-4 bodyweight movements with reps (e.g. '30s plank → 12 push-ups → 20 air squats')"],
+          "why": "1 sentence on muscle activation, metabolic boost, etc."
+        },
+        {
+          "name": "Cooldown (2 min)",
+          "moves": ["2-3 stretches with hold duration (e.g. '30s hamstring stretch each side')"],
+          "why": "1 sentence on flexibility and parasympathetic shift."
+        }
+      ],
+      "tip": "1-2 sentence pro tip — form cue, common mistake to avoid, or motivation. Plain-English."
+    },
     "focus": "concrete breath/mental cue, max 10 words"
   },
   "clarity": {
@@ -234,9 +260,12 @@ Return ONLY this JSON shape with all fields populated:
     "style": "High Protein or Mediterranean or Anti-Inflammatory",
     "protein_g": 30,
     "prep_min": 25,
-    "description": "1-2 sentences, max 28 words",
-    "groceries": ["4-6 grocery line items"],
-    "prep_steps": ["4-5 short cooking steps, max 18 words each"]
+    "description": "2-3 sentences (50-75 words) describing the dish — flavor profile, texture, when it's best eaten, and what makes it satisfying",
+    "why_this_meal": "70-100 word plain-English paragraph explaining WHY this meal supports the user's goals today — protein for muscle, healthy fats for brain, fiber for energy, anti-inflammatory ingredients. Tie it to the day's mood/intent. Like a thoughtful friend explaining the choice.",
+    "groceries": ["6-9 specific grocery line items with rough quantities (e.g. '8oz wild salmon', '1 large lemon', '2 cups baby spinach')"],
+    "prep_steps": ["6-8 cooking steps, max 22 words each — clear and beginner-friendly with timing where helpful"],
+    "swap_options": ["2-3 simple substitutions a user can make (e.g. 'Sub salmon → chicken thigh if pescatarian-averse', 'Sub quinoa → cauliflower rice for lower carb')"],
+    "pairing": "1-line beverage or side suggestion (e.g. 'Pair with sparkling water + lemon, or unsweetened green tea')"
   },
   "decisions": [
     "3-5 PERSONALIZED trade decisions referencing the user's actual holdings + today's catalysts. Each STRING max 16 words. Format: [Account if multi-account] + [Ticker context] + [Specific action] + [Catalyst]."
@@ -255,7 +284,7 @@ PRIMARY DECISION INPUT: This brief is the user's main source for what-to-do-toda
 decisions_reasoning EXAMPLE (for a TRIM IONQ decision) — note the simple language:
 "IONQ has gone up 45% in just one month, and the company is reporting earnings on May 6 — that's only days away. Earnings reports are big moments where the stock can swing wildly in either direction. Trimming means selling part of your position to lock in some of those gains, while keeping the rest invested. The reason to consider trimming: the stock has already had a huge run, so a lot of good news may already be 'priced in' (built into the current price). If the earnings disappoint even a little, the stock could drop 15-20% in a single day. Before you sell anything, check your cost basis (what you originally paid). If you're up 200%+, you'll owe taxes on the gains. On the other hand, if you sell and earnings are amazing, you'll miss the next move up. Selling 75 of your 175 shares keeps you in the game with most of your shares while reducing the risk of a big drop."`;
 
-  return callJsonChunk(prompt, { maxTokens: 3500, model: "claude-haiku-4-5" });
+  return callJsonChunk(prompt, { maxTokens: 5500, model: "claude-haiku-4-5" });
 }
 
 // Chunk 2: Market pulse + today's edge + radar watch (web search needed
@@ -341,9 +370,9 @@ Return ONLY this JSON:
     "sector_heatmap": [
       { "sector": "sector name max 22 chars", "direction": "buying or selling or neutral", "intensity": 1 }
     ],
-    "whale_moves": [ { "text": "named trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "30-50 word plain-English context: why this firm/trade matters (firm size, trade scale, signal credibility)" } ],
-    "congress_moves": [ { "text": "named congressional trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "30-50 word plain-English context: relevant committee/role, trade scale, mention 30-45d STOCK Act delay" } ],
-    "hedge_fund_moves": [ { "text": "named hedge fund trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "30-50 word plain-English context: fund strategy (quant/macro/long-short), AUM if known, why this rotation matters" } ]
+    "whale_moves": [ { "text": "named trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation written for someone NEW to investing. Cover: WHO is this firm or person and WHY are they worth watching (their AUM, track record, strategy in plain language) — WHAT EXACTLY did they do (the trade size, when, and what it likely signals about their conviction) — WHY THIS MATTERS for someone watching the markets today — WHAT TO BE CAREFUL OF (data delays, that this is a snapshot, that smart money makes mistakes too). Define any technical term in the same sentence." } ],
+    "congress_moves": [ { "text": "named congressional trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation written for someone NEW to investing. Cover: WHO is this Congress member and WHY their trades draw attention (their committee assignments, what info they have access to, their disclosed track record) — WHAT EXACTLY they traded (size, when filed, when actually executed) — THE STOCK ACT context (30-45 day disclosure delay, what that means for retail investors trying to follow) — WHY THIS particular trade is interesting (timing relative to legislation, sector context, scale relative to their net worth). Define any technical term in the same sentence." } ],
+    "hedge_fund_moves": [ { "text": "named hedge fund trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation written for someone NEW to investing. Cover: WHO is this hedge fund and HOW they operate (assets under management, investment style — quant/macro/long-short/activist — explain each style in plain language if used) — WHAT THIS TRADE represents in the context of their portfolio (a major rotation, a new theme, a hedge) — WHY THIS FUND IS WORTH WATCHING (track record, public-facing analysts, notable past calls) — KEY CAVEATS (13F shows positions only, not derivatives or shorts, ~45 day delay). Define any technical term in the same sentence." } ]
   },
   "conviction_watch": [
     {
@@ -379,7 +408,7 @@ CRITICAL DATA RULES:
 - If you genuinely cannot find 3 real trades for a category after searching, return whatever you have (1, 2, or 0). Empty array is fine if no data exists.
 - Empty arrays are acceptable; placeholder strings or padding-with-news are NEVER acceptable.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 4500, maxSearches: 3 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 6500, maxSearches: 3 });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────
@@ -497,7 +526,7 @@ WRITING STYLE RULES (critical):
    • ATHLETE MINDSET — grounded performance language: today is a rep, process over outcome, recovery is part of the work, show up the same on green and red days, long-season thinking
    The line must be DECLARATIVE and ACTIVATING — never soft, never "walk gently," never passive resignation. It gives the reader fire or steadiness — depending on the voice — but always with edge. No religion-specific language. Address the reader by name when natural. Maximum 18 words.
 
-3. mindset.fuel must be a STRUCTURED 10-MINUTE VITALITY ROUTINE for someone fit and capable, no equipment needed. Format exactly as: "10-min vitality routine: [2 min mobility] · [3 min breathwork] · [3 min strength] · [2 min stretch]." Vary the specific exercises each day. Keep each segment under 10 words.
+3. mindset.fuel must be a structured 4-block 10-MINUTE VITALITY ROUTINE for someone fit and capable, no equipment needed. The 4 blocks are mobility, breathwork, strength, and cooldown. Each block has its own specific moves with reps/duration, plus a 'why' sentence. Vary the specific exercises each day so the user stays engaged. Use plain English — define any technical term in the same sentence (e.g. 'box breath — 4 seconds in, 4 hold, 4 out, 4 hold').
 
 4. smart_money is THE MOST IMPORTANT SECTION OF THE BRIEF — the meat-and-potatoes for the user. It must contain:
 
@@ -621,9 +650,9 @@ Output exactly:
     "sector_heatmap": [
       { "sector": "sector name max 22 chars", "direction": "buying or selling or neutral", "intensity": 1 }
     ],
-    "whale_moves": [ { "text": "named trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "30-50 word plain-English context: why this firm/trade matters (firm size, trade scale, signal credibility)" } ],
-    "congress_moves": [ { "text": "named congressional trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "30-50 word plain-English context: relevant committee/role, trade scale, mention 30-45d STOCK Act delay" } ],
-    "hedge_fund_moves": [ { "text": "named hedge fund trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "30-50 word plain-English context: fund strategy (quant/macro/long-short), AUM if known, why this rotation matters" } ]
+    "whale_moves": [ { "text": "named trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation written for someone NEW to investing. Cover: WHO is this firm or person and WHY are they worth watching (their AUM, track record, strategy in plain language) — WHAT EXACTLY did they do (the trade size, when, and what it likely signals about their conviction) — WHY THIS MATTERS for someone watching the markets today — WHAT TO BE CAREFUL OF (data delays, that this is a snapshot, that smart money makes mistakes too). Define any technical term in the same sentence." } ],
+    "congress_moves": [ { "text": "named congressional trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation written for someone NEW to investing. Cover: WHO is this Congress member and WHY their trades draw attention (their committee assignments, what info they have access to, their disclosed track record) — WHAT EXACTLY they traded (size, when filed, when actually executed) — THE STOCK ACT context (30-45 day disclosure delay, what that means for retail investors trying to follow) — WHY THIS particular trade is interesting (timing relative to legislation, sector context, scale relative to their net worth). Define any technical term in the same sentence." } ],
+    "hedge_fund_moves": [ { "text": "named hedge fund trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation written for someone NEW to investing. Cover: WHO is this hedge fund and HOW they operate (assets under management, investment style — quant/macro/long-short/activist — explain each style in plain language if used) — WHAT THIS TRADE represents in the context of their portfolio (a major rotation, a new theme, a hedge) — WHY THIS FUND IS WORTH WATCHING (track record, public-facing analysts, notable past calls) — KEY CAVEATS (13F shows positions only, not derivatives or shorts, ~45 day delay). Define any technical term in the same sentence." } ]
   },
   "todays_edge": {
     "earnings_alerts": [ { "ticker": "TICKER", "when": "today after close", "your_shares": 0 } ],
@@ -651,9 +680,12 @@ Output exactly:
     "style": "High Protein or Mediterranean or Anti-Inflammatory",
     "protein_g": 30,
     "prep_min": 25,
-    "description": "1-2 short sentences, max 28 words",
-    "groceries": ["4-6 grocery line items"],
-    "prep_steps": ["4-5 short cooking steps, max 18 words each"]
+    "description": "2-3 sentences (50-75 words) describing the dish — flavor, texture, why it satisfies",
+    "why_this_meal": "70-100 word plain-English paragraph on why this meal fits today: protein, fats, fiber, anti-inflammatory rationale tied to the day's mood",
+    "groceries": ["6-9 specific grocery items with rough quantities"],
+    "prep_steps": ["6-8 beginner-friendly cooking steps, max 22 words each"],
+    "swap_options": ["2-3 simple substitutions"],
+    "pairing": "1-line beverage or side suggestion"
   },
   "decisions": ["3-5 PERSONALIZED trader actions referencing user's actual holdings + today's catalysts, max 14 words each"]
 }`;
