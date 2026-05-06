@@ -2951,7 +2951,7 @@ export default function MorningEdge() {
                             {(brief.todays_edge.earnings_alerts || []).map((e, i) => (
                               <button
                                 key={`earn-${i}`}
-                                onClick={() => openLinkInBrowser(`https://stockanalysis.com/stocks/${e.ticker.toLowerCase()}/`)}
+                                onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${e.ticker.toUpperCase()}`)}
                                 className="w-full flex items-center gap-2 rounded-lg bg-rose-100/80 border border-rose-300 px-2.5 py-1.5 hover:bg-rose-200 active:bg-rose-300 transition text-left"
                               >
                                 <span className="text-[9px] uppercase tracking-wider font-bold text-rose-800 flex-shrink-0">Earnings</span>
@@ -2966,7 +2966,7 @@ export default function MorningEdge() {
                             {(brief.todays_edge.binary_catalysts || []).map((c, i) => (
                               <button
                                 key={`cat-${i}`}
-                                onClick={() => openLinkInBrowser(`https://stockanalysis.com/stocks/${c.ticker.toLowerCase()}/`)}
+                                onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${c.ticker.toUpperCase()}`)}
                                 className="w-full flex items-center gap-2 rounded-lg bg-amber-100/80 border border-amber-300 px-2.5 py-1.5 hover:bg-amber-200 active:bg-amber-300 transition text-left"
                               >
                                 <span className="text-[9px] uppercase tracking-wider font-bold text-amber-800 flex-shrink-0">Catalyst</span>
@@ -2982,7 +2982,7 @@ export default function MorningEdge() {
                             {(brief.todays_edge.risk_flags || []).map((r, i) => (
                               <button
                                 key={`risk-${i}`}
-                                onClick={() => openLinkInBrowser(`https://stockanalysis.com/stocks/${r.ticker.toLowerCase()}/`)}
+                                onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${r.ticker.toUpperCase()}`)}
                                 className="w-full flex items-center gap-2 rounded-lg bg-orange-100/80 border border-orange-300 px-2.5 py-1.5 hover:bg-orange-200 active:bg-orange-300 transition text-left"
                               >
                                 <span className="text-[9px] uppercase tracking-wider font-bold text-orange-800 flex-shrink-0">Risk</span>
@@ -3008,7 +3008,7 @@ export default function MorningEdge() {
                     <p className="text-[13px] text-slate-700 leading-snug mb-2.5">
                       The top 2 most-bought and top 2 most-sold names across whales, Congress, and hedge funds today. Tap to view performance.
                     </p>
-                    {/* Most bought / sold — top 2 per side, tappable tickers open stockanalysis.com in-app */}
+                    {/* Most bought / sold — top 2 per side, tappable tickers open Yahoo Finance in-app */}
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       {/* Most Bought column — top 2 */}
                       <div className="space-y-1.5">
@@ -3023,7 +3023,7 @@ export default function MorningEdge() {
                         ).filter((t) => t && typeof t === "string" && !/^DATA_UNAVAIL|^N\/?A$|^NONE$|^UNKNOWN$/i.test(t.trim())).slice(0, 2).map((tkr, i) => (
                           <button
                             key={i}
-                            onClick={() => openLinkInBrowser(`https://stockanalysis.com/stocks/${tkr.toLowerCase()}/`)}
+                            onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${tkr.toUpperCase()}`)}
                             className="w-full flex items-center gap-2 rounded-lg bg-white border border-emerald-200 px-2.5 py-1.5 hover:bg-emerald-50 active:bg-emerald-100 transition text-left min-w-0 overflow-hidden"
                           >
                             <span className="text-[12px] text-emerald-700 font-semibold flex-shrink-0">#{i + 1}</span>
@@ -3047,7 +3047,7 @@ export default function MorningEdge() {
                         ).filter((t) => t && typeof t === "string" && !/^DATA_UNAVAIL|^N\/?A$|^NONE$|^UNKNOWN$/i.test(t.trim())).slice(0, 2).map((tkr, i) => (
                           <button
                             key={i}
-                            onClick={() => openLinkInBrowser(`https://stockanalysis.com/stocks/${tkr.toLowerCase()}/`)}
+                            onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${tkr.toUpperCase()}`)}
                             className="w-full flex items-center gap-2 rounded-lg bg-white border border-rose-200 px-2.5 py-1.5 hover:bg-rose-50 active:bg-rose-100 transition text-left min-w-0 overflow-hidden"
                           >
                             <span className="text-[12px] text-rose-700 font-semibold flex-shrink-0">#{i + 1}</span>
@@ -3521,15 +3521,15 @@ function SmartMoneyRow({ item, onOpenLink, category }) {
     }
 
     if (category === "whale" || category === "hedge") {
-      // Stock Analysis is the cleanest free page showing institutional
-      // holders by ticker. Lists all 13F filers with share counts and
-      // quarterly position changes. The named firm (Citadel, Soros, etc.)
-      // appears in the holders list with their actual position.
+      // Yahoo Finance — works for virtually every ticker including ETFs,
+      // foreign stocks, crypto, indexes. Stock Analysis 404s on smaller
+      // names; Yahoo doesn't. Yahoo's quote page also shows holders data
+      // (Statistics → Major Holders) so it's a valid destination for
+      // institutional/hedge fund context.
       // Example: "Citadel increased NVDA stake" →
-      //   https://stockanalysis.com/stocks/nvda/holders/
-      // Citadel appears in the holders table with their NVDA position.
-      if (tkr) return `https://stockanalysis.com/stocks/${tkr.toLowerCase()}/holders/`;
-      return "https://stockanalysis.com/";
+      //   https://finance.yahoo.com/quote/NVDA
+      if (tkr) return `https://finance.yahoo.com/quote/${tkr.toUpperCase()}`;
+      return "https://finance.yahoo.com/";
     }
 
     // Unknown category — Google search fallback (should rarely hit)
