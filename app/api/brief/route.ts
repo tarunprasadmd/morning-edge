@@ -341,9 +341,9 @@ Return ONLY this JSON:
     "sector_heatmap": [
       { "sector": "sector name max 22 chars", "direction": "buying or selling or neutral", "intensity": 1 }
     ],
-    "whale_moves": [ { "text": "named trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ],
-    "congress_moves": [ { "text": "named congressional trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ],
-    "hedge_fund_moves": [ { "text": "named hedge fund trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ]
+    "whale_moves": [ { "text": "named trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "30-50 word plain-English context: why this firm/trade matters (firm size, trade scale, signal credibility)" } ],
+    "congress_moves": [ { "text": "named congressional trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "30-50 word plain-English context: relevant committee/role, trade scale, mention 30-45d STOCK Act delay" } ],
+    "hedge_fund_moves": [ { "text": "named hedge fund trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "30-50 word plain-English context: fund strategy (quant/macro/long-short), AUM if known, why this rotation matters" } ]
   },
   "conviction_watch": [
     {
@@ -379,7 +379,7 @@ CRITICAL DATA RULES:
 - If you genuinely cannot find 3 real trades for a category after searching, return whatever you have (1, 2, or 0). Empty array is fine if no data exists.
 - Empty arrays are acceptable; placeholder strings or padding-with-news are NEVER acceptable.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 3200, maxSearches: 3 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 4500, maxSearches: 3 });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────
@@ -621,9 +621,9 @@ Output exactly:
     "sector_heatmap": [
       { "sector": "sector name max 22 chars", "direction": "buying or selling or neutral", "intensity": 1 }
     ],
-    "whale_moves": [ { "text": "named trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ],
-    "congress_moves": [ { "text": "named congressional trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ],
-    "hedge_fund_moves": [ { "text": "named hedge fund trade, max 12 words", "ticker": "TICKER", "source_url": "https://..." } ]
+    "whale_moves": [ { "text": "named trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "30-50 word plain-English context: why this firm/trade matters (firm size, trade scale, signal credibility)" } ],
+    "congress_moves": [ { "text": "named congressional trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "30-50 word plain-English context: relevant committee/role, trade scale, mention 30-45d STOCK Act delay" } ],
+    "hedge_fund_moves": [ { "text": "named hedge fund trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "30-50 word plain-English context: fund strategy (quant/macro/long-short), AUM if known, why this rotation matters" } ]
   },
   "todays_edge": {
     "earnings_alerts": [ { "ticker": "TICKER", "when": "today after close", "your_shares": 0 } ],
