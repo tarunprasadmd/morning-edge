@@ -1699,8 +1699,24 @@ export default function MorningEdge() {
   // ─── Loading splash ──────────────────────────────────────────────
   if (phase === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-100 to-slate-200" style={{ fontFamily: SANS }}>
-        <Sparkles className="w-8 h-8 text-slate-700 animate-pulse" />
+      <div className="min-h-screen relative" style={{
+        fontFamily: SANS,
+        background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 14%, #DDD6FE 30%, #C7D2FE 45%, #A5B4FC 60%, #818CF8 75%, #4338CA 100%)",
+      }}>
+        <div className="relative z-10 px-6 pt-16 pb-12 flex flex-col items-center max-w-md mx-auto">
+          {/* Branded mark */}
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-2xl mb-5 animate-pulse"
+            style={{ background: "linear-gradient(135deg, #1E40AF 0%, #0E7490 50%, #047857 100%)" }}>
+            <span className="text-white text-3xl font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic" }}>ME</span>
+          </div>
+          <p className="text-[14px] uppercase tracking-[0.3em] text-white/95 font-bold mb-2 drop-shadow-md">Morning Edge</p>
+          <p className="text-[13px] text-white/85 italic mb-8 drop-shadow">By T-Spot</p>
+          {/* Loading status — explicit, never blank */}
+          <div className="flex items-center gap-2 text-white/90 text-[14px]">
+            <RefreshCw className="w-4 h-4 animate-spin" strokeWidth={2.5} />
+            <span>Loading your edge…</span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -1850,20 +1866,25 @@ export default function MorningEdge() {
           <div className="flex gap-2">
             {brief && (
               <button onClick={shareBrief}
-                className="p-2.5 rounded-full bg-white border border-slate-200 shadow-md"
+                className="p-2.5 rounded-full bg-white border border-slate-200 shadow-md transition active:scale-90 active:bg-slate-100 hover:bg-slate-50"
                 aria-label="Share">
                 <Share2 className="w-4 h-4 text-slate-700" />
               </button>
             )}
             <button onClick={() => setShowPremium(true)}
-              className="p-2.5 rounded-full text-white shadow-md bg-gradient-to-br from-amber-500 to-orange-500"
+              className="p-2.5 rounded-full text-white shadow-md bg-gradient-to-br from-amber-500 to-orange-500 transition active:scale-90 hover:from-amber-600 hover:to-orange-600"
               aria-label="Premium">
               <Crown className="w-4 h-4" />
             </button>
             <button onClick={() => setShowSettings(!showSettings)}
-              className="p-2.5 rounded-full bg-white border border-slate-200 shadow-md"
-              aria-label="Settings">
-              <Settings className="w-4 h-4 text-slate-700" />
+              className={`p-2.5 rounded-full border shadow-md transition active:scale-90 ${
+                showSettings
+                  ? "bg-slate-900 border-slate-900"
+                  : "bg-white border-slate-200 hover:bg-slate-50 active:bg-slate-100"
+              }`}
+              aria-label="Settings"
+              aria-pressed={showSettings}>
+              <Settings className={`w-4 h-4 ${showSettings ? "text-white" : "text-slate-700"}`} />
             </button>
           </div>
         </div>
@@ -2117,6 +2138,76 @@ export default function MorningEdge() {
               ))}
             </div>
           </div>
+
+          {/* Manage Accounts — per-account view with delete buttons.
+              Lets the user remove a single brokerage account without
+              having to nuke everything via "Reset all data". */}
+          {(accountsState.length > 0 || holdings.length > 0) && (
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-[12px] uppercase tracking-[0.2em] text-slate-700 font-semibold">
+                  Synced Accounts
+                </h3>
+                <span className="text-[12px] text-slate-500">
+                  {accountsState.length} account{accountsState.length === 1 ? "" : "s"} · {holdings.length} position{holdings.length === 1 ? "" : "s"}
+                </span>
+              </div>
+              {accountsState.length > 0 ? (
+                <div className="space-y-2">
+                  {accountsState.map((acct) => {
+                    const acctHoldings = holdings.filter((h) => h.accountId === acct.id);
+                    return (
+                      <div key={acct.id} className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center">
+                          <Briefcase className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[14px] font-semibold text-slate-900 truncate" style={{ fontFamily: SERIF }}>
+                            {acct.name || "Unnamed account"}
+                          </p>
+                          <p className="text-[11px] text-slate-700 uppercase tracking-wider">
+                            {acctHoldings.length} position{acctHoldings.length === 1 ? "" : "s"}
+                            {acct.brokerage ? ` · ${acct.brokerage}` : ""}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => deleteAccount(acct.id)}
+                          className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-rose-600 hover:bg-rose-50 active:bg-rose-100 transition"
+                          aria-label={`Delete ${acct.name}`}
+                          title="Delete this account"
+                        >
+                          <Trash2 className="w-4 h-4" strokeWidth={2.2} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                // Untagged legacy holdings — show a "Clear holdings" option
+                <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-amber-900">
+                      {holdings.length} unassigned position{holdings.length === 1 ? "" : "s"}
+                    </p>
+                    <p className="text-[11px] text-amber-800">
+                      From an older import. Clear and re-upload to organize by account.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (typeof window !== "undefined" && !window.confirm("Clear all unassigned holdings?")) return;
+                      setHoldings([]);
+                      setHoldingsRefreshedAt(null);
+                    }}
+                    className="flex-shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-semibold bg-white border border-amber-300 text-amber-900 hover:bg-amber-100"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           <button
             onClick={() => { setShowSettings(false); setShowBrokerageGuide(true); }}
             className="w-full mb-3 py-2.5 rounded-xl text-[13px] text-amber-800 hover:bg-amber-50 border border-amber-300 font-semibold flex items-center justify-center gap-1.5"
@@ -2172,9 +2263,19 @@ export default function MorningEdge() {
         </div>
       )}
 
-      {/* Loading skeleton — pretty placeholder cards */}
+      {/* Loading skeleton — branded placeholder cards that show the shape
+          of the brief, with section labels visible so users see what's
+          coming. Each card has a colored top bar matching the real card
+          for that section, plus a small "Building your X..." status. */}
       {loading && !brief && (
         <main className="relative px-4 pb-16 space-y-4">
+          {/* Status banner */}
+          <div className="rounded-xl p-3 bg-gradient-to-br from-violet-100 to-indigo-100 border border-violet-200 flex items-center gap-2">
+            <RefreshCw className="w-4 h-4 text-violet-700 animate-spin flex-shrink-0" strokeWidth={2.5} />
+            <p className="text-[13px] text-violet-900 font-semibold">
+              Building your edge — reading today's tape, checking your holdings…
+            </p>
+          </div>
           {/* Affirmation skeleton */}
           <div className="rounded-3xl p-8 shadow-md border border-slate-100 bg-gradient-to-br from-amber-50 via-rose-50 to-violet-50">
             <div className="w-12 h-12 rounded-full mx-auto mb-4 bg-white/60 animate-pulse" />
@@ -2182,10 +2283,24 @@ export default function MorningEdge() {
             <div className="h-5 w-3/4 mx-auto mb-2 rounded bg-slate-300/60 animate-pulse" />
             <div className="h-5 w-2/3 mx-auto rounded bg-slate-300/60 animate-pulse" />
           </div>
-          {/* Card skeletons */}
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-2xl bg-white shadow-md border border-slate-100 overflow-hidden">
-              <div className="h-12 bg-slate-100 animate-pulse" />
+          {/* Section skeletons with labels so the user knows what's loading */}
+          {[
+            { label: "Market Pulse", color: "#3b82f6" },
+            { label: "Today's Playbook", color: "#10b981" },
+            { label: "Holdings · High Conviction Watch", color: "#059669" },
+            { label: "Insider Flow", color: "#d97706" },
+            { label: "On Your Radar", color: "#0891b2" },
+          ].map((sec) => (
+            <div key={sec.label} className="rounded-2xl bg-white shadow-md border border-slate-100 overflow-hidden">
+              {/* Colored top bar */}
+              <div className="h-1 w-full" style={{ background: sec.color }} />
+              {/* Label */}
+              <div className="px-4 py-3 flex items-center gap-2 border-b border-slate-100">
+                <div className="w-7 h-7 rounded-md animate-pulse" style={{ background: sec.color, opacity: 0.2 }} />
+                <p className="text-[12px] uppercase tracking-[0.2em] font-bold text-slate-500">
+                  {sec.label}
+                </p>
+              </div>
               <div className="px-5 py-4 space-y-3">
                 <div className="h-4 w-full rounded bg-slate-200 animate-pulse" />
                 <div className="h-4 w-5/6 rounded bg-slate-200 animate-pulse" />
@@ -2738,15 +2853,12 @@ export default function MorningEdge() {
                 <p className="text-[13px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium px-1 mb-1">
                   Hold · Add · Trim signals on stocks you own
                 </p>
-                <p className="text-[13px] text-slate-700 italic px-1 mb-3">
-                  How to think about each position you own — analytical view, not today's action list.
+                <p className="text-[12px] text-slate-700 italic px-1 mb-3">
+                  Tap any signal for the full reasoning.
                 </p>
                 {brief.conviction_watch.filter(Boolean).map((c, i) => {
                   if (!c || typeof c !== "object") return null;
                   const hasAction = !!c.action;
-                  // Weekend awareness — markets are closed, "ACTION TODAY"
-                  // is misleading on Saturday/Sunday. Use a horizon-friendly
-                  // label so the user knows it's the next trading session.
                   const dow = new Date().getDay();
                   const actionLabel = (dow === 0 || dow === 6) ? "NEXT SESSION" : "ACTION TODAY";
                   const actionAccent = c.signal === "trim"
@@ -2754,72 +2866,51 @@ export default function MorningEdge() {
                     : c.signal === "add"
                       ? { bar: "bg-emerald-500", chip: "bg-emerald-100 text-emerald-800 border-emerald-200", label: actionLabel }
                       : { bar: "bg-amber-500", chip: "bg-amber-100 text-amber-800 border-amber-200", label: actionLabel };
+                  // Scannable summary line — short version of why_now or note,
+                  // truncated to a single readable line for the brief view.
+                  // Full text stays available on the reading page.
+                  const summaryLine = c.note || (c.why_now ? c.why_now.split(/[.!?]/)[0] + "." : "Tap for full reasoning");
                   return (
-                    <div
+                    <button
                       key={i}
-                      className={`relative rounded-xl p-3.5 bg-slate-50 border ${hasAction ? "border-slate-200 shadow-sm" : "border-slate-100"} overflow-hidden`}
+                      onClick={() => setReadingPage({
+                        id: `conviction-${c.ticker || i}-${todayKey}`,
+                        type: "conviction",
+                        ticker: c.ticker,
+                        signal: c.signal,
+                        headline: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}`,
+                        action: c.action,
+                        why_now: c.why_now,
+                        note: c.note,
+                        deep_reasoning: c.deep_reasoning,
+                        holding: holdings.find(h => h.symbol === c.ticker),
+                        chatDescription: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}${c.action ? ` — ${c.action}` : ""}${c.why_now ? `. ${c.why_now}` : ""}${c.deep_reasoning ? ` Full reasoning: ${c.deep_reasoning}` : ""}`,
+                      })}
+                      className={`relative w-full text-left rounded-xl px-3 py-2.5 bg-slate-50 border ${hasAction ? "border-slate-200 shadow-sm" : "border-slate-100"} overflow-hidden transition active:scale-[0.99] active:bg-slate-100 hover:bg-slate-100`}
                     >
-                      {/* Colored left-edge bar — only shown when there's a high-conviction action */}
+                      {/* Colored left-edge bar — only for high-conviction action items */}
                       {hasAction && (
                         <span className={`absolute left-0 top-0 bottom-0 w-1 ${actionAccent.bar}`} aria-hidden="true" />
                       )}
-                      <div className={`flex items-start gap-3 mb-1.5 ${hasAction ? "pl-2" : ""}`}>
-                        <span className={`px-2.5 py-1 rounded-lg text-[12px] uppercase tracking-wider border font-semibold flex items-center gap-1 flex-shrink-0 ${signalStyle(c.signal)}`}>
+                      <div className={`flex items-center gap-2.5 ${hasAction ? "pl-2" : ""}`}>
+                        <span className={`px-2 py-0.5 rounded-md text-[11px] uppercase tracking-wider border font-bold flex items-center gap-1 flex-shrink-0 ${signalStyle(c.signal)}`}>
                           {signalIcon(c.signal)}{c.signal}
                         </span>
-                        <p className="text-base font-semibold text-slate-900 flex-1" style={{ fontFamily: SERIF }}>{c.ticker}</p>
-                      </div>
-                      {/* High-conviction action callout — only when c.action is set */}
-                      {hasAction && (
-                        <div className={`mb-2 pl-2`}>
-                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[12px] uppercase tracking-wider font-bold ${actionAccent.chip}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${actionAccent.bar}`} />
+                        <p className="text-[15px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{c.ticker}</p>
+                        {hasAction && (
+                          <span className={`text-[10px] uppercase tracking-wider font-bold flex-shrink-0 ${actionAccent.chip} px-1.5 py-0.5 rounded border`}>
                             {actionAccent.label}
-                          </div>
-                          <p className="text-[16px] text-slate-900 font-semibold leading-snug mt-1">
-                            {c.action}
-                          </p>
-                        </div>
-                      )}
-                      {/* Longer "why now" reasoning */}
-                      {c.why_now && (
-                        <p className={`text-[16px] text-slate-800 leading-relaxed mb-1 ${hasAction ? "pl-2" : "pl-1"}`}>{c.why_now}</p>
-                      )}
-                      <p className={`text-[16px] text-slate-700 leading-snug ${hasAction ? "pl-2" : "pl-1"}`}>{c.note}</p>
-                      {/* Read more — opens the reading page with full deep_reasoning.
-                          From the reading page, user can tap "Ask about this" for chat. */}
-                      <button
-                        onClick={() => setReadingPage({
-                          id: `conviction-${c.ticker || i}-${todayKey}`,
-                          type: "conviction",
-                          ticker: c.ticker,
-                          signal: c.signal,
-                          headline: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}`,
-                          action: c.action,
-                          why_now: c.why_now,
-                          note: c.note,
-                          deep_reasoning: c.deep_reasoning,
-                          // Find this holding for portfolio context
-                          holding: holdings.find(h => h.symbol === c.ticker),
-                          // Build chat description for when user taps Ask
-                          chatDescription: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}${c.action ? ` — ${c.action}` : ""}${c.why_now ? `. ${c.why_now}` : ""}${c.deep_reasoning ? ` Full reasoning: ${c.deep_reasoning}` : ""}`,
-                        })}
-                        className={`mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-bold transition active:scale-95 ${hasAction ? "ml-2" : "ml-1"}`}
-                        style={{
-                          background: "linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%)",
-                          color: "#5B21B6",
-                          border: "1px solid #C4B5FD",
-                        }}
-                      >
-                        <Sparkles className="w-3.5 h-3.5" strokeWidth={2.5} />
-                        Read why · Ask about this
-                      </button>
-                    </div>
+                          </span>
+                        )}
+                        <ChevronRight className="w-4 h-4 text-slate-400 ml-auto flex-shrink-0" strokeWidth={2.2} />
+                      </div>
+                      <p className={`text-[13px] text-slate-700 leading-snug mt-1.5 line-clamp-2 ${hasAction ? "pl-2" : ""}`}>
+                        {hasAction && c.action ? c.action : summaryLine}
+                      </p>
+                    </button>
                   );
                 })}
               </div>
-
-              {/* Sync Portfolio button moved to top of brief — see top of <main> */}
             </Card>
           )}
           {visible.smart_money && brief.smart_money && (
@@ -3097,52 +3188,49 @@ export default function MorningEdge() {
           {visible.radar && Array.isArray(brief.radar_watch) && brief.radar_watch.length > 0 && (
             <Card theme={themes.radar}>
               <CardHeader icon={<Telescope className="w-4 h-4" />} label="On Your Radar" theme={themes.radar} />
-              <div className="px-5 pt-1 pb-4">
-                <p className="text-[13px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-4">
+              <div className="px-4 pt-1 pb-4">
+                <p className="text-[13px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-1">
                   Thematic stocks moving today · Not in your portfolio
                 </p>
-                <div className="space-y-3">
+                <p className="text-[12px] text-slate-700 italic mb-3">
+                  Tap any tile for the full reasoning.
+                </p>
+                {/* 2-column grid of tappable tiles. Compact layout fits 6
+                    picks on screen without the user feeling overwhelmed.
+                    Each tile shows ticker + theme + 1-line headline.
+                    Full why_now and deep_reasoning live on the reading page. */}
+                <div className="grid grid-cols-2 gap-2">
                   {brief.radar_watch.filter((r) => r && typeof r === "object").map((r, i) => (
-                    <div key={i} className="rounded-xl p-3 bg-gradient-to-br from-cyan-50/50 to-teal-50/30 border border-cyan-100/70">
-                      <div className="flex items-start gap-3">
-                        <span className="px-2 py-1 rounded-md text-[12px] font-bold tracking-wider bg-cyan-100 text-cyan-800 border border-cyan-200 flex-shrink-0">
+                    <button
+                      key={i}
+                      onClick={() => setReadingPage({
+                        id: `radar-${r.ticker || i}-${todayKey}`,
+                        type: "radar",
+                        ticker: r.ticker,
+                        theme: r.theme,
+                        headline: r.headline,
+                        why_now: r.why_now,
+                        deep_reasoning: r.deep_reasoning,
+                        chatDescription: `${r.ticker}${r.theme ? ` (${r.theme})` : ""}: ${r.headline}${r.why_now ? `. ${r.why_now}` : ""}${r.deep_reasoning ? ` Full reasoning: ${r.deep_reasoning}` : ""}`,
+                      })}
+                      className="text-left rounded-xl p-2.5 bg-gradient-to-br from-cyan-50/60 to-teal-50/40 border border-cyan-200/70 transition active:scale-[0.97] hover:from-cyan-50 hover:to-teal-50 hover:border-cyan-300"
+                    >
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span className="px-1.5 py-0.5 rounded-md text-[11px] font-bold tracking-wider bg-cyan-100 text-cyan-800 border border-cyan-200">
                           {r.ticker}
                         </span>
-                        <div className="flex-1 min-w-0">
-                          {r.theme && (
-                            <p className="text-[12px] uppercase tracking-wider text-teal-700 font-semibold mb-1">{r.theme}</p>
-                          )}
-                          <p className="text-[16px] font-semibold text-slate-900 leading-snug" style={{ fontFamily: SERIF }}>{r.headline}</p>
-                          {r.why_now && (
-                            <p className="text-[16px] text-slate-700 leading-relaxed mt-1">{r.why_now}</p>
-                          )}
-                          <button
-                            onClick={() => setReadingPage({
-                              id: `radar-${r.ticker || i}-${todayKey}`,
-                              type: "radar",
-                              ticker: r.ticker,
-                              theme: r.theme,
-                              headline: r.headline,
-                              why_now: r.why_now,
-                              deep_reasoning: r.deep_reasoning,
-                              chatDescription: `${r.ticker}${r.theme ? ` (${r.theme})` : ""}: ${r.headline}${r.why_now ? `. ${r.why_now}` : ""}${r.deep_reasoning ? ` Full reasoning: ${r.deep_reasoning}` : ""}`,
-                            })}
-                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-bold transition active:scale-95"
-                            style={{
-                              background: "linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%)",
-                              color: "#5B21B6",
-                              border: "1px solid #C4B5FD",
-                            }}
-                          >
-                            <Sparkles className="w-3.5 h-3.5" strokeWidth={2.5} />
-                            Read why · Ask about this
-                          </button>
-                        </div>
+                        <ChevronRight className="w-3.5 h-3.5 text-cyan-500 ml-auto flex-shrink-0" strokeWidth={2.2} />
                       </div>
-                    </div>
+                      {r.theme && (
+                        <p className="text-[10px] uppercase tracking-wider text-teal-700 font-semibold mb-1 truncate">{r.theme}</p>
+                      )}
+                      <p className="text-[13px] font-semibold text-slate-900 leading-snug line-clamp-3" style={{ fontFamily: SERIF }}>
+                        {r.headline}
+                      </p>
+                    </button>
                   ))}
                 </div>
-                <p className="mt-4 text-[12px] text-slate-700 leading-relaxed italic">
+                <p className="mt-3 text-[11px] text-slate-700 leading-relaxed italic">
                   Surfaced from your themes (AI · semis · nuclear · quantum · biotech). Watch only — not a recommendation.
                 </p>
               </div>

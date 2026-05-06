@@ -162,7 +162,38 @@ async function callJsonChunk(
   if (start === -1 || end === -1) {
     throw new Error("Model returned no JSON object");
   }
-  return JSON.parse(cleaned.slice(start, end + 1));
+  const parsed = JSON.parse(cleaned.slice(start, end + 1));
+  // Strip <cite ...>...</cite> tags from every string in the response.
+  // The web_search tool injects these for source attribution, but they
+  // leak into the brief content as raw text and look broken to users.
+  return stripCiteTags(parsed);
+}
+
+// Recursively walk a JSON value and remove <cite ...>...</cite> wrappers
+// from any string, keeping only the inner text. Also strips bare <cite>
+// open/close tags if encountered. Idempotent and safe on any value type.
+function stripCiteTags<T>(value: T): T {
+  if (typeof value === "string") {
+    return value
+      // Remove <cite index="..">...</cite> wrappers, keep inner text
+      .replace(/<cite\b[^>]*>([\s\S]*?)<\/cite>/gi, "$1")
+      // Remove any orphaned bare cite tags
+      .replace(/<\/?cite\b[^>]*>/gi, "")
+      // Collapse any double-spaces left behind
+      .replace(/[ \t]{2,}/g, " ")
+      .trim() as any;
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => stripCiteTags(v)) as any;
+  }
+  if (value && typeof value === "object") {
+    const out: any = {};
+    for (const [k, v] of Object.entries(value as any)) {
+      out[k] = stripCiteTags(v);
+    }
+    return out;
+  }
+  return value;
 }
 
 // Chunk 1: Light content (no web search) — affirmation, mindset, clarity,
@@ -219,6 +250,8 @@ ${accountRule}
 GOOD decision examples: "IONQ +45% on 175sh — earnings 5/6. Trim 75 into Friday strength." / "NVDA reports tonight, you hold 75sh. Set $850 stop pre-FOMC."
 BAD examples to avoid: "Review highest-conviction position" / "Confirm cash balance" — too generic.
 
+PRIMARY DECISION INPUT: This brief is the user's main source for what-to-do-today. 3 high-conviction action items beat 5 generic ones. If you don't have a clear take on a 4th or 5th item, return only the strong ones.
+
 decisions_reasoning EXAMPLE (for a TRIM IONQ decision) — note the simple language:
 "IONQ has gone up 45% in just one month, and the company is reporting earnings on May 6 — that's only days away. Earnings reports are big moments where the stock can swing wildly in either direction. Trimming means selling part of your position to lock in some of those gains, while keeping the rest invested. The reason to consider trimming: the stock has already had a huge run, so a lot of good news may already be 'priced in' (built into the current price). If the earnings disappoint even a little, the stock could drop 15-20% in a single day. Before you sell anything, check your cost basis (what you originally paid). If you're up 200%+, you'll owe taxes on the gains. On the other hand, if you sell and earnings are amazing, you'll miss the next move up. Selling 75 of your 175 shares keeps you in the game with most of your shares while reducing the risk of a big drop."`;
 
@@ -268,7 +301,9 @@ Return ONLY this JSON:
 }
 
 todays_edge: 0-3 alerts total — only if genuinely time-sensitive. Empty arrays are fine.
-radar_watch: 2-4 thematic stocks the user does NOT own. Each entry MUST include the deep_reasoning field — this is what the user reads when they tap to learn more.`;
+radar_watch: 4-6 high-conviction thematic stocks the user does NOT own. QUALITY OVER QUANTITY: 4 strong picks beat 6 mediocre ones. Each entry MUST include the deep_reasoning field — this is what the user reads when they tap to learn more.
+
+PRIMARY DECISION INPUT: This brief is the user's main source for "what to do today" — what to buy, hold, trim, or watch. Filler content hurts trust. Only include items where you have a clear, defensible take backed by today's data. If a category has nothing genuinely high-conviction to say, return fewer items rather than padding.`;
 
   return callJsonChunk(prompt, { search: true, maxTokens: 3200, maxSearches: 3 });
 }
@@ -322,7 +357,9 @@ Return ONLY this JSON:
   ]
 }
 
-conviction_watch: 3-5 entries. EVERY entry MUST include deep_reasoning — this is what the user reads when they tap the card to learn more.
+conviction_watch: 3-5 entries — focus on positions where you have a CLEAR HIGH-CONVICTION take (add, hold, trim) backed by current setup, catalysts, or risk. EVERY entry MUST include deep_reasoning — this is the depth the user reads when they tap the card.
+
+PRIMARY DECISION INPUT: This brief is the user's main source for "what to do with what I own" — hold, add, or trim signals. Filler hurts trust. 3 strong calls beat 5 weak ones. If a position is genuinely "no view, just hold," it's fine to omit.
 
 CRITICAL DATA RULES:
 - NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD", or any all-caps placeholder.
