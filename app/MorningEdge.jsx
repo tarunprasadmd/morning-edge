@@ -1223,12 +1223,18 @@ export default function MorningEdge() {
 
   // ─── Streaming brief fetch ────────────────────────────────────────
   // Uses Server-Sent Events from /api/brief?stream=1. The server runs
-  // the brief in parallel chunks and streams each card as it lands.
-  // We merge cards into the brief state progressively, so the page
-  // populates over ~10s instead of a 30s blank wait.
+  // the brief in 3 parallel chunks (light, pulse, smart_money) and
+  // streams each chunk's JSON the moment it lands. We merge into the
+  // brief state progressively, so the UI populates over ~10-30 seconds
+  // instead of a 60-90 second blank wait.
   //
-  // Falls back to the regular JSON path if streaming fails (older
-  // browsers, network proxies that strip SSE, etc.).
+  // SSE event types from server:
+  //   "chunk"    → { chunkName, fields }  — partial brief data, merge into state
+  //   "complete" → { brief, cached }      — final merge done
+  //   "error"    → { chunkName, message } — chunk failed (others continue)
+  //   "done"     → {}                     — stream ended
+  //
+  // Falls back to the regular JSON path on stream failure.
   const callStreamingAPI = async (opts = {}) => {
     const fresh = opts && opts.fresh === true;
     const params = new URLSearchParams();
@@ -1252,7 +1258,9 @@ export default function MorningEdge() {
       throw new Error(`Stream API ${response.status}: ${errBody.slice(0, 200)}`);
     }
 
-    const accumulated = {};
+    let accumulated = {};
+    let finalBrief = null;
+    let fatalError = null;
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
@@ -1279,16 +1287,31 @@ export default function MorningEdge() {
         let payload = null;
         try { payload = JSON.parse(dataStr); } catch { continue; }
 
-        if (eventName === "card" && payload && payload.key) {
-          accumulated[payload.key] = payload.value;
-          // Push partial brief to React state as each card arrives
+        if (eventName === "chunk" && payload && payload.fields && typeof payload.fields === "object") {
+          // Merge this chunk's fields into the accumulated brief and push
+          // to React state so each section appears as it lands.
+          accumulated = { ...accumulated, ...payload.fields };
           setBrief({ ...accumulated });
+        } else if (eventName === "complete" && payload && payload.brief) {
+          finalBrief = payload.brief;
+          setBrief({ ...payload.brief });
+        } else if (eventName === "error" && payload) {
+          if (payload.fatal) {
+            fatalError = payload.message || "Brief generation failed";
+          } else {
+            // Non-fatal — a single chunk failed, but others may still ship.
+            // Just log it; the merged brief will be partial.
+            console.warn(`Chunk ${payload.chunkName} failed:`, payload.message);
+          }
         }
-        // 'meta' and 'done' events are informational; nothing to render
+        // 'done' events are informational; nothing to render
       }
     }
 
-    return accumulated;
+    if (fatalError && !finalBrief && Object.keys(accumulated).length === 0) {
+      throw new Error(fatalError);
+    }
+    return finalBrief || accumulated;
   };
 
   const extractJSON = (data) => {
@@ -1325,8 +1348,20 @@ export default function MorningEdge() {
     setLoading(true);
 
     try {
-      const data = await callAPI(opts);
-      const fresh = extractJSON(data);
+      // Try streaming first — sections appear as they generate (10-30s
+      // total instead of 60-90s blank wait). Falls back to non-streaming
+      // if the streaming call fails (proxy strips SSE, browser issue, etc.)
+      let fresh;
+      try {
+        fresh = await callStreamingAPI(opts);
+      } catch (streamErr) {
+        console.warn("Streaming failed, falling back to non-streaming:", streamErr);
+        const data = await callAPI(opts);
+        fresh = extractJSON(data);
+      }
+      if (!fresh || Object.keys(fresh).length === 0) {
+        throw new Error("Empty brief returned");
+      }
       setBrief(fresh);
       // Auto-save brief by date for future history feature
       try {
@@ -2308,10 +2343,10 @@ export default function MorningEdge() {
           {/* Section skeletons with labels so the user knows what's loading */}
           {[
             { label: "Market Pulse", color: "#3b82f6" },
-            { label: "Today's Playbook", color: "#10b981" },
-            { label: "Holdings · High Conviction Watch", color: "#059669" },
+            { label: "Your Holdings · Today", color: "#10b981" },
+            { label: "Your Holdings · Ongoing Watch", color: "#059669" },
             { label: "Insider Flow", color: "#d97706" },
-            { label: "On Your Radar", color: "#0891b2" },
+            { label: "Discovery · Opportunities & Radar", color: "#0891b2" },
           ].map((sec) => (
             <div key={sec.label} className="rounded-2xl bg-white shadow-md border border-slate-100 overflow-hidden">
               {/* Colored top bar */}
@@ -2641,6 +2676,44 @@ export default function MorningEdge() {
             )}
           </div>
 
+          {/* Ask Anything — top-level entry point for general questions about
+              the user's portfolio, today's market, or anything investing-
+              related. Differs from the per-card "Ask about this" buttons in
+              that it has no specific card context — Claude has access to
+              the full brief and full portfolio. The user types whatever
+              they want. */}
+          <button
+            onClick={() => {
+              openChat({
+                id: `general-${todayKey}`,
+                type: "general",
+                description: "General question about today's brief or your portfolio. The user has the full brief in front of them and may reference any section.",
+              });
+            }}
+            className="w-full rounded-2xl px-4 py-3.5 transition active:scale-[0.99] hover:shadow-md flex items-center gap-3 text-left border"
+            style={{
+              background: "linear-gradient(135deg, #f5f3ff 0%, #faf5ff 60%, #fdf4ff 100%)",
+              borderColor: "#ddd6fe",
+              boxShadow: "0 2px 8px -2px rgba(139, 92, 246, 0.12)",
+            }}
+          >
+            <div
+              className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%)" }}
+            >
+              <Sparkles className="w-5 h-5 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-violet-700 leading-none mb-1">
+                Ask Morning Edge
+              </p>
+              <p className="text-[15px] text-slate-800 leading-snug truncate">
+                Anything about your portfolio or today's brief…
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-violet-400 flex-shrink-0" strokeWidth={2.5} />
+          </button>
+
           {visible.market_pulse && brief.market_pulse && (() => {
             // Tone drives the hero color treatment so the card feels alive
             // rather than dry. Bullish = teal energy, cautious = amber care,
@@ -2766,10 +2839,13 @@ export default function MorningEdge() {
           {/* PLAYBOOK — tappable check-offs that persist per day */}
           {visible.decisions && Array.isArray(brief.decisions) && brief.decisions.length > 0 && (
             <Card theme={themes.play}>
-              <CardHeader icon={<CheckSquare className="w-4 h-4" />} label="Today's Playbook" theme={themes.play} />
+              <CardHeader icon={<CheckSquare className="w-4 h-4" />} label="Your Holdings · Today" theme={themes.play} />
               <div className="px-5 py-6">
-                <p className="text-[13px] text-slate-700 italic mb-4 -mt-2">
-                  Moves to make today, sized to your accounts. Tap any card for full reasoning.
+                <p className="text-[13px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-1 -mt-2">
+                  Specific moves to make TODAY
+                </p>
+                <p className="text-[13px] text-slate-700 italic mb-4">
+                  Time-sensitive trades, sized to your accounts. Tap any card for full reasoning.
                 </p>
                 {/* Personalization indicator */}
                 {holdings.length > 0 ? (
@@ -2871,13 +2947,13 @@ export default function MorningEdge() {
           {visible.conviction && (
             (Array.isArray(brief.conviction_watch) && brief.conviction_watch.length > 0) ? (
             <Card theme={themes.conviction}>
-              <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Holdings · High Conviction Watch" theme={themes.conviction} />
+              <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Ongoing Watch" theme={themes.conviction} />
               <div className="px-3 pt-1 pb-3 space-y-2">
                 <p className="text-[13px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium px-1 mb-1">
-                  Hold · Add · Trim signals on stocks you own
+                  Hold · Add · Trim signals worth monitoring
                 </p>
                 <p className="text-[12px] text-slate-700 italic px-1 mb-3">
-                  Tap any signal for the full reasoning.
+                  Not necessarily today. Background watch on your positions. Tap any signal for full reasoning.
                 </p>
                 {brief.conviction_watch.filter(Boolean).map((c, i) => {
                   if (!c || typeof c !== "object") return null;
@@ -2941,10 +3017,10 @@ export default function MorningEdge() {
               // section header still shows so the user knows the feature
               // exists; the body explains what to do.
               <Card theme={themes.conviction}>
-                <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Holdings · High Conviction Watch" theme={themes.conviction} />
+                <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Ongoing Watch" theme={themes.conviction} />
                 <div className="px-5 pt-1 pb-5">
                   <p className="text-[13px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-3">
-                    Hold · Add · Trim signals on stocks you own
+                    Hold · Add · Trim signals worth monitoring
                   </p>
                   <div className="rounded-xl bg-emerald-50/60 border border-emerald-200 p-4">
                     <p className="text-[14px] text-emerald-900 leading-relaxed m-0">
@@ -3248,76 +3324,49 @@ export default function MorningEdge() {
           )}
 
 
-          {visible.radar && (
-            (Array.isArray(brief.radar_watch) && brief.radar_watch.length > 0) ? (
-            <Card theme={themes.radar}>
-              <CardHeader icon={<Telescope className="w-4 h-4" />} label="On Your Radar" theme={themes.radar} />
-              <div className="px-4 pt-1 pb-4">
-                <p className="text-[13px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-1">
-                  Thematic stocks moving today · Not in your portfolio
-                </p>
-                <p className="text-[12px] text-slate-700 italic mb-3">
-                  Tap any tile for the full reasoning.
-                </p>
-                {/* 2-column grid of tappable tiles. Compact layout fits 6
-                    picks on screen without the user feeling overwhelmed.
-                    Each tile shows ticker + theme + 1-line headline.
-                    Full why_now and deep_reasoning live on the reading page. */}
-                <div className="grid grid-cols-2 gap-2">
-                  {brief.radar_watch.filter((r) => r && typeof r === "object").map((r, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setReadingPage({
-                        id: `radar-${r.ticker || i}-${todayKey}`,
-                        type: "radar",
-                        ticker: r.ticker,
-                        theme: r.theme,
-                        headline: r.headline,
-                        why_now: r.why_now,
-                        deep_reasoning: r.deep_reasoning,
-                        chatDescription: `${r.ticker}${r.theme ? ` (${r.theme})` : ""}: ${r.headline}${r.why_now ? `. ${r.why_now}` : ""}${r.deep_reasoning ? ` Full reasoning: ${r.deep_reasoning}` : ""}`,
-                      })}
-                      className="text-left rounded-xl p-2.5 bg-gradient-to-br from-cyan-50/60 to-teal-50/40 border border-cyan-200/70 transition active:scale-[0.97] hover:from-cyan-50 hover:to-teal-50 hover:border-cyan-300"
-                    >
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <span className="px-1.5 py-0.5 rounded-md text-[11px] font-bold tracking-wider bg-cyan-100 text-cyan-800 border border-cyan-200">
-                          {r.ticker}
-                        </span>
-                        <ChevronRight className="w-3.5 h-3.5 text-cyan-500 ml-auto flex-shrink-0" strokeWidth={2.2} />
-                      </div>
-                      {r.theme && (
-                        <p className="text-[10px] uppercase tracking-wider text-teal-700 font-semibold mb-1 truncate">{r.theme}</p>
-                      )}
-                      <p className="text-[13px] font-semibold text-slate-900 leading-snug line-clamp-3" style={{ fontFamily: SERIF }}>
-                        {r.headline}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-                <p className="mt-3 text-[11px] text-slate-700 leading-relaxed italic">
-                  Surfaced from your themes (AI · semis · nuclear · quantum · biotech). Watch only — not a recommendation.
-                </p>
-              </div>
-            </Card>
-            ) : (
-              // Empty state for Radar — surfaced when no thematic picks
-              // strong enough to warrant attention today. Honest is better
-              // than padded.
-              <Card theme={themes.radar}>
-                <CardHeader icon={<Telescope className="w-4 h-4" />} label="On Your Radar" theme={themes.radar} />
-                <div className="px-5 pt-1 pb-5">
-                  <p className="text-[13px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-3">
-                    Thematic stocks moving today · Not in your portfolio
-                  </p>
-                  <div className="rounded-xl bg-cyan-50/60 border border-cyan-200 p-4">
-                    <p className="text-[14px] text-cyan-900 leading-relaxed m-0">
-                      No high-conviction thematic picks today. Markets quiet on AI, nuclear, quantum, and biotech themes — sometimes there's no signal worth acting on.
+          {visible.radar && (() => {
+            const hasRadar = Array.isArray(brief.radar_watch) && brief.radar_watch.length > 0;
+            const hasOpportunity = Array.isArray(brief.opportunity_watch) && brief.opportunity_watch.length > 0;
+            // Show the section if EITHER list has content. If both are
+            // empty, show a graceful empty state.
+            if (!hasRadar && !hasOpportunity) {
+              return (
+                <Card theme={themes.radar}>
+                  <CardHeader icon={<Telescope className="w-4 h-4" />} label="Discovery" theme={themes.radar} />
+                  <div className="px-5 pt-1 pb-5">
+                    <p className="text-[13px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-3">
+                      Opportunities · On Your Radar
                     </p>
+                    <div className="rounded-xl bg-cyan-50/60 border border-cyan-200 p-4">
+                      <p className="text-[14px] text-cyan-900 leading-relaxed m-0">
+                        No high-conviction discovery picks today. Quiet across AI, nuclear, quantum, and biotech themes — sometimes there's no signal worth acting on.
+                      </p>
+                    </div>
                   </div>
+                </Card>
+              );
+            }
+
+            // Default tab: Opportunity if it has content (more actionable),
+            // otherwise Radar. The user can toggle.
+            const defaultTab = hasOpportunity ? "opportunity" : "radar";
+            return (
+              <Card theme={themes.radar}>
+                <CardHeader icon={<Telescope className="w-4 h-4" />} label="Discovery" theme={themes.radar} />
+                <div className="px-3 pt-1 pb-4">
+                  {/* Tab selector — Opportunity (portfolio-aware buys) vs Radar (general thematic) */}
+                  <DiscoverySection
+                    radar={hasRadar ? brief.radar_watch : []}
+                    opportunity={hasOpportunity ? brief.opportunity_watch : []}
+                    defaultTab={defaultTab}
+                    holdings={holdings}
+                    todayKey={todayKey}
+                    onOpenReading={(d) => setReadingPage(d)}
+                  />
                 </div>
               </Card>
-            )
-          )}
+            );
+          })()}
 
 
           {visible.mindset && brief.mindset && (
@@ -4475,6 +4524,163 @@ function autoExpand(text) {
   return text + " — Tap again to collapse.";
 }
 
+// ────────────────────────────────────────────────────────────────────
+// DiscoverySection — combined Opportunity Watch + Radar in one card
+// with a 2-tab toggle. Opportunity is portfolio-aware (buy ideas that
+// fill thematic gaps in user's holdings); Radar is general thematic
+// discovery. Both use the same scannable tile layout — tap any tile
+// for the full reasoning + sources + ask-about-this chat.
+// ────────────────────────────────────────────────────────────────────
+function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, onOpenReading }) {
+  const [activeTab, setActiveTab] = React.useState(defaultTab || "opportunity");
+  const hasOpportunity = Array.isArray(opportunity) && opportunity.length > 0;
+  const hasRadar = Array.isArray(radar) && radar.length > 0;
+
+  return (
+    <div>
+      {/* Tab selector */}
+      <div className="flex gap-2 mb-3 border-b border-cyan-100">
+        <button
+          onClick={() => setActiveTab("opportunity")}
+          className={`flex-1 py-2 px-2 text-[12px] font-bold uppercase tracking-wider transition relative ${
+            activeTab === "opportunity"
+              ? "text-cyan-800"
+              : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          <span className="flex items-center justify-center gap-1.5">
+            <Sparkles className="w-3 h-3" strokeWidth={2.5} />
+            Opportunities {hasOpportunity && `(${opportunity.length})`}
+          </span>
+          {activeTab === "opportunity" && (
+            <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-cyan-700" />
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab("radar")}
+          className={`flex-1 py-2 px-2 text-[12px] font-bold uppercase tracking-wider transition relative ${
+            activeTab === "radar"
+              ? "text-cyan-800"
+              : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          <span className="flex items-center justify-center gap-1.5">
+            <Telescope className="w-3 h-3" strokeWidth={2.5} />
+            On Your Radar {hasRadar && `(${radar.length})`}
+          </span>
+          {activeTab === "radar" && (
+            <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-cyan-700" />
+          )}
+        </button>
+      </div>
+
+      {/* Tab content */}
+      {activeTab === "opportunity" ? (
+        hasOpportunity ? (
+          <div>
+            <p className="text-[12px] text-slate-700 italic mb-3 px-1">
+              Personalized buy ideas that fit your themes and fill gaps in your holdings. Tap any pick for the full reasoning.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {opportunity.filter((o) => o && typeof o === "object").map((o, i) => (
+                <button
+                  key={i}
+                  onClick={() => onOpenReading({
+                    id: `opportunity-${o.ticker || i}-${todayKey}`,
+                    type: "opportunity",
+                    ticker: o.ticker,
+                    theme: o.theme,
+                    fits_gap: o.fits_gap,
+                    headline: o.headline,
+                    deep_reasoning: o.deep_reasoning,
+                    chatDescription: `${o.ticker}${o.theme ? ` (${o.theme})` : ""}: ${o.headline}${o.fits_gap ? `. Fits gap: ${o.fits_gap}` : ""}${o.deep_reasoning ? ` Full reasoning: ${o.deep_reasoning}` : ""}`,
+                  })}
+                  className="text-left rounded-xl p-2.5 bg-gradient-to-br from-violet-50/70 to-cyan-50/40 border border-violet-200/80 transition active:scale-[0.97] hover:from-violet-50 hover:to-cyan-50 hover:border-violet-300"
+                >
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className="px-1.5 py-0.5 rounded-md text-[11px] font-bold tracking-wider bg-violet-100 text-violet-800 border border-violet-200">
+                      {o.ticker}
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-violet-500 ml-auto flex-shrink-0" strokeWidth={2.2} />
+                  </div>
+                  {o.theme && (
+                    <p className="text-[10px] uppercase tracking-wider text-violet-700 font-semibold mb-1 truncate">{o.theme}</p>
+                  )}
+                  {o.fits_gap && (
+                    <p className="text-[12px] text-violet-900 font-bold leading-snug mb-1 line-clamp-2">
+                      {o.fits_gap}
+                    </p>
+                  )}
+                  <p className="text-[12px] text-slate-700 leading-snug line-clamp-2" style={{ fontFamily: SERIF }}>
+                    {o.headline}
+                  </p>
+                </button>
+              ))}
+            </div>
+            <p className="mt-3 text-[11px] text-slate-700 leading-relaxed italic px-1">
+              Picks chosen to fit your existing themes and fill diversification gaps. Educational only — verify before buying.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-xl bg-violet-50/60 border border-violet-200 p-4">
+            <p className="text-[14px] text-violet-900 leading-relaxed m-0">
+              No high-conviction buy ideas that fit your portfolio gaps today. Quality over quantity — we'd rather show nothing than pad with weak picks.
+            </p>
+          </div>
+        )
+      ) : (
+        hasRadar ? (
+          <div>
+            <p className="text-[12px] text-slate-700 italic mb-3 px-1">
+              Thematic stocks moving today. Not necessarily personalized — discovery feed. Tap any tile for the full reasoning.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {radar.filter((r) => r && typeof r === "object").map((r, i) => (
+                <button
+                  key={i}
+                  onClick={() => onOpenReading({
+                    id: `radar-${r.ticker || i}-${todayKey}`,
+                    type: "radar",
+                    ticker: r.ticker,
+                    theme: r.theme,
+                    headline: r.headline,
+                    why_now: r.why_now,
+                    deep_reasoning: r.deep_reasoning,
+                    chatDescription: `${r.ticker}${r.theme ? ` (${r.theme})` : ""}: ${r.headline}${r.why_now ? `. ${r.why_now}` : ""}${r.deep_reasoning ? ` Full reasoning: ${r.deep_reasoning}` : ""}`,
+                  })}
+                  className="text-left rounded-xl p-2.5 bg-gradient-to-br from-cyan-50/60 to-teal-50/40 border border-cyan-200/70 transition active:scale-[0.97] hover:from-cyan-50 hover:to-teal-50 hover:border-cyan-300"
+                >
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className="px-1.5 py-0.5 rounded-md text-[11px] font-bold tracking-wider bg-cyan-100 text-cyan-800 border border-cyan-200">
+                      {r.ticker}
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-cyan-500 ml-auto flex-shrink-0" strokeWidth={2.2} />
+                  </div>
+                  {r.theme && (
+                    <p className="text-[10px] uppercase tracking-wider text-teal-700 font-semibold mb-1 truncate">{r.theme}</p>
+                  )}
+                  <p className="text-[13px] font-semibold text-slate-900 leading-snug line-clamp-3" style={{ fontFamily: SERIF }}>
+                    {r.headline}
+                  </p>
+                </button>
+              ))}
+            </div>
+            <p className="mt-3 text-[11px] text-slate-700 leading-relaxed italic px-1">
+              Surfaced from your themes (AI · semis · nuclear · quantum · biotech). Watch only — not a recommendation.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-xl bg-cyan-50/60 border border-cyan-200 p-4">
+            <p className="text-[14px] text-cyan-900 leading-relaxed m-0">
+              No thematic discovery picks today. Markets quiet on your themes — sometimes there's no signal worth acting on.
+            </p>
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
 function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
   const parsed = parseDecision(decision);
   const theme = DECISION_THEMES[parsed.type] || DECISION_THEMES.act;
@@ -4633,6 +4839,22 @@ function ChatSheet({
         `Does this affect my portfolio?`,
       ];
     }
+    if (context.type === "opportunity") {
+      return [
+        cashBalance != null ? `How many shares can I afford?` : `How should I size a starter position?`,
+        `Why does this fit my portfolio?`,
+        `What could go wrong?`,
+        `Buy now or wait for a dip?`,
+      ];
+    }
+    if (context.type === "general") {
+      return [
+        `Where am I overexposed?`,
+        `What earnings should I watch?`,
+        `Anything I should trim?`,
+        `Where are my biggest gaps?`,
+      ];
+    }
     return [`Tell me more`, `What should I think about?`, `What's the catch?`];
   })();
 
@@ -4672,7 +4894,7 @@ function ChatSheet({
                 Ask Morning Edge
               </p>
               <p className="text-[11px] text-slate-700 truncate uppercase tracking-wider">
-                {context.type}{context.ticker ? ` · ${context.ticker}` : ""}
+                {context.type === "general" ? "Anything goes" : context.type}{context.ticker ? ` · ${context.ticker}` : ""}
               </p>
             </div>
           </div>
@@ -4749,7 +4971,9 @@ function ChatSheet({
                 <Sparkles className="w-6 h-6 text-violet-700" strokeWidth={2} />
               </div>
               <p className="text-[15px] text-slate-700 mb-4 max-w-xs leading-relaxed" style={{ fontFamily: SERIF }}>
-                Ask anything about this. I know your portfolio and today's market read.
+                {context.type === "general"
+                  ? "Ask me anything about your portfolio, today's market, or the brief."
+                  : "Ask anything about this. I know your portfolio and today's market read."}
               </p>
               <div className="flex flex-col gap-2 w-full max-w-xs">
                 {starterPrompts.map((q, i) => (
@@ -4775,8 +4999,18 @@ function ChatSheet({
             </div>
           )}
           {error && (
-            <div className="text-[13px] text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">
-              {error}
+            <div className="rounded-lg bg-rose-50 border border-rose-200 px-3 py-2.5">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-700 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] text-rose-900 font-semibold leading-snug">
+                    Couldn't get a response
+                  </p>
+                  <p className="text-[12px] text-rose-700 leading-snug mt-0.5">
+                    The AI is taking longer than usual. Try sending your question again, or check back in a moment.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -4845,6 +5079,12 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
     if (data.type === "radar") {
       return { bg: "linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)", border: "#67e8f9", accent: "#0891b2", accentDark: "#155e75", chipBg: "#cffafe" };
     }
+    if (data.type === "opportunity") {
+      // Opportunity uses violet — distinguishes from radar's cyan.
+      // Buy ideas are personalized and higher-stakes, so they warrant
+      // their own visual signal.
+      return { bg: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)", border: "#c4b5fd", accent: "#6d28d9", accentDark: "#4c1d95", chipBg: "#ede9fe" };
+    }
     return { bg: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)", border: "#cbd5e1", accent: "#475569", accentDark: "#0f172a", chipBg: "#e2e8f0" };
   })();
 
@@ -4879,7 +5119,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
         <div style={{ background: theme.bg, padding: "16px 18px 14px", borderBottom: `1px solid ${theme.border}`, borderTopLeftRadius: 20, borderTopRightRadius: 20 }}>
           <div className="flex items-center justify-between mb-3">
             <p className="text-[12px] font-bold tracking-[0.2em] uppercase m-0" style={{ color: theme.accent }}>
-              {data.type === "conviction" ? "Conviction · Why" : data.type === "radar" ? "Radar · Why" : "Why"}
+              {data.type === "conviction" ? "Conviction · Why" : data.type === "radar" ? "Radar · Why" : data.type === "opportunity" ? "Opportunity · Why" : "Why"}
             </p>
             <button
               onClick={onClose}
@@ -4920,6 +5160,18 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
 
         {/* Body — scrollable */}
         <div className="flex-1 overflow-y-auto px-5 py-5">
+          {/* Fits gap callout — only for Opportunity type, distinguishes
+              this from generic radar by emphasizing the portfolio fit. */}
+          {data.fits_gap && (
+            <div className="mb-4 rounded-lg p-3" style={{ background: theme.chipBg, border: `1px solid ${theme.border}` }}>
+              <p className="text-[10px] uppercase tracking-[0.18em] font-bold mb-1" style={{ color: theme.accent }}>
+                Fits your portfolio gap
+              </p>
+              <p className="text-[15px] leading-snug font-bold m-0" style={{ color: theme.accentDark, fontFamily: SERIF }}>
+                {data.fits_gap}
+              </p>
+            </div>
+          )}
           {/* Quick summary if we have why_now */}
           {data.why_now && (
             <div className="mb-4">
@@ -5429,6 +5681,74 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
               </p>
             </div>
           )}
+          {/* Verify · Learn more — source links so users can dive deeper
+              into the stock on their preferred research site. Same pattern
+              as Conviction and Radar reading pages. */}
+          {parsed.ticker && (
+            <div className="mt-5 pt-4 border-t border-slate-200">
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-2">
+                Verify · Learn more about {parsed.ticker}
+              </p>
+              <div className="space-y-2">
+                <a
+                  href={`https://www.investing.com/search/?q=${parsed.ticker}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
+                  style={{ borderColor: "#e2e8f0" }}
+                >
+                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                    Investing.com — {parsed.ticker}
+                  </p>
+                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                    Full quote, charts, news, technical analysis, and earnings — clean dashboard.
+                  </p>
+                </a>
+                <a
+                  href={`https://seekingalpha.com/symbol/${parsed.ticker}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
+                  style={{ borderColor: "#e2e8f0" }}
+                >
+                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                    Seeking Alpha — {parsed.ticker}
+                  </p>
+                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                    Analyst articles, earnings analysis, bull/bear takes (some content paywalled).
+                  </p>
+                </a>
+                <a
+                  href={`https://finance.yahoo.com/quote/${parsed.ticker}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
+                  style={{ borderColor: "#e2e8f0" }}
+                >
+                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                    Yahoo Finance — {parsed.ticker}
+                  </p>
+                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                    Quick price, news headlines, and basic chart. Always works as a fallback.
+                  </p>
+                </a>
+                <a
+                  href={`https://fintel.io/so/us/${parsed.ticker.toLowerCase()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
+                  style={{ borderColor: "#e2e8f0" }}
+                >
+                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                    Fintel — {parsed.ticker} institutional ownership
+                  </p>
+                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                    See which hedge funds and institutions hold this stock. Clean ownership data.
+                  </p>
+                </a>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Status indicators */}
@@ -5525,7 +5845,17 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
 function PowerPlateCard({ plate }) {
   const [expanded, setExpanded] = React.useState(false);
   if (!plate) return null;
-  const { name, description, protein_g, prep_min, groceries = [], prep_steps = [] } = plate;
+  const {
+    name,
+    description,
+    protein_g,
+    prep_min,
+    groceries = [],
+    prep_steps = [],
+    why_this_meal,
+    swap_options = [],
+    pairing,
+  } = plate;
   return (
     <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50/70 to-orange-50/40 overflow-hidden">
       {/* Header — always visible */}
@@ -5535,6 +5865,15 @@ function PowerPlateCard({ plate }) {
         </p>
         {description && (
           <p className="text-[15px] text-slate-700 leading-relaxed mb-3">{description}</p>
+        )}
+        {/* Why this meal — context paragraph explaining nutritional rationale */}
+        {why_this_meal && (
+          <div className="rounded-lg bg-white/70 border border-amber-200/60 px-3 py-2.5 mb-3">
+            <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-amber-800 mb-1">
+              Why this meal today
+            </p>
+            <p className="text-[13px] text-slate-800 leading-relaxed m-0">{why_this_meal}</p>
+          </div>
         )}
         {/* Stats row */}
         <div className="flex items-center gap-2 mb-3">
@@ -5563,7 +5902,7 @@ function PowerPlateCard({ plate }) {
         </button>
       </div>
 
-      {/* Expanded section — grocery list + prep steps */}
+      {/* Expanded section — grocery list + prep steps + swaps + pairing */}
       {expanded && (
         <div className="px-4 pb-4 pt-1 space-y-4 border-t border-amber-100">
           {groceries.length > 0 && (
@@ -5598,6 +5937,31 @@ function PowerPlateCard({ plate }) {
               </ol>
             </div>
           )}
+          {/* Swap options — sub-ingredient flexibility */}
+          {Array.isArray(swap_options) && swap_options.length > 0 && (
+            <div>
+              <p className="text-[12px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2 flex items-center gap-1.5">
+                <RefreshCw className="w-3 h-3" /> Easy swaps
+              </p>
+              <ul className="space-y-1.5">
+                {swap_options.map((s, i) => (
+                  <li key={i} className="text-[15px] text-slate-700 leading-snug flex gap-2">
+                    <span className="text-amber-500 flex-shrink-0">↔</span>
+                    <span>{s}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {/* Pairing suggestion — drink/side */}
+          {pairing && (
+            <div className="rounded-lg bg-amber-100/50 border border-amber-200 px-3 py-2.5">
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-amber-800 mb-1">
+                Pair with
+              </p>
+              <p className="text-[14px] text-amber-900 leading-relaxed m-0">{pairing}</p>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -5615,24 +5979,36 @@ function SignatureFooter({ verified, hash, compact }) {
       )}
 
       {/* Charitable mission — a portion of proceeds supports children and
-          adults with disabilities. Inspired by family who depend on this
-          care every day. */}
+          adults with disabilities. The medallion at the heart of this
+          section is a bronze relief of the founder's father holding his
+          sister, who lives with disabilities. The reason the app exists. */}
       {!compact && (
-        <div className="mt-5 mx-4 px-4 py-3 rounded-xl border border-amber-200/70 bg-gradient-to-br from-amber-50/80 to-rose-50/60 max-w-md mx-auto">
-          <div className="flex items-start gap-2.5">
-            <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5"
-              style={{ background: "linear-gradient(135deg, #F5D08C 0%, #D4A574 100%)" }}>
-              <HeartHandshake className="w-3.5 h-3.5" style={{ color: "#7C2D12" }} />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-[12px] uppercase tracking-[0.2em] font-bold text-amber-900 mb-0.5">
-                Pay It Forward
-              </p>
-              <p className="text-[13px] text-slate-700 leading-snug">
-                A portion of proceeds contributes to U.S. charities supporting children and adults with disabilities and the families who care for them.
-              </p>
-            </div>
+        <div className="mt-6 mx-4 px-5 py-6 rounded-2xl border max-w-md mx-auto"
+          style={{
+            background: "linear-gradient(135deg, #faf6ee 0%, #f4ede4 60%, #efe4d0 100%)",
+            borderColor: "#e8dfca",
+            boxShadow: "0 2px 12px -4px rgba(124, 45, 18, 0.08)",
+          }}>
+          <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-amber-900/80 mb-4">
+            For the families who care
+          </p>
+          {/* Medallion — bronze relief, family heart of this app */}
+          <div className="flex justify-center mb-4">
+            <img
+              src="/charity_medallion.webp"
+              alt="Bronze medallion of a father holding his daughter — the inspiration behind Morning Edge"
+              width="120"
+              height="120"
+              className="select-none pointer-events-none"
+              style={{
+                filter: "drop-shadow(0 4px 8px rgba(124, 45, 18, 0.20))",
+              }}
+              loading="lazy"
+            />
           </div>
+          <p className="text-[13.5px] text-slate-800 leading-relaxed text-center px-1">
+            A portion of proceeds contributes to U.S. charities supporting children and adults with disabilities and the families who care for them.
+          </p>
         </div>
       )}
 

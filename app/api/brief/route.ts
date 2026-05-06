@@ -18,7 +18,7 @@ const anthropic = new Anthropic({
 //
 // Bypass with ?fresh=1 (or { forceFresh: true } in body). The user's
 // pull-to-refresh action triggers ?fresh=1 on the client.
-const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
+const CACHE_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours — keeps API costs down by serving cached briefs through a typical workday
 const briefCache = new Map<string, { brief: any; storedAt: number }>();
 
 function buildCacheKey(input: {
@@ -47,6 +47,7 @@ export async function POST(request: Request) {
   try {
     const url = new URL(request.url);
     const queryFresh = url.searchParams.get("fresh") === "1";
+    const wantsStream = url.searchParams.get("stream") === "1";
     const body = await request.json();
     const { name, watchlist, holdings, accounts, holdingsAgeDays, date, forceFresh } = body;
     const fresh = queryFresh || !!forceFresh;
@@ -62,18 +63,30 @@ export async function POST(request: Request) {
     if (!fresh) {
       const hit = briefCache.get(cacheKey);
       if (hit && Date.now() - hit.storedAt < CACHE_TTL_MS) {
+        // Cache hit — return immediately. For streaming requests, emit a
+        // single "complete" event with the full brief so the client gets
+        // the same UI flow.
+        if (wantsStream) {
+          return streamCachedBrief(hit.brief);
+        }
         return NextResponse.json({ brief: hit.brief, cached: true });
       }
     }
 
-    // ─── Parallel chunk generation ──────────────────────────────────────
-    // Instead of one giant Anthropic call (slow — sequential web searches
-    // inside a single call), run 3 focused calls concurrently. Each handles
-    // a related set of cards. Total wall time ≈ slowest single call (~10-
-    // 15s) instead of all of them in series (~2 minutes).
-    //
-    // If a chunk fails, the others still ship — we just return a brief
-    // missing those cards rather than failing the whole request.
+    // ─── STREAMING path ─────────────────────────────────────────────────
+    // For fresh generation, stream chunks to the client as they complete.
+    // The user sees Affirmation/Mindset arrive in ~1-2s (Haiku), then
+    // Pulse/Edge in ~10-15s, then Smart Money + Conviction in ~25-35s.
+    // No more 60-90 second blank screen.
+    if (wantsStream) {
+      return streamFreshBrief({
+        name, watchlist, holdings, accounts, holdingsAgeDays, date, cacheKey,
+      });
+    }
+
+    // ─── Non-streaming path (legacy / cache-miss fallback) ──────────────
+    // Same Promise.allSettled flow as before. Client either uses stream OR
+    // falls back to this if streaming isn't supported.
     const tasks = [
       generateLightChunk(name, holdings, accounts, holdingsAgeDays, date),
       generatePulseAndEdge(name, watchlist, holdings, date),
@@ -91,8 +104,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // If literally nothing came back, fail the request so the client can
-    // show its demo brief fallback.
     if (Object.keys(merged).length === 0) {
       return NextResponse.json(
         { error: `All chunks failed: ${failures.join("; ")}` },
@@ -120,6 +131,126 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+// ─── SSE streaming helpers ────────────────────────────────────────────
+// Server-Sent Events emit a sequence of `event: <name>\ndata: <json>\n\n`
+// frames. Frontend listens with EventSource (or a fetch reader for POST).
+//
+// Frame types:
+//   - "chunk"    — partial brief data { fields: {...}, chunkName: "light" }
+//   - "complete" — final merge done, brief cached { brief: {...} }
+//   - "error"    — chunk failed, brief continues without it
+//   - "done"     — stream end (also closes the underlying connection)
+
+function sseEncode(eventName: string, data: any): string {
+  const json = JSON.stringify(data);
+  return `event: ${eventName}\ndata: ${json}\n\n`;
+}
+
+function streamCachedBrief(brief: any): Response {
+  const stream = new ReadableStream({
+    start(controller) {
+      const encoder = new TextEncoder();
+      controller.enqueue(encoder.encode(sseEncode("chunk", { chunkName: "cached", fields: brief })));
+      controller.enqueue(encoder.encode(sseEncode("complete", { brief, cached: true })));
+      controller.enqueue(encoder.encode(sseEncode("done", {})));
+      controller.close();
+    },
+  });
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      "Connection": "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  });
+}
+
+function streamFreshBrief(opts: {
+  name: string;
+  watchlist: string[];
+  holdings: any[];
+  accounts: any[];
+  holdingsAgeDays: number;
+  date: string;
+  cacheKey: string;
+}): Response {
+  const { name, watchlist, holdings, accounts, holdingsAgeDays, date, cacheKey } = opts;
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      const encoder = new TextEncoder();
+      const send = (eventName: string, data: any) => {
+        controller.enqueue(encoder.encode(sseEncode(eventName, data)));
+      };
+
+      // Initial "started" frame so the client knows generation has begun
+      send("chunk", { chunkName: "started", fields: {} });
+
+      const merged: any = {};
+      const failures: string[] = [];
+
+      // Each chunk runs in parallel (Promise.allSettled) but we wire up
+      // .then handlers so the client gets each one the moment it lands —
+      // not after all three finish.
+      const tasks = [
+        { name: "light", promise: generateLightChunk(name, holdings, accounts, holdingsAgeDays, date) },
+        { name: "pulse", promise: generatePulseAndEdge(name, watchlist, holdings, date) },
+        { name: "smart_money", promise: generateSmartMoneyAndConviction(name, watchlist, holdings, date) },
+      ];
+
+      // Wire up each task's resolution to send a chunk frame
+      const wired = tasks.map((t) =>
+        t.promise.then(
+          (val) => {
+            if (val && typeof val === "object") {
+              Object.assign(merged, val);
+              send("chunk", { chunkName: t.name, fields: val });
+            }
+          },
+          (err) => {
+            failures.push(`${t.name}: ${err?.message || "unknown"}`);
+            send("error", { chunkName: t.name, message: err?.message || "Chunk failed" });
+          }
+        )
+      );
+
+      // Wait for all to settle (success or failure)
+      await Promise.all(wired);
+
+      if (Object.keys(merged).length === 0) {
+        send("error", { fatal: true, message: `All chunks failed: ${failures.join("; ")}` });
+      } else {
+        // Cache the merged brief for next time
+        briefCache.set(cacheKey, { brief: merged, storedAt: Date.now() });
+        if (briefCache.size > 100) {
+          const now = Date.now();
+          for (const [k, v] of briefCache.entries()) {
+            if (now - v.storedAt > CACHE_TTL_MS) briefCache.delete(k);
+          }
+        }
+        send("complete", {
+          brief: merged,
+          cached: false,
+          partial: failures.length > 0 ? { failedChunks: failures.length } : undefined,
+        });
+      }
+
+      send("done", {});
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      "Connection": "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }
 
 // ─── Chunk helpers ────────────────────────────────────────────────────
@@ -383,10 +514,21 @@ Return ONLY this JSON:
       "action": "OPTIONAL concrete trade with size, max 12 words — omit for routine holds",
       "deep_reasoning": "130-180 word explanation written for someone NEW to trading. Cover: WHY this signal NOW for this stock you own (what's happening that triggered it), WHY YOU MIGHT WANT TO FOLLOW IT (what problem it solves), WHAT TO THINK ABOUT FIRST (your cost basis if known, how much you own as % of portfolio, tax differences between IRA and taxable accounts), WHAT COULD GO WRONG (the case against acting, why doing nothing might be fine). PLAIN ENGLISH RULES: define any technical term in the same sentence (e.g. 'cost basis — what you originally paid'). Never use trading slang without explaining it. Use 'you' and 'your' to make it personal. Like a thoughtful friend explaining over coffee. Full sentences. No bullet points."
     }
+  ],
+  "opportunity_watch": [
+    {
+      "ticker": "TICKER (must NOT already be in user's holdings)",
+      "theme": "short tag matching user's themes (e.g. 'AI compute', 'Nuclear · grid', 'Quantum hardware', 'Critical minerals', 'Biotech catalyst')",
+      "fits_gap": "1-line tagline, max 14 words, on what GAP in their portfolio this fills (e.g. 'Adds AI cooling exposure you're missing')",
+      "headline": "1-line catalyst, max 14 words (what's happening today that makes this a watch NOW)",
+      "deep_reasoning": "180-220 word personalized buy thesis written for someone NEW to investing. Cover FOUR things: (1) WHY THIS FITS YOUR PORTFOLIO (reference their existing themes/holdings, the gap this fills, why it's not duplicative); (2) THE THESIS (why this stock now — catalyst, valuation, technical setup); (3) SIZING THINKING (suggest a starter position size in plain language — 'a 2-3% position would let you participate without overcommitting'); (4) WHAT COULD GO WRONG (honest bear case, key risks). Define any technical term in the same sentence. Use 'you' and 'your'. Like a thoughtful friend who's seen your portfolio explaining why this idea fits."
+    }
   ]
 }
 
 conviction_watch: 3-5 entries — focus on positions where you have a CLEAR HIGH-CONVICTION take (add, hold, trim) backed by current setup, catalysts, or risk. EVERY entry MUST include deep_reasoning — this is the depth the user reads when they tap the card.
+
+opportunity_watch: 3-4 portfolio-aware buy ideas. Stock MUST NOT be in user's current holdings. Each pick MUST: (1) match one of the user's existing themes (AI / semis / nuclear / quantum / biotech / critical minerals / crypto infra), (2) fill a thematic gap (different sub-theme than what they already own — e.g. if they own NVDA, suggest cooling/power infrastructure rather than another GPU maker), (3) have a real catalyst or setup TODAY worth watching, (4) include the deep_reasoning paragraph. QUALITY OVER QUANTITY — 3 strong picks beat 4 weak ones. If you can't find 3 high-conviction non-duplicate fits, return fewer. This is the most actionable section of the brief — users are deciding what to BUY based on this, so filler is dangerous.
 
 PRIMARY DECISION INPUT: This brief is the user's main source for "what to do with what I own" — hold, add, or trim signals. Filler hurts trust. 3 strong calls beat 5 weak ones. If a position is genuinely "no view, just hold," it's fine to omit.
 
@@ -408,7 +550,7 @@ CRITICAL DATA RULES:
 - If you genuinely cannot find 3 real trades for a category after searching, return whatever you have (1, 2, or 0). Empty array is fine if no data exists.
 - Empty arrays are acceptable; placeholder strings or padding-with-news are NEVER acceptable.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 6500, maxSearches: 3 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 8000, maxSearches: 4 });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────
