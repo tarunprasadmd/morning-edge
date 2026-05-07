@@ -5401,148 +5401,65 @@ function ChatSheet({
 // the original signal/headline at the top and an "Ask about this"
 // button at the bottom for personalized chat follow-up.
 // ────────────────────────────────────────────────────────────────────
-// StockChart — lightweight SVG line chart with timeframe selector. Renders
-// in CardReadingPage when the reading page is for a ticker. Pure SVG, no
-// chart library needed — keeps bundle small and avoids dependency churn.
+// StockChart — TradingView Advanced Chart embedded as an iframe.
 //
-// Fetches /api/prices/history?symbol=X&period=Y. Caches results per
-// symbol+period in component state so switching tabs doesn't re-fetch.
+// Why iframe + TradingView instead of fetching prices ourselves: Yahoo's
+// public chart endpoint (whether direct or via yahoo-finance2) rate-limits
+// hard when a single user opens the brief and 10+ chart fetches fire in
+// parallel from the same Vercel IP. TradingView serves chart data from
+// their own CDN with no rate limit on us, supports every US ticker, and
+// gives the user proper timeframe controls (1D / 5D / 1M / 3M / 6M / YTD
+// / 1Y / 5Y / All) baked into the chart itself.
 //
-// Graceful: if Yahoo fails or the symbol isn't found, shows a polite
-// "chart unavailable" message rather than blowing up the whole reading page.
+// Trade-off: small TradingView logo in the chart corner. Acceptable —
+// users recognize the brand and it lends the chart credibility.
+//
+// The /api/prices/history endpoint is kept deployed (unused by this
+// component) in case we want to bring back custom charts later.
 function StockChart({ ticker }) {
-  const [period, setPeriod] = React.useState("1m");
-  const [cache, setCache] = React.useState({}); // { "1m": { points, meta }, ... }
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState(null);
+  if (!ticker) return null;
 
-  React.useEffect(() => {
-    if (!ticker) return;
-    if (cache[period]) return; // already have it
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    (async () => {
-      try {
-        const res = await fetch(
-          `/api/prices/history?symbol=${encodeURIComponent(ticker)}&period=${period}`
-        );
-        if (!res.ok) throw new Error(`status ${res.status}`);
-        const data = await res.json();
-        if (cancelled) return;
-        if (!data.points || data.points.length === 0) {
-          setError("Chart data unavailable for this symbol.");
-        } else {
-          setCache((prev) => ({ ...prev, [period]: data }));
-        }
-      } catch (e) {
-        if (!cancelled) setError("Could not load chart data.");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [ticker, period]); // eslint-disable-line react-hooks/exhaustive-deps
+  const symbol = String(ticker).toUpperCase().trim();
 
-  const data = cache[period];
-  const periods = [
-    { id: "1d", label: "1D" },
-    { id: "1w", label: "1W" },
-    { id: "1m", label: "1M" },
-    { id: "1y", label: "1Y" },
-    { id: "5y", label: "5Y" },
-  ];
+  // TradingView widget URL params — light theme to match Morning Edge,
+  // side toolbar hidden (drawing tools clutter on mobile), top toolbar
+  // visible so the user can switch periods, ideas/symbol-edit disabled
+  // so the chart stays focused on this ticker.
+  const params = new URLSearchParams({
+    symbol,
+    interval: "D",
+    hidesidetoolbar: "1",
+    symboledit: "0",
+    saveimage: "0",
+    toolbarbg: "ffffff",
+    hideideas: "1",
+    theme: "light",
+    style: "2", // 2 = area chart (cleaner than candles for a quick read)
+    timezone: "America/New_York",
+    withdateranges: "1",
+    showpopupbutton: "0",
+    locale: "en",
+  });
 
-  // Compute SVG path from points
-  const chart = React.useMemo(() => {
-    if (!data || !data.points || data.points.length < 2) return null;
-    const pts = data.points;
-    const W = 320;
-    const H = 110;
-    const PAD_X = 4;
-    const PAD_Y = 8;
-    const xs = pts.map((p) => p.t);
-    const ys = pts.map((p) => p.c);
-    const minX = Math.min(...xs);
-    const maxX = Math.max(...xs);
-    const minY = Math.min(...ys);
-    const maxY = Math.max(...ys);
-    const rangeX = maxX - minX || 1;
-    const rangeY = maxY - minY || 1;
-    const toX = (t) => PAD_X + ((t - minX) / rangeX) * (W - 2 * PAD_X);
-    const toY = (c) => PAD_Y + (1 - (c - minY) / rangeY) * (H - 2 * PAD_Y);
-    const path = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${toX(p.t).toFixed(2)} ${toY(p.c).toFixed(2)}`).join(" ");
-    const areaPath = `${path} L ${toX(maxX).toFixed(2)} ${(H - PAD_Y).toFixed(2)} L ${toX(minX).toFixed(2)} ${(H - PAD_Y).toFixed(2)} Z`;
-    return { W, H, path, areaPath, minY, maxY };
-  }, [data]);
-
-  const isUp = data?.meta?.changePct != null && data.meta.changePct >= 0;
-  const lineColor = isUp ? "#059669" : "#dc2626";
-  const fillColor = isUp ? "rgba(5, 150, 105, 0.12)" : "rgba(220, 38, 38, 0.10)";
+  const src = `https://s.tradingview.com/widgetembed/?${params.toString()}`;
 
   return (
-    <div className="mb-4 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white overflow-hidden">
-      {/* Header — price summary */}
-      <div className="px-3 pt-3 pb-2 flex items-end justify-between gap-2">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-slate-500 m-0 leading-none mb-1">
-            Price · {periods.find((p) => p.id === period)?.label}
-          </p>
-          {data?.meta ? (
-            <div className="flex items-baseline gap-2">
-              <span className="text-[20px] font-bold text-slate-900 leading-none" style={{ fontFamily: SERIF }}>
-                ${data.meta.lastClose?.toFixed(2)}
-              </span>
-              <span className={`text-[13px] font-semibold ${isUp ? "text-emerald-700" : "text-rose-700"}`}>
-                {isUp ? "+" : ""}
-                {data.meta.changePct?.toFixed(2)}%
-              </span>
-            </div>
-          ) : loading ? (
-            <span className="text-[13px] text-slate-500 italic">Loading…</span>
-          ) : (
-            <span className="text-[13px] text-slate-400">—</span>
-          )}
-        </div>
-        {/* Period switcher */}
-        <div className="flex gap-1 flex-shrink-0">
-          {periods.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setPeriod(p.id)}
-              className={`px-2 py-1 rounded text-[11px] font-bold tracking-wider transition ${
-                period === p.id
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
+    <div className="mb-4 rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <div className="px-3 pt-2.5 pb-1.5 flex items-center justify-between">
+        <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-slate-500 m-0 leading-none">
+          Price chart · {symbol}
+        </p>
+        <p className="text-[9px] text-slate-400 m-0 leading-none italic">
+          via TradingView
+        </p>
       </div>
-      {/* Chart body */}
-      <div className="px-2 pb-2 relative" style={{ minHeight: 124 }}>
-        {chart ? (
-          <svg viewBox={`0 0 ${chart.W} ${chart.H}`} className="w-full" style={{ height: 110 }} preserveAspectRatio="none">
-            <path d={chart.areaPath} fill={fillColor} />
-            <path d={chart.path} stroke={lineColor} strokeWidth="1.6" fill="none" strokeLinejoin="round" strokeLinecap="round" />
-          </svg>
-        ) : loading ? (
-          <div className="flex items-center justify-center" style={{ height: 110 }}>
-            <span className="inline-block w-2 h-2 rounded-full bg-slate-400 animate-pulse mr-2" />
-            <span className="text-[12px] text-slate-500 italic">Loading chart…</span>
-          </div>
-        ) : error ? (
-          <div className="flex items-center justify-center px-3" style={{ height: 110 }}>
-            <span className="text-[12px] text-slate-500 italic text-center">{error}</span>
-          </div>
-        ) : (
-          <div style={{ height: 110 }} />
-        )}
-      </div>
+      <iframe
+        src={src}
+        title={`${symbol} price chart`}
+        style={{ width: "100%", height: 320, border: 0, display: "block" }}
+        allow="encrypted-media *"
+        allowFullScreen
+      />
     </div>
   );
 }
@@ -6149,6 +6066,11 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
 
         {/* Body — short decision text + full reasoning */}
         <div className="px-5 py-4">
+          {/* Price chart for the decision's ticker — same component as the
+              conviction reading page so the user gets consistent context
+              regardless of which kind of card they tapped. */}
+          {parsed.ticker && <StockChart ticker={parsed.ticker} />}
+
           <p
             className="text-[16px] leading-relaxed m-0 font-semibold"
             style={{ color: "#1e293b", fontFamily: SERIF }}
