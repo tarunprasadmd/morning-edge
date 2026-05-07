@@ -337,6 +337,31 @@ const KNOWN_ACCOUNT_HINTS = [
   "TOD", "IRA", "401K", "401(k)", "529",
 ];
 
+// colorizePercents — wraps any percentage value in the text with a
+// green or red span based on sign. Used in Market Pulse "What's moving"
+// rows so positive/negative moves render in color instead of muted text.
+function colorizePercents(text) {
+  if (!text || typeof text !== "string") return text;
+  const parts = text.split(/([+-]?\d+(?:\.\d+)?%)/g);
+  return parts.map((part, i) => {
+    if (/^[+-]?\d+(?:\.\d+)?%$/.test(part)) {
+      const isUp = !part.startsWith("-");
+      return (
+        <span
+          key={i}
+          style={{
+            color: isUp ? "#047857" : "#be123c",
+            fontWeight: 700,
+          }}
+        >
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+}
+
 function parseDecision(text) {
   if (!text || typeof text !== "string") {
     return { type: "act", typeLabel: "ACT", ticker: null, account: null, headline: "", body: text || "" };
@@ -3032,12 +3057,16 @@ export default function MorningEdge() {
                           if (!c || typeof c !== "object") return null;
                           const hasAction = !!c.action;
                           const summaryLine = c.note || (c.why_now ? c.why_now.split(/[.!?]/)[0] + "." : "Tap for full reasoning");
-                          // Color theme based on signal — matches the colorful Playbook style
-                          const sigTheme = c.signal === "trim"
-                            ? { bg: "linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)", border: "#c4b5fd", iconBg: "#7c3aed", labelText: "#5b21b6", chip: "bg-rose-100 text-rose-800 border-rose-200" }
-                            : c.signal === "add"
-                              ? { bg: "linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)", border: "#c4b5fd", iconBg: "#7c3aed", labelText: "#5b21b6", chip: "bg-emerald-100 text-emerald-800 border-emerald-200" }
-                              : { bg: "linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)", border: "#c4b5fd", iconBg: "#7c3aed", labelText: "#5b21b6", chip: "bg-amber-100 text-amber-800 border-amber-200" };
+                          // Use the SAME themes/icons as Today's Moves so the columns match.
+                          // Map signal → action type (with sensible fallbacks).
+                          const actionType =
+                            c.signal === "trim" ? "trim"
+                            : c.signal === "add" ? "add"
+                            : c.signal === "protect" ? "protect"
+                            : "watch";
+                          const sigTheme = DECISION_THEMES[actionType] || DECISION_THEMES.watch;
+                          const SignalIcon = ACTION_ICON_MAP[actionType] || Eye;
+                          const signalLabel = (c.signal || "watch").toUpperCase();
                           return (
                             <li key={i} className="m-0 p-0">
                               <button
@@ -3046,13 +3075,13 @@ export default function MorningEdge() {
                                   type: "conviction",
                                   ticker: c.ticker,
                                   signal: c.signal,
-                                  headline: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}`,
+                                  headline: `${signalLabel} ${c.ticker}`,
                                   action: c.action,
                                   why_now: c.why_now,
                                   note: c.note,
                                   deep_reasoning: c.deep_reasoning,
                                   holding: holdings.find(h => h.symbol === c.ticker),
-                                  chatDescription: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}${c.action ? ` — ${c.action}` : ""}${c.why_now ? `. ${c.why_now}` : ""}${c.deep_reasoning ? ` Full reasoning: ${c.deep_reasoning}` : ""}`,
+                                  chatDescription: `${signalLabel} ${c.ticker}${c.action ? ` — ${c.action}` : ""}${c.why_now ? `. ${c.why_now}` : ""}${c.deep_reasoning ? ` Full reasoning: ${c.deep_reasoning}` : ""}`,
                                 })}
                                 className="w-full h-full text-left transition-all duration-150 active:scale-[0.99] hover:shadow-md"
                                 style={{
@@ -3060,25 +3089,37 @@ export default function MorningEdge() {
                                   border: `1px solid ${sigTheme.border}`,
                                   borderRadius: 12,
                                   padding: "10px 11px",
-                                  boxShadow: "0 2px 6px -2px rgba(124, 58, 237, 0.15)",
+                                  boxShadow: `0 2px 6px -2px ${sigTheme.shadow}`,
                                   display: "flex",
                                   flexDirection: "column",
                                   gap: 8,
                                   minHeight: 110,
                                 }}
                               >
-                                {/* Top row: signal chip + ticker */}
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className={`px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border font-bold flex-shrink-0 ${sigTheme.chip}`}>
-                                    {c.signal || "watch"}
-                                  </span>
-                                  <p className="text-[15px] font-bold m-0 leading-tight" style={{ color: "#0f172a", fontFamily: SERIF }}>
-                                    {c.ticker}
-                                  </p>
+                                {/* Top row: colored icon square + ticker — matches Today's Moves */}
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className="flex-shrink-0 flex items-center justify-center"
+                                    style={{ width: 32, height: 32, borderRadius: 8, background: sigTheme.iconBg }}
+                                  >
+                                    <SignalIcon className="w-4 h-4" style={{ color: "white", strokeWidth: 2.6 }} />
+                                  </div>
+                                  {c.ticker && (
+                                    <p
+                                      className="text-[16px] font-bold m-0 leading-tight truncate"
+                                      style={{ color: "#0f172a", fontFamily: SERIF }}
+                                    >
+                                      {c.ticker}
+                                    </p>
+                                  )}
                                 </div>
+                                {/* Action label — same style as Today's Moves */}
+                                <p className="text-[10px] font-bold tracking-[0.14em] uppercase m-0" style={{ color: sigTheme.labelText }}>
+                                  {signalLabel}
+                                </p>
                                 {/* Reasoning preview */}
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-[12px] m-0 leading-snug" style={{
+                                  <p className="text-[13px] m-0 leading-snug" style={{
                                     color: "#1e293b",
                                     display: "-webkit-box",
                                     WebkitLineClamp: 3,
@@ -3089,7 +3130,7 @@ export default function MorningEdge() {
                                   </p>
                                 </div>
                                 {/* Footer hint */}
-                                <p className="text-[10px] m-0 italic" style={{ color: sigTheme.labelText, opacity: 0.75 }}>
+                                <p className="text-[10px] m-0 italic" style={{ color: sigTheme.labelText, opacity: 0.7 }}>
                                   Tap for reasoning →
                                 </p>
                               </button>
@@ -3838,7 +3879,10 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
   const RowInner = (
     <>
       {ticker && (
-        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-amber-100 text-amber-800 border border-amber-200 flex-shrink-0">
+        <span
+          className="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider bg-amber-100 text-amber-800 border-2 border-amber-300 flex-shrink-0 text-center shadow-sm"
+          style={{ minWidth: "60px" }}
+        >
           {ticker}
         </span>
       )}
@@ -4686,7 +4730,7 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
           className="flex-1 text-[15px] leading-snug pt-0.5"
           style={{ color: "#0f172a", fontFamily: SERIF, fontWeight: 500 }}
         >
-          {text}
+          {colorizePercents(text)}
         </span>
         <ChevronRight
           className="w-4 h-4 flex-shrink-0 mt-1"
@@ -4745,152 +4789,157 @@ function autoExpand(text) {
 // discovery. Both use the same scannable tile layout — tap any tile
 // for the full reasoning + sources + ask-about-this chat.
 // ────────────────────────────────────────────────────────────────────
+// Discovery jewel-tone palettes — split by column so the two columns
+// read as visually distinct families.
+//   NEW BUYS  → COOL jewels (cyan, teal, emerald, sky, indigo, blue, sapphire)
+//   WATCHING  → WARM jewels (violet, purple, fuchsia, pink, rose, magenta, plum, coral)
+// No yellow / amber / orange — those belong to the Insider Flow family.
+const DISCOVERY_COOL = [
+  { iconBg: "from-cyan-400 to-cyan-600",       rowBg: "bg-cyan-50",     border: "border-cyan-200",     stripe: "bg-cyan-500",     ticker: "text-cyan-900",     theme: "text-cyan-700" },
+  { iconBg: "from-teal-400 to-teal-600",       rowBg: "bg-teal-50",     border: "border-teal-200",     stripe: "bg-teal-500",     ticker: "text-teal-900",     theme: "text-teal-700" },
+  { iconBg: "from-emerald-400 to-emerald-600", rowBg: "bg-emerald-50",  border: "border-emerald-200",  stripe: "bg-emerald-500",  ticker: "text-emerald-900",  theme: "text-emerald-700" },
+  { iconBg: "from-sky-400 to-sky-600",         rowBg: "bg-sky-50",      border: "border-sky-200",      stripe: "bg-sky-500",      ticker: "text-sky-900",      theme: "text-sky-700" },
+  { iconBg: "from-indigo-400 to-indigo-600",   rowBg: "bg-indigo-50",   border: "border-indigo-200",   stripe: "bg-indigo-500",   ticker: "text-indigo-900",   theme: "text-indigo-700" },
+  { iconBg: "from-blue-400 to-blue-600",       rowBg: "bg-blue-50",     border: "border-blue-200",     stripe: "bg-blue-500",     ticker: "text-blue-900",     theme: "text-blue-700" },
+  { iconBg: "from-blue-500 to-indigo-700",     rowBg: "bg-slate-50",    border: "border-blue-300",     stripe: "bg-blue-700",     ticker: "text-blue-950",     theme: "text-blue-800" },
+];
+const DISCOVERY_WARM = [
+  { iconBg: "from-violet-400 to-violet-600",   rowBg: "bg-violet-50",   border: "border-violet-200",   stripe: "bg-violet-500",   ticker: "text-violet-900",   theme: "text-violet-700" },
+  { iconBg: "from-purple-400 to-purple-600",   rowBg: "bg-purple-50",   border: "border-purple-200",   stripe: "bg-purple-500",   ticker: "text-purple-900",   theme: "text-purple-700" },
+  { iconBg: "from-fuchsia-400 to-fuchsia-600", rowBg: "bg-fuchsia-50",  border: "border-fuchsia-200",  stripe: "bg-fuchsia-500",  ticker: "text-fuchsia-900",  theme: "text-fuchsia-700" },
+  { iconBg: "from-pink-400 to-pink-600",       rowBg: "bg-pink-50",     border: "border-pink-200",     stripe: "bg-pink-500",     ticker: "text-pink-900",     theme: "text-pink-700" },
+  { iconBg: "from-rose-400 to-rose-600",       rowBg: "bg-rose-50",     border: "border-rose-200",     stripe: "bg-rose-500",     ticker: "text-rose-900",     theme: "text-rose-700" },
+  { iconBg: "from-pink-500 to-fuchsia-700",    rowBg: "bg-pink-50",     border: "border-pink-300",     stripe: "bg-fuchsia-600",  ticker: "text-fuchsia-950",  theme: "text-fuchsia-800" },
+  { iconBg: "from-purple-500 to-violet-800",   rowBg: "bg-purple-50",   border: "border-purple-300",   stripe: "bg-purple-700",   ticker: "text-purple-950",   theme: "text-purple-800" },
+  { iconBg: "from-rose-400 to-pink-600",       rowBg: "bg-rose-50",     border: "border-rose-300",     stripe: "bg-rose-600",     ticker: "text-rose-950",     theme: "text-rose-800" },
+];
+
 function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, onOpenReading }) {
-  const [activeTab, setActiveTab] = React.useState(defaultTab || "opportunity");
   const hasOpportunity = Array.isArray(opportunity) && opportunity.length > 0;
   const hasRadar = Array.isArray(radar) && radar.length > 0;
 
+  // Compact row card used in both columns
+  const renderRow = (item, i, palettes, type) => {
+    const p = palettes[i % palettes.length];
+    const reading = type === "opportunity"
+      ? {
+          id: `opportunity-${item.ticker || i}-${todayKey}`,
+          type: "opportunity",
+          ticker: item.ticker,
+          theme: item.theme,
+          fits_gap: item.fits_gap,
+          headline: item.headline,
+          deep_reasoning: item.deep_reasoning,
+          chatDescription: `${item.ticker}${item.theme ? ` (${item.theme})` : ""}: ${item.headline}${item.fits_gap ? `. Fits gap: ${item.fits_gap}` : ""}${item.deep_reasoning ? ` Full reasoning: ${item.deep_reasoning}` : ""}`,
+        }
+      : {
+          id: `radar-${item.ticker || i}-${todayKey}`,
+          type: "radar",
+          ticker: item.ticker,
+          theme: item.theme,
+          headline: item.headline,
+          why_now: item.why_now,
+          deep_reasoning: item.deep_reasoning,
+          chatDescription: `${item.ticker}${item.theme ? ` (${item.theme})` : ""}: ${item.headline}${item.why_now ? `. ${item.why_now}` : ""}${item.deep_reasoning ? ` Full reasoning: ${item.deep_reasoning}` : ""}`,
+        };
+    return (
+      <button
+        key={i}
+        onClick={() => onOpenReading(reading)}
+        className={`text-left rounded-lg ${p.rowBg} border ${p.border} hover:shadow-md active:scale-[0.98] transition-all overflow-hidden flex items-stretch`}
+      >
+        <div className={`w-1 ${p.stripe}`} />
+        <div className="flex items-center gap-2 px-1.5 py-1.5 flex-1 min-w-0">
+          <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${p.iconBg} flex items-center justify-center shadow-sm flex-shrink-0`}>
+            <Sparkles className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className={`text-[12px] font-bold leading-tight ${p.ticker}`} style={{ fontFamily: SERIF }}>
+              {item.ticker}
+            </p>
+            {item.theme && (
+              <p className={`text-[8.5px] font-semibold tracking-wide leading-tight truncate ${p.theme}`}>
+                {item.theme}
+              </p>
+            )}
+            <p className="text-[9.5px] text-slate-700 mt-0.5 leading-tight truncate">
+              {item.fits_gap || item.headline || item.why_now || "Tap for reasoning"}
+            </p>
+          </div>
+        </div>
+      </button>
+    );
+  };
+
   return (
     <div>
-      {/* Tab selector */}
-      <div className="flex gap-2 mb-3 border-b border-cyan-100">
-        <button
-          onClick={() => setActiveTab("opportunity")}
-          className={`flex-1 py-2 px-2 text-[12px] font-bold uppercase tracking-wider transition relative ${
-            activeTab === "opportunity"
-              ? "text-cyan-800"
-              : "text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          <span className="flex items-center justify-center gap-1.5">
-            <Sparkles className="w-3 h-3" strokeWidth={2.5} />
-            Opportunities {hasOpportunity && `(${opportunity.length})`}
-          </span>
-          {activeTab === "opportunity" && (
-            <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-cyan-700" />
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab("radar")}
-          className={`flex-1 py-2 px-2 text-[12px] font-bold uppercase tracking-wider transition relative ${
-            activeTab === "radar"
-              ? "text-cyan-800"
-              : "text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          <span className="flex items-center justify-center gap-1.5">
-            <Telescope className="w-3 h-3" strokeWidth={2.5} />
-            On Your Radar {hasRadar && `(${radar.length})`}
-          </span>
-          {activeTab === "radar" && (
-            <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-cyan-700" />
-          )}
-        </button>
+      <p className="text-[12px] text-slate-700 italic mb-3 px-1">
+        High-conviction names outside your portfolio, plus catalyst setups on watch. Tap any row for the full thesis.
+      </p>
+
+      {/* Two-column header: NEW BUYS + WATCHING */}
+      <div className="grid grid-cols-2 gap-2 mb-2">
+        <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 px-2.5 py-2 shadow-sm">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="w-3 h-3 text-white" strokeWidth={2.5} />
+            <p className="text-[10px] font-bold tracking-wider text-white">NEW BUYS</p>
+            {hasOpportunity && (
+              <span className="ml-auto text-[9px] font-bold text-emerald-700 bg-white px-1.5 py-0.5 rounded-full">
+                {opportunity.length}
+              </span>
+            )}
+          </div>
+          <p className="text-[9.5px] mt-0.5 leading-tight text-white/90">High conviction · not held</p>
+        </div>
+        <div className="rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-600 px-2.5 py-2 shadow-sm">
+          <div className="flex items-center gap-1.5">
+            <Telescope className="w-3 h-3 text-white" strokeWidth={2.5} />
+            <p className="text-[10px] font-bold tracking-wider text-white">WATCHING</p>
+            {hasRadar && (
+              <span className="ml-auto text-[9px] font-bold text-fuchsia-700 bg-white px-1.5 py-0.5 rounded-full">
+                {radar.length}
+              </span>
+            )}
+          </div>
+          <p className="text-[9.5px] mt-0.5 leading-tight text-white/90">Setting up · catalyst ahead</p>
+        </div>
       </div>
 
-      {/* Tab content */}
-      {activeTab === "opportunity" ? (
-        hasOpportunity ? (
-          <div>
-            <p className="text-[12px] text-slate-700 italic mb-3 px-1">
-              Personalized buy ideas that fit your themes and fill gaps in your holdings. Tap any pick for the full reasoning.
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {opportunity.filter((o) => o && typeof o === "object").map((o, i) => (
-                <button
-                  key={i}
-                  onClick={() => onOpenReading({
-                    id: `opportunity-${o.ticker || i}-${todayKey}`,
-                    type: "opportunity",
-                    ticker: o.ticker,
-                    theme: o.theme,
-                    fits_gap: o.fits_gap,
-                    headline: o.headline,
-                    deep_reasoning: o.deep_reasoning,
-                    chatDescription: `${o.ticker}${o.theme ? ` (${o.theme})` : ""}: ${o.headline}${o.fits_gap ? `. Fits gap: ${o.fits_gap}` : ""}${o.deep_reasoning ? ` Full reasoning: ${o.deep_reasoning}` : ""}`,
-                  })}
-                  className="text-left rounded-xl p-2.5 bg-gradient-to-br from-violet-50/70 to-cyan-50/40 border border-violet-200/80 transition active:scale-[0.97] hover:from-violet-50 hover:to-cyan-50 hover:border-violet-300"
-                >
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <span className="px-1.5 py-0.5 rounded-md text-[11px] font-bold tracking-wider bg-violet-100 text-violet-800 border border-violet-200">
-                      {o.ticker}
-                    </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-violet-500 ml-auto flex-shrink-0" strokeWidth={2.2} />
-                  </div>
-                  {o.theme && (
-                    <p className="text-[10px] uppercase tracking-wider text-violet-700 font-semibold mb-1 truncate">{o.theme}</p>
-                  )}
-                  {o.fits_gap && (
-                    <p className="text-[12px] text-violet-900 font-bold leading-snug mb-1 line-clamp-2">
-                      {o.fits_gap}
-                    </p>
-                  )}
-                  <p className="text-[12px] text-slate-700 leading-snug line-clamp-2" style={{ fontFamily: SERIF }}>
-                    {o.headline}
-                  </p>
-                </button>
-              ))}
+      {/* Two-column row grid */}
+      <div className="grid grid-cols-2 gap-2">
+        {/* LEFT — NEW BUYS (cool jewels) */}
+        <div className="flex flex-col gap-1.5">
+          {hasOpportunity ? (
+            opportunity
+              .filter((o) => o && typeof o === "object")
+              .map((o, i) => renderRow(o, i, DISCOVERY_COOL, "opportunity"))
+          ) : (
+            <div className="rounded-lg bg-emerald-50/60 border border-emerald-200 p-3">
+              <p className="text-[11px] text-emerald-900 leading-relaxed m-0">
+                No high-conviction buys today. Quality over quantity.
+              </p>
             </div>
-            <p className="mt-3 text-[11px] text-slate-700 leading-relaxed italic px-1">
-              Picks chosen to fit your existing themes and fill diversification gaps. Educational only — verify before buying.
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-xl bg-violet-50/60 border border-violet-200 p-4">
-            <p className="text-[14px] text-violet-900 leading-relaxed m-0">
-              No high-conviction buy ideas that fit your portfolio gaps today. Quality over quantity — we'd rather show nothing than pad with weak picks.
-            </p>
-          </div>
-        )
-      ) : (
-        hasRadar ? (
-          <div>
-            <p className="text-[12px] text-slate-700 italic mb-3 px-1">
-              Thematic stocks moving today. Not necessarily personalized — discovery feed. Tap any tile for the full reasoning.
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {radar.filter((r) => r && typeof r === "object").map((r, i) => (
-                <button
-                  key={i}
-                  onClick={() => onOpenReading({
-                    id: `radar-${r.ticker || i}-${todayKey}`,
-                    type: "radar",
-                    ticker: r.ticker,
-                    theme: r.theme,
-                    headline: r.headline,
-                    why_now: r.why_now,
-                    deep_reasoning: r.deep_reasoning,
-                    chatDescription: `${r.ticker}${r.theme ? ` (${r.theme})` : ""}: ${r.headline}${r.why_now ? `. ${r.why_now}` : ""}${r.deep_reasoning ? ` Full reasoning: ${r.deep_reasoning}` : ""}`,
-                  })}
-                  className="text-left rounded-xl p-2.5 bg-gradient-to-br from-cyan-50/60 to-teal-50/40 border border-cyan-200/70 transition active:scale-[0.97] hover:from-cyan-50 hover:to-teal-50 hover:border-cyan-300"
-                >
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <span className="px-1.5 py-0.5 rounded-md text-[11px] font-bold tracking-wider bg-cyan-100 text-cyan-800 border border-cyan-200">
-                      {r.ticker}
-                    </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-cyan-500 ml-auto flex-shrink-0" strokeWidth={2.2} />
-                  </div>
-                  {r.theme && (
-                    <p className="text-[10px] uppercase tracking-wider text-teal-700 font-semibold mb-1 truncate">{r.theme}</p>
-                  )}
-                  <p className="text-[13px] font-semibold text-slate-900 leading-snug line-clamp-3" style={{ fontFamily: SERIF }}>
-                    {r.headline}
-                  </p>
-                </button>
-              ))}
+          )}
+        </div>
+        {/* RIGHT — WATCHING (warm jewels) */}
+        <div className="flex flex-col gap-1.5">
+          {hasRadar ? (
+            radar
+              .filter((r) => r && typeof r === "object")
+              .map((r, i) => renderRow(r, i, DISCOVERY_WARM, "radar"))
+          ) : (
+            <div className="rounded-lg bg-fuchsia-50/60 border border-fuchsia-200 p-3">
+              <p className="text-[11px] text-fuchsia-900 leading-relaxed m-0">
+                Markets quiet on your themes today.
+              </p>
             </div>
-            <p className="mt-3 text-[11px] text-slate-700 leading-relaxed italic px-1">
-              Surfaced from your themes (AI · semis · nuclear · quantum · biotech). Watch only — not a recommendation.
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-xl bg-cyan-50/60 border border-cyan-200 p-4">
-            <p className="text-[14px] text-cyan-900 leading-relaxed m-0">
-              No thematic discovery picks today. Markets quiet on your themes — sometimes there's no signal worth acting on.
-            </p>
-          </div>
-        )
-      )}
+          )}
+        </div>
+      </div>
+
+      <p className="mt-3 text-[11px] text-slate-700 leading-relaxed italic px-1">
+        Picks chosen to fit your existing themes and fill diversification gaps. Educational only — verify before buying.
+      </p>
     </div>
   );
 }
