@@ -1088,6 +1088,73 @@ export default function MorningEdge() {
     }
   }, [holdings, holdingsRefreshedAt, phase]);
 
+  // ─── Live price fetching ─────────────────────────────────────────
+  // When holdings load (or change), fetch current prices from /api/prices.
+  // Updates each holding's gainPct based on today's price change.
+  // The /api/prices endpoint uses Finnhub when FINNHUB_API_KEY is set on
+  // Vercel; without the key it returns an empty object and the ticker
+  // gracefully shows no percentages (see HoldingsMarquee).
+  // We refetch every 5 minutes during market hours, and on first load.
+  useEffect(() => {
+    if (phase !== "app") return;
+    if (!holdings || holdings.length === 0) return;
+
+    let cancelled = false;
+    const fetchPrices = async () => {
+      try {
+        // Build a unique list of symbols to query
+        const symbols = Array.from(
+          new Set(holdings.map((h) => h.symbol).filter(Boolean))
+        );
+        if (symbols.length === 0) return;
+
+        const res = await fetch("/api/prices", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ symbols }),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const prices = data?.prices || {};
+        if (cancelled) return;
+
+        // Merge price data into holdings — only updates gainPct, leaves
+        // other fields (qty, cost, accountId) untouched.
+        setHoldings((prev) =>
+          prev.map((h) => {
+            const p = prices[h.symbol];
+            if (!p) return h;
+            return {
+              ...h,
+              currentPrice: p.price,
+              gainPct: p.changePct, // today's % change, not lifetime
+              dayChange: p.change,  // today's $ change per share
+            };
+          })
+        );
+      } catch (e) {
+        // Silent failure — better to show no percentages than fake ones.
+        // The console warning helps debugging if a key is misconfigured.
+        console.warn("Price fetch failed:", e);
+      }
+    };
+
+    // Fetch immediately, then refresh every 5 minutes while the app is
+    // open. This keeps the ticker fresh without hammering Finnhub.
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 5 * 60 * 1000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+    // We deliberately use a stable string key derived from the symbol
+    // list (not holdings.length) so the effect re-fires when symbols
+    // CHANGE, not just when count changes. setHoldings inside the
+    // effect updates gainPct only — symbol list stays the same — so
+    // this avoids the infinite loop you'd get from depending on holdings.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, holdings.map((h) => h.symbol).filter(Boolean).sort().join(",")]);
+
   // Rotate the loading status message every 2.2s while a brief is being
   // generated. Makes the wait feel personalized and active rather than
   // a static spinner — the user sees the app is doing real work for them.
@@ -2766,50 +2833,49 @@ export default function MorningEdge() {
               <Card theme={themes.pulse}>
                 <CardHeader icon={<Sun className="w-4 h-4" />} label="Market Pulse" theme={themes.pulse} />
 
-                {/* Hero — bigger, bolder, more energetic */}
+                {/* Hero — compact tone read, takes minimal vertical space */}
                 <div
-                  className="mx-4 mt-4 rounded-2xl px-5 py-5 relative overflow-hidden"
+                  className="mx-4 mt-3 rounded-xl px-4 py-3 relative overflow-hidden"
                   style={{
                     background: toneTheme.heroBg,
-                    border: `1.5px solid ${toneTheme.heroBorder}`,
-                    boxShadow: `0 6px 20px -8px ${toneTheme.badge}`,
+                    border: `1px solid ${toneTheme.heroBorder}`,
+                    boxShadow: `0 3px 12px -6px ${toneTheme.badge}`,
                   }}
                 >
                   <div
                     aria-hidden
                     style={{
                       position: "absolute",
-                      top: -30,
-                      right: -30,
-                      width: 130,
-                      height: 130,
+                      top: -20,
+                      right: -20,
+                      width: 80,
+                      height: 80,
                       borderRadius: "50%",
                       background: `radial-gradient(circle, ${toneTheme.heroBorder} 0%, transparent 70%)`,
-                      opacity: 0.5,
+                      opacity: 0.4,
                       pointerEvents: "none",
                     }}
                   />
                   <div className="relative">
-                    <div className="flex items-center gap-2.5 mb-3">
-                      <span style={{ fontSize: 32, lineHeight: 1 }}>{toneTheme.emoji}</span>
-                      <div className="flex flex-col">
-                        <span
-                          className="text-[12px] font-bold uppercase tracking-[0.2em]"
-                          style={{ color: toneTheme.accent, letterSpacing: "0.18em" }}
-                        >
-                          {toneTheme.kicker}
-                        </span>
-                        <span
-                          style={{ fontFamily: SERIF, fontWeight: 700, color: toneTheme.accentDark, lineHeight: 1, fontSize: 32 }}
-                        >
-                          {brief.market_pulse.tone}
-                        </span>
-                      </div>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span style={{ fontSize: 18, lineHeight: 1 }}>{toneTheme.emoji}</span>
+                      <span
+                        className="text-[10px] font-bold uppercase tracking-[0.18em]"
+                        style={{ color: toneTheme.accent, letterSpacing: "0.16em" }}
+                      >
+                        {toneTheme.kicker}
+                      </span>
+                      <span
+                        className="text-[16px] font-bold leading-none uppercase tracking-wide"
+                        style={{ fontFamily: SERIF, color: toneTheme.accentDark }}
+                      >
+                        {brief.market_pulse.tone}
+                      </span>
                     </div>
                     {brief.market_pulse.summary && (
                       <p
-                        className="text-[17px] leading-relaxed m-0 font-medium"
-                        style={{ fontFamily: SERIF, color: "#0f172a" }}
+                        className="text-[14px] leading-snug m-0"
+                        style={{ color: "#0f172a" }}
                       >
                         {brief.market_pulse.summary}
                       </p>
@@ -2839,13 +2905,13 @@ export default function MorningEdge() {
           {/* PLAYBOOK — tappable check-offs that persist per day */}
           {visible.decisions && Array.isArray(brief.decisions) && brief.decisions.length > 0 && (
             <Card theme={themes.play}>
-              <CardHeader icon={<CheckSquare className="w-4 h-4" />} label="Your Holdings · Today" theme={themes.play} />
+              <CardHeader icon={<CheckSquare className="w-4 h-4" />} label="Today's Playbook" theme={themes.play} />
               <div className="px-5 py-6">
                 <p className="text-[13px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-1 -mt-2">
-                  Specific moves to make TODAY
+                  Your portfolio at a glance
                 </p>
                 <p className="text-[13px] text-slate-700 italic mb-4">
-                  Time-sensitive trades, sized to your accounts. Tap any card for full reasoning.
+                  What to act on today, plus high-conviction signals to monitor. Tap any card for full reasoning.
                 </p>
                 {/* Personalization indicator */}
                 {holdings.length > 0 ? (
@@ -2910,27 +2976,148 @@ export default function MorningEdge() {
                   </div>
                 </div>
 
-                <ol className="flex flex-col gap-2.5 list-none p-0 m-0">
-                  {brief.decisions.map((d, i) => {
-                    const done = decisionsDoneToday.includes(i);
-                    const dismissed = decisionsDismissedToday.includes(i);
-                    return (
-                      <li key={i} className="m-0 p-0">
-                        <PlaybookActionCard
-                          decision={d}
-                          idx={i}
-                          done={done}
-                          dismissed={dismissed}
-                          onOpen={(idx) => setOpenDecisionIdx(idx)}
-                        />
-                      </li>
-                    );
-                  })}
-                </ol>
+                {/* TWO-COLUMN layout: TODAY actions on left, HIGH CONVICTION watch on right.
+                    Each column has its own colorful header so the two are distinct at a glance. */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* LEFT COLUMN — Today's Moves (act now) */}
+                  <div>
+                    <div className="rounded-lg px-2 py-1.5 mb-2 text-center"
+                      style={{
+                        background: "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)",
+                        border: "1px solid #6ee7b7",
+                      }}>
+                      <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-emerald-900 m-0 leading-tight">
+                        Today's Moves
+                      </p>
+                      <p className="text-[9px] text-emerald-800 m-0 leading-tight mt-0.5">
+                        Act now
+                      </p>
+                    </div>
+                    <ol className="flex flex-col gap-2 list-none p-0 m-0">
+                      {brief.decisions.map((d, i) => {
+                        const done = decisionsDoneToday.includes(i);
+                        const dismissed = decisionsDismissedToday.includes(i);
+                        return (
+                          <li key={i} className="m-0 p-0">
+                            <PlaybookActionCard
+                              decision={d}
+                              idx={i}
+                              done={done}
+                              dismissed={dismissed}
+                              onOpen={(idx) => setOpenDecisionIdx(idx)}
+                            />
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </div>
+
+                  {/* RIGHT COLUMN — High Conviction (watch / monitor) */}
+                  <div>
+                    <div className="rounded-lg px-2 py-1.5 mb-2 text-center"
+                      style={{
+                        background: "linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%)",
+                        border: "1px solid #a78bfa",
+                      }}>
+                      <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-violet-900 m-0 leading-tight">
+                        High Conviction
+                      </p>
+                      <p className="text-[9px] text-violet-800 m-0 leading-tight mt-0.5">
+                        Worth watching
+                      </p>
+                    </div>
+                    {Array.isArray(brief.conviction_watch) && brief.conviction_watch.length > 0 ? (
+                      <ul className="flex flex-col gap-2 list-none p-0 m-0">
+                        {brief.conviction_watch.filter(Boolean).map((c, i) => {
+                          if (!c || typeof c !== "object") return null;
+                          const hasAction = !!c.action;
+                          const summaryLine = c.note || (c.why_now ? c.why_now.split(/[.!?]/)[0] + "." : "Tap for full reasoning");
+                          // Color theme based on signal — matches the colorful Playbook style
+                          const sigTheme = c.signal === "trim"
+                            ? { bg: "linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)", border: "#c4b5fd", iconBg: "#7c3aed", labelText: "#5b21b6", chip: "bg-rose-100 text-rose-800 border-rose-200" }
+                            : c.signal === "add"
+                              ? { bg: "linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)", border: "#c4b5fd", iconBg: "#7c3aed", labelText: "#5b21b6", chip: "bg-emerald-100 text-emerald-800 border-emerald-200" }
+                              : { bg: "linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)", border: "#c4b5fd", iconBg: "#7c3aed", labelText: "#5b21b6", chip: "bg-amber-100 text-amber-800 border-amber-200" };
+                          return (
+                            <li key={i} className="m-0 p-0">
+                              <button
+                                onClick={() => setReadingPage({
+                                  id: `conviction-${c.ticker || i}-${todayKey}`,
+                                  type: "conviction",
+                                  ticker: c.ticker,
+                                  signal: c.signal,
+                                  headline: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}`,
+                                  action: c.action,
+                                  why_now: c.why_now,
+                                  note: c.note,
+                                  deep_reasoning: c.deep_reasoning,
+                                  holding: holdings.find(h => h.symbol === c.ticker),
+                                  chatDescription: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}${c.action ? ` — ${c.action}` : ""}${c.why_now ? `. ${c.why_now}` : ""}${c.deep_reasoning ? ` Full reasoning: ${c.deep_reasoning}` : ""}`,
+                                })}
+                                className="w-full h-full text-left transition-all duration-150 active:scale-[0.99] hover:shadow-md"
+                                style={{
+                                  background: sigTheme.bg,
+                                  border: `1px solid ${sigTheme.border}`,
+                                  borderRadius: 12,
+                                  padding: "10px 11px",
+                                  boxShadow: "0 2px 6px -2px rgba(124, 58, 237, 0.15)",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: 8,
+                                  minHeight: 110,
+                                }}
+                              >
+                                {/* Top row: signal chip + ticker */}
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className={`px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border font-bold flex-shrink-0 ${sigTheme.chip}`}>
+                                    {c.signal || "watch"}
+                                  </span>
+                                  <p className="text-[15px] font-bold m-0 leading-tight" style={{ color: "#0f172a", fontFamily: SERIF }}>
+                                    {c.ticker}
+                                  </p>
+                                </div>
+                                {/* Reasoning preview */}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[12px] m-0 leading-snug" style={{
+                                    color: "#1e293b",
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: "vertical",
+                                    overflow: "hidden",
+                                  }}>
+                                    {hasAction && c.action ? c.action : summaryLine}
+                                  </p>
+                                </div>
+                                {/* Footer hint */}
+                                <p className="text-[10px] m-0 italic" style={{ color: sigTheme.labelText, opacity: 0.75 }}>
+                                  Tap for reasoning →
+                                </p>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : (
+                      // Empty state for conviction column — keeps the column visible
+                      <div className="rounded-xl p-3"
+                        style={{
+                          background: "linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)",
+                          border: "1px solid #c4b5fd",
+                          minHeight: 110,
+                        }}>
+                        <p className="text-[12px] text-violet-900 leading-relaxed m-0">
+                          {(holdings && holdings.length > 0)
+                            ? "Quiet day for your positions. No high-conviction signals."
+                            : "Sync your portfolio to see signals on stocks you own."}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {/* Helper text */}
                 <p className="mt-4 text-[13px] text-slate-700 text-center italic">
-                  Tap any card to see full reasoning and act on it.
+                  Tap any card for full reasoning and to act on it.
                 </p>
 
                 {/* Completion celebration */}
@@ -2944,7 +3131,9 @@ export default function MorningEdge() {
               </div>
             </Card>
           )}
-          {visible.conviction && (
+          {/* Conviction section is now MERGED into Today's Playbook above as the right column.
+              We hide the standalone conviction card to avoid duplication. */}
+          {false && visible.conviction && (
             (Array.isArray(brief.conviction_watch) && brief.conviction_watch.length > 0) ? (
             <Card theme={themes.conviction}>
               <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Ongoing Watch" theme={themes.conviction} />
@@ -2955,6 +3144,7 @@ export default function MorningEdge() {
                 <p className="text-[12px] text-slate-700 italic px-1 mb-3">
                   Not necessarily today. Background watch on your positions. Tap any signal for full reasoning.
                 </p>
+                <div className="grid grid-cols-2 gap-2">
                 {brief.conviction_watch.filter(Boolean).map((c, i) => {
                   if (!c || typeof c !== "object") return null;
                   const hasAction = !!c.action;
@@ -2985,30 +3175,41 @@ export default function MorningEdge() {
                         holding: holdings.find(h => h.symbol === c.ticker),
                         chatDescription: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}${c.action ? ` — ${c.action}` : ""}${c.why_now ? `. ${c.why_now}` : ""}${c.deep_reasoning ? ` Full reasoning: ${c.deep_reasoning}` : ""}`,
                       })}
-                      className={`relative w-full text-left rounded-xl px-3 py-2.5 bg-slate-50 border ${hasAction ? "border-slate-200 shadow-sm" : "border-slate-100"} overflow-hidden transition active:scale-[0.99] active:bg-slate-100 hover:bg-slate-100`}
+                      className={`relative w-full h-full text-left rounded-xl px-2.5 py-2.5 bg-slate-50 border ${hasAction ? "border-slate-200 shadow-sm" : "border-slate-100"} overflow-hidden transition active:scale-[0.99] active:bg-slate-100 hover:bg-slate-100 flex flex-col gap-1.5`}
+                      style={{ minHeight: 110 }}
                     >
                       {/* Colored left-edge bar — only for high-conviction action items */}
                       {hasAction && (
                         <span className={`absolute left-0 top-0 bottom-0 w-1 ${actionAccent.bar}`} aria-hidden="true" />
                       )}
-                      <div className={`flex items-center gap-2.5 ${hasAction ? "pl-2" : ""}`}>
-                        <span className={`px-2 py-0.5 rounded-md text-[11px] uppercase tracking-wider border font-bold flex items-center gap-1 flex-shrink-0 ${signalStyle(c.signal)}`}>
+                      {/* Top row: signal chip + ticker */}
+                      <div className={`flex items-center gap-1.5 flex-wrap ${hasAction ? "pl-1.5" : ""}`}>
+                        <span className={`px-1.5 py-0.5 rounded-md text-[10px] uppercase tracking-wider border font-bold flex items-center gap-0.5 flex-shrink-0 ${signalStyle(c.signal)}`}>
                           {signalIcon(c.signal)}{c.signal}
                         </span>
                         <p className="text-[15px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{c.ticker}</p>
-                        {hasAction && (
-                          <span className={`text-[10px] uppercase tracking-wider font-bold flex-shrink-0 ${actionAccent.chip} px-1.5 py-0.5 rounded border`}>
-                            {actionAccent.label}
-                          </span>
-                        )}
-                        <ChevronRight className="w-4 h-4 text-slate-400 ml-auto flex-shrink-0" strokeWidth={2.2} />
                       </div>
-                      <p className={`text-[13px] text-slate-700 leading-snug mt-1.5 line-clamp-2 ${hasAction ? "pl-2" : ""}`}>
+                      {hasAction && (
+                        <span className={`text-[9px] uppercase tracking-wider font-bold w-fit ${actionAccent.chip} px-1.5 py-0.5 rounded border ${hasAction ? "ml-1.5" : ""}`}>
+                          {actionAccent.label}
+                        </span>
+                      )}
+                      <p className={`text-[12px] text-slate-700 leading-snug flex-1 ${hasAction ? "pl-1.5" : ""}`} style={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}>
                         {hasAction && c.action ? c.action : summaryLine}
                       </p>
+                      <div className={`flex items-center justify-between mt-auto ${hasAction ? "pl-1.5" : ""}`}>
+                        <span className="text-[10px] italic text-slate-500">Tap for reasoning</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" strokeWidth={2.2} />
+                      </div>
                     </button>
                   );
                 })}
+                </div>
               </div>
             </Card>
             ) : (
@@ -3735,7 +3936,9 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
 
     return sorted.map((h) => ({
       symbol: h.symbol,
-      change: h.gainPct != null ? h.gainPct : 0,
+      // Pass null through (rather than substituting 0) so the renderer
+      // knows to hide the percentage when we don't have real data.
+      change: h.gainPct != null ? h.gainPct : null,
       flow: (h.gainPct || 0) > 5 ? "high" : (h.gainPct || 0) < -5 ? "dip" : "normal",
       shares: h.qty,
       accountLabel: h.accountId ? accountById[h.accountId] : null,
@@ -3817,12 +4020,16 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
             }}
           >
             {stream.map((m, i) => {
-              const up = (m.change || 0) >= 0;
+              const up = (Number(m.change) || 0) >= 0;
               const isHigh = m.flow === "high";
               const isDip = m.flow === "dip";
               return (
                 <div key={i} className="flex flex-col gap-0.5 text-[13px] font-semibold py-0.5 px-0.5">
-                  {/* Top row — symbol + change */}
+                  {/* Top row — symbol + change. Only show the percentage
+                      when we have actual price data (non-zero). Showing
+                      "+0.00%" when prices haven't been fetched is worse
+                      than showing nothing — it implies stocks aren't
+                      moving when really we just don't have the data yet. */}
                   <div className="flex items-center gap-1.5 leading-none">
                     {isHigh && <span className="text-emerald-400 text-[12px]">▲▲</span>}
                     {isDip && <span className="text-rose-400 text-[12px]">▼▼</span>}
@@ -3832,10 +4039,17 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
                     {m.shares != null && (
                       <span className="text-slate-500 text-[12px]">{m.shares}sh</span>
                     )}
-                    <span className={up ? "text-emerald-400" : "text-rose-400"}>
-                      {up ? "+" : ""}
-                      {Number(m.change || 0).toFixed(2)}%
-                    </span>
+                    {/* Only render the percentage if we have a real value.
+                        m.change comes from h.gainPct on user holdings —
+                        which is null/undefined until live prices are
+                        fetched. Once the prices endpoint is wired up
+                        with a Finnhub key, this will populate. */}
+                    {m.change != null && Number(m.change) !== 0 && (
+                      <span className={up ? "text-emerald-400" : "text-rose-400"}>
+                        {up ? "+" : ""}
+                        {Number(m.change).toFixed(2)}%
+                      </span>
+                    )}
                   </div>
                   {/* Bottom row — sector / signal / account label */}
                   <div className="flex items-center gap-1.5 leading-none text-[9px]">
@@ -4691,69 +4905,72 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
   return (
     <button
       onClick={() => onOpen(idx)}
-      className="text-left transition-all duration-150 active:scale-[0.99] hover:shadow-md w-full"
+      className="text-left transition-all duration-150 active:scale-[0.99] hover:shadow-md w-full h-full"
       style={{
         background: theme.bg,
         border: `1px solid ${theme.border}`,
         borderRadius: 12,
-        padding: "12px 14px",
+        padding: "10px 11px",
         boxShadow: `0 2px 6px -2px ${theme.shadow}`,
         opacity,
         display: "flex",
-        alignItems: "center",
-        gap: 12,
+        flexDirection: "column",
+        gap: 8,
+        minHeight: 110,
       }}
     >
-      {/* Icon badge */}
-      <div
-        className="flex-shrink-0 flex items-center justify-center"
-        style={{ width: 38, height: 38, borderRadius: 10, background: theme.iconBg }}
-      >
-        <Icon className="w-5 h-5" style={{ color: "white", strokeWidth: 2.6 }} />
+      {/* Top row: Icon + ticker */}
+      <div className="flex items-center gap-2">
+        <div
+          className="flex-shrink-0 flex items-center justify-center"
+          style={{ width: 32, height: 32, borderRadius: 8, background: theme.iconBg }}
+        >
+          <Icon className="w-4 h-4" style={{ color: "white", strokeWidth: 2.6 }} />
+        </div>
+        {parsed.ticker && (
+          <p
+            className="text-[16px] font-bold m-0 leading-tight truncate"
+            style={{ color: "#0f172a", fontFamily: SERIF }}
+          >
+            {parsed.ticker}
+          </p>
+        )}
+        {done && (
+          <span className="ml-auto text-emerald-700 flex-shrink-0">
+            <CheckCircle2 className="w-4 h-4" strokeWidth={2.5} />
+          </span>
+        )}
       </div>
 
-      {/* Center text block */}
+      {/* Action label */}
+      <p className="text-[10px] font-bold tracking-[0.14em] uppercase m-0" style={{ color: theme.labelText }}>
+        {parsed.typeLabel}
+      </p>
+
+      {/* Center text block — the action itself, trimmed for narrow card */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-          <p className="text-[13px] font-bold tracking-[0.15em] uppercase m-0" style={{ color: theme.labelText }}>
-            {parsed.typeLabel}
-          </p>
-          {parsed.ticker && (
-            <p
-              className="text-[18px] font-bold m-0 leading-tight"
-              style={{ color: "#0f172a", fontFamily: SERIF }}
-            >
-              {parsed.ticker}
-            </p>
-          )}
-          {done && (
-            <span className="ml-1 text-emerald-700 flex-shrink-0">
-              <Check className="w-4 h-4" strokeWidth={3} />
-            </span>
-          )}
-          {dismissed && !done && (
-            <span className="ml-1 text-slate-500 flex-shrink-0">
-              <X className="w-4 h-4" strokeWidth={2.5} />
-            </span>
-          )}
-        </div>
-        <p
-          className="text-[16px] leading-snug m-0"
-          style={{ color: "#1e293b", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}
-        >
+        <p className="text-[13px] m-0 leading-snug" style={{
+          color: "#1e293b",
+          display: "-webkit-box",
+          WebkitLineClamp: 3,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+        }}>
           {parsed.ticker
-            ? parsed.headline.replace(parsed.ticker, "").replace(/^[\s:.\-—]+/, "")
-            : parsed.headline}
+            ? (parsed.headline || decision).replace(parsed.ticker, "").replace(/^[\s:.\-—]+/, "")
+            : (parsed.headline || decision)}
         </p>
         {parsed.account && (
-          <p className="text-[12px] font-semibold uppercase tracking-wider mt-0.5 m-0" style={{ color: theme.accentText }}>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mt-1 m-0" style={{ color: theme.accentText }}>
             {parsed.account}
           </p>
         )}
       </div>
 
-      {/* Chevron */}
-      <ChevronRight className="w-5 h-5 flex-shrink-0" style={{ color: theme.chevron }} />
+      {/* Footer: tap hint */}
+      <p className="text-[10px] m-0 italic" style={{ color: theme.labelText, opacity: 0.7 }}>
+        Tap for full reasoning →
+      </p>
     </button>
   );
 }
@@ -5866,15 +6083,6 @@ function PowerPlateCard({ plate }) {
         {description && (
           <p className="text-[15px] text-slate-700 leading-relaxed mb-3">{description}</p>
         )}
-        {/* Why this meal — context paragraph explaining nutritional rationale */}
-        {why_this_meal && (
-          <div className="rounded-lg bg-white/70 border border-amber-200/60 px-3 py-2.5 mb-3">
-            <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-amber-800 mb-1">
-              Why this meal today
-            </p>
-            <p className="text-[13px] text-slate-800 leading-relaxed m-0">{why_this_meal}</p>
-          </div>
-        )}
         {/* Stats row */}
         <div className="flex items-center gap-2 mb-3">
           {protein_g != null && (
@@ -5902,9 +6110,19 @@ function PowerPlateCard({ plate }) {
         </button>
       </div>
 
-      {/* Expanded section — grocery list + prep steps + swaps + pairing */}
+      {/* Expanded section — why_this_meal + grocery list + prep steps + swaps + pairing */}
       {expanded && (
         <div className="px-4 pb-4 pt-1 space-y-4 border-t border-amber-100">
+          {/* Why this meal today — context paragraph explaining nutritional rationale.
+              Tucked inside the expanded view so the card stays compact when collapsed. */}
+          {why_this_meal && (
+            <div className="rounded-lg bg-white/70 border border-amber-200/60 px-3 py-2.5 mt-3">
+              <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-amber-800 mb-1">
+                Why this meal today
+              </p>
+              <p className="text-[13px] text-slate-800 leading-relaxed m-0">{why_this_meal}</p>
+            </div>
+          )}
           {groceries.length > 0 && (
             <div>
               <p className="text-[12px] uppercase tracking-[0.2em] text-amber-700 font-semibold mb-2 flex items-center gap-1.5">
@@ -5990,7 +6208,7 @@ function SignatureFooter({ verified, hash, compact }) {
             boxShadow: "0 2px 12px -4px rgba(124, 45, 18, 0.08)",
           }}>
           <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-amber-900/80 mb-4">
-            For the families who care
+            Because every life deserves dignity
           </p>
           {/* Medallion — bronze relief, family heart of this app */}
           <div className="flex justify-center mb-4">
