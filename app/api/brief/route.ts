@@ -393,15 +393,15 @@ Return ONLY this JSON shape with all fields populated:
     "style": "High Protein or Mediterranean or Anti-Inflammatory",
     "protein_g": 30,
     "prep_min": 25,
-    "description": "2-3 sentences (50-75 words) describing the dish — flavor profile, texture, when it's best eaten, and what makes it satisfying",
-    "why_this_meal": "70-100 word plain-English paragraph explaining WHY this meal supports the user's goals today — protein for muscle, healthy fats for brain, fiber for energy, anti-inflammatory ingredients. Tie it to the day's mood/intent. Like a thoughtful friend explaining the choice.",
-    "groceries": ["6-9 specific grocery line items with rough quantities (e.g. '8oz wild salmon', '1 large lemon', '2 cups baby spinach')"],
-    "prep_steps": ["6-8 cooking steps, max 22 words each — clear and beginner-friendly with timing where helpful"],
-    "swap_options": ["2-3 simple substitutions a user can make (e.g. 'Sub salmon → chicken thigh if pescatarian-averse', 'Sub quinoa → cauliflower rice for lower carb')"],
-    "pairing": "1-line beverage or side suggestion (e.g. 'Pair with sparkling water + lemon, or unsweetened green tea')"
+    "description": "4-5 sentences (110-150 words) describing the dish like a thoughtful chef would: open with the sensory hook (aroma, color, what hits the plate first), then walk through flavor profile and texture (creamy / crunchy / bright / smoky / umami-rich), then mention the best moment to eat it (post-workout, end of a long screen day, light dinner), and close with what makes it deeply satisfying — the protein anchor, the contrast of textures, the way the seasoning lands. Make it inviting, not clinical. The user should want to cook it.",
+    "why_this_meal": "120-170 word plain-English paragraph explaining WHY this meal supports the user's goals today. Cover FOUR things: (1) the macronutrient story — protein for muscle and satiety, healthy fats for brain and hormones, complex carbs for steady energy, fiber for gut health; (2) any anti-inflammatory or specific nutrient angles (omega-3s, polyphenols, magnesium, choline) and what they do in plain language; (3) tie to the day's mood/intent — high-focus day, recovery day, social evening; (4) a brief sentence on long-term benefit (cardiovascular, cognitive, blood sugar stability). Like a thoughtful friend with nutrition knowledge explaining the choice over coffee. Define any technical term in the same sentence (e.g. 'polyphenols — plant compounds that reduce inflammation').",
+    "groceries": ["7-10 specific grocery line items with rough quantities AND a brief tag (1-3 words) on what to look for at the store. Examples: '8oz wild salmon — bright pink, no fishy smell', '1 large lemon — heavy for size = juicier', '2 cups baby spinach — deep green, no wilting', '3 cloves garlic — firm, no green sprouts'. The tag helps a beginner shopper pick the good version."],
+    "prep_steps": ["7-9 cooking steps, 25-40 words each. Each step should include: the action, a timing cue (e.g. '4-5 minutes per side'), and a sensory tell (what to look/listen/smell for so beginners know it's working — 'until edges turn golden', 'when garlic smells nutty, not burnt', 'when oil shimmers but doesn't smoke'). Number-friendly instructions a confident beginner can follow without watching a video."],
+    "swap_options": ["3-4 simple substitutions a user can make. Format each as: 'Sub X → Y if [reason]' (e.g. 'Sub salmon → chicken thigh if pescatarian-averse', 'Sub quinoa → cauliflower rice for lower carb', 'Sub spinach → kale if you prefer firmer greens')"],
+    "pairing": "2-3 sentences (35-55 words) on what to drink or serve alongside, and why it works (acidity cuts fat, herbs echo the dish, etc). Examples: 'Pair with sparkling water + a wedge of lemon — the acidity lifts the salmon and resets your palate between bites. If wine, a crisp Sauvignon Blanc echoes the herb notes without competing.'"
   },
   "decisions": [
-    "3-5 PERSONALIZED trade decisions referencing the user's actual holdings + today's catalysts. Each STRING max 16 words. Format: [Account if multi-account] + [Ticker context] + [Specific action] + [Catalyst]."
+    "8-10 PERSONALIZED trade decisions referencing the user's actual holdings + today's catalysts. Each STRING max 16 words. Format: [Account if multi-account] + [Ticker context] + [Specific action] + [Catalyst]."
   ],
   "decisions_reasoning": [
     "For EACH decision above (same order, same length), a 130-180 word explanation written for someone NEW to trading. Cover: WHY this matters now (what's happening that triggered the suggestion) — WHY YOU MIGHT WANT TO DO IT (what problem it solves or opportunity it captures) — WHAT TO THINK ABOUT BEFORE DOING IT (your cost basis, how much you own, taxes) — WHY YOU MIGHT NOT WANT TO (the case against). PLAIN ENGLISH RULES: explain any technical term in the same sentence you use it (e.g. 'asymmetric — meaning the upside and downside aren't equal'). Never assume the reader knows trading slang. Use 'you' and 'your' to make it personal. Write like you're explaining to a smart friend who's never invested before. No bullet points. Full paragraphs."
@@ -412,12 +412,12 @@ ${accountRule}
 GOOD decision examples: "IONQ +45% on 175sh — earnings 5/6. Trim 75 into Friday strength." / "NVDA reports tonight, you hold 75sh. Set $850 stop pre-FOMC."
 BAD examples to avoid: "Review highest-conviction position" / "Confirm cash balance" — too generic.
 
-PRIMARY DECISION INPUT: This brief is the user's main source for what-to-do-today. 3 high-conviction action items beat 5 generic ones. If you don't have a clear take on a 4th or 5th item, return only the strong ones.
+PRIMARY DECISION INPUT: This brief is the user's main source for what-to-do-today. Aim for 8-10 high-conviction action items, but quality over quantity — if you don't have a clear take on a 9th or 10th item, return only the strong ones (5-7 is fine if that's all you genuinely have).
 
 decisions_reasoning EXAMPLE (for a TRIM IONQ decision) — note the simple language:
 "IONQ has gone up 45% in just one month, and the company is reporting earnings on May 6 — that's only days away. Earnings reports are big moments where the stock can swing wildly in either direction. Trimming means selling part of your position to lock in some of those gains, while keeping the rest invested. The reason to consider trimming: the stock has already had a huge run, so a lot of good news may already be 'priced in' (built into the current price). If the earnings disappoint even a little, the stock could drop 15-20% in a single day. Before you sell anything, check your cost basis (what you originally paid). If you're up 200%+, you'll owe taxes on the gains. On the other hand, if you sell and earnings are amazing, you'll miss the next move up. Selling 75 of your 175 shares keeps you in the game with most of your shares while reducing the risk of a big drop."`;
 
-  return callJsonChunk(prompt, { maxTokens: 5500, model: "claude-haiku-4-5" });
+  return callJsonChunk(prompt, { maxTokens: 8000, model: "claude-haiku-4-5" });
 }
 
 // Chunk 2: Market pulse + today's edge + radar watch (web search needed
@@ -565,17 +565,17 @@ Return ONLY this JSON:
   ]
 }
 
-conviction_watch: 3-5 entries — focus on positions where you have a CLEAR HIGH-CONVICTION take (add, hold, trim) backed by current setup, catalysts, or risk. EVERY entry MUST include deep_reasoning — this is the depth the user reads when they tap the card.
+conviction_watch: 8-10 entries — focus on positions where you have a CLEAR HIGH-CONVICTION take (add, hold, trim) backed by current setup, catalysts, or risk. EVERY entry MUST include deep_reasoning — this is the depth the user reads when they tap the card. Prioritize the user's largest positions and biggest catalysts. If the user has fewer than 8 positions worth a clear take, return as many as you genuinely can — don't pad with filler.
 
-opportunity_watch: 3-4 portfolio-aware buy ideas. Stock MUST NOT be in user's current holdings. Each pick MUST: (1) match one of the user's existing themes (AI / semis / nuclear / quantum / biotech / critical minerals / crypto infra), (2) fill a thematic gap (different sub-theme than what they already own — e.g. if they own NVDA, suggest cooling/power infrastructure rather than another GPU maker), (3) have a real catalyst or setup TODAY worth watching, (4) include the deep_reasoning paragraph. QUALITY OVER QUANTITY — 3 strong picks beat 4 weak ones. If you can't find 3 high-conviction non-duplicate fits, return fewer. This is the most actionable section of the brief — users are deciding what to BUY based on this, so filler is dangerous.
+opportunity_watch: 8-10 portfolio-aware buy ideas. Stock MUST NOT be in user's current holdings. Each pick MUST: (1) match one of the user's existing themes (AI / semis / nuclear / quantum / biotech / critical minerals / crypto infra), (2) fill a thematic gap (different sub-theme than what they already own — e.g. if they own NVDA, suggest cooling/power infrastructure rather than another GPU maker), (3) have a real catalyst or setup TODAY worth watching, (4) include the deep_reasoning paragraph. QUALITY OVER QUANTITY — 8 strong picks beat 10 with filler. If you genuinely can't find 8 high-conviction non-duplicate fits, return whatever you have. This is the most actionable section of the brief — users are deciding what to BUY based on this, so filler is dangerous.
 
-PRIMARY DECISION INPUT: This brief is the user's main source for "what to do with what I own" — hold, add, or trim signals. Filler hurts trust. 3 strong calls beat 5 weak ones. If a position is genuinely "no view, just hold," it's fine to omit.
+PRIMARY DECISION INPUT: This brief is the user's main source for "what to do with what I own" — hold, add, or trim signals. Filler hurts trust. Aim for 8-10 strong calls; if a position is genuinely "no view, just hold," it's fine to omit and return fewer.
 
 CRITICAL DATA RULES:
 - NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD", or any all-caps placeholder.
 - Empty arrays are acceptable; placeholder strings are NEVER acceptable.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 8000, maxSearches: 3 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 12000, maxSearches: 3 });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────
@@ -854,6 +854,6 @@ Output exactly:
     "swap_options": ["2-3 simple substitutions"],
     "pairing": "1-line beverage or side suggestion"
   },
-  "decisions": ["3-5 PERSONALIZED trader actions referencing user's actual holdings + today's catalysts, max 14 words each"]
+  "decisions": ["8-10 PERSONALIZED trader actions referencing user's actual holdings + today's catalysts, max 14 words each"]
 }`;
 }

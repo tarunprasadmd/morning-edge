@@ -14,7 +14,7 @@ import {
   ArrowRight, Lock, Crown, LayoutGrid, Briefcase, Share2, CalendarPlus, Play,
   Compass, Telescope, Flower2, Activity, ChevronLeft, ChevronRight, ExternalLink,
   Utensils, ShoppingBasket, Timer, Flame, Pencil, Trash2, Check,
-  Castle, Dumbbell, Move, HeartHandshake,
+  Castle, Dumbbell, Move, HeartHandshake, Snowflake, CheckCircle2,
 } from "lucide-react";
 
 const SIGNATURE = "Morning Edge · by T-SPOT · Tarun Prasad · 2026";
@@ -3087,39 +3087,38 @@ export default function MorningEdge() {
                                 style={{
                                   background: sigTheme.bg,
                                   border: `1px solid ${sigTheme.border}`,
-                                  borderRadius: 12,
-                                  padding: "8px 10px",
-                                  boxShadow: `0 2px 6px -2px ${sigTheme.shadow}`,
+                                  borderRadius: 10,
+                                  padding: "6px 8px",
+                                  boxShadow: `0 1px 4px -2px ${sigTheme.shadow}`,
                                   display: "flex",
                                   flexDirection: "column",
-                                  gap: 8,
-                                  minHeight: 88,
+                                  gap: 4,
+                                  minHeight: 68,
                                 }}
                               >
-                                {/* Top row: colored icon square + ticker — matches Today's Moves */}
-                                <div className="flex items-center gap-2">
+                                {/* Top row: colored icon square + ticker + label — matches Today's Moves */}
+                                <div className="flex items-center gap-1.5">
                                   <div
                                     className="flex-shrink-0 flex items-center justify-center"
-                                    style={{ width: 32, height: 32, borderRadius: 8, background: sigTheme.iconBg }}
+                                    style={{ width: 24, height: 24, borderRadius: 6, background: sigTheme.iconBg }}
                                   >
-                                    <SignalIcon className="w-4 h-4" style={{ color: "white", strokeWidth: 2.6 }} />
+                                    <SignalIcon className="w-3 h-3" style={{ color: "white", strokeWidth: 2.6 }} />
                                   </div>
                                   {c.ticker && (
                                     <p
-                                      className="text-[16px] font-bold m-0 leading-tight truncate"
+                                      className="text-[14px] font-bold m-0 leading-tight truncate"
                                       style={{ color: "#0f172a", fontFamily: SERIF }}
                                     >
                                       {c.ticker}
                                     </p>
                                   )}
+                                  <span className="ml-auto text-[8.5px] font-bold tracking-[0.14em] uppercase" style={{ color: sigTheme.labelText }}>
+                                    {signalLabel}
+                                  </span>
                                 </div>
-                                {/* Action label — same style as Today's Moves */}
-                                <p className="text-[10px] font-bold tracking-[0.14em] uppercase m-0" style={{ color: sigTheme.labelText }}>
-                                  {signalLabel}
-                                </p>
                                 {/* Reasoning preview */}
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-[13px] m-0 leading-snug" style={{
+                                  <p className="text-[11.5px] m-0 leading-snug" style={{
                                     color: "#1e293b",
                                     display: "-webkit-box",
                                     WebkitLineClamp: 2,
@@ -3129,10 +3128,6 @@ export default function MorningEdge() {
                                     {hasAction && c.action ? c.action : summaryLine}
                                   </p>
                                 </div>
-                                {/* Footer hint */}
-                                <p className="text-[10px] m-0 italic" style={{ color: sigTheme.labelText, opacity: 0.7 }}>
-                                  Tap for reasoning →
-                                </p>
                               </button>
                             </li>
                           );
@@ -3990,23 +3985,69 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
     }));
   })();
 
+  // Live price overlay — fetch /api/prices for the symbols on screen and
+  // overwrite change% with the real intraday number. Polls every 60s while
+  // visible. If the endpoint fails, items keep whatever change they had.
+  const symbolList = React.useMemo(
+    () => Array.from(new Set(items.map((m) => m.symbol).filter(Boolean))).slice(0, 20),
+    [items]
+  );
+  const [livePrices, setLivePrices] = React.useState({});
+  React.useEffect(() => {
+    if (symbolList.length === 0) return;
+    let cancelled = false;
+    let timer = null;
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/prices?symbols=${symbolList.join(",")}`);
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        const data = await res.json();
+        if (!cancelled && data?.prices) {
+          setLivePrices(data.prices);
+        }
+      } catch {
+        // Silent — keep showing whatever we had. UI degrades gracefully.
+      }
+    };
+    poll();
+    timer = setInterval(() => {
+      // Skip if the document is hidden (saves API calls when phone is locked
+      // or app is backgrounded — Yahoo's chart endpoint isn't free forever).
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        poll();
+      }
+    }, 60_000);
+    return () => {
+      cancelled = true;
+      if (timer) clearInterval(timer);
+    };
+  }, [symbolList.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Merge live prices into items — overlay change% if we got a real value.
+  const itemsWithLive = items.map((m) => {
+    const live = livePrices[m.symbol];
+    if (live && typeof live.changePct === "number" && !Number.isNaN(live.changePct)) {
+      return {
+        ...m,
+        change: live.changePct,
+        flow: live.changePct > 5 ? "high" : live.changePct < -5 ? "dip" : "normal",
+      };
+    }
+    return m;
+  });
+
   // Duplicate so the marquee loops seamlessly
-  const stream = [...items, ...items];
+  const stream = [...itemsWithLive, ...itemsWithLive];
   const isPersonalized = userHoldings && userHoldings.length > 0;
 
   return (
     <div
-      className="relative -mt-2 mb-3 overflow-hidden shadow-md border-y border-amber-900/30"
+      className="relative -mt-2 mb-3 overflow-hidden shadow-md border-y"
       style={{
-        // Castle wall stone-effect background — layered gradients give a
-        // subtle texture without needing image assets. Warm dark tones to
-        // pair with the gold accents elsewhere in the app.
-        background: `
-          linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.25) 100%),
-          repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 60px, rgba(0,0,0,0.05) 60px 64px, rgba(255,255,255,0.04) 64px 124px, rgba(0,0,0,0.07) 124px 128px),
-          repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0 22px, rgba(255,255,255,0.03) 22px 26px),
-          linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)
-        `,
+        borderColor: "rgba(245, 208, 140, 0.35)",
+        // Cleaner gradient — premium navy without the muddy stone texture.
+        // Brighter midtones so the ticker reads vibrant rather than dim.
+        background: `linear-gradient(180deg, #1e3a5f 0%, #142b48 50%, #0c1f37 100%)`,
       }}
     >
       {/* Top crenellation line — gold accent */}
@@ -4014,7 +4055,7 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
         className="absolute top-0 left-0 right-0 h-[2px]"
         style={{
           background:
-            "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)",
+            "linear-gradient(90deg, transparent 0%, #F5D08C 25%, #FFEAB6 50%, #F5D08C 75%, transparent 100%)",
         }}
       />
 
@@ -4075,13 +4116,13 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
                       than showing nothing — it implies stocks aren't
                       moving when really we just don't have the data yet. */}
                   <div className="flex items-center gap-1.5 leading-none">
-                    {isHigh && <span className="text-emerald-400 text-[12px]">▲▲</span>}
-                    {isDip && <span className="text-rose-400 text-[12px]">▼▼</span>}
-                    <span className="text-slate-100 tracking-tight font-bold">
+                    {isHigh && <span className="text-emerald-300 text-[12px]">▲▲</span>}
+                    {isDip && <span className="text-rose-300 text-[12px]">▼▼</span>}
+                    <span className="text-white tracking-tight font-bold">
                       {m.symbol}
                     </span>
                     {m.shares != null && (
-                      <span className="text-slate-500 text-[12px]">{m.shares}sh</span>
+                      <span className="text-slate-300 text-[12px]">{m.shares}sh</span>
                     )}
                     {/* Only render the percentage if we have a real value.
                         m.change comes from h.gainPct on user holdings —
@@ -4089,7 +4130,7 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
                         fetched. Once the prices endpoint is wired up
                         with a Finnhub key, this will populate. */}
                     {m.change != null && Number(m.change) !== 0 && (
-                      <span className={up ? "text-emerald-400" : "text-rose-400"}>
+                      <span className={up ? "text-emerald-300 font-bold" : "text-rose-300 font-bold"}>
                         {up ? "+" : ""}
                         {Number(m.change).toFixed(2)}%
                       </span>
@@ -4101,27 +4142,27 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
                       <span
                         className={`px-1 py-0.5 rounded uppercase tracking-wider font-bold ${
                           m.signal === "add"
-                            ? "bg-emerald-500/30 text-emerald-200"
+                            ? "bg-emerald-500/40 text-emerald-100"
                             : m.signal === "trim"
-                            ? "bg-amber-500/30 text-amber-200"
-                            : "bg-slate-500/30 text-slate-200"
+                            ? "bg-amber-500/40 text-amber-100"
+                            : "bg-slate-500/40 text-slate-100"
                         }`}
                       >
                         {m.signal}
                       </span>
                     )}
                     {m.sector && (
-                      <span className="text-slate-300 uppercase tracking-wider">
+                      <span className="text-slate-200 uppercase tracking-wider">
                         {m.sector}
                       </span>
                     )}
                     {m.accountLabel && (
-                      <span className="text-amber-300/80 uppercase tracking-wider">
+                      <span className="text-amber-200 uppercase tracking-wider font-semibold">
                         · {m.accountLabel}
                       </span>
                     )}
                     {!m.signal && !m.sector && !m.accountLabel && (
-                      <span className="text-slate-700 text-[8px] italic">
+                      <span className="text-slate-400 text-[8px] italic">
                         on watch
                       </span>
                     )}
@@ -4317,29 +4358,68 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
             </div>
           )}
           {detail.fuelBlocks && Array.isArray(detail.fuelBlocks) && (
-            <div className="space-y-3 mb-3">
-              {detail.fuelBlocks.map((block, i) => (
-                <div key={i} className="rounded-lg bg-white border border-slate-200 p-3">
-                  <p className="text-[12px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-2">
-                    {block.name}
-                  </p>
-                  {Array.isArray(block.moves) && block.moves.length > 0 && (
-                    <ul className="space-y-1.5 mb-2">
-                      {block.moves.map((m, j) => (
-                        <li key={j} className="text-[14px] text-slate-800 leading-snug flex gap-2">
-                          <span className="text-amber-600 font-bold flex-shrink-0">·</span>
-                          <span>{m}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {block.why && (
-                    <p className="text-[12px] text-slate-600 italic leading-snug mt-1.5">
-                      {block.why}
-                    </p>
-                  )}
-                </div>
-              ))}
+            <div className="space-y-2.5 mb-3">
+              {detail.fuelBlocks.map((block, i) => {
+                // Map block name to a lucide icon + color theme. Real library icons,
+                // not generated SVG drawings, so they look clean and professional.
+                const name = (block.name || "").toLowerCase();
+                let BlockIcon = Activity;
+                let accent = { bg: "#f0f9ff", border: "#bae6fd", iconBg: "linear-gradient(135deg, #0ea5e9, #0284c7)", labelColor: "#0c4a6e" };
+                if (name.includes("mobil")) {
+                  BlockIcon = Move;
+                  accent = { bg: "#ecfeff", border: "#a5f3fc", iconBg: "linear-gradient(135deg, #06b6d4, #0891b2)", labelColor: "#155e75" };
+                } else if (name.includes("breath")) {
+                  BlockIcon = Wind;
+                  accent = { bg: "#f0fdfa", border: "#99f6e4", iconBg: "linear-gradient(135deg, #14b8a6, #0d9488)", labelColor: "#115e59" };
+                } else if (name.includes("strength") || name.includes("power") || name.includes("core")) {
+                  BlockIcon = Dumbbell;
+                  accent = { bg: "#fef2f2", border: "#fecaca", iconBg: "linear-gradient(135deg, #ef4444, #dc2626)", labelColor: "#991b1b" };
+                } else if (name.includes("cool") || name.includes("stretch") || name.includes("recover")) {
+                  BlockIcon = Snowflake;
+                  accent = { bg: "#eef2ff", border: "#c7d2fe", iconBg: "linear-gradient(135deg, #6366f1, #4f46e5)", labelColor: "#3730a3" };
+                } else if (name.includes("focus") || name.includes("mind")) {
+                  BlockIcon = Sparkles;
+                  accent = { bg: "#faf5ff", border: "#e9d5ff", iconBg: "linear-gradient(135deg, #a855f7, #9333ea)", labelColor: "#6b21a8" };
+                }
+                return (
+                  <div
+                    key={i}
+                    className="rounded-lg border overflow-hidden"
+                    style={{ background: accent.bg, borderColor: accent.border }}
+                  >
+                    {/* Header strip with icon + name */}
+                    <div className="flex items-center gap-2 px-2.5 py-2 border-b" style={{ borderColor: accent.border }}>
+                      <div
+                        className="flex-shrink-0 flex items-center justify-center"
+                        style={{ width: 28, height: 28, borderRadius: 8, background: accent.iconBg, boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }}
+                      >
+                        <BlockIcon className="w-4 h-4 text-white" strokeWidth={2.4} />
+                      </div>
+                      <p className="text-[12px] uppercase tracking-[0.16em] font-bold m-0" style={{ color: accent.labelColor }}>
+                        {block.name}
+                      </p>
+                    </div>
+                    {/* Moves list */}
+                    <div className="px-2.5 py-2">
+                      {Array.isArray(block.moves) && block.moves.length > 0 && (
+                        <ul className="space-y-1.5 mb-1.5">
+                          {block.moves.map((m, j) => (
+                            <li key={j} className="text-[13.5px] text-slate-800 leading-snug flex gap-2">
+                              <span className="flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full" style={{ background: accent.labelColor }} />
+                              <span>{m}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {block.why && (
+                        <p className="text-[12px] text-slate-600 italic leading-snug mt-1.5">
+                          {block.why}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
           {detail.tip && (
@@ -4849,20 +4929,20 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
         className={`text-left rounded-lg ${p.rowBg} border ${p.border} hover:shadow-md active:scale-[0.98] transition-all overflow-hidden flex items-stretch`}
       >
         <div className={`w-1 ${p.stripe}`} />
-        <div className="flex items-center gap-2 px-1.5 py-1.5 flex-1 min-w-0">
-          <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${p.iconBg} flex items-center justify-center shadow-sm flex-shrink-0`}>
-            <Sparkles className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+        <div className="flex items-center gap-2 px-2 py-2 flex-1 min-w-0">
+          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${p.iconBg} flex items-center justify-center shadow-sm flex-shrink-0`}>
+            <Sparkles className="w-4 h-4 text-white" strokeWidth={2.5} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className={`text-[12px] font-bold leading-tight ${p.ticker}`} style={{ fontFamily: SERIF }}>
+            <p className={`text-[14px] font-bold leading-tight ${p.ticker}`} style={{ fontFamily: SERIF }}>
               {item.ticker}
             </p>
             {item.theme && (
-              <p className={`text-[8.5px] font-semibold tracking-wide leading-tight truncate ${p.theme}`}>
+              <p className={`text-[10px] font-semibold tracking-wide leading-tight truncate ${p.theme}`}>
                 {item.theme}
               </p>
             )}
-            <p className="text-[9.5px] text-slate-700 mt-0.5 leading-tight truncate">
+            <p className="text-[11px] text-slate-700 mt-0.5 leading-tight truncate">
               {item.fits_gap || item.headline || item.why_now || "Tap for reasoning"}
             </p>
           </div>
@@ -4958,47 +5038,43 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
       style={{
         background: theme.bg,
         border: `1px solid ${theme.border}`,
-        borderRadius: 12,
-        padding: "8px 10px",
-        boxShadow: `0 2px 6px -2px ${theme.shadow}`,
+        borderRadius: 10,
+        padding: "6px 8px",
+        boxShadow: `0 1px 4px -2px ${theme.shadow}`,
         opacity,
         display: "flex",
         flexDirection: "column",
-        gap: 8,
-        minHeight: 88,
+        gap: 4,
+        minHeight: 68,
       }}
     >
-      {/* Top row: Icon + ticker */}
-      <div className="flex items-center gap-2">
+      {/* Top row: Icon + ticker + done check */}
+      <div className="flex items-center gap-1.5">
         <div
           className="flex-shrink-0 flex items-center justify-center"
-          style={{ width: 32, height: 32, borderRadius: 8, background: theme.iconBg }}
+          style={{ width: 24, height: 24, borderRadius: 6, background: theme.iconBg }}
         >
-          <Icon className="w-4 h-4" style={{ color: "white", strokeWidth: 2.6 }} />
+          <Icon className="w-3 h-3" style={{ color: "white", strokeWidth: 2.6 }} />
         </div>
         {parsed.ticker && (
           <p
-            className="text-[16px] font-bold m-0 leading-tight truncate"
+            className="text-[14px] font-bold m-0 leading-tight truncate"
             style={{ color: "#0f172a", fontFamily: SERIF }}
           >
             {parsed.ticker}
           </p>
         )}
+        <span className="ml-auto text-[8.5px] font-bold tracking-[0.14em] uppercase" style={{ color: theme.labelText }}>
+          {parsed.typeLabel}
+        </span>
         {done && (
-          <span className="ml-auto text-emerald-700 flex-shrink-0">
-            <CheckCircle2 className="w-4 h-4" strokeWidth={2.5} />
-          </span>
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" strokeWidth={2.5} />
         )}
       </div>
 
-      {/* Action label */}
-      <p className="text-[10px] font-bold tracking-[0.14em] uppercase m-0" style={{ color: theme.labelText }}>
-        {parsed.typeLabel}
-      </p>
-
-      {/* Center text block — the action itself, trimmed for narrow card */}
+      {/* Center text block — the action itself, single-line clamp keeps box compact */}
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] m-0 leading-snug" style={{
+        <p className="text-[11.5px] m-0 leading-snug" style={{
           color: "#1e293b",
           display: "-webkit-box",
           WebkitLineClamp: 2,
@@ -5010,16 +5086,11 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
             : (parsed.headline || decision)}
         </p>
         {parsed.account && (
-          <p className="text-[10px] font-semibold uppercase tracking-wider mt-1 m-0" style={{ color: theme.accentText }}>
+          <p className="text-[8.5px] font-semibold uppercase tracking-wider mt-0.5 m-0" style={{ color: theme.accentText }}>
             {parsed.account}
           </p>
         )}
       </div>
-
-      {/* Footer: tap hint */}
-      <p className="text-[10px] m-0 italic" style={{ color: theme.labelText, opacity: 0.7 }}>
-        Tap for full reasoning →
-      </p>
     </button>
   );
 }
@@ -5330,6 +5401,153 @@ function ChatSheet({
 // the original signal/headline at the top and an "Ask about this"
 // button at the bottom for personalized chat follow-up.
 // ────────────────────────────────────────────────────────────────────
+// StockChart — lightweight SVG line chart with timeframe selector. Renders
+// in CardReadingPage when the reading page is for a ticker. Pure SVG, no
+// chart library needed — keeps bundle small and avoids dependency churn.
+//
+// Fetches /api/prices/history?symbol=X&period=Y. Caches results per
+// symbol+period in component state so switching tabs doesn't re-fetch.
+//
+// Graceful: if Yahoo fails or the symbol isn't found, shows a polite
+// "chart unavailable" message rather than blowing up the whole reading page.
+function StockChart({ ticker }) {
+  const [period, setPeriod] = React.useState("1m");
+  const [cache, setCache] = React.useState({}); // { "1m": { points, meta }, ... }
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!ticker) return;
+    if (cache[period]) return; // already have it
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/prices/history?symbol=${encodeURIComponent(ticker)}&period=${period}`
+        );
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        const data = await res.json();
+        if (cancelled) return;
+        if (!data.points || data.points.length === 0) {
+          setError("Chart data unavailable for this symbol.");
+        } else {
+          setCache((prev) => ({ ...prev, [period]: data }));
+        }
+      } catch (e) {
+        if (!cancelled) setError("Could not load chart data.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ticker, period]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const data = cache[period];
+  const periods = [
+    { id: "1d", label: "1D" },
+    { id: "1w", label: "1W" },
+    { id: "1m", label: "1M" },
+    { id: "1y", label: "1Y" },
+    { id: "5y", label: "5Y" },
+  ];
+
+  // Compute SVG path from points
+  const chart = React.useMemo(() => {
+    if (!data || !data.points || data.points.length < 2) return null;
+    const pts = data.points;
+    const W = 320;
+    const H = 110;
+    const PAD_X = 4;
+    const PAD_Y = 8;
+    const xs = pts.map((p) => p.t);
+    const ys = pts.map((p) => p.c);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    const rangeX = maxX - minX || 1;
+    const rangeY = maxY - minY || 1;
+    const toX = (t) => PAD_X + ((t - minX) / rangeX) * (W - 2 * PAD_X);
+    const toY = (c) => PAD_Y + (1 - (c - minY) / rangeY) * (H - 2 * PAD_Y);
+    const path = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${toX(p.t).toFixed(2)} ${toY(p.c).toFixed(2)}`).join(" ");
+    const areaPath = `${path} L ${toX(maxX).toFixed(2)} ${(H - PAD_Y).toFixed(2)} L ${toX(minX).toFixed(2)} ${(H - PAD_Y).toFixed(2)} Z`;
+    return { W, H, path, areaPath, minY, maxY };
+  }, [data]);
+
+  const isUp = data?.meta?.changePct != null && data.meta.changePct >= 0;
+  const lineColor = isUp ? "#059669" : "#dc2626";
+  const fillColor = isUp ? "rgba(5, 150, 105, 0.12)" : "rgba(220, 38, 38, 0.10)";
+
+  return (
+    <div className="mb-4 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white overflow-hidden">
+      {/* Header — price summary */}
+      <div className="px-3 pt-3 pb-2 flex items-end justify-between gap-2">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-slate-500 m-0 leading-none mb-1">
+            Price · {periods.find((p) => p.id === period)?.label}
+          </p>
+          {data?.meta ? (
+            <div className="flex items-baseline gap-2">
+              <span className="text-[20px] font-bold text-slate-900 leading-none" style={{ fontFamily: SERIF }}>
+                ${data.meta.lastClose?.toFixed(2)}
+              </span>
+              <span className={`text-[13px] font-semibold ${isUp ? "text-emerald-700" : "text-rose-700"}`}>
+                {isUp ? "+" : ""}
+                {data.meta.changePct?.toFixed(2)}%
+              </span>
+            </div>
+          ) : loading ? (
+            <span className="text-[13px] text-slate-500 italic">Loading…</span>
+          ) : (
+            <span className="text-[13px] text-slate-400">—</span>
+          )}
+        </div>
+        {/* Period switcher */}
+        <div className="flex gap-1 flex-shrink-0">
+          {periods.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setPeriod(p.id)}
+              className={`px-2 py-1 rounded text-[11px] font-bold tracking-wider transition ${
+                period === p.id
+                  ? "bg-slate-900 text-white"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* Chart body */}
+      <div className="px-2 pb-2 relative" style={{ minHeight: 124 }}>
+        {chart ? (
+          <svg viewBox={`0 0 ${chart.W} ${chart.H}`} className="w-full" style={{ height: 110 }} preserveAspectRatio="none">
+            <path d={chart.areaPath} fill={fillColor} />
+            <path d={chart.path} stroke={lineColor} strokeWidth="1.6" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+          </svg>
+        ) : loading ? (
+          <div className="flex items-center justify-center" style={{ height: 110 }}>
+            <span className="inline-block w-2 h-2 rounded-full bg-slate-400 animate-pulse mr-2" />
+            <span className="text-[12px] text-slate-500 italic">Loading chart…</span>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center px-3" style={{ height: 110 }}>
+            <span className="text-[12px] text-slate-500 italic text-center">{error}</span>
+          </div>
+        ) : (
+          <div style={{ height: 110 }} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 function CardReadingPage({ data, onClose, onAskAboutThis }) {
   if (!data) return null;
 
@@ -5426,6 +5644,10 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
 
         {/* Body — scrollable */}
         <div className="flex-1 overflow-y-auto px-5 py-5">
+          {/* Live price chart — only renders when we have a ticker. Shows
+              1D / 1W / 1M / 1Y / 5Y switcher with a clean SVG sparkline. */}
+          {data.ticker && <StockChart ticker={data.ticker} />}
+
           {/* Fits gap callout — only for Opportunity type, distinguishes
               this from generic radar by emphasizing the portfolio fit. */}
           {data.fits_gap && (
