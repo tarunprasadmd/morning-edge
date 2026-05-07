@@ -90,7 +90,8 @@ export async function POST(request: Request) {
     const tasks = [
       generateLightChunk(name, holdings, accounts, holdingsAgeDays, date),
       generatePulseAndEdge(name, watchlist, holdings, date),
-      generateSmartMoneyAndConviction(name, watchlist, holdings, date),
+      generateSmartMoneyOnly(name, date),
+      generateConvictionAndOpportunity(name, watchlist, holdings, date),
     ];
 
     const results = await Promise.allSettled(tasks);
@@ -198,7 +199,8 @@ function streamFreshBrief(opts: {
       const tasks = [
         { name: "light", promise: generateLightChunk(name, holdings, accounts, holdingsAgeDays, date) },
         { name: "pulse", promise: generatePulseAndEdge(name, watchlist, holdings, date) },
-        { name: "smart_money", promise: generateSmartMoneyAndConviction(name, watchlist, holdings, date) },
+        { name: "smart_money", promise: generateSmartMoneyOnly(name, date) },
+        { name: "conviction", promise: generateConvictionAndOpportunity(name, watchlist, holdings, date) },
       ];
 
       // Wire up each task's resolution to send a chunk frame
@@ -468,25 +470,15 @@ PRIMARY DECISION INPUT: This brief is the user's main source for "what to do tod
   return callJsonChunk(prompt, { search: true, maxTokens: 3200, maxSearches: 3 });
 }
 
-// Chunk 3: Smart money (13F + congress + insiders) + conviction watch
-// (current technical setup on user's top tickers).
-async function generateSmartMoneyAndConviction(
+// Chunk 3a: Smart money ONLY (whale 13Fs + congress STOCK Act + hedge fund moves).
+// Split out from the old combined chunk so it runs in parallel with conviction/
+// opportunity. Cuts the long-pole wait roughly in half on cold start.
+async function generateSmartMoneyOnly(
   name: string,
-  watchlist: string[],
-  holdings: any[],
   date: string
 ) {
-  const ownedSet = new Set((holdings || []).map((h: any) => h.symbol));
-  const ownedNote = ownedSet.size > 0 ? `\nUser's holdings: ${Array.from(ownedSet).join(", ")}.` : "";
-  const focusTickers = (holdings && holdings.length > 0)
-    ? (holdings as any[]).slice(0, 5).map((h: any) => h.symbol)
-    : (watchlist || []).slice(0, 5);
-  const tickerNote = focusTickers.length > 0
-    ? `\nFor conviction_watch, focus on: ${focusTickers.join(", ")}.`
-    : "";
-
   const prompt = `${COMMON_PREAMBLE(name, date)}
-Use web_search up to 3 times to fetch the LATEST 13F disclosures, biggest insider Form 4 trades from the past 1-2 weeks, most recent congressional STOCK Act filings, and current technical setup on the focus tickers.${ownedNote}${tickerNote}
+Use web_search up to 3 times to fetch the LATEST 13F disclosures, biggest insider Form 4 trades from the past 1-2 weeks, and most recent congressional STOCK Act filings.
 
 Return ONLY this JSON:
 
@@ -504,7 +496,54 @@ Return ONLY this JSON:
     "whale_moves": [ { "text": "named trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation written for someone NEW to investing. Cover: WHO is this firm or person and WHY are they worth watching (their AUM, track record, strategy in plain language) — WHAT EXACTLY did they do (the trade size, when, and what it likely signals about their conviction) — WHY THIS MATTERS for someone watching the markets today — WHAT TO BE CAREFUL OF (data delays, that this is a snapshot, that smart money makes mistakes too). Define any technical term in the same sentence." } ],
     "congress_moves": [ { "text": "named congressional trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation written for someone NEW to investing. Cover: WHO is this Congress member and WHY their trades draw attention (their committee assignments, what info they have access to, their disclosed track record) — WHAT EXACTLY they traded (size, when filed, when actually executed) — THE STOCK ACT context (30-45 day disclosure delay, what that means for retail investors trying to follow) — WHY THIS particular trade is interesting (timing relative to legislation, sector context, scale relative to their net worth). Define any technical term in the same sentence." } ],
     "hedge_fund_moves": [ { "text": "named hedge fund trade, max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation written for someone NEW to investing. Cover: WHO is this hedge fund and HOW they operate (assets under management, investment style — quant/macro/long-short/activist — explain each style in plain language if used) — WHAT THIS TRADE represents in the context of their portfolio (a major rotation, a new theme, a hedge) — WHY THIS FUND IS WORTH WATCHING (track record, public-facing analysts, notable past calls) — KEY CAVEATS (13F shows positions only, not derivatives or shorts, ~45 day delay). Define any technical term in the same sentence." } ]
-  },
+  }
+}
+
+CRITICAL DATA RULES:
+- NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD", or any all-caps placeholder.
+- whale_moves, congress_moves, hedge_fund_moves: target 3-5 entries each. QUALITY OVER QUANTITY: better to return 3 real trades than 5 padded with filler. NEVER pad these categories with news, calendar notes, filing schedules, or political headlines. Every entry MUST be a SPECIFIC STOCK TRADE.
+- Each entry in these categories MUST satisfy ALL of these:
+   1. References a specific named person or fund (e.g. "Pelosi", "Citadel", "Buffett's Berkshire") — NOT generic phrases like "Ten members" or "GOP leadership"
+   2. References a specific stock TICKER they bought, sold, added to, or trimmed — NOT a sector, country, or asset class generality
+   3. The "ticker" field must contain a real ticker symbol (NVDA, MSFT, etc.) — NEVER "BTC" for crypto-news, NEVER blank
+   4. The text reads as a TRADE: "Pelosi bought NVDA calls", "Citadel added 2M MSFT shares", "Buffett trimmed AAPL stake by 13%"
+- BAD examples that should NEVER appear (these are news, not trades):
+   * "Violations continue despite STOCK Act 45-day rule" — this is news commentary
+   * "Bridgewater Q1 13F due mid-May" — this is a calendar note, not a trade
+   * "Tiger Global holds US China India exposure" — vague, no ticker, no trade action
+   * "GOP leadership delayed floor vote past Q1" — political news
+   * "Ten members hold $750k-$2M crypto exposure" — generic, no named person, no specific trade
+- For most_bought / most_sold: provide 1-2 ACTUAL ticker symbols based on your search. If you cannot find recent data, return an EMPTY ARRAY: [].
+- If you genuinely cannot find 3 real trades for a category after searching, return whatever you have (1, 2, or 0). Empty array is fine if no data exists.
+- Empty arrays are acceptable; placeholder strings or padding-with-news are NEVER acceptable.`;
+
+  return callJsonChunk(prompt, { search: true, maxTokens: 5500, maxSearches: 3 });
+}
+
+// Chunk 3b: Conviction watch + opportunity watch — runs in parallel with
+// smart_money. Reads on the user's actual positions (conviction) and
+// thematic gaps the user doesn't own yet (opportunity).
+async function generateConvictionAndOpportunity(
+  name: string,
+  watchlist: string[],
+  holdings: any[],
+  date: string
+) {
+  const ownedSet = new Set((holdings || []).map((h: any) => h.symbol));
+  const ownedNote = ownedSet.size > 0 ? `\nUser's holdings: ${Array.from(ownedSet).join(", ")}.` : "";
+  const focusTickers = (holdings && holdings.length > 0)
+    ? (holdings as any[]).slice(0, 5).map((h: any) => h.symbol)
+    : (watchlist || []).slice(0, 5);
+  const tickerNote = focusTickers.length > 0
+    ? `\nFor conviction_watch, focus on: ${focusTickers.join(", ")}.`
+    : "";
+
+  const prompt = `${COMMON_PREAMBLE(name, date)}
+Use web_search up to 2 times to fetch the current technical setup, recent catalysts, and thematic news for the focus tickers and adjacent thematic plays.${ownedNote}${tickerNote}
+
+Return ONLY this JSON:
+
+{
   "conviction_watch": [
     {
       "ticker": "TICKER",
@@ -534,23 +573,9 @@ PRIMARY DECISION INPUT: This brief is the user's main source for "what to do wit
 
 CRITICAL DATA RULES:
 - NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD", or any all-caps placeholder.
-- whale_moves, congress_moves, hedge_fund_moves: target 3-5 entries each. QUALITY OVER QUANTITY: better to return 3 real trades than 5 padded with filler. NEVER pad these categories with news, calendar notes, filing schedules, or political headlines. Every entry MUST be a SPECIFIC STOCK TRADE.
-- Each entry in these categories MUST satisfy ALL of these:
-   1. References a specific named person or fund (e.g. "Pelosi", "Citadel", "Buffett's Berkshire") — NOT generic phrases like "Ten members" or "GOP leadership"
-   2. References a specific stock TICKER they bought, sold, added to, or trimmed — NOT a sector, country, or asset class generality
-   3. The "ticker" field must contain a real ticker symbol (NVDA, MSFT, etc.) — NEVER "BTC" for crypto-news, NEVER blank
-   4. The text reads as a TRADE: "Pelosi bought NVDA calls", "Citadel added 2M MSFT shares", "Buffett trimmed AAPL stake by 13%"
-- BAD examples that should NEVER appear (these are news, not trades):
-   * "Violations continue despite STOCK Act 45-day rule" — this is news commentary
-   * "Bridgewater Q1 13F due mid-May" — this is a calendar note, not a trade
-   * "Tiger Global holds US China India exposure" — vague, no ticker, no trade action
-   * "GOP leadership delayed floor vote past Q1" — political news
-   * "Ten members hold $750k-$2M crypto exposure" — generic, no named person, no specific trade
-- For most_bought / most_sold: provide 1-2 ACTUAL ticker symbols based on your search. If you cannot find recent data, return an EMPTY ARRAY: [].
-- If you genuinely cannot find 3 real trades for a category after searching, return whatever you have (1, 2, or 0). Empty array is fine if no data exists.
-- Empty arrays are acceptable; placeholder strings or padding-with-news are NEVER acceptable.`;
+- Empty arrays are acceptable; placeholder strings are NEVER acceptable.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 8000, maxSearches: 4 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 5500, maxSearches: 2 });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────
