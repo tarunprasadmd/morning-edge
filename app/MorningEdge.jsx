@@ -3088,12 +3088,12 @@ export default function MorningEdge() {
                                   background: sigTheme.bg,
                                   border: `1px solid ${sigTheme.border}`,
                                   borderRadius: 12,
-                                  padding: "10px 11px",
+                                  padding: "8px 10px",
                                   boxShadow: `0 2px 6px -2px ${sigTheme.shadow}`,
                                   display: "flex",
                                   flexDirection: "column",
                                   gap: 8,
-                                  minHeight: 110,
+                                  minHeight: 88,
                                 }}
                               >
                                 {/* Top row: colored icon square + ticker — matches Today's Moves */}
@@ -3122,7 +3122,7 @@ export default function MorningEdge() {
                                   <p className="text-[13px] m-0 leading-snug" style={{
                                     color: "#1e293b",
                                     display: "-webkit-box",
-                                    WebkitLineClamp: 3,
+                                    WebkitLineClamp: 2,
                                     WebkitBoxOrient: "vertical",
                                     overflow: "hidden",
                                   }}>
@@ -3144,7 +3144,7 @@ export default function MorningEdge() {
                         style={{
                           background: "linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)",
                           border: "1px solid #c4b5fd",
-                          minHeight: 110,
+                          minHeight: 88,
                         }}>
                         <p className="text-[12px] text-violet-900 leading-relaxed m-0">
                           {(holdings && holdings.length > 0)
@@ -3217,7 +3217,7 @@ export default function MorningEdge() {
                         chatDescription: `${c.signal?.toUpperCase() || "WATCH"} ${c.ticker}${c.action ? ` — ${c.action}` : ""}${c.why_now ? `. ${c.why_now}` : ""}${c.deep_reasoning ? ` Full reasoning: ${c.deep_reasoning}` : ""}`,
                       })}
                       className={`relative w-full h-full text-left rounded-xl px-2.5 py-2.5 bg-slate-50 border ${hasAction ? "border-slate-200 shadow-sm" : "border-slate-100"} overflow-hidden transition active:scale-[0.99] active:bg-slate-100 hover:bg-slate-100 flex flex-col gap-1.5`}
-                      style={{ minHeight: 110 }}
+                      style={{ minHeight: 88 }}
                     >
                       {/* Colored left-edge bar — only for high-conviction action items */}
                       {hasAction && (
@@ -3237,7 +3237,7 @@ export default function MorningEdge() {
                       )}
                       <p className={`text-[12px] text-slate-700 leading-snug flex-1 ${hasAction ? "pl-1.5" : ""}`} style={{
                         display: "-webkit-box",
-                        WebkitLineClamp: 3,
+                        WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical",
                         overflow: "hidden",
                       }}>
@@ -4959,13 +4959,13 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
         background: theme.bg,
         border: `1px solid ${theme.border}`,
         borderRadius: 12,
-        padding: "10px 11px",
+        padding: "8px 10px",
         boxShadow: `0 2px 6px -2px ${theme.shadow}`,
         opacity,
         display: "flex",
         flexDirection: "column",
         gap: 8,
-        minHeight: 110,
+        minHeight: 88,
       }}
     >
       {/* Top row: Icon + ticker */}
@@ -5001,7 +5001,7 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
         <p className="text-[13px] m-0 leading-snug" style={{
           color: "#1e293b",
           display: "-webkit-box",
-          WebkitLineClamp: 3,
+          WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical",
           overflow: "hidden",
         }}>
