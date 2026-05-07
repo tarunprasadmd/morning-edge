@@ -1,82 +1,78 @@
-// /api/prices/history — historical price candles for the chart on each
-// stock card's reading page.
+// /api/prices/history — historical price candles for the StockChart in
+// the reading page. Uses the yahoo-finance2 npm library which handles
+// Yahoo's cookie/crumb authentication automatically — direct fetch to
+// query1.finance.yahoo.com no longer works reliably as of 2024.
 //
-// Supports 5 standard timeframes:
-//   1d  — intraday, 5-minute candles  (about 78 points during a trading day)
-//   1w  — 5 trading days, 30-minute candles
-//   1m  — ~22 daily candles
-//   1y  — ~252 daily candles
-//   5y  — weekly candles, ~260 points
+// Request:  /api/prices/history?symbol=NVDA&period=1m
+// Response: { symbol, period, points: [{t, c}, ...], meta: { firstClose, lastClose, changePct } }
 //
-// Uses Yahoo Finance's public chart endpoint via fetch. Same approach as
-// /api/prices — no API key, graceful degradation on failure.
-//
-// Response:
-//   {
-//     symbol: "NVDA",
-//     period: "1m",
-//     points: [{ t: 1746547200000, c: 875.30 }, ...],   // unix-ms timestamps
-//     meta: { firstClose: 854.20, lastClose: 875.30, changePct: 2.47 }
-//   }
+// On any failure → returns 200 with empty points + error string. The
+// frontend renders "Chart data unavailable for this symbol" gracefully.
 
 import { NextResponse } from "next/server";
+import yahooFinance from "yahoo-finance2";
 
 export const runtime = "nodejs";
 export const maxDuration = 15;
 export const dynamic = "force-dynamic";
 
+// Quiet down yahoo-finance2's startup notices in serverless logs.
+yahooFinance.suppressNotices(["yahooSurvey"]);
+
 interface HistoryPoint {
-  t: number;
-  c: number;
+  t: number; // unix-ms timestamp
+  c: number; // close price
 }
 
-// Map our period names to Yahoo's range + interval combinations.
-const PERIOD_MAP: Record<string, { range: string; interval: string; cacheMs: number }> = {
-  "1d": { range: "1d", interval: "5m", cacheMs: 60_000 },
-  "1w": { range: "5d", interval: "30m", cacheMs: 5 * 60_000 },
-  "1m": { range: "1mo", interval: "1d", cacheMs: 60 * 60_000 },
-  "1y": { range: "1y", interval: "1d", cacheMs: 60 * 60_000 },
-  "5y": { range: "5y", interval: "1wk", cacheMs: 6 * 60 * 60_000 },
+interface PeriodConfig {
+  range: string;    // yahoo-finance2 range string
+  interval: string; // candle granularity
+  cacheMs: number;  // how long to keep response in memory
+}
+
+// Map our friendly period names to yahoo-finance2 chart() params.
+// Wider windows get longer cache TTLs because the data barely changes.
+const PERIOD_MAP: Record<string, PeriodConfig> = {
+  "1d": { range: "1d",  interval: "5m",  cacheMs: 60_000 },         // 1 min
+  "1w": { range: "5d",  interval: "30m", cacheMs: 5  * 60_000 },    // 5 min
+  "1m": { range: "1mo", interval: "1d",  cacheMs: 60 * 60_000 },    // 1 hour
+  "1y": { range: "1y",  interval: "1d",  cacheMs: 60 * 60_000 },    // 1 hour
+  "5y": { range: "5y",  interval: "1wk", cacheMs: 6 * 60 * 60_000 }, // 6 hours
 };
 
+// In-memory cache. Vercel reuses warm workers for a few minutes so this
+// helps for back-to-back taps on the same chart. A KV-backed cache would
+// help across cold starts too, but this is sufficient for now.
 const cache = new Map<string, { data: any; expiresAt: number }>();
 
-async function fetchYahooHistory(symbol: string, period: string) {
+async function fetchHistory(symbol: string, period: string) {
   const cfg = PERIOD_MAP[period];
   if (!cfg) throw new Error(`bad period: ${period}`);
+
   const key = `${symbol}:${period}`;
   const now = Date.now();
   const cached = cache.get(key);
   if (cached && cached.expiresAt > now) return cached.data;
 
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=${cfg.interval}&range=${cfg.range}`;
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
-      Accept: "application/json",
-    },
-    signal: AbortSignal.timeout(6000),
+  // yahoo-finance2 chart() returns { meta, quotes: [{date, open, high, low, close, volume}, ...] }
+  const result = await yahooFinance.chart(symbol, {
+    range: cfg.range as any,
+    interval: cfg.interval as any,
+    includePrePost: false,
   });
-  if (!res.ok) throw new Error(`yahoo ${res.status}`);
-  const j: any = await res.json();
-  const result = j?.chart?.result?.[0];
-  if (!result) throw new Error("no result");
 
-  const timestamps: number[] = result.timestamp || [];
-  const closeRaw: (number | null)[] = result.indicators?.quote?.[0]?.close || [];
-
-  // Filter out null closes (gaps in Yahoo data — happens at session edges)
+  const quotes = result?.quotes || [];
   const points: HistoryPoint[] = [];
-  for (let i = 0; i < timestamps.length; i++) {
-    const t = timestamps[i];
-    const c = closeRaw[i];
-    if (typeof t === "number" && typeof c === "number" && !Number.isNaN(c)) {
-      points.push({ t: t * 1000, c });
+  for (const q of quotes) {
+    if (!q || q.close == null || !q.date) continue;
+    const close = Number(q.close);
+    const ts = q.date instanceof Date ? q.date.getTime() : new Date(q.date as any).getTime();
+    if (Number.isFinite(close) && Number.isFinite(ts)) {
+      points.push({ t: ts, c: close });
     }
   }
 
-  if (points.length === 0) throw new Error("empty series");
+  if (points.length < 2) throw new Error("empty series");
 
   const firstClose = points[0].c;
   const lastClose = points[points.length - 1].c;
@@ -112,10 +108,11 @@ export async function GET(req: Request) {
       );
     }
 
-    const data = await fetchYahooHistory(symbol, period);
+    const data = await fetchHistory(symbol, period);
     return NextResponse.json(data);
   } catch (err: any) {
-    // Return 200 with empty payload — frontend handles "no data" gracefully
+    // 200 with empty payload — frontend treats as "no data" and renders the
+    // friendly message. Avoid throwing so the reading page doesn't break.
     return NextResponse.json(
       {
         symbol: "",
