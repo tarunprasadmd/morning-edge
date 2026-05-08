@@ -1,19 +1,11 @@
-// /api/prices — live quote endpoint for the ticker tape and any other
-// component that needs current prices. Uses yahoo-finance2 npm library.
+// /api/prices — live quote endpoint. Uses yahoo-finance2 npm library.
 //
 // Request:  /api/prices?symbols=NVDA,MSFT,AAPL    (comma-separated)
 // Response: {
-//   prices: {
-//     "NVDA": { price: 875.30, changePct: 2.45, prevClose: 854.20 },
-//     ...
-//   },
+//   prices: { "NVDA": { price: 875.30, changePct: 2.45, prevClose: 854.20 }, ... },
 //   fetchedAt: "2026-05-07T13:30:00.000Z",
 //   errors?: ["BADSYM: not found"]
 // }
-//
-// Frontend polls this every 60s while the app is foregrounded. 30s
-// in-memory cache prevents back-to-back polls from the same warm worker
-// from all hitting Yahoo.
 
 import { NextResponse } from "next/server";
 import yahooFinance from "yahoo-finance2";
@@ -21,8 +13,6 @@ import yahooFinance from "yahoo-finance2";
 export const runtime = "nodejs";
 export const maxDuration = 15;
 export const dynamic = "force-dynamic";
-
-yahooFinance.suppressNotices(["yahooSurvey"]);
 
 interface QuoteResult {
   price: number | null;
@@ -32,16 +22,15 @@ interface QuoteResult {
 
 const cache = new Map<string, { data: QuoteResult; expiresAt: number }>();
 const CACHE_MS = 30_000;
-const MAX_SYMBOLS = 60; // hard cap so a malicious request can't run forever
+const MAX_SYMBOLS = 60;
 
 async function fetchOne(symbol: string): Promise<QuoteResult> {
   const now = Date.now();
   const cached = cache.get(symbol);
   if (cached && cached.expiresAt > now) return cached.data;
 
-  // yahoo-finance2 quote() returns regularMarketPrice, regularMarketPreviousClose,
-  // regularMarketChangePercent, plus a lot of other fields we don't need.
-  const q: any = await yahooFinance.quote(symbol);
+  // Cast to any to avoid TS friction with yahoo-finance2's strict types.
+  const q: any = await (yahooFinance as any).quote(symbol);
   const price =
     typeof q?.regularMarketPrice === "number" ? q.regularMarketPrice : null;
   const prevClose =
@@ -66,7 +55,7 @@ export async function GET(req: Request) {
     const raw = (url.searchParams.get("symbols") || "").trim();
     if (!raw) {
       return NextResponse.json(
-        { error: "missing symbols query param (e.g. ?symbols=NVDA,AAPL)" },
+        { prices: {}, fetchedAt: new Date().toISOString(), error: "missing symbols query param" },
         { status: 400 }
       );
     }
@@ -82,7 +71,7 @@ export async function GET(req: Request) {
 
     if (symbols.length === 0) {
       return NextResponse.json(
-        { error: "no valid symbols provided" },
+        { prices: {}, fetchedAt: new Date().toISOString(), error: "no valid symbols provided" },
         { status: 400 }
       );
     }

@@ -1,13 +1,11 @@
-// /api/prices/history — historical price candles for the StockChart in
-// the reading page. Uses the yahoo-finance2 npm library which handles
-// Yahoo's cookie/crumb authentication automatically — direct fetch to
-// query1.finance.yahoo.com no longer works reliably as of 2024.
+// /api/prices/history — historical price candles for charts.
+// Uses yahoo-finance2 npm library to bypass Yahoo's bot detection.
 //
 // Request:  /api/prices/history?symbol=NVDA&period=1m
 // Response: { symbol, period, points: [{t, c}, ...], meta: { firstClose, lastClose, changePct } }
 //
-// On any failure → returns 200 with empty points + error string. The
-// frontend renders "Chart data unavailable for this symbol" gracefully.
+// On any failure → returns 200 with empty points + error string. Frontend
+// renders a polite "Chart data unavailable" message gracefully.
 
 import { NextResponse } from "next/server";
 import yahooFinance from "yahoo-finance2";
@@ -16,33 +14,25 @@ export const runtime = "nodejs";
 export const maxDuration = 15;
 export const dynamic = "force-dynamic";
 
-// Quiet down yahoo-finance2's startup notices in serverless logs.
-yahooFinance.suppressNotices(["yahooSurvey"]);
-
 interface HistoryPoint {
   t: number; // unix-ms timestamp
   c: number; // close price
 }
 
 interface PeriodConfig {
-  range: string;    // yahoo-finance2 range string
-  interval: string; // candle granularity
-  cacheMs: number;  // how long to keep response in memory
+  range: string;
+  interval: string;
+  cacheMs: number;
 }
 
-// Map our friendly period names to yahoo-finance2 chart() params.
-// Wider windows get longer cache TTLs because the data barely changes.
 const PERIOD_MAP: Record<string, PeriodConfig> = {
-  "1d": { range: "1d",  interval: "5m",  cacheMs: 60_000 },         // 1 min
-  "1w": { range: "5d",  interval: "30m", cacheMs: 5  * 60_000 },    // 5 min
-  "1m": { range: "1mo", interval: "1d",  cacheMs: 60 * 60_000 },    // 1 hour
-  "1y": { range: "1y",  interval: "1d",  cacheMs: 60 * 60_000 },    // 1 hour
-  "5y": { range: "5y",  interval: "1wk", cacheMs: 6 * 60 * 60_000 }, // 6 hours
+  "1d": { range: "1d", interval: "5m", cacheMs: 60_000 },
+  "1w": { range: "5d", interval: "30m", cacheMs: 5 * 60_000 },
+  "1m": { range: "1mo", interval: "1d", cacheMs: 60 * 60_000 },
+  "1y": { range: "1y", interval: "1d", cacheMs: 60 * 60_000 },
+  "5y": { range: "5y", interval: "1wk", cacheMs: 6 * 60 * 60_000 },
 };
 
-// In-memory cache. Vercel reuses warm workers for a few minutes so this
-// helps for back-to-back taps on the same chart. A KV-backed cache would
-// help across cold starts too, but this is sufficient for now.
 const cache = new Map<string, { data: any; expiresAt: number }>();
 
 async function fetchHistory(symbol: string, period: string) {
@@ -55,18 +45,19 @@ async function fetchHistory(symbol: string, period: string) {
   if (cached && cached.expiresAt > now) return cached.data;
 
   // yahoo-finance2 chart() returns { meta, quotes: [{date, open, high, low, close, volume}, ...] }
-  const result = await yahooFinance.chart(symbol, {
-    range: cfg.range as any,
-    interval: cfg.interval as any,
+  // Cast to any to avoid TS friction with the library's strict types.
+  const result: any = await (yahooFinance as any).chart(symbol, {
+    range: cfg.range,
+    interval: cfg.interval,
     includePrePost: false,
   });
 
-  const quotes = result?.quotes || [];
+  const quotes: any[] = result?.quotes || [];
   const points: HistoryPoint[] = [];
   for (const q of quotes) {
     if (!q || q.close == null || !q.date) continue;
     const close = Number(q.close);
-    const ts = q.date instanceof Date ? q.date.getTime() : new Date(q.date as any).getTime();
+    const ts = q.date instanceof Date ? q.date.getTime() : new Date(q.date).getTime();
     if (Number.isFinite(close) && Number.isFinite(ts)) {
       points.push({ t: ts, c: close });
     }
@@ -97,13 +88,19 @@ export async function GET(req: Request) {
 
     if (!symbol || !/^[A-Z][A-Z0-9.\-]{0,9}$/.test(symbol)) {
       return NextResponse.json(
-        { error: "missing or invalid symbol" },
+        { symbol: "", period: "", points: [], meta: null, error: "missing or invalid symbol" },
         { status: 400 }
       );
     }
     if (!PERIOD_MAP[period]) {
       return NextResponse.json(
-        { error: `invalid period; expected one of ${Object.keys(PERIOD_MAP).join(", ")}` },
+        {
+          symbol: "",
+          period: "",
+          points: [],
+          meta: null,
+          error: `invalid period; expected one of ${Object.keys(PERIOD_MAP).join(", ")}`,
+        },
         { status: 400 }
       );
     }
@@ -111,8 +108,6 @@ export async function GET(req: Request) {
     const data = await fetchHistory(symbol, period);
     return NextResponse.json(data);
   } catch (err: any) {
-    // 200 with empty payload — frontend treats as "no data" and renders the
-    // friendly message. Avoid throwing so the reading page doesn't break.
     return NextResponse.json(
       {
         symbol: "",
