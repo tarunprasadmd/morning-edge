@@ -5421,10 +5421,27 @@ function StockChart({ ticker }) {
 
   const symbol = String(ticker).toUpperCase().trim();
 
-  // TradingView widget URL params — light theme to match Morning Edge,
-  // side toolbar hidden (drawing tools clutter on mobile), top toolbar
-  // visible so the user can switch periods, ideas/symbol-edit disabled
-  // so the chart stays focused on this ticker.
+  // TradingView widget URL params — light theme, line chart (cleaner than
+  // candles for a quick read), only timeframes shown in the toolbar. We
+  // disable: chart-type picker, indicator picker, compare, fullscreen,
+  // settings, save/load, screenshot, symbol-search — to keep the embed
+  // focused on "what's the price doing" inside a stock card.
+  const disabledFeatures = [
+    "header_chart_type",
+    "header_indicators",
+    "header_compare",
+    "header_settings",
+    "header_fullscreen_button",
+    "header_saveload",
+    "header_symbol_search",
+    "header_screenshot",
+    "header_undo_redo",
+    "edit_buttons_in_legend",
+    "context_menus",
+    "control_bar",
+    "border_around_the_chart",
+  ];
+
   const params = new URLSearchParams({
     symbol,
     interval: "D",
@@ -5433,19 +5450,26 @@ function StockChart({ ticker }) {
     saveimage: "0",
     toolbarbg: "ffffff",
     hideideas: "1",
+    hidetrading: "1",
+    hidevolume: "0",
+    hide_legend: "0",
+    details: "0",
+    hotlist: "0",
+    calendar: "0",
     theme: "light",
-    style: "2", // 2 = area chart (cleaner than candles for a quick read)
+    style: "2", // 2 = area / line chart
     timezone: "America/New_York",
     withdateranges: "1",
     showpopupbutton: "0",
     locale: "en",
+    disabled_features: JSON.stringify(disabledFeatures),
   });
 
   const src = `https://s.tradingview.com/widgetembed/?${params.toString()}`;
 
   return (
     <div className="mb-4 rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <div className="px-3 pt-2.5 pb-1.5 flex items-center justify-between">
+      <div className="px-3 pt-2 pb-1 flex items-center justify-between">
         <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-slate-500 m-0 leading-none">
           Price chart · {symbol}
         </p>
@@ -5456,10 +5480,21 @@ function StockChart({ ticker }) {
       <iframe
         src={src}
         title={`${symbol} price chart`}
-        style={{ width: "100%", height: 320, border: 0, display: "block" }}
+        style={{ width: "100%", height: 280, border: 0, display: "block" }}
         allow="encrypted-media *"
         allowFullScreen
       />
+      {/* Fallback link in case iframe is blocked by browser (rare) */}
+      <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-200">
+        <a
+          href={`https://www.tradingview.com/symbols/${encodeURIComponent(symbol)}/`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-slate-500 hover:text-slate-700 underline"
+        >
+          Open {symbol} on TradingView →
+        </a>
+      </div>
     </div>
   );
 }
