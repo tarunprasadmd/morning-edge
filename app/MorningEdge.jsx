@@ -5451,7 +5451,7 @@ function StockChart({ ticker }) {
     toolbarbg: "ffffff",
     hideideas: "1",
     hidetrading: "1",
-    hidevolume: "0",
+    hidevolume: "1",
     hide_legend: "0",
     details: "0",
     hotlist: "0",
