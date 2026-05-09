@@ -1659,7 +1659,7 @@ export default function MorningEdge() {
   // Extracts symbol + quantity + cost basis + current value + gain%.
   // All data stays on device — never sent to any server beyond the brief generation request.
   // Multi-account: each upload is staged in pendingCsvUpload, then committed under a user-supplied label.
-  const handleCsvUpload = (e) => {
+  const handleCsvUpload = (e) => {console.log("CSV UPLOAD FIRED", e.target.files);
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     setCsvImportMessage(null);
