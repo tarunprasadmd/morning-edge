@@ -1533,7 +1533,11 @@ export default function MorningEdge() {
       startY = null;
       setPullProgress(0);
       if (triggered) {
-        generateBrief({ fresh: true });
+        // Pull-to-refresh: cache-aware. If today's brief is in cache,
+        // returns instantly. If holdings changed, fast Layer B regen
+        // (~25-30s). Only goes to full regen if no cache exists at all.
+        // Force-fresh is reserved for the explicit "regenerate" action.
+        generateBrief();
       }
     };
 
