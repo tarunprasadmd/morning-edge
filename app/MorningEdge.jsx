@@ -3946,6 +3946,19 @@ export default function MorningEdge() {
             )}
           </div>
 
+          {/* Skip — generate without portfolio. Secondary action.
+              Lets users who want to see what the brief looks like generate
+              one without committing to a CSV upload. They can always upload
+              later and regenerate. */}
+          <div className="text-center pt-1">
+            <button
+              onClick={generateBrief}
+              className="text-[14px] text-slate-600 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-700 transition"
+            >
+              Skip — generate brief without portfolio
+            </button>
+          </div>
+
           {/* Brand promise card */}
           <div className="rounded-3xl p-8 text-center bg-white shadow-md border border-slate-100" style={{ fontFamily: SERIF }}>
             <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-md"
