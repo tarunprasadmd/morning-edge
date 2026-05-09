@@ -3927,9 +3927,26 @@ export default function MorningEdge() {
                 <p className="text-[14px] text-white/80 mb-3">
                   Export a CSV from any brokerage (Fidelity, Schwab, Robinhood, etc.) and upload it here. We never see your password — only the file you upload.
                 </p>
+                <input
+                  id="me-csv-file-input-empty"
+                  type="file"
+                  accept=".csv,text/csv"
+                  onChange={handleCsvUpload}
+                  style={{
+                    position: "absolute",
+                    width: 1,
+                    height: 1,
+                    padding: 0,
+                    margin: -1,
+                    overflow: "hidden",
+                    clip: "rect(0,0,0,0)",
+                    whiteSpace: "nowrap",
+                    border: 0,
+                  }}
+                />
                 <label
-                  htmlFor="me-csv-file-input"
-                  className="block w-full py-3 rounded-xl text-center font-semibold cursor-pointer transition active:scale-[0.99]"
+                  htmlFor="me-csv-file-input-empty"
+                  className="block w-full py-3 rounded-xl text-center font-semibold cursor-pointer transition active:scale-[0.99] select-none"
                   style={{
                     background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)",
                     color: "#1E293B",
@@ -3946,18 +3963,17 @@ export default function MorningEdge() {
             )}
           </div>
 
-          {/* Skip — generate without portfolio. Secondary action.
-              Lets users who want to see what the brief looks like generate
-              one without committing to a CSV upload. They can always upload
+          {/* Secondary action — generate brief without portfolio.
+              Equal-weight option for users who want to see what the brief
+              looks like before committing to upload. They can always upload
               later and regenerate. */}
-          <div className="text-center pt-1">
-            <button
-              onClick={generateBrief}
-              className="text-[14px] text-slate-600 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-700 transition"
-            >
-              Skip — generate brief without portfolio
-            </button>
-          </div>
+          <button
+            onClick={generateBrief}
+            className="w-full py-3.5 rounded-xl bg-white text-slate-700 border border-slate-200 text-[15px] font-semibold flex items-center justify-center gap-2 shadow-sm hover:bg-slate-50 transition"
+          >
+            <Sparkles className="w-4 h-4" />
+            Generate brief without portfolio
+          </button>
 
           {/* Brand promise card */}
           <div className="rounded-3xl p-8 text-center bg-white shadow-md border border-slate-100" style={{ fontFamily: SERIF }}>
