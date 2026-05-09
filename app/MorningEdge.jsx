@@ -1990,6 +1990,177 @@ export default function MorningEdge() {
   // ════════════════════════════════════════════════════════════════════
   //                            MAIN APP
   // ════════════════════════════════════════════════════════════════════
+
+  // Shared Sync Portfolio block — same UI rendered in both empty state and
+  // brief-state main panel. Defining it here as a JSX variable keeps both
+  // states 1:1 in sync (account list, brokerage links, security copy, etc.)
+  // without copy-paste drift.
+  const syncPortfolioBlock = (
+    <div className="relative rounded-2xl shadow-lg overflow-hidden" data-csv-import-anchor
+      style={{
+        background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
+      }}>
+      {/* Top gold accent line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
+        style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+      {/* Subtle radial glow */}
+      <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-20"
+        style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
+
+      <button
+        onClick={() => setShowCsvImport(!showCsvImport)}
+        className="relative z-10 w-full text-left px-4 py-3 transition hover:bg-white/[0.03] active:bg-white/[0.06]"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
+            <Briefcase className="w-4 h-4" style={{ color: "#1E293B" }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[9px] tracking-[0.25em] uppercase font-semibold leading-none mb-1"
+              style={{ color: "#D4A574" }}>
+              Sync Portfolio
+            </p>
+            <p className="text-[16px] leading-tight truncate"
+              style={{ fontFamily: SERIF, fontWeight: 400, color: "#F8FAFC" }}>
+              {showCsvImport
+                ? "Tap to close"
+                : holdings.length > 0
+                ? `${holdings.length} position${holdings.length === 1 ? "" : "s"} · ${accountsState.length || 1} account${(accountsState.length || 1) === 1 ? "" : "s"}`
+                : "Connect your holdings from any brokerage"}
+            </p>
+          </div>
+          {!showCsvImport && (
+            <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold"
+              style={{
+                background: "rgba(212, 165, 116, 0.15)",
+                border: "1px solid rgba(212, 165, 116, 0.4)",
+                color: "#D4A574",
+              }}>
+              {holdings.length > 0 ? "✓ Synced" : "Tap to begin"}
+            </span>
+          )}
+        </div>
+      </button>
+
+      {showCsvImport && (
+        <div className="relative z-10 px-4 pb-5 pt-1">
+          <div className="px-3 py-3 rounded-lg bg-white text-[13px] text-slate-700 space-y-3 shadow-inner">
+            <div>
+              <p className="font-semibold text-slate-900 mb-2">Get your CSV from your brokerage</p>
+              <p className="text-[13px] text-slate-700 leading-snug mb-2.5">
+                Tap to open the broker in a new tab. Log in, find your positions, save the CSV, then come back and upload it.
+                {isMobile && (
+                  <span className="block mt-1 text-[12px] text-amber-700">
+                    Heads up: brokerage CSV downloads usually work better on a computer.
+                  </span>
+                )}
+              </p>
+              <div className="space-y-1.5">
+                {BROKERAGES.slice(0, 6).map((b) => (
+                  <button
+                    key={b.name}
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.open(b.url, "_blank", "noopener,noreferrer");
+                      }
+                    }}
+                    className="w-full flex items-center gap-2 bg-white border border-amber-200 rounded-lg px-2.5 py-2 hover:border-amber-300 hover:bg-amber-50/60 active:bg-amber-100 transition text-left"
+                  >
+                    <span className="text-[15px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate" style={{ fontFamily: SERIF }}>
+                      {b.name}
+                    </span>
+                    <span className="text-[12px] text-slate-700 flex-1 truncate">
+                      {b.path}
+                    </span>
+                    <ExternalLink className="w-3 h-3 text-amber-600 flex-shrink-0" />
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setShowBrokerageGuide(true)}
+                className="w-full mt-2 px-2.5 py-2 rounded-lg border border-amber-300 bg-white text-[13px] font-semibold text-amber-800 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-center gap-1.5"
+              >
+                See all {BROKERAGES.length} brokerages
+                <ChevronRight className="w-3 h-3" />
+              </button>
+              <p className="text-[12px] text-slate-700 italic mt-2 leading-snug">
+                We never see your password. We only read the CSV you upload. Holdings stay on this device until a brief is generated, and are never stored on our servers.
+              </p>
+            </div>
+
+            <div>
+              <p className="block font-semibold text-slate-900 mb-1.5">Upload your CSV</p>
+              <input
+                id="me-csv-file-input"
+                type="file"
+                accept=".csv,text/csv"
+                onChange={handleCsvUpload}
+                style={{
+                  position: "absolute",
+                  width: 1,
+                  height: 1,
+                  padding: 0,
+                  margin: -1,
+                  overflow: "hidden",
+                  clip: "rect(0,0,0,0)",
+                  whiteSpace: "nowrap",
+                  border: 0,
+                }}
+              />
+              <label
+                htmlFor="me-csv-file-input"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-[15px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition cursor-pointer select-none"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Choose CSV file
+              </label>
+              {csvImportMessage && (
+                <div className={`mt-2 px-3 py-2 rounded-md text-[13px] ${
+                  csvImportMessage.type === "ok"
+                    ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                    : "bg-rose-100 text-rose-800 border border-rose-200"
+                }`}>
+                  {csvImportMessage.text}
+                </div>
+              )}
+              {holdings.length > 0 && (
+                <div className={`mt-2 px-3 py-2 rounded-md text-[13px] ${
+                  holdingsAgeDays != null && holdingsAgeDays > 7
+                    ? "bg-amber-50 border border-amber-200 text-amber-900"
+                    : "bg-slate-100 border border-slate-200 text-slate-700"
+                }`}>
+                  <p className="font-semibold mb-0.5">
+                    {holdings.length} position{holdings.length === 1 ? "" : "s"} loaded
+                    {holdingsAgeDays != null && (
+                      <span className="font-normal">
+                        {" · "}
+                        {holdingsAgeDays === 0 ? "today" : holdingsAgeDays === 1 ? "1 day ago" : `${holdingsAgeDays} days ago`}
+                      </span>
+                    )}
+                  </p>
+                  {holdingsAgeDays != null && holdingsAgeDays > 7 && (
+                    <p className="text-[12px] mt-1">
+                      ⚠ Data is stale — gain percentages may be off. Re-upload for accurate playbook recommendations.
+                    </p>
+                  )}
+                  {holdingsAgeDays != null && holdingsAgeDays <= 7 && (
+                    <p className="text-[12px] mt-1 text-slate-700">
+                      Holdings power your personalized playbook. Re-upload weekly for best accuracy.
+                    </p>
+                  )}
+                </div>
+              )}
+              <p className="text-[12px] text-slate-700 leading-relaxed mt-2">
+                Holdings stay on your device. We only send them to generate today's brief — never stored on any server.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen relative overflow-hidden" style={{
       fontFamily: SANS,
@@ -2518,300 +2689,7 @@ export default function MorningEdge() {
             transition: "opacity 0.6s ease",
           }}
         >
-          {/* Sync Portfolio — compact horizontal hero, ~50% the height of v2.
-              Same black & gold treatment, just denser. Icon left, label + status
-              right, expand caret on the far right. Expanded panel below stays
-              the same as before. */}
-          <div className="relative rounded-2xl shadow-lg overflow-hidden" data-csv-import-anchor
-            style={{
-              background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
-            }}>
-            {/* Top gold accent line */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
-              style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            {/* Subtle radial glow — smaller now to match the slimmer hero */}
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-20"
-              style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
-
-            <button
-              onClick={() => setShowCsvImport(!showCsvImport)}
-              className="relative z-10 w-full text-left px-4 py-3 transition hover:bg-white/[0.03] active:bg-white/[0.06]"
-            >
-              <div className="flex items-center gap-3">
-                {/* Briefcase icon, smaller */}
-                <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
-                  style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
-                  <Briefcase className="w-4 h-4" style={{ color: "#1E293B" }} />
-                </div>
-
-                {/* Label + status, single line each */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-[9px] tracking-[0.25em] uppercase font-semibold leading-none mb-1"
-                    style={{ color: "#D4A574" }}>
-                    Sync Portfolio
-                  </p>
-                  <p className="text-[16px] leading-tight truncate"
-                    style={{ fontFamily: SERIF, fontWeight: 400, color: "#F8FAFC" }}>
-                    {showCsvImport
-                      ? "Tap to close"
-                      : holdings.length > 0
-                      ? `${holdings.length} position${holdings.length === 1 ? "" : "s"} · ${accountsState.length || 1} account${(accountsState.length || 1) === 1 ? "" : "s"}`
-                      : "Connect your holdings from any brokerage"}
-                  </p>
-                </div>
-
-                {/* Status chip on the right */}
-                {!showCsvImport && (
-                  <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold"
-                    style={{
-                      background: "rgba(212, 165, 116, 0.15)",
-                      border: "1px solid rgba(212, 165, 116, 0.4)",
-                      color: "#D4A574",
-                    }}>
-                    {holdings.length > 0 ? "✓ Synced" : "Tap to begin"}
-                  </span>
-                )}
-              </div>
-            </button>
-
-            {showCsvImport && (
-              <div className="relative z-10 px-4 pb-5 pt-1">
-                <div className="px-3 py-3 rounded-lg bg-white text-[13px] text-slate-700 space-y-3 shadow-inner">
-                  <div>
-                    <p className="font-semibold text-slate-900 mb-2">Get your CSV from your brokerage</p>
-                    <p className="text-[13px] text-slate-700 leading-snug mb-2.5">
-                      Tap to open the broker in a new tab. Log in, find your positions, save the CSV, then come back and upload it.
-                      {isMobile && (
-                        <span className="block mt-1 text-[12px] text-amber-700">
-                          Heads up: brokerage CSV downloads usually work better on a computer.
-                        </span>
-                      )}
-                    </p>
-                    <div className="space-y-1.5">
-                      {BROKERAGES.slice(0, 6).map((b) => (
-                        <button
-                          key={b.name}
-                          onClick={() => {
-                            // Always open the broker login in a new tab — both mobile and desktop.
-                            // Mobile users can still try; we just warn them above that CSV saving
-                            // is easier on a computer.
-                            if (typeof window !== "undefined") {
-                              window.open(b.url, "_blank", "noopener,noreferrer");
-                            }
-                          }}
-                          className="w-full flex items-center gap-2 bg-white border border-amber-200 rounded-lg px-2.5 py-2 hover:border-amber-300 hover:bg-amber-50/60 active:bg-amber-100 transition text-left"
-                        >
-                          <span className="text-[15px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate" style={{ fontFamily: SERIF }}>
-                            {b.name}
-                          </span>
-                          <span className="text-[12px] text-slate-700 flex-1 truncate">
-                            {b.path}
-                          </span>
-                          <ExternalLink className="w-3 h-3 text-amber-600 flex-shrink-0" />
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      onClick={() => setShowBrokerageGuide(true)}
-                      className="w-full mt-2 px-2.5 py-2 rounded-lg border border-amber-300 bg-white text-[13px] font-semibold text-amber-800 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-center gap-1.5"
-                    >
-                      See all {BROKERAGES.length} brokerages
-                      <ChevronRight className="w-3 h-3" />
-                    </button>
-                    <p className="text-[12px] text-slate-700 italic mt-2 leading-snug">
-                      We never see your password. We only read the CSV you upload. Holdings stay on this device until a brief is generated, and are never stored on our servers.
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="block font-semibold text-slate-900 mb-1.5">Upload your CSV</p>
-                    <input
-                      id="me-csv-file-input"
-                      type="file"
-                      accept=".csv,text/csv"
-                      onChange={handleCsvUpload}
-                      style={{
-                        position: "absolute",
-                        width: 1,
-                        height: 1,
-                        padding: 0,
-                        margin: -1,
-                        overflow: "hidden",
-                        clip: "rect(0,0,0,0)",
-                        whiteSpace: "nowrap",
-                        border: 0,
-                      }}
-                    />
-                    <label
-                      htmlFor="me-csv-file-input"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-[15px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition cursor-pointer select-none"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      Choose CSV file
-                    </label>
-                    <p className="text-[12px] text-slate-700 mt-1.5">
-                      Tap to pick a CSV from your phone or computer.
-                    </p>
-                  </div>
-
-                  {/* Account label prompt — appears after CSV is parsed, before commit */}
-                  {pendingCsvUpload && (
-                    <div className="px-3 py-3 rounded-md bg-amber-50 border border-amber-200 space-y-2">
-                      <p className="text-[13px] font-semibold text-amber-900">
-                        Label this account
-                      </p>
-                      <p className="text-[12px] text-amber-800 leading-snug">
-                        Found {pendingCsvUpload.newHoldings.length} position{pendingCsvUpload.newHoldings.length === 1 ? "" : "s"}. Give this upload a name so the Playbook can call it out by account (e.g. "Fidelity TOD", "Roth IRA", "Schwab Joint").
-                      </p>
-                      <input
-                        type="text"
-                        value={accountLabelDraft}
-                        onChange={(e) => setAccountLabelDraft(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === "Enter") commitPendingCsvUpload(); }}
-                        placeholder={pendingCsvUpload.brokerageGuess ? `e.g. ${pendingCsvUpload.brokerageGuess} TOD` : "Account name"}
-                        className="w-full px-2.5 py-2 rounded-md border border-amber-300 text-[15px] bg-white focus:outline-none focus:border-amber-500"
-                        autoFocus
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={commitPendingCsvUpload}
-                          className="flex-1 px-3 py-2 rounded-md bg-amber-700 text-white text-[13px] font-semibold hover:bg-amber-800 active:bg-amber-900"
-                        >
-                          Save account
-                        </button>
-                        <button
-                          onClick={cancelPendingCsvUpload}
-                          className="px-3 py-2 rounded-md bg-white border border-amber-300 text-amber-800 text-[13px] font-semibold hover:bg-amber-50"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Account list — shows existing accounts with rename / delete */}
-                  {accountsState.length > 0 && (
-                    <div className="px-3 py-2.5 rounded-md bg-slate-50 border border-slate-200">
-                      <p className="text-[12px] font-bold uppercase tracking-wider text-slate-700 mb-2">
-                        Your accounts ({accountsState.length})
-                      </p>
-                      <div className="space-y-1.5">
-                        {accountsState.map((acct) => {
-                          const count = holdings.filter((h) => h.accountId === acct.id).length;
-                          const editing = editingAccountId === acct.id;
-                          return (
-                            <div key={acct.id} className="flex items-center gap-2">
-                              {editing ? (
-                                <>
-                                  <input
-                                    type="text"
-                                    value={editingAccountName}
-                                    onChange={(e) => setEditingAccountName(e.target.value)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") {
-                                        renameAccount(acct.id, editingAccountName);
-                                        setEditingAccountId(null);
-                                      } else if (e.key === "Escape") {
-                                        setEditingAccountId(null);
-                                      }
-                                    }}
-                                    className="flex-1 px-2 py-1 rounded border border-slate-300 text-[13px] bg-white focus:outline-none focus:border-slate-500"
-                                    autoFocus
-                                  />
-                                  <button
-                                    onClick={() => { renameAccount(acct.id, editingAccountName); setEditingAccountId(null); }}
-                                    className="p-1 rounded text-emerald-600 hover:bg-emerald-50"
-                                    aria-label="Save name"
-                                  >
-                                    <Check className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    onClick={() => setEditingAccountId(null)}
-                                    className="p-1 rounded text-slate-700 hover:bg-slate-100"
-                                    aria-label="Cancel rename"
-                                  >
-                                    <X className="w-3.5 h-3.5" />
-                                  </button>
-                                </>
-                              ) : (
-                                <>
-                                  <span className="flex-1 text-[15px] font-semibold text-slate-800 truncate" style={{ fontFamily: SERIF }}>
-                                    {acct.name}
-                                  </span>
-                                  <span className="text-[12px] text-slate-700 flex-shrink-0">
-                                    {count} pos
-                                  </span>
-                                  <button
-                                    onClick={() => { setEditingAccountId(acct.id); setEditingAccountName(acct.name); }}
-                                    className="p-1 rounded text-slate-500 hover:text-slate-700 hover:bg-slate-100"
-                                    aria-label="Rename account"
-                                    title="Rename"
-                                  >
-                                    <Pencil className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    onClick={() => deleteAccount(acct.id)}
-                                    className="p-1 rounded text-slate-500 hover:text-rose-600 hover:bg-rose-50"
-                                    aria-label="Remove account"
-                                    title="Remove account"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {csvImportMessage && (
-                    <div className={`px-3 py-2 rounded-md text-[13px] ${
-                      csvImportMessage.type === "ok"
-                        ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                        : "bg-rose-100 text-rose-800 border border-rose-200"
-                    }`}>
-                      {csvImportMessage.text}
-                    </div>
-                  )}
-
-                  {/* Holdings status — show what's loaded + freshness */}
-                  {holdings.length > 0 && (
-                    <div className={`px-3 py-2 rounded-md text-[13px] ${
-                      holdingsAgeDays != null && holdingsAgeDays > 7
-                        ? "bg-amber-50 border border-amber-200 text-amber-900"
-                        : "bg-slate-100 border border-slate-200 text-slate-700"
-                    }`}>
-                      <p className="font-semibold mb-0.5">
-                        {holdings.length} position{holdings.length === 1 ? "" : "s"} loaded
-                        {holdingsAgeDays != null && (
-                          <span className="font-normal">
-                            {" · "}
-                            {holdingsAgeDays === 0 ? "today" : holdingsAgeDays === 1 ? "1 day ago" : `${holdingsAgeDays} days ago`}
-                          </span>
-                        )}
-                      </p>
-                      {holdingsAgeDays != null && holdingsAgeDays > 7 && (
-                        <p className="text-[12px] mt-1">
-                          ⚠ Data is stale — gain percentages may be off. Re-upload for accurate playbook recommendations.
-                        </p>
-                      )}
-                      {holdingsAgeDays != null && holdingsAgeDays <= 7 && (
-                        <p className="text-[12px] mt-1 text-slate-700">
-                          Holdings power your personalized playbook. Re-upload weekly for best accuracy.
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  <p className="text-[12px] text-slate-700 leading-relaxed">
-                    Holdings stay on your device. We only send them to generate today's brief — never stored on any server.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+          {syncPortfolioBlock}
 
           {/* Ask Anything — top-level entry point for general questions about
               the user's portfolio, today's market, or anything investing-
@@ -3880,88 +3758,7 @@ export default function MorningEdge() {
       {/* Empty state */}
       {!brief && !loading && (
         <div className="relative px-6 pb-16 space-y-4">
-          {/* Sync Portfolio hero — empty state's primary action.
-              When there's no brief yet, this card IS the call to action.
-              Tapping it opens the CSV import panel inline. */}
-          <div className="relative rounded-2xl shadow-lg overflow-hidden" data-csv-import-anchor
-            style={{
-              background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
-            }}>
-            <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
-              style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-20"
-              style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
-            <button
-              onClick={() => setShowCsvImport(!showCsvImport)}
-              className="relative z-10 w-full text-left px-4 py-4 transition hover:bg-white/[0.03] active:bg-white/[0.06]"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
-                  <Briefcase className="w-5 h-5" style={{ color: "#1E293B" }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] tracking-[0.25em] uppercase font-semibold leading-none mb-1.5"
-                    style={{ color: "#D4A574" }}>
-                    Get Started
-                  </p>
-                  <p className="text-[17px] leading-tight"
-                    style={{ fontFamily: SERIF, fontWeight: 400, color: "#F8FAFC" }}>
-                    {showCsvImport ? "Tap to close" : "Upload your portfolio"}
-                  </p>
-                </div>
-                {!showCsvImport && (
-                  <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold"
-                    style={{
-                      background: "rgba(212, 165, 116, 0.15)",
-                      color: "#D4A574",
-                      border: "1px solid rgba(212, 165, 116, 0.3)",
-                    }}>
-                    Tap to begin
-                  </span>
-                )}
-              </div>
-            </button>
-            {showCsvImport && (
-              <div className="relative z-10 px-4 pb-4 pt-2 border-t border-white/10">
-                <p className="text-[14px] text-white/80 mb-3">
-                  Export a CSV from any brokerage (Fidelity, Schwab, Robinhood, etc.) and upload it here. We never see your password — only the file you upload.
-                </p>
-                <input
-                  id="me-csv-file-input-empty"
-                  type="file"
-                  accept=".csv,text/csv"
-                  onChange={handleCsvUpload}
-                  style={{
-                    position: "absolute",
-                    width: 1,
-                    height: 1,
-                    padding: 0,
-                    margin: -1,
-                    overflow: "hidden",
-                    clip: "rect(0,0,0,0)",
-                    whiteSpace: "nowrap",
-                    border: 0,
-                  }}
-                />
-                <label
-                  htmlFor="me-csv-file-input-empty"
-                  className="block w-full py-3 rounded-xl text-center font-semibold cursor-pointer transition active:scale-[0.99] select-none"
-                  style={{
-                    background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)",
-                    color: "#1E293B",
-                  }}
-                >
-                  Choose CSV file
-                </label>
-                {csvImportMessage && (
-                  <p className={`text-[13px] mt-2 ${csvImportMessage.type === "ok" ? "text-emerald-300" : "text-rose-300"}`}>
-                    {csvImportMessage.text}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
+          {syncPortfolioBlock}
 
           {/* Secondary action — generate brief without portfolio.
               Equal-weight option for users who want to see what the brief
