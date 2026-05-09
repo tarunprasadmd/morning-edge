@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
+import { Redis } from "@upstash/redis";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -10,16 +11,87 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-// ─── In-memory brief cache (4-hour TTL) ────────────────────────────────
-// Caches the generated brief keyed by a hash of (name + watchlist + holdings
-// fingerprint + 4-hour time bucket). The same user reloading within the
-// same 4-hour window gets an instant response. Vercel warm instances retain
-// this cache; cold starts regenerate, which is acceptable.
+// ─── Two-tier brief cache ────────────────────────────────────────────────
+// L1: in-memory Map (fast, but dies on cold starts)
+// L2: Upstash Redis (slower ~50ms, but survives cold starts)
 //
-// Bypass with ?fresh=1 (or { forceFresh: true } in body). The user's
-// pull-to-refresh action triggers ?fresh=1 on the client.
-const CACHE_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours — keeps API costs down by serving cached briefs through a typical workday
+// Read path: check L1 first; if miss, check L2 and populate L1.
+// Write path: write to both. If Upstash isn't configured (env vars missing,
+// e.g. local dev), L2 is silently skipped — behavior degrades gracefully
+// to old in-memory-only mode.
+//
+// TTL: 12 hours. The brief from this morning persists through the trading
+// day on cold starts so cross-device opens hit cache.
+const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+const CACHE_TTL_SECONDS = Math.floor(CACHE_TTL_MS / 1000);
+
 const briefCache = new Map<string, { brief: any; storedAt: number }>();
+
+// Initialize Upstash client. Vercel's marketplace integration creates env
+// vars with a KV_ prefix by default (KV_REST_API_URL, KV_REST_API_TOKEN).
+// We also fall back to the Upstash-native UPSTASH_REDIS_REST_* names so
+// either naming convention works. If neither is set, redis stays null and
+// L2 caching is silently disabled (graceful degradation for local dev).
+let redis: Redis | null = null;
+try {
+  const url =
+    process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const token =
+    process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (url && token) {
+    redis = new Redis({ url, token });
+  }
+} catch (err) {
+  console.warn("Upstash Redis init failed; falling back to in-memory only:", err);
+  redis = null;
+}
+
+// L1+L2 read. Returns the brief or null.
+async function cacheReadBrief(cacheKey: string): Promise<any | null> {
+  // L1 — in-memory Map
+  const memHit = briefCache.get(cacheKey);
+  if (memHit && Date.now() - memHit.storedAt < CACHE_TTL_MS) {
+    return memHit.brief;
+  }
+  // L2 — Upstash Redis (skip if not configured)
+  if (!redis) return null;
+  try {
+    const kvHit = await redis.get<any>(`brief:${cacheKey}`);
+    if (kvHit && kvHit.brief) {
+      // Populate L1 so subsequent reads on this warm worker are fast
+      briefCache.set(cacheKey, { brief: kvHit.brief, storedAt: Date.now() });
+      return kvHit.brief;
+    }
+  } catch (err) {
+    // Don't let cache errors break the request — just log and fall through
+    console.warn("Upstash read failed:", err);
+  }
+  return null;
+}
+
+// L1+L2 write. Best-effort — failures are logged, not thrown.
+async function cacheWriteBrief(cacheKey: string, brief: any): Promise<void> {
+  briefCache.set(cacheKey, { brief, storedAt: Date.now() });
+
+  // Cleanup L1 if it grows too large
+  if (briefCache.size > 100) {
+    const now = Date.now();
+    for (const [k, v] of briefCache.entries()) {
+      if (now - v.storedAt > CACHE_TTL_MS) briefCache.delete(k);
+    }
+  }
+
+  if (!redis) return;
+  try {
+    await redis.set(
+      `brief:${cacheKey}`,
+      { brief, storedAt: Date.now() },
+      { ex: CACHE_TTL_SECONDS }
+    );
+  } catch (err) {
+    console.warn("Upstash write failed:", err);
+  }
+}
 
 function buildCacheKey(input: {
   name: string;
@@ -61,15 +133,15 @@ export async function POST(request: Request) {
 
     const cacheKey = buildCacheKey({ name, watchlist, holdings, date });
     if (!fresh) {
-      const hit = briefCache.get(cacheKey);
-      if (hit && Date.now() - hit.storedAt < CACHE_TTL_MS) {
+      const cachedBrief = await cacheReadBrief(cacheKey);
+      if (cachedBrief) {
         // Cache hit — return immediately. For streaming requests, emit a
         // single "complete" event with the full brief so the client gets
         // the same UI flow.
         if (wantsStream) {
-          return streamCachedBrief(hit.brief);
+          return streamCachedBrief(cachedBrief);
         }
-        return NextResponse.json({ brief: hit.brief, cached: true });
+        return NextResponse.json({ brief: cachedBrief, cached: true });
       }
     }
 
@@ -112,13 +184,7 @@ export async function POST(request: Request) {
       );
     }
 
-    briefCache.set(cacheKey, { brief: merged, storedAt: Date.now() });
-    if (briefCache.size > 100) {
-      const now = Date.now();
-      for (const [k, v] of briefCache.entries()) {
-        if (now - v.storedAt > CACHE_TTL_MS) briefCache.delete(k);
-      }
-    }
+    await cacheWriteBrief(cacheKey, merged);
 
     return NextResponse.json({
       brief: merged,
@@ -225,14 +291,8 @@ function streamFreshBrief(opts: {
       if (Object.keys(merged).length === 0) {
         send("error", { fatal: true, message: `All chunks failed: ${failures.join("; ")}` });
       } else {
-        // Cache the merged brief for next time
-        briefCache.set(cacheKey, { brief: merged, storedAt: Date.now() });
-        if (briefCache.size > 100) {
-          const now = Date.now();
-          for (const [k, v] of briefCache.entries()) {
-            if (now - v.storedAt > CACHE_TTL_MS) briefCache.delete(k);
-          }
-        }
+        // Cache the merged brief for next time (writes to L1 + L2)
+        await cacheWriteBrief(cacheKey, merged);
         send("complete", {
           brief: merged,
           cached: false,
