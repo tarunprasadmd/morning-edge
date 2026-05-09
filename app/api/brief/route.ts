@@ -99,7 +99,11 @@ function buildCacheKey(input: {
   holdings: any[];
   date: string;
 }) {
-  const bucket = Math.floor(Date.now() / CACHE_TTL_MS);
+  // Cache key is derived from the actual data inputs only — no time bucket.
+  // Expiration is handled by Redis TTL (CACHE_TTL_SECONDS). The "date" string
+  // ("Friday, May 8, 2026") naturally invalidates the cache once the calendar
+  // day changes. This avoids false cache misses at the 12-hour bucket
+  // boundaries we used to have.
   const holdingsFingerprint = (input.holdings || [])
     .map((h: any) => `${h.symbol}:${h.qty ?? ""}:${h.accountId ?? ""}`)
     .sort()
@@ -110,7 +114,6 @@ function buildCacheKey(input: {
     w: watchFingerprint,
     h: holdingsFingerprint,
     d: input.date || "",
-    b: bucket,
   });
   return crypto.createHash("sha256").update(raw).digest("hex");
 }
