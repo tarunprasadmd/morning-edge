@@ -880,6 +880,7 @@ export default function MorningEdge() {
   const [filter, setFilter] = useState("all"); // all | health | wealth | clarity
   const [showCsvImport, setShowCsvImport] = useState(false);
   const [csvImportMessage, setCsvImportMessage] = useState(null);
+  const csvFileInputRef = React.useRef(null);
   const [completedDecisions, setCompletedDecisions] = useState({}); // { "2026-04-29": [0, 2] }
   const [dismissedDecisions, setDismissedDecisions] = useState({}); // { "2026-04-29": [1, 3] }
   const [accountsState, setAccountsState] = useState([]); // [{ id, name, brokerage, uploadedAt, holdingCount }]
@@ -2092,29 +2093,20 @@ export default function MorningEdge() {
             <div>
               <p className="block font-semibold text-slate-900 mb-1.5">Upload your CSV</p>
               <input
-                id="me-csv-file-input"
+                ref={csvFileInputRef}
                 type="file"
                 accept=".csv,text/csv"
                 onChange={handleCsvUpload}
-                style={{
-                  position: "absolute",
-                  width: 1,
-                  height: 1,
-                  padding: 0,
-                  margin: -1,
-                  overflow: "hidden",
-                  clip: "rect(0,0,0,0)",
-                  whiteSpace: "nowrap",
-                  border: 0,
-                }}
+                style={{ display: "none" }}
               />
-              <label
-                htmlFor="me-csv-file-input"
+              <button
+                type="button"
+                onClick={() => csvFileInputRef.current && csvFileInputRef.current.click()}
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-[15px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition cursor-pointer select-none"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Choose CSV file
-              </label>
+              </button>
               {csvImportMessage && (
                 <div className={`mt-2 px-3 py-2 rounded-md text-[13px] ${
                   csvImportMessage.type === "ok"
@@ -2352,7 +2344,7 @@ export default function MorningEdge() {
           {/* SYNC PORTFOLIO — black & gold */}
           <button
             onClick={() => {
-              setShowCsvImport(!showCsvImport);
+              setShowCsvImport(true);
               setTimeout(() => {
                 const el = document.querySelector("[data-csv-import-anchor]");
                 if (el && el.scrollIntoView) {
