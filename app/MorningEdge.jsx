@@ -1690,7 +1690,7 @@ export default function MorningEdge() {
           const lower = lines[i].toLowerCase();
           if (/symbol|ticker|stock|security/.test(lower)) { headerIdx = i; break; }
         }
-        const splitRow = (s) => s.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+        const splitRow = (s) => { const out = []; let cur = "", inQ = false; for (let i = 0; i < s.length; i++) { const c = s[i]; if (c === '"') { inQ = !inQ; continue; } if (c === "," && !inQ) { out.push(cur.trim()); cur = ""; continue; } cur += c; } out.push(cur.trim()); return out; };
         const header = splitRow(lines[headerIdx]).map((h) => h.toLowerCase());
 
         // Find each column by fuzzy matching common header names across brokerages
