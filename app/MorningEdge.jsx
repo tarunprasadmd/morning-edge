@@ -2268,49 +2268,47 @@ export default function MorningEdge() {
           enriched with the user's holdings and conviction signals from today's brief. */}
       <TickerTape userHoldings={holdings} brief={brief} accounts={accountsState} />
 
-      {/* Filter pillars — only visible when a brief exists. They do nothing
-          without a brief, so showing them in empty state was dead UI.
-          Once a brief loads, they appear with weight as proper "pillars". */}
-      {brief && (
-        <div className="relative px-4 pb-4">
-          <div className="text-center mb-3">
-            <span className="inline-block px-3 py-1 text-[10px] tracking-[0.3em] uppercase font-bold"
-              style={{ color: "#92400e", borderTop: "1px solid rgba(212,165,116,0.4)", borderBottom: "1px solid rgba(212,165,116,0.4)" }}>
-              ✦ Choose Your Pillar ✦
-            </span>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            <FilterPill
-              active={filter === "all"}
-              onClick={() => setFilter("all")}
-              icon={<LayoutGrid className="w-4 h-4" />}
-              label="All Pillars"
-              accent={{ bg: "bg-slate-900", text: "text-white", ring: "ring-slate-300", dot: "bg-slate-400" }}
-            />
-            <FilterPill
-              active={filter === "wealth"}
-              onClick={() => setFilter("wealth")}
-              icon={<TrendingUp className="w-4 h-4" />}
-              label="Wealth Pillar"
-              accent={{ bg: "bg-amber-600", text: "text-white", ring: "ring-amber-200", dot: "bg-amber-500" }}
-            />
-            <FilterPill
-              active={filter === "health"}
-              onClick={() => setFilter("health")}
-              icon={<Heart className="w-4 h-4" />}
-              label="Health Pillar"
-              accent={{ bg: "bg-emerald-600", text: "text-white", ring: "ring-emerald-200", dot: "bg-emerald-500" }}
-            />
-            <FilterPill
-              active={filter === "clarity"}
-              onClick={() => setFilter("clarity")}
-              icon={<Sparkles className="w-4 h-4" />}
-              label="Clarity Pillar"
-              accent={{ bg: "bg-indigo-600", text: "text-white", ring: "ring-indigo-200", dot: "bg-indigo-500" }}
-            />
-          </div>
+      {/* Filter pillars — always visible. Step 1 of the flow:
+          user picks their pillar focus before generating the brief.
+          The selection persists once the brief loads. */}
+      <div className="relative px-4 pb-4">
+        <div className="text-center mb-3">
+          <span className="inline-block px-3 py-1 text-[10px] tracking-[0.3em] uppercase font-bold"
+            style={{ color: "#92400e", borderTop: "1px solid rgba(212,165,116,0.4)", borderBottom: "1px solid rgba(212,165,116,0.4)" }}>
+            ✦ Choose Your Pillar ✦
+          </span>
         </div>
-      )}
+        <div className="grid grid-cols-4 gap-2">
+          <FilterPill
+            active={filter === "all"}
+            onClick={() => setFilter("all")}
+            icon={<LayoutGrid className="w-4 h-4" />}
+            label="All Pillars"
+            accent={{ bg: "bg-slate-900", text: "text-white", ring: "ring-slate-300", dot: "bg-slate-400" }}
+          />
+          <FilterPill
+            active={filter === "wealth"}
+            onClick={() => setFilter("wealth")}
+            icon={<TrendingUp className="w-4 h-4" />}
+            label="Wealth Pillar"
+            accent={{ bg: "bg-amber-600", text: "text-white", ring: "ring-amber-200", dot: "bg-amber-500" }}
+          />
+          <FilterPill
+            active={filter === "health"}
+            onClick={() => setFilter("health")}
+            icon={<Heart className="w-4 h-4" />}
+            label="Health Pillar"
+            accent={{ bg: "bg-emerald-600", text: "text-white", ring: "ring-emerald-200", dot: "bg-emerald-500" }}
+          />
+          <FilterPill
+            active={filter === "clarity"}
+            onClick={() => setFilter("clarity")}
+            icon={<Sparkles className="w-4 h-4" />}
+            label="Clarity Pillar"
+            accent={{ bg: "bg-indigo-600", text: "text-white", ring: "ring-indigo-200", dot: "bg-indigo-500" }}
+          />
+        </div>
+      </div>
 
       {/* Premium modal */}
       {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
