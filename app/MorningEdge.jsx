@@ -2566,58 +2566,32 @@ export default function MorningEdge() {
           from cached brief), the big button stays hidden — the small
           "Refreshing brief…" banner up top is enough. The user can read
           the cached brief while the new one loads in background. */}
-      {!brief && (
+      {/* Loading state button — rotating evocative messages while brief
+          generates. Empty state is handled by separate block below. */}
+      {!brief && loading && (
         <div className="relative px-6 pb-6 space-y-2">
-          {(!holdings || holdings.length === 0) && !loading ? (
-            // Empty state: clean hero design. Sync Portfolio card up top is
-            // already the primary upload entry. We add nothing competing,
-            // just a small "Try a sample" link for skeptics.
-            <div className="text-center pt-2">
-              <p className="text-[14px] text-slate-500 mb-2">
-                Want to see what a brief looks like first?
-              </p>
-              <button onClick={showDemo}
-                className="text-[15px] font-semibold text-slate-700 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-700 transition">
-                View sample brief →
-              </button>
-            </div>
-          ) : (
-            <>
-              <button
-                onClick={generateBrief}
-                disabled={loading}
-                className={`w-full py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 transition shadow-lg ${
-                  loading ? "bg-slate-200 text-slate-700 shadow-none"
-                    : "bg-slate-900 text-white hover:bg-slate-800"
-                }`}
-              >
-                {loading ? (() => {
-                  const msgs = [
-                    "Reading the tape…",
-                    "Scanning smart money flow…",
-                    "Checking earnings & catalysts…",
-                    "Tuning your edge…",
-                    "Pulling congressional disclosures…",
-                    "Almost there…",
-                  ];
-                  const m = msgs[loadingStatusIdx % msgs.length];
-                  return (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span key={m} style={{ animation: "me-status-fade 0.5s ease-out" }}>{m}</span>
-                    </>
-                  );
-                })()
-                : <><Sparkles className="w-5 h-5" />Generate Today's Brief</>}
-              </button>
-              {!loading && (
-                <button onClick={showDemo}
-                  className="w-full py-3 rounded-xl bg-white text-slate-700 border border-slate-200 text-[16px] font-semibold flex items-center justify-center gap-2 shadow-md">
-                  <Eye className="w-4 h-4" />View Sample Brief
-                </button>
-              )}
-            </>
-          )}
+          <button
+            disabled
+            className="w-full py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 transition shadow-lg bg-slate-200 text-slate-700 shadow-none"
+          >
+            {(() => {
+              const msgs = [
+                "Reading the tape…",
+                "Scanning smart money flow…",
+                "Checking earnings & catalysts…",
+                "Tuning your edge…",
+                "Pulling congressional disclosures…",
+                "Almost there…",
+              ];
+              const m = msgs[loadingStatusIdx % msgs.length];
+              return (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span key={m} style={{ animation: "me-status-fade 0.5s ease-out" }}>{m}</span>
+                </>
+              );
+            })()}
+          </button>
           {error && (
             <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2 text-[16px] text-amber-800">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
