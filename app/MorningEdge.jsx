@@ -2390,36 +2390,55 @@ export default function MorningEdge() {
           the cached brief while the new one loads in background. */}
       {!brief && (
         <div className="relative px-6 pb-6 space-y-2">
-          {/* CSV-first UX: if user has no holdings yet, encourage them to
-              sync their portfolio first. Generating a brief without holdings
-              gives a generic market view, then they'd have to wait again
-              after upload. The Sync Portfolio card above this section is
-              the primary action; we de-emphasize Generate Brief here to
-              steer the user. */}
-          {(!holdings || holdings.length === 0) && !loading && (
-            <div className="mb-3 p-4 rounded-xl bg-amber-50 border border-amber-200 text-[14px] text-amber-900 flex gap-2 items-start">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <span>
-                <strong>Tip:</strong> Upload your portfolio CSV first (Sync Portfolio above) so your brief includes personalized trade ideas. Otherwise you'll get a generic market view and need to regenerate after upload.
-              </span>
+          {(!holdings || holdings.length === 0) && !loading ? (
+            // Empty state: clean hero design. Sync Portfolio card up top is
+            // already the primary upload entry. We add nothing competing,
+            // just a small "Try a sample" link for skeptics.
+            <div className="text-center pt-2">
+              <p className="text-[14px] text-slate-500 mb-2">
+                Want to see what a brief looks like first?
+              </p>
+              <button onClick={showDemo}
+                className="text-[15px] font-semibold text-slate-700 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-700 transition">
+                View sample brief →
+              </button>
             </div>
-          )}
-          <button
-            onClick={generateBrief}
-            disabled={loading}
-            className={`w-full py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 transition shadow-lg ${
-              loading ? "bg-slate-200 text-slate-700 shadow-none"
-                : "bg-slate-900 text-white hover:bg-slate-800"
-            }`}
-          >
-            {loading ? <><RefreshCw className="w-4 h-4 animate-spin" />Reading the tape…</>
-            : <><Sparkles className="w-5 h-5" />Generate Today's Brief</>}
-          </button>
-          {!loading && (
-            <button onClick={showDemo}
-              className="w-full py-3 rounded-xl bg-white text-slate-700 border border-slate-200 text-[16px] font-semibold flex items-center justify-center gap-2 shadow-md">
-              <Eye className="w-4 h-4" />View Sample Brief
-            </button>
+          ) : (
+            <>
+              <button
+                onClick={generateBrief}
+                disabled={loading}
+                className={`w-full py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 transition shadow-lg ${
+                  loading ? "bg-slate-200 text-slate-700 shadow-none"
+                    : "bg-slate-900 text-white hover:bg-slate-800"
+                }`}
+              >
+                {loading ? (() => {
+                  const msgs = [
+                    "Reading the tape…",
+                    "Scanning smart money flow…",
+                    "Checking earnings & catalysts…",
+                    "Tuning your edge…",
+                    "Pulling congressional disclosures…",
+                    "Almost there…",
+                  ];
+                  const m = msgs[loadingStatusIdx % msgs.length];
+                  return (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span key={m} style={{ animation: "me-status-fade 0.5s ease-out" }}>{m}</span>
+                    </>
+                  );
+                })()
+                : <><Sparkles className="w-5 h-5" />Generate Today's Brief</>}
+              </button>
+              {!loading && (
+                <button onClick={showDemo}
+                  className="w-full py-3 rounded-xl bg-white text-slate-700 border border-slate-200 text-[16px] font-semibold flex items-center justify-center gap-2 shadow-md">
+                  <Eye className="w-4 h-4" />View Sample Brief
+                </button>
+              )}
+            </>
           )}
           {error && (
             <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2 text-[16px] text-amber-800">
