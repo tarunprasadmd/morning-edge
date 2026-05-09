@@ -2756,7 +2756,8 @@ export default function MorningEdge() {
             transition: "opacity 0.6s ease",
           }}
         >
-          {syncPortfolioBlock}
+          {/* Sync Portfolio block is now rendered persistently via the twin
+              buttons section near the top — no need to render it here too. */}
 
           {/* Ask Anything — top-level entry point for general questions about
               the user's portfolio, today's market, or anything investing-
