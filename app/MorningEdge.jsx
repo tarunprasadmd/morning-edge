@@ -1705,8 +1705,7 @@ export default function MorningEdge() {
         const qtyCol = findCol(/^quantity$/, /^shares$/, /^qty$/, /quantity|shares|qty/);
         const costCol = findCol(/avg.*cost|average.*cost|cost.*basis|cost.*per.*share/, /^cost$/);
         const valCol = findCol(/current.*value|market.*value|^value$|^total.*value/);
-        const gainCol = findCol(/total.*gain.*%|gain.*loss.*%|^gain.*%|%.*gain|return.*%/);
-
+const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct)|gain.*(%|percent|pct)|return.*(%|percent|pct)/);
         if (symCol === -1) {
           setCsvImportMessage({ type: "error", text: "Couldn't find a Symbol or Ticker column." });
           return;
