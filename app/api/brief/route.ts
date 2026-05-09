@@ -93,6 +93,349 @@ async function cacheWriteBrief(cacheKey: string, brief: any): Promise<void> {
   }
 }
 
+// ─── Layer A / Layer B cache helpers ───────────────────────────────────
+// Phase 3 architecture:
+//   Layer A = market data (cron-cached daily, NOT user-specific):
+//             market_pulse, todays_edge_market, smart_money,
+//             radar_candidates (raw, before holdings filter)
+//   Layer B = user-specific (regenerated when holdings change, NO web search):
+//             affirmation, mindset, clarity, power_plate (Haiku, ~5s)
+//             decisions, conviction_watch, opportunity_watch (Sonnet no search,
+//             uses Layer A as input context — ~25-30s total)
+//
+// Cache keys:
+//   layer-a:{YYYY-MM-DD}                  → general market data, 30h TTL
+//   brief-full:{YYYY-MM-DD}:{holdingsHash} → complete merged brief, 30h TTL
+//   latest-user-state                      → most recent user inputs (cron uses)
+//
+// Read flow on user request:
+//   1. brief-full hit       → return immediately (<1s)
+//   2. layer-a hit          → fast Layer B regen (~25-30s) + cache full brief
+//   3. all miss             → full legacy generation (slow but works)
+//
+// Cron at 5 AM ET reads latest-user-state, runs full generation, writes
+// both layer-a and brief-full so morning open is instant.
+
+const LAYER_A_TTL_SECONDS = 30 * 60 * 60; // 30 hours
+const FULL_BRIEF_TTL_SECONDS = 30 * 60 * 60;
+const USER_STATE_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
+
+function todayDateString(): string {
+  // ET-ish (use UTC for consistency across deploys; cron runs at 9 UTC = 5 AM ET).
+  // Format: YYYY-MM-DD. The user-facing "Friday, May 8, 2026" date is separate.
+  return new Date().toISOString().slice(0, 10);
+}
+
+function holdingsHash(holdings: any[]): string {
+  const fp = (holdings || [])
+    .map((h: any) => `${h.symbol}:${h.qty ?? ""}:${h.accountId ?? ""}`)
+    .sort()
+    .join(",");
+  return crypto.createHash("sha256").update(fp).digest("hex").slice(0, 16);
+}
+
+async function cacheReadLayerA(date: string): Promise<any | null> {
+  if (!redis) return null;
+  try {
+    return await redis.get<any>(`layer-a:${date}`);
+  } catch (err) {
+    console.warn("Upstash layer-a read failed:", err);
+    return null;
+  }
+}
+
+async function cacheWriteLayerA(date: string, data: any): Promise<void> {
+  if (!redis) return;
+  try {
+    await redis.set(`layer-a:${date}`, data, { ex: LAYER_A_TTL_SECONDS });
+  } catch (err) {
+    console.warn("Upstash layer-a write failed:", err);
+  }
+}
+
+async function cacheReadFullBrief(date: string, hash: string): Promise<any | null> {
+  if (!redis) return null;
+  try {
+    return await redis.get<any>(`brief-full:${date}:${hash}`);
+  } catch (err) {
+    console.warn("Upstash full-brief read failed:", err);
+    return null;
+  }
+}
+
+async function cacheWriteFullBrief(date: string, hash: string, brief: any): Promise<void> {
+  if (!redis) return;
+  try {
+    await redis.set(`brief-full:${date}:${hash}`, brief, {
+      ex: FULL_BRIEF_TTL_SECONDS,
+    });
+  } catch (err) {
+    console.warn("Upstash full-brief write failed:", err);
+  }
+}
+
+async function cacheWriteUserState(state: {
+  name: string;
+  watchlist: string[];
+  holdings: any[];
+  accounts?: any[];
+  holdingsAgeDays?: number | null;
+  date: string;
+}): Promise<void> {
+  if (!redis) return;
+  try {
+    await redis.set("latest-user-state", { ...state, savedAt: Date.now() }, {
+      ex: USER_STATE_TTL_SECONDS,
+    });
+  } catch (err) {
+    console.warn("Upstash user-state write failed:", err);
+  }
+}
+
+async function cacheReadUserState(): Promise<any | null> {
+  if (!redis) return null;
+  try {
+    return await redis.get<any>("latest-user-state");
+  } catch (err) {
+    console.warn("Upstash user-state read failed:", err);
+    return null;
+  }
+}
+
+// ─── End Layer A/B helpers ─────────────────────────────────────────────
+
+// ─── Layer A: market data (cron-cached, NOT user-specific) ─────────────
+// Generates the chunks that need web search but don't depend on the user's
+// specific holdings. Stored once per day; reused across regenerations for
+// any user state change.
+//
+// IMPORTANT: This is NOT a copy of the existing chunks. The user-aware
+// filtering (e.g. "exclude tickers user owns" in radar) happens later
+// in Layer B, using these candidates as input.
+async function generateLayerA(name: string, watchlist: string[], date: string): Promise<any> {
+  const tickers = (watchlist && watchlist.length) ? watchlist.join(", ") : "general market";
+
+  // Layer A combines two prompts in parallel: market+edge, and smart_money.
+  // We keep them as separate calls because each has different search budgets
+  // and Anthropic charges by tokens not by call.
+  const [marketResult, smartMoneyResult] = await Promise.allSettled([
+    generateLayerAMarket(name, tickers, date),
+    generateSmartMoneyOnly(name, date),
+  ]);
+
+  const layerA: any = { generatedAt: new Date().toISOString(), date };
+  if (marketResult.status === "fulfilled" && marketResult.value) {
+    Object.assign(layerA, marketResult.value);
+  }
+  if (smartMoneyResult.status === "fulfilled" && smartMoneyResult.value) {
+    Object.assign(layerA, smartMoneyResult.value);
+  }
+  return layerA;
+}
+
+async function generateLayerAMarket(name: string, tickers: string, date: string): Promise<any> {
+  const prompt = `${COMMON_PREAMBLE(name, date)}
+Use web_search up to 3 times to fetch TODAY's premarket movement, headlines, macro events, and any earnings/FDA/catalysts in the next 1-2 weeks. Watchlist for context: ${tickers}.
+
+Return ONLY this JSON:
+
+{
+  "market_pulse": {
+    "tone": "bullish or cautious or bearish",
+    "summary": "ONE short headline sentence, max 14 words",
+    "key_levels": ["4-6 short bullets, max 10 words each — index futures, VIX, key commodities, sector rotation, today's catalysts"]
+  },
+  "todays_edge_market": {
+    "binary_catalysts": [ { "ticker": "TICKER", "event": "event date", "context": "max 12 words" } ],
+    "risk_flags": [ { "ticker": "TICKER", "flag": "max 12 words", "suggested_action": "max 12 words" } ]
+  },
+  "radar_candidates": [
+    {
+      "ticker": "TICKER",
+      "theme": "short tag e.g. 'Nuclear · AI energy'",
+      "headline": "max 14 words",
+      "why_now": "max 18 words",
+      "deep_reasoning": "130-180 word explanation written for someone NEW to trading. Explain WHY this stock matters right now (what specific event or trend), WHY IT'S WORTH WATCHING (what could go right), HOW IT FITS thematic interests (AI/semiconductors/nuclear/quantum/biotech — explain what each theme means if used), and WHAT COULD GO WRONG (the risk). Define any technical term in the same sentence. Use 'you'. No bullet points."
+    }
+  ]
+}
+
+todays_edge_market: 0-3 risk flags total — only if genuinely time-sensitive market-wide events. Empty arrays are fine.
+radar_candidates: 8-10 high-conviction thematic stocks across the user's themes (AI / semis / nuclear / quantum / rare earths / biotech / crypto infra). The user's actual holdings will be filtered out later — don't try to filter here. Each entry MUST include deep_reasoning.
+
+PRIMARY DECISION INPUT: This is the user's main source for "what's moving in markets today". Filler hurts trust.`;
+
+  return callJsonChunk(prompt, { search: true, maxTokens: 6000, maxSearches: 3 });
+}
+
+// ─── Layer B: user-specific chunks generated from Layer A context ─────
+// These run WITHOUT web search — Layer A already paid for the searches.
+// Combined Layer B regen target: ~25-30s on Sonnet, ~5s on Haiku for light.
+//
+// generateLightChunk already exists (Haiku, no search) — reuse it.
+
+async function generateUserAwareEdge(
+  name: string,
+  date: string,
+  layerA: any,
+  holdings: any[]
+): Promise<any> {
+  // Compute earnings_alerts from holdings + Layer A's binary_catalysts.
+  // This is deterministic — no LLM needed. Saves ~10s vs regenerating.
+  const ownedSet = new Set((holdings || []).map((h: any) => (h.symbol || "").toUpperCase()));
+  const layerEdge = layerA?.todays_edge_market || {};
+  const binaryCatalysts = Array.isArray(layerEdge.binary_catalysts) ? layerEdge.binary_catalysts : [];
+  const riskFlags = Array.isArray(layerEdge.risk_flags) ? layerEdge.risk_flags : [];
+
+  // Pull earnings alerts: any user holding mentioned in binary_catalysts
+  const earningsAlerts: any[] = [];
+  for (const cat of binaryCatalysts) {
+    const t = (cat?.ticker || "").toUpperCase();
+    if (ownedSet.has(t)) {
+      const holding = (holdings || []).find((h: any) => (h.symbol || "").toUpperCase() === t);
+      earningsAlerts.push({
+        ticker: t,
+        when: cat.event || "",
+        your_shares: holding?.qty ?? 0,
+      });
+    }
+  }
+
+  return {
+    todays_edge: {
+      earnings_alerts: earningsAlerts,
+      binary_catalysts: binaryCatalysts,
+      risk_flags: riskFlags,
+    },
+  };
+}
+
+async function generateRadarFromCandidates(layerA: any, holdings: any[]): Promise<any> {
+  // Filter Layer A's radar_candidates to exclude user's holdings.
+  // Deterministic, no LLM call.
+  const ownedSet = new Set((holdings || []).map((h: any) => (h.symbol || "").toUpperCase()));
+  const candidates = Array.isArray(layerA?.radar_candidates) ? layerA.radar_candidates : [];
+  const filtered = candidates.filter((c: any) => {
+    const t = (c?.ticker || "").toUpperCase();
+    return t && !ownedSet.has(t);
+  });
+  // Cap at 6 (matches old radar_watch sizing)
+  return { radar_watch: filtered.slice(0, 6) };
+}
+
+// User-specific Sonnet chunks that take Layer A's smart_money + market_pulse
+// as INPUT CONTEXT. No web_search — they reason over the cached data.
+async function generateConvictionFromContext(
+  name: string,
+  date: string,
+  layerA: any,
+  watchlist: string[],
+  holdings: any[]
+): Promise<any> {
+  const ownedSet = new Set((holdings || []).map((h: any) => h.symbol));
+  const ownedNote = ownedSet.size > 0 ? `\nUser's holdings: ${Array.from(ownedSet).join(", ")}.` : "";
+  const focusTickers = (holdings && holdings.length > 0)
+    ? (holdings as any[]).slice(0, 5).map((h: any) => h.symbol)
+    : (watchlist || []).slice(0, 5);
+  const tickerNote = focusTickers.length > 0
+    ? `\nFor conviction_watch, focus on: ${focusTickers.join(", ")}.`
+    : "";
+
+  // Trim Layer A to the parts conviction generator needs (to keep prompt size sane)
+  const contextSlice = {
+    market_pulse: layerA?.market_pulse || null,
+    smart_money_summary: layerA?.smart_money?.summary || null,
+    sector_heatmap: layerA?.smart_money?.sector_heatmap || null,
+  };
+
+  const prompt = `${COMMON_PREAMBLE(name, date)}
+You have already-fetched market context below. DO NOT search — use this context directly.
+
+MARKET CONTEXT (today, fetched at ${layerA?.generatedAt || date}):
+${JSON.stringify(contextSlice, null, 2)}
+${ownedNote}${tickerNote}
+
+Return ONLY this JSON:
+
+{
+  "conviction_watch": [
+    {
+      "ticker": "TICKER",
+      "signal": "add or hold or trim",
+      "why_now": "1-2 short sentences, max 25 words",
+      "note": "tight summary, max 8 words",
+      "action": "OPTIONAL concrete trade with size, max 12 words — omit for routine holds",
+      "deep_reasoning": "130-180 word explanation written for someone NEW to trading. Cover: WHY this signal NOW for this stock you own (what's happening that triggered it), WHY YOU MIGHT WANT TO FOLLOW IT (what problem it solves), WHAT TO THINK ABOUT FIRST (your cost basis if known, how much you own as % of portfolio, tax differences between IRA and taxable accounts), WHAT COULD GO WRONG (the case against acting, why doing nothing might be fine). Define any technical term in the same sentence. Use 'you' and 'your'. Like a thoughtful friend explaining over coffee. Full sentences. No bullet points."
+    }
+  ],
+  "opportunity_watch": [
+    {
+      "ticker": "TICKER (must NOT be in user's holdings)",
+      "theme": "short tag matching user's themes (e.g. 'AI compute', 'Nuclear · grid', 'Quantum hardware', 'Critical minerals', 'Biotech catalyst')",
+      "fits_gap": "1-line tagline, max 14 words, on what GAP in their portfolio this fills",
+      "headline": "1-line catalyst, max 14 words",
+      "deep_reasoning": "180-220 word personalized buy thesis written for someone NEW to investing. Cover FOUR things: (1) WHY THIS FITS YOUR PORTFOLIO; (2) THE THESIS; (3) SIZING THINKING; (4) WHAT COULD GO WRONG. Define any technical term in the same sentence. Use 'you' and 'your'."
+    }
+  ]
+}
+
+CRITICAL: You have NO web_search access. Reason from the market context above and your knowledge. If you're uncertain about a specific fact, omit the entry rather than fabricate. Each item must reference real, plausible setups.
+
+conviction_watch: 8-10 entries. Mix add/hold/trim signals across user's largest positions. Every meaningful position deserves a take, even routine holds. EVERY entry MUST include deep_reasoning.
+opportunity_watch: 6-8 portfolio-aware buy ideas NOT in user's holdings. Match user's themes. Each pick MUST: (1) match a user theme, (2) fill a gap, (3) include deep_reasoning.
+
+CRITICAL DATA RULES:
+- NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD".
+- Empty arrays are acceptable; placeholder strings are NEVER acceptable.`;
+
+  return callJsonChunk(prompt, { search: false, maxTokens: 12000, model: "claude-sonnet-4-5" });
+}
+
+// Combined Layer B execution — runs all user-specific chunks in parallel,
+// using Layer A as context. Returns the merged user-specific brief slice.
+async function generateLayerB(opts: {
+  name: string;
+  watchlist: string[];
+  holdings: any[];
+  accounts: any[] | undefined;
+  holdingsAgeDays: number | null;
+  date: string;
+  layerA: any;
+}): Promise<any> {
+  const { name, watchlist, holdings, accounts, holdingsAgeDays, date, layerA } = opts;
+
+  const tasks = [
+    // Light chunk (Haiku, no search) — affirmation/mindset/clarity/power_plate/decisions
+    generateLightChunk(name, holdings, accounts, holdingsAgeDays, date),
+    // Conviction + opportunity (Sonnet, no search, uses Layer A context)
+    generateConvictionFromContext(name, date, layerA, watchlist, holdings),
+    // Edge (deterministic — filters Layer A's catalysts against holdings)
+    generateUserAwareEdge(name, date, layerA, holdings),
+    // Radar (deterministic — filters Layer A's candidates against holdings)
+    generateRadarFromCandidates(layerA, holdings),
+  ];
+
+  const results = await Promise.allSettled(tasks);
+  const merged: any = {};
+  for (const r of results) {
+    if (r.status === "fulfilled" && r.value) {
+      Object.assign(merged, r.value);
+    } else if (r.status === "rejected") {
+      console.warn("Layer B chunk failed:", r.reason?.message || r.reason);
+    }
+  }
+
+  // Layer A contributions that go directly into the final brief
+  if (layerA?.market_pulse) merged.market_pulse = layerA.market_pulse;
+  if (layerA?.smart_money) merged.smart_money = layerA.smart_money;
+
+  return merged;
+}
+
+// ─── End Layer A/B generators ──────────────────────────────────────────
+
+
+
 function buildCacheKey(input: {
   name: string;
   watchlist: string[];
@@ -134,34 +477,64 @@ export async function POST(request: Request) {
       );
     }
 
-    const cacheKey = buildCacheKey({ name, watchlist, holdings, date });
+    // Always save the latest user state for the cron job to pick up tomorrow.
+    // Best-effort, fire-and-forget.
+    cacheWriteUserState({ name, watchlist, holdings, accounts, holdingsAgeDays, date }).catch(() => {});
+
+    // ─── PHASE 3 cache hierarchy ───────────────────────────────────────
+    // Tier 1: brief-full (today + holdings hash) — instant return on hit.
+    // Tier 2: layer-a (today) — fast Layer B regen using cached market data.
+    // Tier 3: full legacy generation — slow, last resort.
+    //
+    // Tier 1 and Tier 2 are skipped on fresh=true (user explicitly requested
+    // a regen via pull-to-refresh or the like).
+    const dateKey = todayDateString();
+    const hHash = holdingsHash(holdings);
+
+    // ── Tier 1: full-brief cache ──
     if (!fresh) {
-      const cachedBrief = await cacheReadBrief(cacheKey);
-      if (cachedBrief) {
-        // Cache hit — return immediately. For streaming requests, emit a
-        // single "complete" event with the full brief so the client gets
-        // the same UI flow.
-        if (wantsStream) {
-          return streamCachedBrief(cachedBrief);
-        }
-        return NextResponse.json({ brief: cachedBrief, cached: true });
+      const cachedFull = await cacheReadFullBrief(dateKey, hHash);
+      if (cachedFull) {
+        if (wantsStream) return streamCachedBrief(cachedFull);
+        return NextResponse.json({ brief: cachedFull, cached: true, tier: 1 });
       }
     }
 
-    // ─── STREAMING path ─────────────────────────────────────────────────
-    // For fresh generation, stream chunks to the client as they complete.
-    // The user sees Affirmation/Mindset arrive in ~1-2s (Haiku), then
-    // Pulse/Edge in ~10-15s, then Smart Money + Conviction in ~25-35s.
-    // No more 60-90 second blank screen.
+    // ── Tier 2: Layer A cached → fast Layer B regen ──
+    if (!fresh) {
+      const layerA = await cacheReadLayerA(dateKey);
+      if (layerA && layerA.market_pulse) {
+        // Layer A exists. Generate Layer B fast (no web search).
+        try {
+          const merged = await generateLayerB({
+            name, watchlist, holdings, accounts, holdingsAgeDays, date, layerA,
+          });
+          if (merged && Object.keys(merged).length > 0) {
+            // Cache the full merged brief for next reload
+            await cacheWriteFullBrief(dateKey, hHash, merged);
+            if (wantsStream) return streamCachedBrief(merged);
+            return NextResponse.json({ brief: merged, cached: false, tier: 2 });
+          }
+        } catch (err) {
+          console.warn("Layer B generation failed, falling through to full regen:", err);
+        }
+      }
+    }
+
+    // ── Tier 3: Full legacy generation (cache miss, no Layer A available) ──
+    // This runs on first deploy and any time cron hasn't run yet.
+
+    // Streaming path for fresh generation
     if (wantsStream) {
+      // Use legacy cache key for streaming compatibility — streaming writes
+      // to old briefCache key for backwards compat with any in-flight clients.
+      const cacheKey = buildCacheKey({ name, watchlist, holdings, date });
       return streamFreshBrief({
         name, watchlist, holdings, accounts, holdingsAgeDays, date, cacheKey,
       });
     }
 
-    // ─── Non-streaming path (legacy / cache-miss fallback) ──────────────
-    // Same Promise.allSettled flow as before. Client either uses stream OR
-    // falls back to this if streaming isn't supported.
+    // Non-streaming legacy path
     const tasks = [
       generateLightChunk(name, holdings, accounts, holdingsAgeDays, date),
       generatePulseAndEdge(name, watchlist, holdings, date),
@@ -187,11 +560,15 @@ export async function POST(request: Request) {
       );
     }
 
+    // Cache to both old and new keys for future requests
+    const cacheKey = buildCacheKey({ name, watchlist, holdings, date });
     await cacheWriteBrief(cacheKey, merged);
+    await cacheWriteFullBrief(dateKey, hHash, merged);
 
     return NextResponse.json({
       brief: merged,
       cached: false,
+      tier: 3,
       partial: failures.length > 0 ? { failedChunks: failures.length } : undefined,
     });
   } catch (err: any) {
@@ -294,8 +671,13 @@ function streamFreshBrief(opts: {
       if (Object.keys(merged).length === 0) {
         send("error", { fatal: true, message: `All chunks failed: ${failures.join("; ")}` });
       } else {
-        // Cache the merged brief for next time (writes to L1 + L2)
+        // Cache the merged brief for next time. Writes to BOTH the legacy
+        // briefCache key (for backwards compat) AND the new brief-full key
+        // (so Phase 3's Tier 1 cache hits work after a streaming generation).
         await cacheWriteBrief(cacheKey, merged);
+        const dateKey = todayDateString();
+        const hHash = holdingsHash(opts.holdings);
+        await cacheWriteFullBrief(dateKey, hHash, merged);
         send("complete", {
           brief: merged,
           cached: false,
