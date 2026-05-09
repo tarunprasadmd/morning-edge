@@ -2310,6 +2310,92 @@ export default function MorningEdge() {
         </div>
       </div>
 
+      {/* Two royal twin buttons — Generate Brief + Sync Portfolio.
+          Always visible so users can re-generate or re-sync at any time
+          without going back. Step 2 of the flow after picking a pillar. */}
+      <div className="relative px-4 pb-4">
+        <div className="grid grid-cols-2 gap-3">
+          {/* GENERATE BRIEF — deep navy → indigo gradient */}
+          <button
+            onClick={generateBrief}
+            disabled={loading}
+            className="relative rounded-2xl shadow-lg overflow-hidden text-left active:scale-[0.99] transition disabled:opacity-60"
+            style={{
+              background: "linear-gradient(160deg, #1E293B 0%, #312E81 60%, #1E1B4B 100%)",
+            }}
+          >
+            <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
+              style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-25"
+              style={{ background: "radial-gradient(circle, #818CF8 0%, transparent 60%)" }} />
+            <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
+              <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow"
+                style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
+                <Sparkles className="w-4 h-4" style={{ color: "#1E293B" }} />
+              </div>
+              <div className="flex-1">
+                <p className="text-[9px] tracking-[0.25em] uppercase font-bold leading-none mb-1"
+                  style={{ color: "#D4A574" }}>
+                  ✦ {brief ? "Refresh" : "Begin"}
+                </p>
+                <p className="text-[16px] leading-tight"
+                  style={{ fontFamily: SERIF, fontWeight: 500, color: "#F8FAFC" }}>
+                  {brief ? "Regenerate" : "Generate Brief"}
+                </p>
+                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.65)" }}>
+                  {loading ? "Reading the tape…" : brief ? "Pull fresh data" : "See today's tape"}
+                </p>
+              </div>
+            </div>
+          </button>
+
+          {/* SYNC PORTFOLIO — black & gold */}
+          <button
+            onClick={() => {
+              setShowCsvImport(!showCsvImport);
+              setTimeout(() => {
+                const el = document.querySelector("[data-csv-import-anchor]");
+                if (el && el.scrollIntoView) {
+                  el.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              }, 50);
+            }}
+            className="relative rounded-2xl shadow-lg overflow-hidden text-left active:scale-[0.99] transition"
+            style={{
+              background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
+            }}
+          >
+            <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
+              style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-25"
+              style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
+            <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
+              <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow"
+                style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
+                <Briefcase className="w-4 h-4" style={{ color: "#1E293B" }} />
+              </div>
+              <div className="flex-1">
+                <p className="text-[9px] tracking-[0.25em] uppercase font-bold leading-none mb-1"
+                  style={{ color: "#D4A574" }}>
+                  ✦ {holdings.length > 0 ? "Manage" : "Personalize"}
+                </p>
+                <p className="text-[16px] leading-tight"
+                  style={{ fontFamily: SERIF, fontWeight: 500, color: "#F8FAFC" }}>
+                  Sync Portfolio
+                </p>
+                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.65)" }}>
+                  {holdings.length > 0 ? `${holdings.length} positions` : "Connect holdings"}
+                </p>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        {/* Sync Portfolio expanded panel — visible when sync button tapped.
+            Full brokerage list and CSV upload. */}
+        {showCsvImport && <div className="mt-3">{syncPortfolioBlock}</div>}
+      </div>
+
       {/* Premium modal */}
       {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
       {routineFlowOpen && (
@@ -3736,93 +3822,10 @@ export default function MorningEdge() {
         </main>
       )}
 
-      {/* Empty state */}
+      {/* Empty state — brand promise card only. Twin buttons moved up
+          near the top so they're always visible. */}
       {!brief && !loading && (
         <div className="relative px-6 pb-16 space-y-4">
-          {/* Two royal twin buttons — Generate Brief + Sync Portfolio.
-              Equal visual weight, side-by-side. Both have icons, themed
-              colors, serif type, and gold accents. */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* GENERATE BRIEF — deep navy → indigo gradient */}
-            <button
-              onClick={generateBrief}
-              className="relative rounded-2xl shadow-lg overflow-hidden text-left active:scale-[0.99] transition"
-              style={{
-                background: "linear-gradient(160deg, #1E293B 0%, #312E81 60%, #1E1B4B 100%)",
-              }}
-            >
-              <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
-                style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-25"
-                style={{ background: "radial-gradient(circle, #818CF8 0%, transparent 60%)" }} />
-              <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
-                <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow"
-                  style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
-                  <Sparkles className="w-4 h-4" style={{ color: "#1E293B" }} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[9px] tracking-[0.25em] uppercase font-bold leading-none mb-1"
-                    style={{ color: "#D4A574" }}>
-                    ✦ Begin
-                  </p>
-                  <p className="text-[16px] leading-tight"
-                    style={{ fontFamily: SERIF, fontWeight: 500, color: "#F8FAFC" }}>
-                    Generate Brief
-                  </p>
-                  <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.65)" }}>
-                    See today's tape
-                  </p>
-                </div>
-              </div>
-            </button>
-
-            {/* SYNC PORTFOLIO — black & gold */}
-            <button
-              onClick={() => {
-                setShowCsvImport(!showCsvImport);
-                setTimeout(() => {
-                  const el = document.querySelector("[data-csv-import-anchor]");
-                  if (el && el.scrollIntoView) {
-                    el.scrollIntoView({ behavior: "smooth", block: "center" });
-                  }
-                }, 50);
-              }}
-              className="relative rounded-2xl shadow-lg overflow-hidden text-left active:scale-[0.99] transition"
-              style={{
-                background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
-              }}
-            >
-              <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
-                style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-25"
-                style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
-              <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
-                <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow"
-                  style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
-                  <Briefcase className="w-4 h-4" style={{ color: "#1E293B" }} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[9px] tracking-[0.25em] uppercase font-bold leading-none mb-1"
-                    style={{ color: "#D4A574" }}>
-                    ✦ Personalize
-                  </p>
-                  <p className="text-[16px] leading-tight"
-                    style={{ fontFamily: SERIF, fontWeight: 500, color: "#F8FAFC" }}>
-                    Sync Portfolio
-                  </p>
-                  <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.65)" }}>
-                    Connect holdings
-                  </p>
-                </div>
-              </div>
-            </button>
-          </div>
-
-          {/* Sync Portfolio expanded panel — only visible when user taps the
-              Sync Portfolio button above. Full brokerage list, CSV upload. */}
-          {showCsvImport && syncPortfolioBlock}
-
-          {/* Brand promise card */}
           <div className="rounded-3xl p-8 text-center bg-white shadow-md border border-slate-100" style={{ fontFamily: SERIF }}>
             <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-md"
               style={{ background: "linear-gradient(135deg, #1E40AF 0%, #0E7490 50%, #047857 100%)" }}>
