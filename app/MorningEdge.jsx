@@ -1786,6 +1786,14 @@ export default function MorningEdge() {
     });
     setPendingCsvUpload(null);
     setAccountLabelDraft("");
+
+    // CSV-first UX: if no brief exists yet, auto-generate one with the
+    // freshly uploaded holdings. Saves the user from sitting through one
+    // generation without holdings, then a second after upload. Wrapped in
+    // a tiny delay so React flushes the holdings state first.
+    if (!brief && !loading) {
+      setTimeout(() => generateBrief(), 100);
+    }
   };
 
   const cancelPendingCsvUpload = () => {
@@ -2382,6 +2390,20 @@ export default function MorningEdge() {
           the cached brief while the new one loads in background. */}
       {!brief && (
         <div className="relative px-6 pb-6 space-y-2">
+          {/* CSV-first UX: if user has no holdings yet, encourage them to
+              sync their portfolio first. Generating a brief without holdings
+              gives a generic market view, then they'd have to wait again
+              after upload. The Sync Portfolio card above this section is
+              the primary action; we de-emphasize Generate Brief here to
+              steer the user. */}
+          {(!holdings || holdings.length === 0) && !loading && (
+            <div className="mb-3 p-4 rounded-xl bg-amber-50 border border-amber-200 text-[14px] text-amber-900 flex gap-2 items-start">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>
+                <strong>Tip:</strong> Upload your portfolio CSV first (Sync Portfolio above) so your brief includes personalized trade ideas. Otherwise you'll get a generic market view and need to regenerate after upload.
+              </span>
+            </div>
+          )}
           <button
             onClick={generateBrief}
             disabled={loading}
