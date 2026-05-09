@@ -3879,7 +3879,74 @@ export default function MorningEdge() {
 
       {/* Empty state */}
       {!brief && !loading && (
-        <div className="relative px-6 pb-16">
+        <div className="relative px-6 pb-16 space-y-4">
+          {/* Sync Portfolio hero — empty state's primary action.
+              When there's no brief yet, this card IS the call to action.
+              Tapping it opens the CSV import panel inline. */}
+          <div className="relative rounded-2xl shadow-lg overflow-hidden" data-csv-import-anchor
+            style={{
+              background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
+            }}>
+            <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
+              style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-20"
+              style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
+            <button
+              onClick={() => setShowCsvImport(!showCsvImport)}
+              className="relative z-10 w-full text-left px-4 py-4 transition hover:bg-white/[0.03] active:bg-white/[0.06]"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
+                  <Briefcase className="w-5 h-5" style={{ color: "#1E293B" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] tracking-[0.25em] uppercase font-semibold leading-none mb-1.5"
+                    style={{ color: "#D4A574" }}>
+                    Get Started
+                  </p>
+                  <p className="text-[17px] leading-tight"
+                    style={{ fontFamily: SERIF, fontWeight: 400, color: "#F8FAFC" }}>
+                    {showCsvImport ? "Tap to close" : "Upload your portfolio"}
+                  </p>
+                </div>
+                {!showCsvImport && (
+                  <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold"
+                    style={{
+                      background: "rgba(212, 165, 116, 0.15)",
+                      color: "#D4A574",
+                      border: "1px solid rgba(212, 165, 116, 0.3)",
+                    }}>
+                    Tap to begin
+                  </span>
+                )}
+              </div>
+            </button>
+            {showCsvImport && (
+              <div className="relative z-10 px-4 pb-4 pt-2 border-t border-white/10">
+                <p className="text-[14px] text-white/80 mb-3">
+                  Export a CSV from any brokerage (Fidelity, Schwab, Robinhood, etc.) and upload it here. We never see your password — only the file you upload.
+                </p>
+                <label
+                  htmlFor="me-csv-file-input"
+                  className="block w-full py-3 rounded-xl text-center font-semibold cursor-pointer transition active:scale-[0.99]"
+                  style={{
+                    background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)",
+                    color: "#1E293B",
+                  }}
+                >
+                  Choose CSV file
+                </label>
+                {csvImportMessage && (
+                  <p className={`text-[13px] mt-2 ${csvImportMessage.type === "ok" ? "text-emerald-300" : "text-rose-300"}`}>
+                    {csvImportMessage.text}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Brand promise card */}
           <div className="rounded-3xl p-8 text-center bg-white shadow-md border border-slate-100" style={{ fontFamily: SERIF }}>
             <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-md"
               style={{ background: "linear-gradient(135deg, #1E40AF 0%, #0E7490 50%, #047857 100%)" }}>
