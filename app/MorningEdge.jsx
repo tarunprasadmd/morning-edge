@@ -1743,14 +1743,15 @@ export default function MorningEdge() {
         }
 
         // Stage the upload — user must label the account before commit
-        setPendingCsvUpload({
-          newHoldings,
-          tickers: Array.from(tickers),
-          brokerageGuess: guess,
-          fileName,
-        });
-        setAccountLabelDraft(guess || "");
-        setCsvImportMessage(null);
+       const _label = guess || "Account";
+            const _newAccountId = `acct_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+            const _newAccount = { id: _newAccountId, name: _label, brokerage: guess || "", uploadedAt: Date.now(), holdingCount: newHoldings.length };
+            const _tagged = newHoldings.map((h) => ({ ...h, accountId: _newAccountId }));
+            setAccountsState((prev) => [...prev, _newAccount]);
+            setHoldings((prev) => [...prev, ..._tagged]);
+            setHoldingsRefreshedAt(Date.now());
+            setPortfolio((prev) => Array.from(new Set([...prev, ...Array.from(tickers)])));
+            setCsvImportMessage({ type: "ok", text: `Added ${newHoldings.length} positions.` }); 
       } catch (err) {
         setCsvImportMessage({ type: "error", text: "Couldn't parse that file. Make sure it's a CSV." });
       }
