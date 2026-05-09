@@ -3758,19 +3758,31 @@ export default function MorningEdge() {
       {/* Empty state */}
       {!brief && !loading && (
         <div className="relative px-6 pb-16 space-y-4">
-          {syncPortfolioBlock}
-
-          {/* Secondary action — generate brief without portfolio.
-              Equal-weight option for users who want to see what the brief
-              looks like before committing to upload. They can always upload
-              later and regenerate. */}
+          {/* PRIMARY: Generate Brief button. The pillars (Wealth/Health/
+              Clarity) above this don't work without a brief, so this is
+              the user's clear next step. They can generate with or without
+              syncing portfolio first — Sync Portfolio is optional below. */}
           <button
             onClick={generateBrief}
-            className="w-full py-3.5 rounded-xl bg-white text-slate-700 border border-slate-200 text-[15px] font-semibold flex items-center justify-center gap-2 shadow-sm hover:bg-slate-50 transition"
+            className="w-full py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 transition shadow-lg bg-slate-900 text-white hover:bg-slate-800"
           >
-            <Sparkles className="w-4 h-4" />
-            Generate brief without portfolio
+            <Sparkles className="w-5 h-5" />
+            Generate Today's Brief
           </button>
+          <p className="text-[13px] text-slate-600 text-center px-2 -mt-1">
+            Sync your portfolio below for personalized trade ideas (optional).
+          </p>
+
+          {/* SECONDARY: Sync Portfolio block */}
+          {syncPortfolioBlock}
+
+          {/* TERTIARY: View sample brief link */}
+          <div className="text-center pt-1">
+            <button onClick={showDemo}
+              className="text-[14px] text-slate-600 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-700 transition">
+              View sample brief →
+            </button>
+          </div>
 
           {/* Brand promise card */}
           <div className="rounded-3xl p-8 text-center bg-white shadow-md border border-slate-100" style={{ fontFamily: SERIF }}>
