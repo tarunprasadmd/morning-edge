@@ -2097,11 +2097,27 @@ export default function MorningEdge() {
                 type="file"
                 accept=".csv,text/csv"
                 onChange={handleCsvUpload}
-                style={{ display: "none" }}
+                style={{
+                  position: "absolute",
+                  width: 1,
+                  height: 1,
+                  padding: 0,
+                  margin: -1,
+                  overflow: "hidden",
+                  clip: "rect(0,0,0,0)",
+                  whiteSpace: "nowrap",
+                  border: 0,
+                  opacity: 0,
+                }}
               />
               <button
                 type="button"
-                onClick={() => csvFileInputRef.current && csvFileInputRef.current.click()}
+                onClick={() => {
+                  if (csvFileInputRef.current) {
+                    csvFileInputRef.current.value = ""; // reset so same file can be re-selected
+                    csvFileInputRef.current.click();
+                  }
+                }}
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-[15px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition cursor-pointer select-none"
               >
                 <Plus className="w-3.5 h-3.5" />
