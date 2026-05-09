@@ -2133,6 +2133,31 @@ export default function MorningEdge() {
                   {csvImportMessage.text}
                 </div>
               )}
+              {accountsState.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  <p className="font-semibold text-slate-900 text-[13px]">Connected accounts</p>
+                  {accountsState.map((a) => (
+                    <div key={a.id} className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-white border border-slate-200">
+                      <div className="min-w-0 flex-1 mr-2">
+                        <div className="font-semibold text-slate-900 text-[14px] truncate">{a.name}</div>
+                        <div className="text-[12px] text-slate-500">{a.holdingCount} positions{a.brokerage ? ` · ${a.brokerage}` : ""}</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(`Remove ${a.name}?`)) {
+                            setAccountsState((prev) => prev.filter((x) => x.id !== a.id));
+                            setHoldings((prev) => prev.filter((h) => h.accountId !== a.id));
+                          }
+                        }}
+                        className="px-3 py-1.5 rounded-md text-rose-600 hover:bg-rose-50 text-[12px] font-semibold flex-shrink-0"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
               {holdings.length > 0 && (
                 <div className={`mt-2 px-3 py-2 rounded-md text-[13px] ${
                   holdingsAgeDays != null && holdingsAgeDays > 7
