@@ -2268,40 +2268,49 @@ export default function MorningEdge() {
           enriched with the user's holdings and conviction signals from today's brief. */}
       <TickerTape userHoldings={holdings} brief={brief} accounts={accountsState} />
 
-      {/* Filter pillars (now actual buttons) */}
-      <div className="relative px-4 pb-4">
-        <div className="grid grid-cols-4 gap-2">
-          <FilterPill
-            active={filter === "all"}
-            onClick={() => setFilter("all")}
-            icon={<LayoutGrid className="w-4 h-4" />}
-            label="All"
-            accent={{ bg: "bg-slate-900", text: "text-white", ring: "ring-slate-300", dot: "bg-slate-400" }}
-          />
-          <FilterPill
-            active={filter === "wealth"}
-            onClick={() => setFilter("wealth")}
-            icon={<TrendingUp className="w-4 h-4" />}
-            label="Wealth"
-            accent={{ bg: "bg-amber-600", text: "text-white", ring: "ring-amber-200", dot: "bg-amber-500" }}
-          />
-          <FilterPill
-            active={filter === "health"}
-            onClick={() => setFilter("health")}
-            icon={<Heart className="w-4 h-4" />}
-            label="Health"
-            accent={{ bg: "bg-emerald-600", text: "text-white", ring: "ring-emerald-200", dot: "bg-emerald-500" }}
-          />
-          <FilterPill
-            active={filter === "clarity"}
-            onClick={() => setFilter("clarity")}
-            icon={<Sparkles className="w-4 h-4" />}
-            label="Clarity"
-            accent={{ bg: "bg-indigo-600", text: "text-white", ring: "ring-indigo-200", dot: "bg-indigo-500" }}
-          />
+      {/* Filter pillars — only visible when a brief exists. They do nothing
+          without a brief, so showing them in empty state was dead UI.
+          Once a brief loads, they appear with weight as proper "pillars". */}
+      {brief && (
+        <div className="relative px-4 pb-4">
+          <div className="text-center mb-3">
+            <span className="inline-block px-3 py-1 text-[10px] tracking-[0.3em] uppercase font-bold"
+              style={{ color: "#92400e", borderTop: "1px solid rgba(212,165,116,0.4)", borderBottom: "1px solid rgba(212,165,116,0.4)" }}>
+              ✦ Choose Your Pillar ✦
+            </span>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            <FilterPill
+              active={filter === "all"}
+              onClick={() => setFilter("all")}
+              icon={<LayoutGrid className="w-4 h-4" />}
+              label="All Pillars"
+              accent={{ bg: "bg-slate-900", text: "text-white", ring: "ring-slate-300", dot: "bg-slate-400" }}
+            />
+            <FilterPill
+              active={filter === "wealth"}
+              onClick={() => setFilter("wealth")}
+              icon={<TrendingUp className="w-4 h-4" />}
+              label="Wealth Pillar"
+              accent={{ bg: "bg-amber-600", text: "text-white", ring: "ring-amber-200", dot: "bg-amber-500" }}
+            />
+            <FilterPill
+              active={filter === "health"}
+              onClick={() => setFilter("health")}
+              icon={<Heart className="w-4 h-4" />}
+              label="Health Pillar"
+              accent={{ bg: "bg-emerald-600", text: "text-white", ring: "ring-emerald-200", dot: "bg-emerald-500" }}
+            />
+            <FilterPill
+              active={filter === "clarity"}
+              onClick={() => setFilter("clarity")}
+              icon={<Sparkles className="w-4 h-4" />}
+              label="Clarity Pillar"
+              accent={{ bg: "bg-indigo-600", text: "text-white", ring: "ring-indigo-200", dot: "bg-indigo-500" }}
+            />
+          </div>
         </div>
-        <p className="text-[12px] text-slate-700 mt-2 italic text-center">Tap a pillar to focus your view.</p>
-      </div>
+      )}
 
       {/* Premium modal */}
       {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
@@ -3758,31 +3767,88 @@ export default function MorningEdge() {
       {/* Empty state */}
       {!brief && !loading && (
         <div className="relative px-6 pb-16 space-y-4">
-          {/* PRIMARY: Generate Brief button. The pillars (Wealth/Health/
-              Clarity) above this don't work without a brief, so this is
-              the user's clear next step. They can generate with or without
-              syncing portfolio first — Sync Portfolio is optional below. */}
-          <button
-            onClick={generateBrief}
-            className="w-full py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 transition shadow-lg bg-slate-900 text-white hover:bg-slate-800"
-          >
-            <Sparkles className="w-5 h-5" />
-            Generate Today's Brief
-          </button>
-          <p className="text-[13px] text-slate-600 text-center px-2 -mt-1">
-            Sync your portfolio below for personalized trade ideas (optional).
-          </p>
+          {/* Two royal twin buttons — Generate Brief + Sync Portfolio.
+              Equal visual weight, side-by-side. Both have icons, themed
+              colors, serif type, and gold accents. */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* GENERATE BRIEF — deep navy → indigo gradient */}
+            <button
+              onClick={generateBrief}
+              className="relative rounded-2xl shadow-lg overflow-hidden text-left active:scale-[0.99] transition"
+              style={{
+                background: "linear-gradient(160deg, #1E293B 0%, #312E81 60%, #1E1B4B 100%)",
+              }}
+            >
+              <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
+                style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-25"
+                style={{ background: "radial-gradient(circle, #818CF8 0%, transparent 60%)" }} />
+              <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
+                <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow"
+                  style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
+                  <Sparkles className="w-4 h-4" style={{ color: "#1E293B" }} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[9px] tracking-[0.25em] uppercase font-bold leading-none mb-1"
+                    style={{ color: "#D4A574" }}>
+                    ✦ Begin
+                  </p>
+                  <p className="text-[16px] leading-tight"
+                    style={{ fontFamily: SERIF, fontWeight: 500, color: "#F8FAFC" }}>
+                    Generate Brief
+                  </p>
+                  <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.65)" }}>
+                    See today's tape
+                  </p>
+                </div>
+              </div>
+            </button>
 
-          {/* SECONDARY: Sync Portfolio block */}
-          {syncPortfolioBlock}
-
-          {/* TERTIARY: View sample brief link */}
-          <div className="text-center pt-1">
-            <button onClick={showDemo}
-              className="text-[14px] text-slate-600 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-700 transition">
-              View sample brief →
+            {/* SYNC PORTFOLIO — black & gold */}
+            <button
+              onClick={() => {
+                setShowCsvImport(!showCsvImport);
+                setTimeout(() => {
+                  const el = document.querySelector("[data-csv-import-anchor]");
+                  if (el && el.scrollIntoView) {
+                    el.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }
+                }, 50);
+              }}
+              className="relative rounded-2xl shadow-lg overflow-hidden text-left active:scale-[0.99] transition"
+              style={{
+                background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
+              }}
+            >
+              <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
+                style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-25"
+                style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
+              <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
+                <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow"
+                  style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
+                  <Briefcase className="w-4 h-4" style={{ color: "#1E293B" }} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[9px] tracking-[0.25em] uppercase font-bold leading-none mb-1"
+                    style={{ color: "#D4A574" }}>
+                    ✦ Personalize
+                  </p>
+                  <p className="text-[16px] leading-tight"
+                    style={{ fontFamily: SERIF, fontWeight: 500, color: "#F8FAFC" }}>
+                    Sync Portfolio
+                  </p>
+                  <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.65)" }}>
+                    Connect holdings
+                  </p>
+                </div>
+              </div>
             </button>
           </div>
+
+          {/* Sync Portfolio expanded panel — only visible when user taps the
+              Sync Portfolio button above. Full brokerage list, CSV upload. */}
+          {showCsvImport && syncPortfolioBlock}
 
           {/* Brand promise card */}
           <div className="rounded-3xl p-8 text-center bg-white shadow-md border border-slate-100" style={{ fontFamily: SERIF }}>
