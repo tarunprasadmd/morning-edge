@@ -1558,7 +1558,7 @@ export default function MorningEdge() {
 
   const showDemo = () => { setError(null); setBrief(buildDemoBrief(name, portfolio, holdings)); };
 
-  const shareBrief = async () => {
+  const shareBrief = async () => {     if (!brief) {       try {         if (navigator.share) {           await navigator.share({ title: "Morning Edge", text: "Check out Morning Edge — daily market brief, smart money flow, and decision playbook.", url: "https://morning-edge-rho.vercel.app" });         } else if (navigator.clipboard && navigator.clipboard.writeText) {           await navigator.clipboard.writeText("https://morning-edge-rho.vercel.app");           setError("Link copied to clipboard.");           setTimeout(() => setError(null), 2500);         }       } catch (e) {}       return;     }
     
     const lines = [
       `☀️ Morning Edge — ${today}`,
