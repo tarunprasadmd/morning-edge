@@ -1854,7 +1854,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         <div className="relative z-10 px-6 pt-16 pb-12 flex flex-col items-center max-w-md mx-auto">
           {/* Branded mark */}
           <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-2xl mb-5 animate-pulse"
-            style={{ background: "linear-gradient(135deg, #1E40AF 0%, #0F172A 50%, #0F172A 100%)" }}>
+            style={{ background: "linear-gradient(135deg, #0F172A 0%, #0F172A 50%, #0F172A 100%)" }}>
             <span className="text-white text-3xl font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic" }}>ME</span>
           </div>
           <p className="text-[14px] uppercase tracking-[0.3em] text-white/95 font-bold mb-2 drop-shadow-md">Morning Edge</p>
@@ -1879,7 +1879,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         <MountainScene />
         <div className="relative z-10 px-6 pt-16 pb-12 flex flex-col items-center max-w-md mx-auto">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl mb-5"
-            style={{ background: "linear-gradient(135deg, #1E40AF 0%, #0F172A 50%, #0F172A 100%)" }}>
+            style={{ background: "linear-gradient(135deg, #0F172A 0%, #0F172A 50%, #0F172A 100%)" }}>
             <span className="text-white text-2xl font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic" }}>ME</span>
           </div>
           <p className="text-base font-bold text-slate-900 tracking-wide mb-1" style={{ fontFamily: SERIF }}>Morning Edge</p>
@@ -2206,7 +2206,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         <div className="flex items-start justify-between mb-7">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg"
-              style={{ background: "linear-gradient(135deg, #1E40AF 0%, #0F172A 60%, #0F172A 100%)" }}>
+              style={{ background: "linear-gradient(135deg, #0F172A 0%, #0F172A 60%, #0F172A 100%)" }}>
               <span className="text-white text-base font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic" }}>ME</span>
             </div>
             <div>
@@ -3862,7 +3862,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         <div className="relative px-6 pb-16 space-y-4">
           <div className="rounded-3xl p-8 text-center bg-white shadow-md border border-slate-100" style={{ fontFamily: SERIF }}>
             <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-md"
-              style={{ background: "linear-gradient(135deg, #1E40AF 0%, #0F172A 50%, #0F172A 100%)" }}>
+              style={{ background: "linear-gradient(135deg, #0F172A 0%, #0F172A 50%, #0F172A 100%)" }}>
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <p className="text-2xl leading-snug text-slate-800 mb-2">Slow rhythm. <span className="italic">Sharp moves.</span></p>
