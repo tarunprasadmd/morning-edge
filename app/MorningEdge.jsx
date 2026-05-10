@@ -2210,10 +2210,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               <span className="text-white text-base font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic", color: "#F5D08C" }}>ME</span>
             </div>
             <div>
-              <p className="text-base font-bold text-slate-900 tracking-wide leading-tight" style={{ fontFamily: SERIF }}>Morning Edge</p>
-              <p className="text-[12px] tracking-[0.25em] uppercase font-semibold text-slate-700">by T-SPOT</p>
-            </div>
-          </div>
+              <p className="text-base font-bold text-slate-900 tracking-wide leading-tight" style={{ fontFamily: SERIF }}>Morning Edge</
           <div className="flex gap-2">
             {true && (
               <button onClick={shareBrief}
