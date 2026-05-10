@@ -1559,7 +1559,7 @@ export default function MorningEdge() {
   const showDemo = () => { setError(null); setBrief(buildDemoBrief(name, portfolio, holdings)); };
 
   const shareBrief = async () => {
-    if (!brief) return;
+    
     const lines = [
       `☀️ Morning Edge — ${today}`,
       "",
