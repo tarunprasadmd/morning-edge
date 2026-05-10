@@ -1007,7 +1007,7 @@ CRITICAL DATA RULES:
 - If you genuinely cannot find 3 real trades for a category after searching, return whatever you have (1, 2, or 0). Empty array is fine if no data exists.
 - Empty arrays are acceptable; placeholder strings or padding-with-news are NEVER acceptable.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 8000, maxSearches: 4 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 5000, maxSearches: 2 });
 }
 
 // Chunk 3b: Conviction watch + opportunity watch — runs in parallel with
