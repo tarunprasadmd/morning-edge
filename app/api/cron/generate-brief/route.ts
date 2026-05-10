@@ -14,7 +14,7 @@
 
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { Redis } from "@upstash/redis";
+import { Redis } from "@upstash/redis"; import crypto from "crypto";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -53,7 +53,7 @@ function holdingsHash(holdings: any[]): string {
     h = ((h << 5) - h) + fp.charCodeAt(i);
     h = h & h;
   }
-  return Math.abs(h).toString(36);
+  return crypto.createHash("sha256").update(fp).digest("hex").slice(0, 16);
 }
 
 // Cron-side helpers — use the @anthropic-ai/sdk to call into the same
