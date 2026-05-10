@@ -1855,7 +1855,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {/* Branded mark */}
           <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-2xl mb-5 animate-pulse"
             style={{ background: "linear-gradient(135deg, #0F172A 0%, #0F172A 50%, #0F172A 100%)" }}>
-            <span className="text-white text-3xl font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic" }}>ME</span>
+            <span className="text-white text-3xl font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic", color: "#F5D08C" }}>ME</span>
           </div>
           <p className="text-[14px] uppercase tracking-[0.3em] text-white/95 font-bold mb-2 drop-shadow-md">Morning Edge</p>
           <p className="text-[13px] text-white/85 italic mb-8 drop-shadow">By T-Spot</p>
@@ -1880,7 +1880,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         <div className="relative z-10 px-6 pt-16 pb-12 flex flex-col items-center max-w-md mx-auto">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl mb-5"
             style={{ background: "linear-gradient(135deg, #0F172A 0%, #0F172A 50%, #0F172A 100%)" }}>
-            <span className="text-white text-2xl font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic" }}>ME</span>
+            <span className="text-white text-2xl font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic", color: "#F5D08C" }}>ME</span>
           </div>
           <p className="text-base font-bold text-slate-900 tracking-wide mb-1" style={{ fontFamily: SERIF }}>Morning Edge</p>
           <p className="text-[13px] tracking-[0.25em] uppercase font-semibold text-slate-700 mb-8">by T-SPOT</p>
@@ -2207,7 +2207,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg"
               style={{ background: "linear-gradient(135deg, #0F172A 0%, #0F172A 60%, #0F172A 100%)" }}>
-              <span className="text-white text-base font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic" }}>ME</span>
+              <span className="text-white text-base font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic", color: "#F5D08C" }}>ME</span>
             </div>
             <div>
               <p className="text-base font-bold text-slate-900 tracking-wide leading-tight" style={{ fontFamily: SERIF }}>Morning Edge</p>
