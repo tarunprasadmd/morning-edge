@@ -1505,7 +1505,7 @@ export default function MorningEdge() {
     const onTouchStart = (e) => {
       if (window.scrollY > 0) return;
       if (loading) return;
-      if (!brief) return; // Only enable pull-to-refresh once a brief is present
+       // Only enable pull-to-refresh once a brief is present
       startY = e.touches && e.touches[0] ? e.touches[0].clientY : null;
       pulling = false;
     };
@@ -2215,7 +2215,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             </div>
           </div>
           <div className="flex gap-2">
-            {brief && (
+            {true && (
               <button onClick={shareBrief}
                 className="p-2.5 rounded-full bg-white border border-slate-200 shadow-md transition active:scale-90 active:bg-slate-100 hover:bg-slate-50"
                 aria-label="Share">
