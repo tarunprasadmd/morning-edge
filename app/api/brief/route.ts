@@ -418,7 +418,7 @@ CRITICAL DATA RULES:
 - NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD".
 - Empty arrays are acceptable; placeholder strings are NEVER acceptable.`;
 
-  return callJsonChunk(prompt, { search: false, maxTokens: 12000, model: "claude-sonnet-4-5" });
+  return callJsonChunk(prompt, { search: false, maxTokens: 7000, model: "claude-sonnet-4-5" });
 }
 
 // Combined Layer B execution — runs all user-specific chunks in parallel,
