@@ -1642,8 +1642,8 @@ export default function MorningEdge() {
     await Store.del("me-user");
     await Store.del("me-progress");
     await Store.del("me-holdings");
-    await Store.del("me-briefs");
-    setName(""); setPortfolio([]); setHoldings([]); setHoldingsRefreshedAt(null);
+    await Store.del("me-briefs"); await Store.del("me-accounts");
+    setName(""); setPortfolio([]); setHoldings([]); setAccountsState([]); setHoldingsRefreshedAt(null);
     setBrief(null); setCompletedDecisions({}); setRoutineDays({});
     setTempName(""); setTempPortfolio([]);
     setShowSettings(false); setPhase("onboard-1");
