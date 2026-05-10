@@ -295,7 +295,7 @@ radar_candidates: 8-10 high-conviction thematic stocks across the user's themes 
 
 PRIMARY DECISION INPUT: This is the user's main source for "what's moving in markets today". Filler hurts trust.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 6000, maxSearches: 3 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 4500, maxSearches: 2 });
 }
 
 // ─── Layer B: user-specific chunks generated from Layer A context ─────
