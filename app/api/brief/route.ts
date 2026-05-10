@@ -1065,7 +1065,7 @@ CRITICAL DATA RULES:
 - NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD", or any all-caps placeholder.
 - Empty arrays are acceptable; placeholder strings are NEVER acceptable.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 12000, maxSearches: 3 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 8000, maxSearches: 2 });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────
