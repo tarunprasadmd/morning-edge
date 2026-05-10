@@ -1575,7 +1575,7 @@ export default function MorningEdge() {
     const text = lines.join("\n");
     try {
       if (navigator.share) {
-        await navigator.share({ title: "Morning Edge — Today's Brief", text });
+        await navigator.share({ title: "Morning Edge — Today's Brief", text, url: "https://morning-edge-rho.vercel.app" });
       } else if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(text);
         setError("Brief copied to clipboard.");
