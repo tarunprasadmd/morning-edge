@@ -1855,10 +1855,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {/* Branded mark */}
           <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-2xl mb-5 animate-pulse"
             style={{ background: "linear-gradient(135deg, #0F172A 0%, #0F172A 50%, #0F172A 100%)" }}>
-            <span className="text-white text-3xl font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic", color: "#F5D08C" }}>ME</span>
+            <span className="text-white text-3xl font-bold tracking-tight" style={{ fontFamily: SERIF, fontStyle: "italic", color: "#FFD580" }}>ME</span>
           </div>
           <p className="text-[14px] uppercase tracking-[0.3em] text-white/95 font-bold mb-2 drop-shadow-md">Morning Edge</p>
-          <p className="text-[13px] text-white/85 italic mb-8 drop-shadow">By T-Spot</p>
+          
           {/* Loading status — explicit, never blank */}
           <div className="flex items-center gap-2 text-white/90 text-[14px]">
             <RefreshCw className="w-4 h-4 animate-spin" strokeWidth={2.5} />
@@ -3862,7 +3862,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         <div className="relative px-6 pb-16 space-y-4">
           <div className="rounded-3xl p-8 text-center bg-white shadow-md border border-slate-100" style={{ fontFamily: SERIF }}>
             <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-md"
-              style={{ background: "linear-gradient(135deg, #0F172A 0%, #0F172A 50%, #0F172A 100%)" }}>
+              style={{ background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)" }}>
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <p className="text-2xl leading-snug text-slate-800 mb-2">Slow rhythm. <span className="italic">Sharp moves.</span></p>
