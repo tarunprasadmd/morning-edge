@@ -2211,7 +2211,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             </div>
             <div>
               <p className="text-base font-bold text-slate-900 tracking-wide leading-tight" style={{ fontFamily: SERIF }}>Morning Edge</p>
-              <p className="text-[12px] tracking-[0.25em] uppercase font-semibold text-slate-700">by T-SPOT</p>
+              <p className="text-[12px] tracking-[0.25em] uppercase font-semibold text-slate-700">by T<span style={{opacity:0.55}}>RADE</span>SPOT</p>
             </div>
           </div>
           <div className="flex gap-2">
