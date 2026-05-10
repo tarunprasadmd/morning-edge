@@ -957,7 +957,7 @@ radar_watch: 4-6 high-conviction thematic stocks the user does NOT own. QUALITY 
 
 PRIMARY DECISION INPUT: This brief is the user's main source for "what to do today" — what to buy, hold, trim, or watch. Filler content hurts trust. Only include items where you have a clear, defensible take backed by today's data. If a category has nothing genuinely high-conviction to say, return fewer items rather than padding.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 3200, maxSearches: 3 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 2800, maxSearches: 2 });
 }
 
 // Chunk 3a: Smart money ONLY (whale 13Fs + congress STOCK Act + hedge fund moves).
