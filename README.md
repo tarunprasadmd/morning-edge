@@ -1,119 +1,53 @@
-# Morning Edge — Deployment Guide
+# Morning Edge
 
-A Next.js 14 app — your daily personalized market intelligence + mindset brief.
+A personal markets and wellness companion. Daily AI-generated market briefs, portfolio insights, and mindful check-ins — a calmer way to start each investing day.
 
-## What's in v1
+**Live:** https://morning-edge-rho.vercel.app
 
-- **Health filter** — 10-min vitality routine generated daily (mobility / breathwork / strength / stretch)
-- **Wealth filter** — Market pulse + smart money + conviction watch + CSV portfolio import (Fidelity, Schwab, Robinhood, Webull, E*Trade, Vanguard)
-- **Clarity filter** — Universal-wisdom affirmations (Stoic, Buddhist, Vedantic, Sufi, indigenous, secular humanist — never religion-specific)
-- **Server-side Anthropic API** — your key stays on server, never exposed to browser
-- **Per-user persistence** — name + watchlist saved on device
+## What it is
 
-## File structure
+Morning Edge is a daily ritual for disciplined investors. Built by a 20-year senior clinical healthcare professional, the app treats investing as a whole-person practice — three pillars: Wealth, Health, Clarity.
 
-```
-morning-edge-nextjs/
-├── app/
-│   ├── api/brief/route.ts    ← Server route (Anthropic key stays server-side)
-│   ├── MorningEdge.jsx       ← Main component
-│   ├── page.tsx              ← Page entry
-│   ├── layout.tsx            ← Root layout + PWA meta
-│   └── globals.css           ← Tailwind base
-├── package.json
-├── next.config.js · tsconfig.json · tailwind.config.js · postcss.config.js
-├── .env.example · .gitignore
-└── README.md (this file)
-```
+- AI-generated market briefs personalized to your portfolio
+- Fidelity CSV upload — portfolio data stays on your device
+- No accounts, no tracking, no FOMO
+- A morning ritual, not market noise
 
----
+## Mission
 
-## Step 1 — Test locally (5 min)
+A portion of proceeds from Morning Edge supports U.S. charities helping children and adults with disabilities, and the families who care for them. The bronze medallion at the heart of the app is a relief of the founder's father holding his sister, who lives with disabilities. She is the reason this app exists.
 
-```bash
-cd morning-edge-nextjs
-npm install
-cp .env.example .env.local
-# Edit .env.local and paste your real Anthropic key
-npm run dev
-```
+## Status
 
-Open `http://localhost:3000`. Onboard, generate a brief — should hit the live API.
+Currently a Progressive Web App deployed on Vercel. Preparing for iOS App Store submission via Capacitor wrapper.
 
-Get your API key at: **https://console.anthropic.com/settings/keys**
+Roadmap documents in this repo:
+- `app-store-assets.md` — marketing copy for App Store listing
+- `icon-design-brief.md` — app icon design brief
+- `capacitor-setup-plan.md` — iOS wrapper setup playbook
+- `app-store-submission-checklist.md` — final submission checklist
 
----
+## Tech stack
 
-## Step 2 — Push to GitHub (5 min)
+- Next.js 14 (App Router)
+- React 18
+- Tailwind CSS
+- Anthropic Claude API (for AI brief generation)
+- Vercel (hosting)
+- Capacitor (planned for iOS wrapper)
 
-```bash
-cd morning-edge-nextjs
-git init
-git add .
-git commit -m "v1 — Morning Edge"
-```
+## Pages
 
-On github.com, create a new private repo called `morning-edge`, then:
+- `/` — Main dashboard
+- `/about` — Founder story and mission
+- `/privacy` — Privacy Policy
+- `/terms` — Terms of Service
+- `/support` — Support contact and FAQ
 
-```bash
-git remote add origin https://github.com/YOUR-USERNAME/morning-edge.git
-git branch -M main
-git push -u origin main
-```
+## Founder
 
----
+Tarun Prasad, MBBS — clinical specialist with two decades of healthcare experience.
 
-## Step 3 — Deploy on Vercel (5 min)
+## License
 
-1. Go to **https://vercel.com/new**
-2. Import the `morning-edge` repo
-3. Framework: **Next.js** (auto-detected)
-4. Expand **Environment Variables** and add:
-   - Name: `ANTHROPIC_API_KEY`
-   - Value: your `sk-ant-...` key
-5. Click **Deploy**
-
-Live URL in ~2 minutes.
-
----
-
-## Step 4 — Connect Porkbun domain
-
-1. Vercel → your project → **Settings → Domains** → add domain
-2. Vercel shows DNS records to set
-3. At Porkbun → **Details** on your domain → DNS → add the records Vercel showed
-4. Wait 5-30 min for DNS to propagate, then HTTPS auto-provisions
-
----
-
-## Step 5 — Install on home screen (PWA)
-
-iPhone Safari: Share → "Add to Home Screen"
-Android Chrome: menu → "Install app"
-
----
-
-## Updates after launch
-
-1. Edit code locally
-2. `git add . && git commit -m "your change" && git push`
-3. Vercel auto-deploys in ~60 seconds
-4. Live users see new version on next refresh
-
----
-
-## Roadmap
-
-- **Week 2:** Stock ticker tape, landing page with email signup
-- **Week 3:** Scheduled email brief at 6am
-- **Week 4:** Stripe + Edge tier ($9/mo)
-- **Month 2:** Push notifications
-- **Month 3+:** Native iOS/Android wrapper for alarm integration
-
----
-
-## Costs
-
-- Vercel: $0 (Hobby tier)
-- Anthropic: ~$0.01-0.03 per brief
-- Domain: ~$12/yr
+© 2026 Tarun Prasad. All rights reserved.
