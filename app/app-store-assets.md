@@ -12,10 +12,10 @@ Briefs for disciplined traders
 Daily AI market briefs, portfolio insights, and mindful check-ins — a calmer way to start each investing day. Built by a 20-year senior clinical healthcare professional.
 
 ## Full Description (4000 char max — draft TBD)
-[To be drafted next session]
+markets,portfolio,investing,AI,wellness,mindful,daily,stocks,finance,wealth,focus,clarity,ritual
 
 ## Keywords (100 char max, comma-separated, no spaces)
-[To be drafted next session]
+markets,portfolio,investing,AI,wellness,mindful,daily,stocks,finance,wealth,focus,clarity,ritual
 
 ## Categories
 - Primary: Finance
