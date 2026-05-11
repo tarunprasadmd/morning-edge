@@ -6440,7 +6440,7 @@ function SignatureFooter({ verified, hash, compact }) {
     <footer className={compact ? "pt-6 text-center" : "pt-8 text-center"}>
       {!compact && (
         <p className="text-[15px] text-slate-700 max-w-md mx-auto leading-relaxed px-4">
-          Informational only. Not investment, medical, or financial advice. Your data stays on your device.
+          Informational and educational use only. Not investment, financial, tax, or medical advice. Consult a licensed financial advisor or healthcare professional before making decisions. Past performance does not guarantee future results. AI-generated content may be inaccurate — verify before acting. Your data stays on your device. Your data stays on your device.
         </p>
       )}
 
