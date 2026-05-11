@@ -229,7 +229,7 @@ function extractLayerAFromBrief(brief: any): any | null {
     };
   }
   // Only return if we got at least the core market_pulse
-  return slice.market_pulse ? slice : null;
+  return (slice.market_pulse && slice.smart_money) ? slice : null;
 }
 
 // ─── End Layer A/B helpers ─────────────────────────────────────────────
@@ -524,7 +524,7 @@ export async function POST(request: Request) {
     // ── Tier 1: full-brief cache ──
     if (!fresh) {
       const cachedFull = await cacheReadFullBrief(dateKey, hHash);
-      if (cachedFull) {
+      if (cachedFull && cachedFull.smart_money) {
         if (wantsStream) return streamCachedBrief(cachedFull);
         return NextResponse.json({ brief: cachedFull, cached: true, tier: 1 });
       }
@@ -533,7 +533,7 @@ export async function POST(request: Request) {
     // ── Tier 2: Layer A cached → fast Layer B regen ──
     if (!fresh) {
       const layerA = await cacheReadLayerA(dateKey);
-      if (layerA && layerA.market_pulse) {
+      if (layerA && layerA.market_pulse && layerA.smart_money) {
         // Layer A exists. Generate Layer B fast (no web search).
         try {
           const merged = await generateLayerB({
