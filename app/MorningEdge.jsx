@@ -6449,7 +6449,7 @@ function SignatureFooter({ verified, hash, compact }) {
           section is a bronze relief of the founder's father holding his
           sister, who lives with disabilities. The reason the app exists. */}
       {!compact && (
-        <div className="mt-6 mx-4 px-5 py-6 rounded-2xl border max-w-md mx-auto"
+        <div className="hidden"
           style={{
             background: "linear-gradient(135deg, #faf6ee 0%, #f4ede4 60%, #efe4d0 100%)",
             borderColor: "#e8dfca",
