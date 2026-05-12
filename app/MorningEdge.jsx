@@ -3479,7 +3479,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 {/* Three boxed sub-sections — Whales, Congress, Hedge Funds */}
                 <div className="space-y-3">
                   {/* Whales (institutional 13F filings) */}
-                  <div className="rounded-xl border-2 border-amber-200 bg-gradient-to-b from-white/80 to-white/30 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_3px_8px_-2px_rgba(0,0,0,0.07)] p-3.5">
+                  <div className="rounded-xl border-2 border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_8%,#fefefe_18%,#f9f9f9_55%,#fef3c7_100%)] shadow-[inset_0_1.5px_0_rgba(255,255,255,1),inset_0_-2px_4px_rgba(120,53,15,0.08),0_4px_12px_-2px_rgba(0,0,0,0.1)] p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
                       <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
@@ -3504,7 +3504,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   </div>
 
                   {/* Congress (STOCK Act disclosures) */}
-                  <div className="rounded-xl border-2 border-amber-200 bg-gradient-to-b from-white/80 to-white/30 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_3px_8px_-2px_rgba(0,0,0,0.07)] p-3.5">
+                  <div className="rounded-xl border-2 border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_8%,#fefefe_18%,#f9f9f9_55%,#fef3c7_100%)] shadow-[inset_0_1.5px_0_rgba(255,255,255,1),inset_0_-2px_4px_rgba(120,53,15,0.08),0_4px_12px_-2px_rgba(0,0,0,0.1)] p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
                       <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
@@ -3529,7 +3529,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   </div>
 
                   {/* Hedge Funds — always render so users see the section is intentional */}
-                  <div className="rounded-xl border-2 border-amber-200 bg-gradient-to-b from-white/80 to-white/30 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_3px_8px_-2px_rgba(0,0,0,0.07)] p-3.5">
+                  <div className="rounded-xl border-2 border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_8%,#fefefe_18%,#f9f9f9_55%,#fef3c7_100%)] shadow-[inset_0_1.5px_0_rgba(255,255,255,1),inset_0_-2px_4px_rgba(120,53,15,0.08),0_4px_12px_-2px_rgba(0,0,0,0.1)] p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
                       <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
