@@ -8,11 +8,14 @@
 // renders a polite "Chart data unavailable" message gracefully.
 
 import { NextResponse } from "next/server";
-import yahooFinance from "yahoo-finance2";
+import YahooFinance from "yahoo-finance2";
 
 export const runtime = "nodejs";
 export const maxDuration = 15;
 export const dynamic = "force-dynamic";
+
+// yahoo-finance2 v3 requires instantiation (changed from v2 singleton)
+const yahooFinance: any = new (YahooFinance as any)();
 
 interface HistoryPoint {
   t: number; // unix-ms timestamp
