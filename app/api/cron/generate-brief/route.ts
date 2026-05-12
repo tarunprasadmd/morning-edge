@@ -420,7 +420,7 @@ export async function GET(request: Request) {
   // Cache the full brief keyed by today + holdings hash
   const hHash = holdingsHash(holdings);
   try {
-    if (merged.smart_money) await redis.set(`brief-full:${dateKey}:${hHash}`, merged, { ex: FULL_BRIEF_TTL_SECONDS });
+    if (merged.smart_money && (merged.smart_money.whale_moves?.length || merged.smart_money.congress_moves?.length || merged.smart_money.hedge_fund_moves?.length)) await redis.set(`brief-full:${dateKey}:${hHash}`, merged, { ex: FULL_BRIEF_TTL_SECONDS });
   } catch (err) {
     console.warn("Cron: failed to write brief-full:", err);
   }
