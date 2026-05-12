@@ -5746,7 +5746,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
             className="w-full py-3 rounded-xl font-bold text-[15px] tracking-wide transition active:scale-[0.98] flex items-center justify-center gap-2 text-white"
             style={{
               background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
-              boxShadow: "0 4px 12px -2px rgba(99,102,241,0.4)",
+              boxShadow: "0 6px 18px -3px rgba(67,56,202,0.55), inset 0 1px 0 rgba(255,255,255,0.25)", border: "2px solid #4338CA",
             }}
           >
             <Sparkles className="w-4 h-4" strokeWidth={2.5} />
@@ -6243,7 +6243,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
               className="w-full py-3 rounded-xl font-bold text-[15px] tracking-wide transition active:scale-[0.98] flex items-center justify-center gap-2 text-white"
               style={{
                 background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
-                boxShadow: "0 4px 12px -2px rgba(99,102,241,0.4)",
+                boxShadow: "0 6px 18px -3px rgba(67,56,202,0.55), inset 0 1px 0 rgba(255,255,255,0.25)", border: "2px solid #4338CA",
               }}
             >
               <Sparkles className="w-4 h-4" strokeWidth={2.5} />
