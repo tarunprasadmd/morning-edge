@@ -524,7 +524,7 @@ export async function POST(request: Request) {
     // ── Tier 1: full-brief cache ──
     if (!fresh) {
       const cachedFull = await cacheReadFullBrief(dateKey, hHash);
-      if (cachedFull && cachedFull.smart_money) {
+      if (cachedFull && cachedFull.smart_money && (cachedFull.smart_money.whale_moves?.length || cachedFull.smart_money.congress_moves?.length || cachedFull.smart_money.hedge_fund_moves?.length)) {
         if (wantsStream) return streamCachedBrief(cachedFull);
         return NextResponse.json({ brief: cachedFull, cached: true, tier: 1 });
       }
@@ -533,7 +533,7 @@ export async function POST(request: Request) {
     // ── Tier 2: Layer A cached → fast Layer B regen ──
     if (!fresh) {
       const layerA = await cacheReadLayerA(dateKey);
-      if (layerA && layerA.market_pulse && layerA.smart_money) {
+      if (layerA && layerA.market_pulse && layerA.smart_money && (layerA.smart_money.whale_moves?.length || layerA.smart_money.congress_moves?.length || layerA.smart_money.hedge_fund_moves?.length)) {
         // Layer A exists. Generate Layer B fast (no web search).
         try {
           const merged = await generateLayerB({
