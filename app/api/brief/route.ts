@@ -50,14 +50,14 @@ try {
 async function cacheReadBrief(cacheKey: string): Promise<any | null> {
   // L1 — in-memory Map
   const memHit = briefCache.get(cacheKey);
-  if (memHit && Date.now() - memHit.storedAt < CACHE_TTL_MS) {
+  if (memHit && Date.now() - memHit.storedAt < CACHE_TTL_MS && memHit.brief?.smart_money && (memHit.brief.smart_money.whale_moves?.length || memHit.brief.smart_money.congress_moves?.length || memHit.brief.smart_money.hedge_fund_moves?.length)) {
     return memHit.brief;
   }
   // L2 — Upstash Redis (skip if not configured)
   if (!redis) return null;
   try {
     const kvHit = await redis.get<any>(`brief:${cacheKey}`);
-    if (kvHit && kvHit.brief) {
+    if (kvHit && kvHit.brief && kvHit.brief.smart_money && (kvHit.brief.smart_money.whale_moves?.length || kvHit.brief.smart_money.congress_moves?.length || kvHit.brief.smart_money.hedge_fund_moves?.length)) {
       // Populate L1 so subsequent reads on this warm worker are fast
       briefCache.set(cacheKey, { brief: kvHit.brief, storedAt: Date.now() });
       return kvHit.brief;
