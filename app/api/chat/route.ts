@@ -286,36 +286,59 @@ const TOOLS = [
 // ─── Tool execution ──────────────────────────────────────────────────
 // Each handler returns a compact JSON-able object. Errors are returned
 // as { error: "..." } so Claude can recover and continue the chat.
+// Verbose logging on every call so Vercel runtime logs let us see
+// exactly what yahoo-finance2 returned if a future call fails.
 async function executeTool(name: string, input: any): Promise<any> {
+  const t0 = Date.now();
   try {
-    if (name === "get_stock_price") {
-      return await toolGetStockPrice(input);
-    }
-    if (name === "get_stock_history") {
-      return await toolGetStockHistory(input);
-    }
-    if (name === "get_market_index") {
-      return await toolGetStockPrice({ symbol: input?.index });
-    }
-    if (name === "get_multiple_quotes") {
-      return await toolGetMultipleQuotes(input);
-    }
-    return { error: `Unknown tool: ${name}` };
+    let result: any;
+    if (name === "get_stock_price") result = await toolGetStockPrice(input);
+    else if (name === "get_stock_history") result = await toolGetStockHistory(input);
+    else if (name === "get_market_index") result = await toolGetStockPrice({ symbol: input?.index });
+    else if (name === "get_multiple_quotes") result = await toolGetMultipleQuotes(input);
+    else result = { error: `Unknown tool: ${name}` };
+    const ms = Date.now() - t0;
+    const ok = !result?.error;
+    console.log(`[chat tool] ${name} ${ok ? "ok" : "FAIL"} input=${JSON.stringify(input).slice(0, 80)} elapsed=${ms}ms${result?.error ? ` error=${result.error}` : ""}`);
+    return result;
   } catch (err: any) {
+    const ms = Date.now() - t0;
+    console.error(`[chat tool] ${name} EXCEPTION input=${JSON.stringify(input).slice(0, 80)} elapsed=${ms}ms err=${err?.message || err}`);
     return { error: err?.message || "Tool execution failed" };
+  }
+}
+
+// Retry wrapper specifically for yahoo-finance2 calls. The first call from a
+// cold serverless function sometimes returns auth/cookie redirects that fail
+// silently. One retry after 400ms gives the library time to settle.
+async function yahooQuoteWithRetry(symbol: string): Promise<any> {
+  try {
+    const q: any = await (yahooFinance as any).quote(symbol);
+    if (q && (q.regularMarketPrice != null || q.regularMarketPreviousClose != null)) return q;
+    // Empty/null response — retry once
+    await new Promise((r) => setTimeout(r, 400));
+    return await (yahooFinance as any).quote(symbol);
+  } catch (err: any) {
+    // First call threw — retry once
+    await new Promise((r) => setTimeout(r, 400));
+    return await (yahooFinance as any).quote(symbol);
   }
 }
 
 async function toolGetStockPrice(input: any): Promise<any> {
   const symbol = typeof input?.symbol === "string" ? input.symbol.toUpperCase() : "";
   if (!SYMBOL_RE.test(symbol)) {
-    return { error: "Invalid symbol" };
+    return { error: `Invalid symbol: ${input?.symbol}` };
   }
-  const q: any = await (yahooFinance as any).quote(symbol);
-  if (!q) return { error: "No data for symbol" };
+  const q: any = await yahooQuoteWithRetry(symbol);
+  if (!q) return { error: `No data for symbol ${symbol}` };
+  if (q.regularMarketPrice == null) {
+    console.warn(`[chat tool] yahoo returned no price for ${symbol}, fields=${Object.keys(q || {}).join(",")}`);
+    return { error: `Yahoo returned no price field for ${symbol}` };
+  }
   return {
     symbol,
-    price: q.regularMarketPrice ?? null,
+    price: q.regularMarketPrice,
     change: q.regularMarketChange ?? null,
     changePct: q.regularMarketChangePercent ?? null,
     prevClose: q.regularMarketPreviousClose ?? null,
@@ -378,20 +401,20 @@ async function toolGetMultipleQuotes(input: any): Promise<any> {
   ).slice(0, 10);
   if (symbols.length === 0) return { error: "No valid symbols" };
   const settled = await Promise.allSettled(
-    symbols.map((s) => (yahooFinance as any).quote(s as string))
+    symbols.map((s) => yahooQuoteWithRetry(s as string))
   );
   const out: Record<string, any> = {};
   settled.forEach((r, i) => {
     const sym = symbols[i] as string;
-    if (r.status === "fulfilled" && r.value) {
+    if (r.status === "fulfilled" && r.value && r.value.regularMarketPrice != null) {
       const q: any = r.value;
       out[sym] = {
-        price: q.regularMarketPrice ?? null,
+        price: q.regularMarketPrice,
         changePct: q.regularMarketChangePercent ?? null,
         change: q.regularMarketChange ?? null,
       };
     } else {
-      out[sym] = { error: "fetch failed" };
+      out[sym] = { error: r.status === "rejected" ? "fetch failed" : "no price data" };
     }
   });
   return { quotes: out, asOf: new Date().toISOString() };
