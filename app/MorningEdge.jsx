@@ -4898,31 +4898,76 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
 }
 
 // Generic context-builder used by ExpandableLevelRow when the model didn't
-// supply explicit detail. Keeps the UX from being empty when the user taps
-// a row. Pattern-matches on common market terms to add a one-line "why
-// this matters" framing without inventing facts.
+// supply explicit detail. Returns ONLY the value-adding explanation — the
+// row text is already shown on the button itself, so duplicating it in the
+// expansion just wastes the user's tap. Pattern-matches on common market
+// terms to add a "why this matters" framing without inventing facts.
 function autoExpand(text) {
-  if (!text) return "Tap again to collapse.";
+  if (!text) return "No additional context for this line.";
   const t = text.toLowerCase();
-  // Pull simple cues from the line and add a brief framing
+
+  // Volatility / hedging signals
   if (/vix|volatility/.test(t))
-    return text + " — Volatility moves like this often signal hedging activity ahead of binary events. Watch for confirmation in put/call ratios.";
-  if (/futures/.test(t))
-    return text + " — Premarket futures direction sets the early tone but often reverses by midday. Wait for the first 30 minutes before chasing.";
-  if (/yields|treasury|fed/.test(t))
-    return text + " — Rate-sensitive sectors (homebuilders, regional banks, REITs) tend to move first. Growth/tech is second-order.";
-  if (/oil|crude|wti|brent/.test(t))
-    return text + " — Energy moves often lead inflation expectations by 3-6 weeks. Track XLE relative strength against SPY.";
-  if (/dxy|dollar/.test(t))
-    return text + " — A stronger dollar pressures multinational earnings. Tech earnings exposure is highest among megacaps.";
-  if (/gold|gld|silver/.test(t))
-    return text + " — Precious metals flows often signal real-rate expectations rather than inflation alone.";
-  if (/semis|semiconductors|chip/.test(t))
-    return text + " — Semis remain the bellwether for AI capex cycles. Watch SOX/SMH for sector breadth.";
-  if (/earnings/.test(t))
-    return text + " — Reactions tend to be larger when guidance surprises diverge from EPS surprises. Trust the guide.";
-  // Generic fallback
-  return text + " — Tap again to collapse.";
+    return "Why it matters: Volatility moves like this often signal hedging activity ahead of binary events. Watch for confirmation in put/call ratios and term-structure inversions (when short-dated VIX trades higher than longer-dated, traders expect near-term stress).";
+
+  // Premarket / futures
+  if (/futures|premarket|pre-market/.test(t))
+    return "Why it matters: Premarket futures set the opening tone but often reverse by midday once real volume arrives. Wait for the first 30 minutes after the bell before chasing a futures-led move — that's when the day's actual flow shows up.";
+
+  // Rates / Fed / Treasury
+  if (/yield|treasury|fed|fomc|rates?\b|10-?year|2-?year/.test(t))
+    return "Why it matters: Rate-sensitive sectors (homebuilders, regional banks, REITs, biotech) move first on yield shifts. Growth and tech are second-order. Watch the 2s/10s spread for the cleanest signal on what the bond market thinks the Fed will do next.";
+
+  // Oil / energy
+  if (/oil|crude|wti|brent|opec|gasoline/.test(t))
+    return "Why it matters: Energy moves lead inflation expectations by 3-6 weeks. Track XLE relative strength versus SPY — if energy is outperforming on rising crude, it's confirming the inflation read. If energy lags rising crude, the move may not stick.";
+
+  // Dollar / DXY
+  if (/dxy|dollar|usd|currency/.test(t))
+    return "Why it matters: A stronger dollar pressures multinational earnings (most megacap tech has 50%+ international revenue) and weighs on commodities priced in dollars. A weaker dollar tends to lift gold, emerging markets, and large exporters.";
+
+  // Precious metals
+  if (/gold|gld|silver|slv|miners/.test(t))
+    return "Why it matters: Precious metals flows signal real-rate expectations (nominal rates minus inflation) more than inflation alone. When gold rises despite firm yields, traders are pricing in higher long-run inflation. When gold falls with rising yields, real rates are doing the work.";
+
+  // Semis / chips
+  if (/semis?|semiconductors?|chip|sox|smh|soxx|nvda|amd|tsmc/.test(t))
+    return "Why it matters: Semis remain the bellwether for AI capex cycles. Watch SOX/SMH breadth — when only a few names lead, the rally is narrow and vulnerable. When the whole basket moves together, the trend has fuel.";
+
+  // Earnings
+  if (/earnings|eps|guidance|reports|beat|miss/.test(t))
+    return "Why it matters: Stock reactions tend to be larger when GUIDANCE surprises diverge from EPS surprises. A company can beat on earnings but get punished if forward guidance is soft. Trust the guide more than the print — the market is forward-looking.";
+
+  // Crypto / Bitcoin
+  if (/bitcoin|btc|crypto|ethereum|eth|coinbase/.test(t))
+    return "Why it matters: Crypto is a risk-on barometer with leverage. Big moves often lead or amplify what equities are about to do, especially in tech. Watch BTC against QQQ for a clean risk-appetite read.";
+
+  // Nuclear / power / utilities
+  if (/nuclear|uranium|oklo|smr|grid|power|utilit/.test(t))
+    return "Why it matters: AI data-center power demand is rewriting the utility playbook. Watch for PPAs (power purchase agreements) between hyperscalers and reactor operators — those are the catalyst events for nuclear-AI names.";
+
+  // Critical minerals / rare earths
+  if (/rare earth|critical mineral|lithium|copper|usar|mp materials/.test(t))
+    return "Why it matters: Supply-chain reshoring and defense priorities are tightening the bid under critical minerals. Watch DOD contract awards and DOE grants — those are the policy catalysts that often move the names before the broader market notices.";
+
+  // Quantum
+  if (/quantum|ionq|rgti|qbts|qubit/.test(t))
+    return "Why it matters: Quantum names trade more on sentiment and milestone announcements than on revenue. Position size accordingly — 1-2% is plenty. The thesis is real but the timing is multi-year.";
+
+  // Breadth / advance-decline
+  if (/breadth|advance|decline|a\/d|new high|new low/.test(t))
+    return "Why it matters: Breadth measures how MANY names are participating in a move, not just the index level. Narrow breadth (a few megacaps lifting the index) is a warning. Broad breadth (most names participating) confirms trend strength.";
+
+  // Sector rotation
+  if (/rotation|sector|leadership/.test(t))
+    return "Why it matters: Sector rotation tells you what the smart money thinks the next quarter looks like. Defensive to growth is risk-on. Growth to defensive is risk-off. Track XLF, XLE, XLK, and XLV relative to SPY for the cleanest read.";
+
+  // Geopolitics
+  if (/china|taiwan|russia|ukraine|israel|iran|geopolitic|tariff|trade war/.test(t))
+    return "Why it matters: Geopolitical headlines often produce sharp same-day moves that fade within 48 hours unless they trigger a structural shift (sanctions, supply-chain reshoring). Wait for the second-day reaction before sizing positions on a headline.";
+
+  // Generic fallback — at least give them an action rather than empty noise
+  return "More context on this line wasn't pre-written. Ask Morning Edge below — it can pull live data and tell you what this means for your specific positions.";
 }
 
 // ────────────────────────────────────────────────────────────────────
