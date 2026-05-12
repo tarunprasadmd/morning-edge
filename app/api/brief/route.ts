@@ -193,8 +193,8 @@ function validateBody(raw: any): { ok: true; body: ValidatedRequestBody } | { ok
 const BRIEF_RATE_LIMIT = 60;     // per IP per hour
 const BRIEF_RATE_WINDOW = 3600;  // seconds
 
-async function checkRateLimit(req: Request): Promise<{ ok: true } | { ok: false; retryAfter: number }> {
-  if (!redis) return { ok: true };
+async function checkRateLimit(req: Request): Promise<{ ok: boolean; retryAfter: number }> {
+  if (!redis) return { ok: true, retryAfter: 0 };
   const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
   const key = `ratelimit:brief:${ip}:${Math.floor(Date.now() / 1000 / BRIEF_RATE_WINDOW)}`;
   try {
@@ -204,7 +204,7 @@ async function checkRateLimit(req: Request): Promise<{ ok: true } | { ok: false;
   } catch (err) {
     console.warn("Brief rate limit check failed:", err);
   }
-  return { ok: true };
+  return { ok: true, retryAfter: 0 };
 }
 
 function todayDateString(): string {
