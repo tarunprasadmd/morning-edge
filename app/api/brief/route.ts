@@ -823,9 +823,11 @@ export async function POST(request: Request) {
 
     const validation = validateBody(rawBody);
     if (!validation.ok) {
-      return NextResponse.json({ error: validation.error }, { status: 400 });
+      const failed = validation as { ok: false; error: string };
+      return NextResponse.json({ error: failed.error }, { status: 400 });
     }
-    const { name, watchlist, holdings, accounts, holdingsAgeDays, date, forceFresh } = validation.body;
+    const validBody = (validation as { ok: true; body: ValidatedRequestBody }).body;
+    const { name, watchlist, holdings, accounts, holdingsAgeDays, date, forceFresh } = validBody;
     const fresh = queryFresh || forceFresh;
 
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -836,7 +838,7 @@ export async function POST(request: Request) {
     }
 
     // Save user state for cron job to pick up tomorrow (fire-and-forget)
-    cacheWriteUserState(validation.body).catch(() => {});
+    cacheWriteUserState(validBody).catch(() => {});
 
     const dateKey = todayDateString();
     const hHash = holdingsHash(holdings);
