@@ -1871,7 +1871,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
   const signalStyle = (s) =>
     s === "add" ? "bg-emerald-50 text-emerald-700 border-emerald-200"
     : s === "trim" ? "bg-rose-50 text-rose-700 border-rose-200"
-    : "bg-slate-100 text-slate-700 border-slate-200";
+    : "bg-slate-100 text-slate-800 border-slate-200";
   const toneColor = (t) =>
     t === "bullish" ? "text-emerald-600"
     : t === "bearish" ? "text-rose-600" : "text-amber-600";
@@ -1934,12 +1934,12 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {phase === "onboard-1" && (
             <div className="w-full bg-white rounded-3xl p-6 shadow-xl border border-slate-100">
               <h1 className="text-3xl text-slate-900 mb-2 leading-tight" style={{ fontFamily: SERIF, fontWeight: 500 }}>
-                Welcome <span className="italic text-slate-700">aboard.</span>
+                Welcome <span className="italic text-slate-800">aboard.</span>
               </h1>
-              <p className="text-[16px] text-slate-700 mb-5 leading-relaxed">
+              <p className="text-[16px] text-slate-800 mb-5 leading-relaxed">
                 30-second setup. No account, no sign-in.
               </p>
-              <label className="text-[13px] uppercase tracking-widest text-slate-700 font-semibold mb-2 block">What should we call you?</label>
+              <label className="text-[14px] uppercase tracking-widest text-slate-800 font-semibold mb-2 block">What should we call you?</label>
               <input
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
@@ -1963,9 +1963,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {phase === "onboard-2" && (
             <div className="w-full bg-white rounded-3xl p-6 shadow-xl border border-slate-100">
               <h1 className="text-3xl text-slate-900 mb-2 leading-tight" style={{ fontFamily: SERIF, fontWeight: 500 }}>
-                Build your <span className="italic text-slate-700">watchlist.</span>
+                Build your <span className="italic text-slate-800">watchlist.</span>
               </h1>
-              <p className="text-[16px] text-slate-700 mb-5">Add tickers you track. Edit anytime.</p>
+              <p className="text-[16px] text-slate-800 mb-5">Add tickers you track. Edit anytime.</p>
               <div className="flex gap-2 mb-3">
                 <input
                   value={tickerInput}
@@ -1988,21 +1988,21 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   }}
                   className="px-4 py-2.5 bg-slate-900 text-white rounded-xl font-semibold text-[16px]">Add</button>
               </div>
-              <p className="text-[12px] uppercase tracking-widest text-slate-700 font-semibold mb-2">Suggestions</p>
+              <p className="text-[12px] uppercase tracking-widest text-slate-800 font-semibold mb-2">Suggestions</p>
               <div className="flex flex-wrap gap-1.5 mb-4">
                 {SUGGESTED.filter((s) => !tempPortfolio.includes(s)).map((s) => (
                   <button key={s} onClick={() => setTempPortfolio([...tempPortfolio, s])}
-                    className="px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200">
+                    className="px-2.5 py-1 rounded-lg text-[14px] font-semibold bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200">
                     + {s}
                   </button>
                 ))}
               </div>
               {tempPortfolio.length > 0 && (
                 <>
-                  <p className="text-[12px] uppercase tracking-widest text-slate-700 font-semibold mb-2">Your picks ({tempPortfolio.length})</p>
+                  <p className="text-[12px] uppercase tracking-widest text-slate-800 font-semibold mb-2">Your picks ({tempPortfolio.length})</p>
                   <div className="flex flex-wrap gap-1.5 mb-5">
                     {tempPortfolio.map((t) => (
-                      <span key={t} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg text-[13px] text-slate-800 font-medium">
+                      <span key={t} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg text-[14px] text-slate-800 font-medium">
                         {t}
                         <button onClick={() => setTempPortfolio(tempPortfolio.filter((x) => x !== t))} className="hover:text-rose-600">
                           <X className="w-3 h-3" />
@@ -2017,11 +2017,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 <Sparkles className="w-4 h-4" /> Begin
               </button>
               <button onClick={() => setPhase("onboard-1")}
-                className="w-full py-2 mt-2 text-[16px] text-slate-700 hover:text-slate-900">← Back</button>
+                className="w-full py-2 mt-2 text-[16px] text-slate-800 hover:text-slate-900">← Back</button>
             </div>
           )}
 
-          <p className="text-[12px] text-slate-700 mt-6 text-center max-w-xs leading-relaxed">
+          <p className="text-[12px] text-slate-800 mt-6 text-center max-w-xs leading-relaxed">
             Informational only — not investment, medical, or financial advice.
           </p>
         </div>
@@ -2087,10 +2087,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
       {showCsvImport && (
         <div className="relative z-10 px-4 pb-5 pt-1">
-          <div className="px-3 py-3 rounded-lg bg-white text-[13px] text-slate-700 space-y-3 shadow-inner">
+          <div className="px-3 py-3 rounded-lg bg-white text-[14px] text-slate-800 space-y-3 shadow-inner">
             <div>
               <p className="font-semibold text-slate-900 mb-2">Get your CSV from your brokerage</p>
-              <p className="text-[13px] text-slate-700 leading-snug mb-2.5">
+              <p className="text-[14px] text-slate-800 leading-snug mb-2.5">
                 Tap to open the broker in a new tab. Log in, find your positions, save the CSV, then come back and upload it.
                 {isMobile && (
                   <span className="block mt-1 text-[12px] text-amber-700">
@@ -2112,7 +2112,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <span className="text-[15px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate" style={{ fontFamily: SERIF }}>
                       {b.name}
                     </span>
-                    <span className="text-[12px] text-slate-700 flex-1 truncate">
+                    <span className="text-[12px] text-slate-800 flex-1 truncate">
                       {b.path}
                     </span>
                     <ExternalLink className="w-3 h-3 text-amber-600 flex-shrink-0" />
@@ -2121,12 +2121,12 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               </div>
               <button
                 onClick={() => setShowBrokerageGuide(true)}
-                className="w-full mt-2 px-2.5 py-2 rounded-lg border border-amber-300 bg-white text-[13px] font-semibold text-amber-800 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-center gap-1.5"
+                className="w-full mt-2 px-2.5 py-2 rounded-lg border border-amber-300 bg-white text-[14px] font-semibold text-amber-800 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-center gap-1.5"
               >
                 See all {BROKERAGES.length} brokerages
                 <ChevronRight className="w-3 h-3" />
               </button>
-              <p className="text-[12px] text-slate-700 italic mt-2 leading-snug">
+              <p className="text-[12px] text-slate-800 italic mt-2 leading-snug">
                 We never see your password. We only read the CSV you upload. Holdings are sent to our server only when generating a brief, then cached briefly under a non-identifying hash. See <a href="/privacy" className="underline">Privacy Policy</a> for details.
               </p>
             </div>
@@ -2165,7 +2165,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 Choose CSV file
               </button>
               {csvImportMessage && (
-                <div className={`mt-2 px-3 py-2 rounded-md text-[13px] ${
+                <div className={`mt-2 px-3 py-2 rounded-md text-[14px] ${
                   csvImportMessage.type === "ok"
                     ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                     : "bg-rose-100 text-rose-800 border border-rose-200"
@@ -2175,7 +2175,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               )}
               {accountsState.length > 0 && (
                 <div className="mt-3 space-y-2">
-                  <p className="font-semibold text-slate-900 text-[13px]">Connected accounts</p>
+                  <p className="font-semibold text-slate-900 text-[14px]">Connected accounts</p>
                   {accountsState.map((a) => (
                     <div key={a.id} className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-white border border-slate-200">
                       <div className="min-w-0 flex-1 mr-2">
@@ -2199,10 +2199,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 </div>
               )}
               {holdings.length > 0 && (
-                <div className={`mt-2 px-3 py-2 rounded-md text-[13px] ${
+                <div className={`mt-2 px-3 py-2 rounded-md text-[14px] ${
                   holdingsAgeDays != null && holdingsAgeDays > 7
                     ? "bg-amber-50 border-2 border-amber-200 text-amber-900"
-                    : "bg-slate-100 border border-slate-200 text-slate-700"
+                    : "bg-slate-100 border border-slate-200 text-slate-800"
                 }`}>
                   <p className="font-semibold mb-0.5">
                     {holdings.length} position{holdings.length === 1 ? "" : "s"} loaded
@@ -2219,13 +2219,13 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     </p>
                   )}
                   {holdingsAgeDays != null && holdingsAgeDays <= 7 && (
-                    <p className="text-[12px] mt-1 text-slate-700">
+                    <p className="text-[12px] mt-1 text-slate-800">
                       Holdings power your personalized playbook. Re-upload weekly for best accuracy.
                     </p>
                   )}
                 </div>
               )}
-              <p className="text-[12px] text-slate-700 leading-relaxed mt-2">
+              <p className="text-[12px] text-slate-800 leading-relaxed mt-2">
                 Holdings are sent to our server only to generate your brief, then cached briefly under a non-identifying hash.
               </p>
             </div>
@@ -2257,7 +2257,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               <button onClick={shareBrief}
                 className="p-2.5 rounded-full bg-white border border-slate-200 shadow-md transition active:scale-90 active:bg-slate-100 hover:bg-slate-50"
                 aria-label="Share">
-                <Share2 className="w-4 h-4 text-slate-700" />
+                <Share2 className="w-4 h-4 text-slate-800" />
               </button>
             )}
             <button onClick={() => setShowPremium(true)}
@@ -2273,16 +2273,16 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               }`}
               aria-label="Settings"
               aria-pressed={showSettings}>
-              <Settings className={`w-4 h-4 ${showSettings ? "text-white" : "text-slate-700"}`} />
+              <Settings className={`w-4 h-4 ${showSettings ? "text-white" : "text-slate-800"}`} />
             </button>
           </div>
         </div>
 
         <h1 className="text-4xl leading-tight text-slate-900" style={{ fontFamily: SERIF, fontWeight: 500 }}>
           {greeting}{name ? `, ${name}` : ""},<br />
-          <span className="italic text-slate-700">your morning edge.</span>
+          <span className="italic text-slate-800">your morning edge.</span>
         </h1>
-        <p className="text-[13px] text-slate-700 mt-3 tracking-[0.2em] uppercase font-medium">{today}</p>
+        <p className="text-[14px] text-slate-800 mt-3 tracking-[0.2em] uppercase font-medium">{today}</p>
       </header>
 
       {/* Pull-to-refresh + background-refresh indicator. When a brief is
@@ -2307,7 +2307,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-700" />
                   <span
                     key={msg}
-                    className="text-[13px] font-semibold uppercase tracking-wider text-amber-800"
+                    className="text-[14px] font-semibold uppercase tracking-wider text-amber-800"
                     style={{ animation: "me-status-fade 0.5s ease-out" }}
                   >
                     {msg}
@@ -2322,7 +2322,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               );
             })()
           ) : (
-            <div className="flex items-center gap-2 text-slate-700 text-[13px] font-semibold uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-slate-800 text-[14px] font-semibold uppercase tracking-wider">
               <RefreshCw
                 className="w-4 h-4"
                 style={{ transform: `rotate(${pullProgress * 360}deg)`, opacity: 0.4 + pullProgress * 0.6 }}
@@ -2601,19 +2601,19 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         <section className="relative mx-4 mb-6 p-5 rounded-2xl bg-white shadow-md border border-slate-100">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[16px] font-semibold text-slate-900">Settings</h2>
-            <button onClick={() => setShowSettings(false)} className="text-slate-700 hover:text-slate-900">
+            <button onClick={() => setShowSettings(false)} className="text-slate-800 hover:text-slate-900">
               <X className="w-4 h-4" />
             </button>
           </div>
           <div className="mb-4">
-            <label className="text-[12px] uppercase tracking-widest text-slate-700 font-semibold mb-1 block">Your name</label>
+            <label className="text-[12px] uppercase tracking-widest text-slate-800 font-semibold mb-1 block">Your name</label>
             <input value={name} onChange={(e) => setName(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[16px] focus:outline-none focus:border-slate-900 focus:bg-white" />
           </div>
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-[12px] uppercase tracking-widest text-slate-700 font-semibold">Watchlist</label>
-              <span className="text-[13px] text-slate-700">{portfolio.length} tickers</span>
+              <label className="text-[12px] uppercase tracking-widest text-slate-800 font-semibold">Watchlist</label>
+              <span className="text-[14px] text-slate-800">{portfolio.length} tickers</span>
             </div>
             <div className="flex gap-2 mb-3">
               <input value={tickerInput} onChange={(e) => setTickerInput(e.target.value)}
@@ -2626,7 +2626,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             </div>
             <div className="flex flex-wrap gap-1.5">
               {portfolio.map((t) => (
-                <span key={t} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg text-[13px] text-slate-800 font-medium">
+                <span key={t} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg text-[14px] text-slate-800 font-medium">
                   {t}
                   <button onClick={() => removeTicker(t)} className="hover:text-rose-600">
                     <X className="w-3 h-3" />
@@ -2642,7 +2642,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {(accountsState.length > 0 || holdings.length > 0) && (
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-[12px] uppercase tracking-[0.2em] text-slate-700 font-semibold">
+                <h3 className="text-[12px] uppercase tracking-[0.2em] text-slate-800 font-semibold">
                   Synced Accounts
                 </h3>
                 <span className="text-[12px] text-slate-500">
@@ -2662,7 +2662,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           <p className="text-[14px] font-semibold text-slate-900 truncate" style={{ fontFamily: SERIF }}>
                             {acct.name || "Unnamed account"}
                           </p>
-                          <p className="text-[11px] text-slate-700 uppercase tracking-wider">
+                          <p className="text-[11px] text-slate-800 uppercase tracking-wider">
                             {acctHoldings.length} position{acctHoldings.length === 1 ? "" : "s"}
                             {acct.brokerage ? ` · ${acct.brokerage}` : ""}
                           </p>
@@ -2683,7 +2683,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 // Untagged legacy holdings — show a "Clear holdings" option
                 <div className="flex items-center gap-2 bg-amber-50 border-2 border-amber-200 rounded-xl px-3 py-2.5">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-amber-900">
+                    <p className="text-[14px] font-semibold text-amber-900">
                       {holdings.length} unassigned position{holdings.length === 1 ? "" : "s"}
                     </p>
                     <p className="text-[11px] text-amber-800">
@@ -2707,13 +2707,13 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
           <button
             onClick={() => { setShowSettings(false); setShowBrokerageGuide(true); }}
-            className="w-full mb-3 py-2.5 rounded-xl text-[13px] text-amber-800 hover:bg-amber-50 border border-amber-300 font-semibold flex items-center justify-center gap-1.5"
+            className="w-full mb-3 py-2.5 rounded-xl text-[14px] text-amber-800 hover:bg-amber-50 border border-amber-300 font-semibold flex items-center justify-center gap-1.5"
           >
             <Briefcase className="w-3.5 h-3.5" />
             Brokerage Help — Where to find your CSV
           </button>
           <button onClick={resetAll}
-            className="w-full py-2 rounded-xl text-[13px] text-rose-600 hover:bg-rose-50 border border-rose-200 font-semibold">
+            className="w-full py-2 rounded-xl text-[14px] text-rose-600 hover:bg-rose-50 border border-rose-200 font-semibold">
             Reset all data
           </button>
         </section>
@@ -2730,7 +2730,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         <div className="relative px-6 pb-6 space-y-2">
           <button
             disabled
-            className="w-full py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 transition shadow-lg bg-slate-200 text-slate-700 shadow-none"
+            className="w-full py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-2 transition shadow-lg bg-slate-200 text-slate-800 shadow-none"
           >
             {(() => {
               const msgs = [
@@ -2776,7 +2776,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {/* Status banner */}
           <div className="rounded-xl p-3 bg-gradient-to-br from-violet-100 to-indigo-100 border border-violet-200 flex items-center gap-2">
             <RefreshCw className="w-4 h-4 text-violet-700 animate-spin flex-shrink-0" strokeWidth={2.5} />
-            <p className="text-[13px] text-violet-900 font-semibold">
+            <p className="text-[14px] text-violet-900 font-semibold">
               Building your edge — reading today's tape, checking your holdings…
             </p>
           </div>
@@ -2995,10 +2995,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             <Card theme={themes.play}>
               <CardHeader icon={<CheckSquare className="w-4 h-4" />} label="Today's Playbook" theme={themes.play} />
               <div className="px-5 py-6">
-                <p className="text-[13px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-1 -mt-2">
+                <p className="text-[14px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-1 -mt-2">
                   Your portfolio at a glance
                 </p>
-                <p className="text-[13px] text-slate-700 italic mb-4">
+                <p className="text-[14px] text-slate-800 italic mb-4">
                   What to act on today, plus high-conviction signals to monitor. Tap any card for full reasoning.
                 </p>
                 {/* Personalization indicator */}
@@ -3007,7 +3007,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <span className="px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200">
                       ✓ Personalized
                     </span>
-                    <span className="text-slate-700">
+                    <span className="text-slate-800">
                       Built from your {holdings.length} position{holdings.length === 1 ? "" : "s"}
                     </span>
                   </div>
@@ -3047,7 +3047,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       <ArrowRight className="w-5 h-5 flex-shrink-0 transition-transform group-hover:translate-x-0.5"
                         style={{ color: "#D4A574" }} />
                     </div>
-                    <p className="text-[13px] text-slate-500 mt-3 ml-14 leading-relaxed">
+                    <p className="text-[14px] text-slate-500 mt-3 ml-14 leading-relaxed">
                       Tap to open. Upload a CSV from any brokerage. Read-only — we never see your password.
                     </p>
                   </button>
@@ -3055,7 +3055,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
                 {/* Progress bar */}
                 <div className="flex items-center justify-between mb-5">
-                  <p className="text-[12px] tracking-[0.2em] uppercase font-semibold text-slate-700">
+                  <p className="text-[12px] tracking-[0.2em] uppercase font-semibold text-slate-800">
                     {decisionsDoneToday.length} of {brief.decisions.length} done
                   </p>
                   <div className="flex-1 ml-3 h-1 rounded-full bg-slate-100 overflow-hidden">
@@ -3215,7 +3215,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 </div>
 
                 {/* Helper text */}
-                <p className="mt-4 text-[13px] text-slate-700 text-center italic">
+                <p className="mt-4 text-[14px] text-slate-800 text-center italic">
                   Tap any card for full reasoning and to act on it.
                 </p>
 
@@ -3237,10 +3237,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             <Card theme={themes.conviction}>
               <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Ongoing Watch" theme={themes.conviction} />
               <div className="px-3 pt-1 pb-3 space-y-2">
-                <p className="text-[13px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium px-1 mb-1">
+                <p className="text-[14px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium px-1 mb-1">
                   Hold · Add · Trim signals worth monitoring
                 </p>
-                <p className="text-[12px] text-slate-700 italic px-1 mb-3">
+                <p className="text-[12px] text-slate-800 italic px-1 mb-3">
                   Not necessarily today. Background watch on your positions. Tap any signal for full reasoning.
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -3293,7 +3293,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           {actionAccent.label}
                         </span>
                       )}
-                      <p className={`text-[12px] text-slate-700 leading-snug flex-1 ${hasAction ? "pl-1.5" : ""}`} style={{
+                      <p className={`text-[12px] text-slate-800 leading-snug flex-1 ${hasAction ? "pl-1.5" : ""}`} style={{
                         display: "-webkit-box",
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical",
@@ -3319,7 +3319,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               <Card theme={themes.conviction}>
                 <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Ongoing Watch" theme={themes.conviction} />
                 <div className="px-5 pt-1 pb-5">
-                  <p className="text-[13px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-3">
+                  <p className="text-[14px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-3">
                     Hold · Add · Trim signals worth monitoring
                   </p>
                   <div className="rounded-xl bg-emerald-50/60 border border-emerald-200 p-4">
@@ -3338,7 +3338,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             <Card theme={themes.money}>
               <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} />
               <div className="px-5 pt-1 pb-5">
-                <p className="text-[13px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-4">
+                <p className="text-[14px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-4">
                   Whales · Congress · Hedge Funds
                 </p>
 
@@ -3377,7 +3377,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               >
                                 <span className="text-[9px] uppercase tracking-wider font-bold text-rose-800 flex-shrink-0">Earnings</span>
                                 <span className="text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{e.ticker}</span>
-                                <span className="text-[13px] text-rose-900 flex-1 leading-tight truncate">
+                                <span className="text-[14px] text-rose-900 flex-1 leading-tight truncate">
                                   {e.when}{e.your_shares ? ` · ${e.your_shares} sh` : ""}
                                 </span>
                                 <ExternalLink className="w-3 h-3 text-rose-700 flex-shrink-0" />
@@ -3393,7 +3393,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                 <span className="text-[9px] uppercase tracking-wider font-bold text-amber-800 flex-shrink-0">Catalyst</span>
                                 <span className="text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{c.ticker}</span>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-[13px] text-amber-900 leading-tight font-semibold truncate">{c.event}</p>
+                                  <p className="text-[14px] text-amber-900 leading-tight font-semibold truncate">{c.event}</p>
                                   {c.context && <p className="text-[12px] text-amber-800/80 leading-tight truncate">{c.context}</p>}
                                 </div>
                                 <ExternalLink className="w-3 h-3 text-amber-700 flex-shrink-0" />
@@ -3409,7 +3409,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                 <span className="text-[9px] uppercase tracking-wider font-bold text-orange-800 flex-shrink-0">Risk</span>
                                 <span className="text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{r.ticker}</span>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-[13px] text-orange-900 leading-tight font-semibold truncate">{r.flag}</p>
+                                  <p className="text-[14px] text-orange-900 leading-tight font-semibold truncate">{r.flag}</p>
                                   {r.suggested_action && <p className="text-[12px] text-orange-800/80 leading-tight truncate">→ {r.suggested_action}</p>}
                                 </div>
                                 <ExternalLink className="w-3 h-3 text-orange-700 flex-shrink-0" />
@@ -3426,7 +3426,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <p className="text-[9px] uppercase tracking-wider text-amber-800 font-bold mb-2">
                       Top Flow · Smart Money
                     </p>
-                    <p className="text-[13px] text-slate-700 leading-snug mb-2.5">
+                    <p className="text-[14px] text-slate-800 leading-snug mb-2.5">
                       The top 2 most-bought and top 2 most-sold names across whales, Congress, and hedge funds today. Tap to view performance.
                     </p>
                     {/* Most bought / sold — top 2 per side, tappable tickers open Yahoo Finance in-app */}
@@ -3487,7 +3487,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[9px] uppercase tracking-wider text-emerald-700 font-bold flex-shrink-0">▲ Bullish</span>
                             {brief.smart_money.summary.net_bullish_sectors.map((s, i) => (
-                              <span key={i} className="text-[13px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">
+                              <span key={i} className="text-[14px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">
                                 {s}
                               </span>
                             ))}
@@ -3497,7 +3497,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[9px] uppercase tracking-wider text-rose-700 font-bold flex-shrink-0">▼ Bearish</span>
                             {brief.smart_money.summary.net_bearish_sectors.map((s, i) => (
-                              <span key={i} className="text-[13px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-medium">
+                              <span key={i} className="text-[14px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-medium">
                                 {s}
                               </span>
                             ))}
@@ -3525,7 +3525,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   {/* Whales (institutional 13F filings) */}
                   <div className="rounded-xl border-2 border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#fdfcf8_25%,#fbf7ed_60%,#faf2dd_85%,#fef7df_100%)] shadow-[inset_0_1.5px_0_rgba(255,255,255,1),inset_0_-2px_4px_rgba(120,53,15,0.06),0_4px_12px_-2px_rgba(0,0,0,0.1)] p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
-                      <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
+                      <h3 className="text-[14px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
                         Institutional Whales
                       </h3>
@@ -3542,7 +3542,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-[13px] text-slate-600 italic">No notable 13F activity in the latest filing window.</p>
+                        <p className="text-[14px] text-slate-600 italic">No notable 13F activity in the latest filing window.</p>
                       );
                     })()}
                   </div>
@@ -3550,7 +3550,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   {/* Congress (STOCK Act disclosures) */}
                   <div className="rounded-xl border-2 border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#fdfcf8_25%,#fbf7ed_60%,#faf2dd_85%,#fef7df_100%)] shadow-[inset_0_1.5px_0_rgba(255,255,255,1),inset_0_-2px_4px_rgba(120,53,15,0.06),0_4px_12px_-2px_rgba(0,0,0,0.1)] p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
-                      <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
+                      <h3 className="text-[14px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
                         Congress
                       </h3>
@@ -3567,7 +3567,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-[13px] text-slate-600 italic">No new STOCK Act disclosures in the latest window.</p>
+                        <p className="text-[14px] text-slate-600 italic">No new STOCK Act disclosures in the latest window.</p>
                       );
                     })()}
                   </div>
@@ -3575,7 +3575,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   {/* Hedge Funds — always render so users see the section is intentional */}
                   <div className="rounded-xl border-2 border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#fdfcf8_25%,#fbf7ed_60%,#faf2dd_85%,#fef7df_100%)] shadow-[inset_0_1.5px_0_rgba(255,255,255,1),inset_0_-2px_4px_rgba(120,53,15,0.06),0_4px_12px_-2px_rgba(0,0,0,0.1)] p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
-                      <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
+                      <h3 className="text-[14px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
                         Hedge Funds
                       </h3>
@@ -3592,13 +3592,13 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-[13px] text-slate-600 italic">No major fund rotations flagged today.</p>
+                        <p className="text-[14px] text-slate-600 italic">No major fund rotations flagged today.</p>
                       );
                     })()}
                   </div>
                 </div>
 
-                <p className="mt-5 text-[12px] text-slate-700 leading-relaxed italic">
+                <p className="mt-5 text-[12px] text-slate-800 leading-relaxed italic">
                   AI-summarized from public filings. Tap any row to see why it matters and verify the trade.
                 </p>
               </div>
@@ -3610,7 +3610,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               <Card theme={themes.money}>
                 <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} />
                 <div className="px-5 pt-1 pb-5">
-                  <p className="text-[13px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-3">
+                  <p className="text-[14px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-3">
                     Whales · Congress · Hedge Funds
                   </p>
                   <div className="rounded-xl bg-amber-50/60 border-2 border-amber-200 p-4">
@@ -3634,7 +3634,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 <Card theme={themes.radar}>
                   <CardHeader icon={<Telescope className="w-4 h-4" />} label="Discovery" theme={themes.radar} />
                   <div className="px-5 pt-1 pb-5">
-                    <p className="text-[13px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-3">
+                    <p className="text-[14px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-3">
                       Opportunities · On Your Radar
                     </p>
                     <div className="rounded-xl bg-cyan-50/60 border border-cyan-200 p-4">
@@ -3742,7 +3742,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       className={`flex-1 px-4 py-2.5 rounded-xl text-[16px] font-semibold transition flex items-center justify-center gap-2 ${
                         routineDoneToday
                           ? "bg-emerald-500 text-white shadow-md"
-                          : "bg-slate-100 text-slate-700 hover:bg-slate-200 active:bg-slate-300"
+                          : "bg-slate-100 text-slate-800 hover:bg-slate-200 active:bg-slate-300"
                       }`}
                     >
                       {routineDoneToday ? (
@@ -3761,7 +3761,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     </div>
                   </div>
                   {routineStreak >= 3 && (
-                    <p className="text-[13px] text-emerald-700 text-center mt-2 italic">
+                    <p className="text-[14px] text-emerald-700 text-center mt-2 italic">
                       🔥 {routineStreak}-day streak. Keep showing up.
                     </p>
                   )}
@@ -3792,7 +3792,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             <Card theme={themes.clarity}>
               <CardHeader icon={<Flower2 className="w-4 h-4" />} label="Clarity" theme={themes.clarity} />
               <div className="px-5 pt-1 pb-5">
-                <p className="text-[13px] uppercase tracking-[0.2em] text-violet-700/80 font-medium mb-5">
+                <p className="text-[14px] uppercase tracking-[0.2em] text-violet-700/80 font-medium mb-5">
                   Contemplation · Wisdom · Breath
                 </p>
 
@@ -3805,7 +3805,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <p className="text-[16px] text-slate-800 leading-relaxed italic" style={{ fontFamily: SERIF }}>
                       {brief.clarity.contemplation}
                     </p>
-                    <p className="text-[13px] text-slate-700 mt-2 leading-relaxed">
+                    <p className="text-[14px] text-slate-800 mt-2 leading-relaxed">
                       Sit with this for 60 seconds before market open. No phone.
                     </p>
                   </div>
@@ -3821,7 +3821,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       "{brief.clarity.eastern_wisdom.quote || brief.clarity.eastern_wisdom}"
                     </p>
                     {brief.clarity.eastern_wisdom.source && (
-                      <p className="text-[13px] text-violet-700 mt-2 font-medium">
+                      <p className="text-[14px] text-violet-700 mt-2 font-medium">
                         — {brief.clarity.eastern_wisdom.source}
                       </p>
                     )}
@@ -3843,12 +3843,12 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           {brief.clarity.breath_practice.pattern || brief.clarity.breath_practice}
                         </p>
                         {brief.clarity.breath_practice.description && (
-                          <p className="text-[15px] text-slate-700 leading-relaxed">
+                          <p className="text-[15px] text-slate-800 leading-relaxed">
                             {brief.clarity.breath_practice.description}
                           </p>
                         )}
                         {brief.clarity.breath_practice.rounds && (
-                          <p className="text-[13px] text-violet-700 font-semibold mt-1.5">
+                          <p className="text-[14px] text-violet-700 font-semibold mt-1.5">
                             {brief.clarity.breath_practice.rounds}
                           </p>
                         )}
@@ -3905,7 +3905,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <p className="text-2xl leading-snug text-slate-800 mb-2">Slow rhythm. <span className="italic">Sharp moves.</span></p>
-            <p className="text-[16px] text-slate-700" style={{ fontFamily: SANS }}>
+            <p className="text-[16px] text-slate-800" style={{ fontFamily: SANS }}>
               Today's tape, smart-money flow, and your decision playbook — all in one calm read.
             </p>
           </div>
@@ -3927,7 +3927,7 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
   // Graceful fallback if item is still a string (older briefs)
   if (typeof item === "string") {
     return (
-      <li className="text-[16px] flex gap-2 text-slate-700">
+      <li className="text-[16px] flex gap-2 text-slate-800">
         <span className="text-amber-500 font-bold">·</span>
         <span>{item}</span>
       </li>
@@ -3945,7 +3945,7 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
           {ticker}
         </span>
       )}
-      <span className="flex-1 text-slate-700 leading-snug">{text}</span>
+      <span className="flex-1 text-slate-800 leading-snug">{text}</span>
       <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-amber-500 mt-0.5" />
     </>
   );
@@ -3977,10 +3977,10 @@ function SectorHeatmapBar({ sector, direction, intensity = 3 }) {
     ? { bar: "bg-emerald-500", track: "bg-emerald-50", label: "text-emerald-700", arrow: "▲" }
     : direction === "selling"
       ? { bar: "bg-rose-500", track: "bg-rose-50", label: "text-rose-700", arrow: "▼" }
-      : { bar: "bg-slate-400", track: "bg-slate-100", label: "text-slate-700", arrow: "·" };
+      : { bar: "bg-slate-400", track: "bg-slate-100", label: "text-slate-800", arrow: "·" };
   return (
     <div className="flex items-center gap-2.5">
-      <span className="text-[13px] text-slate-700 font-medium flex-shrink-0 w-[110px] truncate" title={sector}>
+      <span className="text-[14px] text-slate-800 font-medium flex-shrink-0 w-[110px] truncate" title={sector}>
         {sector}
       </span>
       <div className={`flex-1 h-3 rounded-full ${palette.track} relative overflow-hidden border border-slate-100`}>
@@ -4173,7 +4173,7 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
               const isHigh = m.flow === "high";
               const isDip = m.flow === "dip";
               return (
-                <div key={i} className="flex flex-col gap-0.5 text-[13px] font-semibold py-0.5 px-0.5">
+                <div key={i} className="flex flex-col gap-0.5 text-[14px] font-semibold py-0.5 px-0.5">
                   {/* Top row — symbol + change. Only show the percentage
                       when we have actual price data (non-zero). Showing
                       "+0.00%" when prices haven't been fetched is worse
@@ -4269,7 +4269,7 @@ function FilterPill({ active, onClick, emoji, icon, label, accent }) {
       className={`relative py-3.5 px-2 rounded-xl flex flex-col items-center gap-1.5 border transition-all duration-150 ${
         active
           ? `${a.bg} ${a.text} border-transparent shadow-md ring-2 ring-offset-1 ${a.ring}`
-          : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:shadow-sm"
+          : "bg-white border-slate-200 text-slate-800 hover:border-slate-300 hover:shadow-sm"
       }`}
     >
       {/* Color dot indicator when not active — tells the user this filter has a color identity */}
@@ -4289,7 +4289,7 @@ function PremiumModal({ onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-slate-700 hover:text-slate-900">
+        <button onClick={onClose} className="absolute top-4 right-4 text-slate-800 hover:text-slate-900">
           <X className="w-5 h-5" />
         </button>
         <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center shadow-md bg-gradient-to-br from-amber-500 to-orange-500">
@@ -4298,7 +4298,7 @@ function PremiumModal({ onClose }) {
         <h3 className="text-2xl mb-1 text-slate-900" style={{ fontFamily: SERIF, fontWeight: 600 }}>
           Morning Edge <span className="italic">Premium</span>
         </h3>
-        <p className="text-[16px] text-slate-700 mb-5">Your edge, multiplied.</p>
+        <p className="text-[16px] text-slate-800 mb-5">Your edge, multiplied.</p>
         <ul className="space-y-3 mb-6">
           {[
             ["Real-time data", "Live pre-market, options flow, Congress disclosures"],
@@ -4313,7 +4313,7 @@ function PremiumModal({ onClose }) {
               </div>
               <div>
                 <p className="text-[16px] font-semibold text-slate-900">{title}</p>
-                <p className="text-[13px] text-slate-700">{desc}</p>
+                <p className="text-[14px] text-slate-800">{desc}</p>
               </div>
             </li>
           ))}
@@ -4321,7 +4321,7 @@ function PremiumModal({ onClose }) {
         <button className="w-full py-3.5 rounded-xl font-semibold text-white shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500">
           <Lock className="w-4 h-4" /> Join the waitlist
         </button>
-        <p className="text-[12px] text-slate-700 text-center mt-3">Coming soon.</p>
+        <p className="text-[12px] text-slate-800 text-center mt-3">Coming soon.</p>
       </div>
     </div>
   );
@@ -4342,7 +4342,7 @@ function CardHeader({ icon, label, theme }) {
       <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${theme.gradient} flex items-center justify-center text-white shadow-sm`}>
         {icon}
       </div>
-      <h2 className="text-[13px] uppercase tracking-[0.22em] text-slate-800 font-bold">{label}</h2>
+      <h2 className="text-[14px] uppercase tracking-[0.22em] text-slate-800 font-bold">{label}</h2>
     </div>
   );
 }
@@ -4359,7 +4359,7 @@ function MindsetRow({ icon, kicker, body, color }) {
         {icon}
       </div>
       <div className="flex-1 pt-0.5">
-        <p className="text-[12px] uppercase tracking-[0.2em] text-slate-700 font-semibold mb-1">{kicker}</p>
+        <p className="text-[12px] uppercase tracking-[0.2em] text-slate-800 font-semibold mb-1">{kicker}</p>
         <p className="text-[16px] leading-relaxed text-slate-800" style={{ fontFamily: SERIF }}>{body}</p>
       </div>
     </div>
@@ -4383,7 +4383,7 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
           {icon}
         </div>
         <div className="flex-1 pt-0.5 min-w-0">
-          <p className="text-[12px] uppercase tracking-[0.2em] text-slate-700 font-semibold mb-1 flex items-center gap-2">
+          <p className="text-[12px] uppercase tracking-[0.2em] text-slate-800 font-semibold mb-1 flex items-center gap-2">
             {kicker}
             <span className="text-slate-300 text-base leading-none">{expanded ? "−" : "+"}</span>
           </p>
@@ -4394,12 +4394,12 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
       {expanded && (
         <div className={`mt-2 ml-12 mr-2 p-4 rounded-xl border ${c.panel}`}>
           {detail.intent && (
-            <p className="text-[15px] text-slate-700 leading-relaxed mb-3 italic" style={{ fontFamily: SERIF }}>
+            <p className="text-[15px] text-slate-800 leading-relaxed mb-3 italic" style={{ fontFamily: SERIF }}>
               {detail.intent}
             </p>
           )}
           {detail.why && (
-            <p className="text-[15px] text-slate-700 leading-relaxed mb-3">
+            <p className="text-[15px] text-slate-800 leading-relaxed mb-3">
               {detail.why}
             </p>
           )}
@@ -4410,10 +4410,10 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">
                     <WorkoutSchematic kicker={seg.kicker} color="#0F766E" size={32} />
                   </div>
-                  <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-white text-slate-700 border border-slate-200">
+                  <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-white text-slate-800 border border-slate-200">
                     {Math.round(seg.durationSec / 60)}m
                   </span>
-                  <span className="text-slate-700">
+                  <span className="text-slate-800">
                     <span className="font-semibold">{seg.kicker}</span> · {seg.title}
                   </span>
                 </div>
@@ -4488,11 +4488,11 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
           {detail.tip && (
             <div className="rounded-lg bg-amber-100/60 border-2 border-amber-200 px-3 py-2 mb-3">
               <p className="text-[10px] uppercase tracking-wider font-bold text-amber-800 mb-0.5">Pro tip</p>
-              <p className="text-[13px] text-amber-900 leading-relaxed m-0">{detail.tip}</p>
+              <p className="text-[14px] text-amber-900 leading-relaxed m-0">{detail.tip}</p>
             </div>
           )}
           {detail.action && (
-            <p className="text-[13px] text-slate-700 leading-relaxed">
+            <p className="text-[14px] text-slate-800 leading-relaxed">
               → {detail.action}
             </p>
           )}
@@ -4578,13 +4578,13 @@ function RoutineFlow({ routine, onClose, onComplete }) {
         {/* Header */}
         <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100">
           <div>
-            <p className="text-[12px] tracking-[0.2em] uppercase font-semibold text-slate-700">
+            <p className="text-[12px] tracking-[0.2em] uppercase font-semibold text-slate-800">
               {routine.name} · Step {segIdx + 1} of {routine.segments.length}
             </p>
             <p className="text-base font-bold text-slate-900 mt-0.5">{segment.kicker}</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100" aria-label="Close">
-            <X className="w-5 h-5 text-slate-700" />
+            <X className="w-5 h-5 text-slate-800" />
           </button>
         </div>
 
@@ -4650,13 +4650,13 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           <div className="mt-8 space-y-3">
             {segment.exercises.map((ex, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[13px] font-bold text-white"
+                <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[14px] font-bold text-white"
                   style={{ backgroundColor: segColor }}>
                   {i + 1}
                 </span>
                 <div className="flex-1">
                   <p className="text-[16px] font-semibold text-slate-900">{ex.name}</p>
-                  <p className="text-[15px] text-slate-700 mt-0.5">{ex.cue}</p>
+                  <p className="text-[15px] text-slate-800 mt-0.5">{ex.cue}</p>
                 </div>
               </div>
             ))}
@@ -4669,7 +4669,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
             onClick={back}
             disabled={segIdx === 0}
             className={`px-4 py-2.5 rounded-xl text-[16px] font-semibold transition ${
-              segIdx === 0 ? "text-slate-300" : "text-slate-700 hover:bg-slate-100 active:bg-slate-200"
+              segIdx === 0 ? "text-slate-300" : "text-slate-800 hover:bg-slate-100 active:bg-slate-200"
             }`}
           >
             Back
@@ -4804,7 +4804,7 @@ function BreathRhythm({ pattern = "4-4-4-4", color = "#7C3AED" }) {
       </div>
       <div className="flex w-full mt-1 px-0.5">
         {parts.map((p, i) => (
-          <div key={i} className="text-[12px] text-center text-slate-700 font-semibold tabular-nums" style={{ width: `${(p / total) * 100}%` }}>
+          <div key={i} className="text-[12px] text-center text-slate-800 font-semibold tabular-nums" style={{ width: `${(p / total) * 100}%` }}>
             {p}s
           </div>
         ))}
@@ -4887,7 +4887,7 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
       </div>
       {open && (
         <div
-          className="mt-2 pl-9 pr-1 pt-2 border-t text-[13px] leading-relaxed"
+          className="mt-2 pl-9 pr-1 pt-2 border-t text-[14px] leading-relaxed"
           style={{ borderColor: theme.heroBorder, color: "#334155", fontFamily: SERIF }}
         >
           {expansion}
@@ -5050,7 +5050,7 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
                 {item.theme}
               </p>
             )}
-            <p className="text-[11px] text-slate-700 mt-0.5 leading-tight truncate">
+            <p className="text-[11px] text-slate-800 mt-0.5 leading-tight truncate">
               {item.fits_gap || item.headline || item.why_now || "Tap for reasoning"}
             </p>
           </div>
@@ -5061,7 +5061,7 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 
   return (
     <div>
-      <p className="text-[12px] text-slate-700 italic mb-3 px-1">
+      <p className="text-[12px] text-slate-800 italic mb-3 px-1">
         High-conviction names outside your portfolio, plus catalyst setups on watch. Tap any row for the full thesis.
       </p>
 
@@ -5125,7 +5125,7 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
         </div>
       </div>
 
-      <p className="mt-3 text-[11px] text-slate-700 leading-relaxed italic px-1">
+      <p className="mt-3 text-[11px] text-slate-800 leading-relaxed italic px-1">
         Picks chosen to fit your existing themes and fill diversification gaps. Educational only — verify before buying.
       </p>
     </div>
@@ -5339,7 +5339,7 @@ function ChatSheet({
               <p className="text-[14px] font-bold text-slate-900 truncate" style={{ fontFamily: SERIF }}>
                 Ask Morning Edge
               </p>
-              <p className="text-[11px] text-slate-700 truncate uppercase tracking-wider">
+              <p className="text-[11px] text-slate-800 truncate uppercase tracking-wider">
                 {context.type === "general" ? "Anything goes" : context.type}{context.ticker ? ` · ${context.ticker}` : ""}
               </p>
             </div>
@@ -5348,7 +5348,7 @@ function ChatSheet({
             {messages && messages.length > 0 && (
               <button
                 onClick={onClearChat}
-                className="px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 transition border border-slate-200"
+                className="px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-800 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 transition border border-slate-200"
                 aria-label="Clear conversation"
                 title="Clear this conversation"
               >
@@ -5360,7 +5360,7 @@ function ChatSheet({
               className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 active:bg-slate-200 transition"
               aria-label="Close chat"
             >
-              <X className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
+              <X className="w-4 h-4 text-slate-800" strokeWidth={2.5} />
             </button>
           </div>
         </div>
@@ -5370,7 +5370,7 @@ function ChatSheet({
           {!showCashInput ? (
             <button
               onClick={() => { setShowCashInput(true); setCashDraft(cashBalance != null ? String(cashBalance) : ""); }}
-              className="w-full flex items-center justify-between text-[14px] text-slate-700 hover:text-slate-900 transition"
+              className="w-full flex items-center justify-between text-[14px] text-slate-800 hover:text-slate-900 transition"
             >
               <span className="flex items-center gap-1.5">
                 <Briefcase className="w-3.5 h-3.5" />
@@ -5383,7 +5383,7 @@ function ChatSheet({
             </button>
           ) : (
             <div className="flex items-center gap-2">
-              <span className="text-[12px] text-slate-700 flex-shrink-0">Cash $</span>
+              <span className="text-[12px] text-slate-800 flex-shrink-0">Cash $</span>
               <input
                 type="text"
                 inputMode="decimal"
@@ -5402,7 +5402,7 @@ function ChatSheet({
               </button>
               <button
                 onClick={() => setShowCashInput(false)}
-                className="text-[12px] text-slate-500 hover:text-slate-700"
+                className="text-[12px] text-slate-500 hover:text-slate-800"
               >
                 Cancel
               </button>
@@ -5464,7 +5464,7 @@ function ChatSheet({
                   <p className="text-[14px] text-rose-900 font-semibold leading-snug">
                     Couldn't get a response
                   </p>
-                  <p className="text-[13px] text-rose-800 leading-snug mt-0.5">
+                  <p className="text-[14px] text-rose-800 leading-snug mt-0.5">
                     The AI is taking longer than usual. Try sending your question again, or check back in a moment.
                   </p>
                 </div>
@@ -5611,7 +5611,7 @@ function StockChart({ ticker }) {
           href={`https://www.tradingview.com/symbols/${encodeURIComponent(symbol)}/`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[10px] text-slate-500 hover:text-slate-700 underline"
+          className="text-[10px] text-slate-500 hover:text-slate-800 underline"
         >
           Open {symbol} on TradingView →
         </a>
@@ -5684,7 +5684,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
               style={{ background: "rgba(255,255,255,0.7)" }}
               aria-label="Close"
             >
-              <X className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
+              <X className="w-4 h-4 text-slate-800" strokeWidth={2.5} />
             </button>
           </div>
 
@@ -5699,7 +5699,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
             </p>
           )}
           {data.theme && (
-            <p className="text-[13px] m-0 mt-1 uppercase tracking-wider" style={{ color: theme.accent, fontWeight: 600 }}>
+            <p className="text-[14px] m-0 mt-1 uppercase tracking-wider" style={{ color: theme.accent, fontWeight: 600 }}>
               {data.theme}
             </p>
           )}
@@ -5736,7 +5736,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
           {/* Quick summary if we have why_now */}
           {data.why_now && (
             <div className="mb-4">
-              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-1.5">
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-800 mb-1.5">
                 Quick read
               </p>
               <p className="text-[15px] leading-relaxed m-0" style={{ color: "#1e293b", fontFamily: SERIF }}>
@@ -5748,7 +5748,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
           {/* Deep reasoning — the main content */}
           {data.deep_reasoning ? (
             <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-2">
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-800 mb-2">
                 Why this · the case · what to consider
               </p>
               <p
@@ -5760,7 +5760,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
             </div>
           ) : (
             <div className="rounded-lg bg-amber-50 border-2 border-amber-200 p-3">
-              <p className="text-[13px] text-amber-900 m-0 leading-relaxed">
+              <p className="text-[14px] text-amber-900 m-0 leading-relaxed">
                 Deeper reasoning isn't available for this card yet — pull-to-refresh your brief to regenerate, or tap "Ask about this" below to get a custom explanation right now.
               </p>
             </div>
@@ -5770,7 +5770,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
               into the stock on their preferred research site. */}
           {data.ticker && (
             <div className="mt-5 pt-4 border-t border-slate-200">
-              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-2">
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-800 mb-2">
                 Verify · Learn more about {data.ticker}
               </p>
               <div className="space-y-2">
@@ -5784,7 +5784,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                   <p className="text-[14px] font-bold text-slate-900 leading-snug">
                     Investing.com — {data.ticker}
                   </p>
-                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
                     Full quote, charts, news, technical analysis, and earnings — clean dashboard.
                   </p>
                 </a>
@@ -5798,7 +5798,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                   <p className="text-[14px] font-bold text-slate-900 leading-snug">
                     Seeking Alpha — {data.ticker}
                   </p>
-                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
                     Analyst articles, earnings analysis, bull/bear takes (some content paywalled).
                   </p>
                 </a>
@@ -5812,7 +5812,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                   <p className="text-[14px] font-bold text-slate-900 leading-snug">
                     Yahoo Finance — {data.ticker}
                   </p>
-                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
                     Quick price, news headlines, and basic chart. Always works as a fallback.
                   </p>
                 </a>
@@ -5826,7 +5826,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                   <p className="text-[14px] font-bold text-slate-900 leading-snug">
                     Fintel — {data.ticker} institutional ownership
                   </p>
-                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
                     See which hedge funds and institutions hold this stock. Clean ownership data.
                   </p>
                 </a>
@@ -6062,7 +6062,7 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
               style={{ background: "rgba(255,255,255,0.7)" }}
               aria-label="Close"
             >
-              <X className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
+              <X className="w-4 h-4 text-slate-800" strokeWidth={2.5} />
             </button>
           </div>
           <p className="text-[18px] font-bold m-0 leading-snug" style={{ color: "#0f172a", fontFamily: SERIF }}>
@@ -6091,7 +6091,7 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
           )}
 
           {/* Source list */}
-          <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-2">
+          <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-slate-800 mb-2">
             Verify · Learn more
           </p>
           <div className="space-y-2">
@@ -6116,7 +6116,7 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
                     <p className="text-[14px] font-bold leading-snug" style={{ color: src.primary ? theme.accentDark : "#0f172a" }}>
                       {src.primary && "★ "}{src.name}
                     </p>
-                    <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                    <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
                       {src.desc}
                     </p>
                   </div>
@@ -6191,7 +6191,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
               >
                 <Icon className="w-4 h-4" style={{ color: "white", strokeWidth: 2.8 }} />
               </div>
-              <p className="text-[13px] font-bold tracking-[0.18em] uppercase m-0" style={{ color: theme.labelText }}>
+              <p className="text-[14px] font-bold tracking-[0.18em] uppercase m-0" style={{ color: theme.labelText }}>
                 {parsed.typeLabel} ACTION
               </p>
             </div>
@@ -6201,7 +6201,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
               style={{ background: "rgba(255,255,255,0.7)" }}
               aria-label="Close"
             >
-              <X className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
+              <X className="w-4 h-4 text-slate-800" strokeWidth={2.5} />
             </button>
           </div>
 
@@ -6236,7 +6236,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
           {/* Deep reasoning paragraph — 130-180 word plain-English explanation */}
           {deepReasoning && (
             <div className="mt-4 pt-4 border-t border-slate-200">
-              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-2">
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-800 mb-2">
                 Why this · the case · what to consider
               </p>
               <p
@@ -6252,7 +6252,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
               as Conviction and Radar reading pages. */}
           {parsed.ticker && (
             <div className="mt-5 pt-4 border-t border-slate-200">
-              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-700 mb-2">
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-800 mb-2">
                 Verify · Learn more about {parsed.ticker}
               </p>
               <div className="space-y-2">
@@ -6266,7 +6266,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                   <p className="text-[14px] font-bold text-slate-900 leading-snug">
                     Investing.com — {parsed.ticker}
                   </p>
-                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
                     Full quote, charts, news, technical analysis, and earnings — clean dashboard.
                   </p>
                 </a>
@@ -6280,7 +6280,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                   <p className="text-[14px] font-bold text-slate-900 leading-snug">
                     Seeking Alpha — {parsed.ticker}
                   </p>
-                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
                     Analyst articles, earnings analysis, bull/bear takes (some content paywalled).
                   </p>
                 </a>
@@ -6294,7 +6294,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                   <p className="text-[14px] font-bold text-slate-900 leading-snug">
                     Yahoo Finance — {parsed.ticker}
                   </p>
-                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
                     Quick price, news headlines, and basic chart. Always works as a fallback.
                   </p>
                 </a>
@@ -6308,7 +6308,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                   <p className="text-[14px] font-bold text-slate-900 leading-snug">
                     Fintel — {parsed.ticker} institutional ownership
                   </p>
-                  <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
                     See which hedge funds and institutions hold this stock. Clean ownership data.
                   </p>
                 </a>
@@ -6328,8 +6328,8 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
             )}
             {dismissed && !done && (
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200">
-                <X className="w-3.5 h-3.5 text-slate-700" strokeWidth={2.5} />
-                <span className="text-[12px] font-bold uppercase tracking-wider text-slate-700">Dismissed</span>
+                <X className="w-3.5 h-3.5 text-slate-800" strokeWidth={2.5} />
+                <span className="text-[12px] font-bold uppercase tracking-wider text-slate-800">Dismissed</span>
               </div>
             )}
           </div>
@@ -6430,20 +6430,20 @@ function PowerPlateCard({ plate }) {
           {name}
         </p>
         {description && (
-          <p className="text-[15px] text-slate-700 leading-relaxed mb-3">{description}</p>
+          <p className="text-[15px] text-slate-800 leading-relaxed mb-3">{description}</p>
         )}
         {/* Stats row */}
         <div className="flex items-center gap-2 mb-3">
           {protein_g != null && (
             <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
               <Flame className="w-3 h-3" />
-              <span className="text-[13px] font-bold">{protein_g}g protein</span>
+              <span className="text-[14px] font-bold">{protein_g}g protein</span>
             </div>
           )}
           {prep_min != null && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
               <Timer className="w-3 h-3" />
-              <span className="text-[13px] font-bold">{prep_min} min</span>
+              <span className="text-[14px] font-bold">{prep_min} min</span>
             </div>
           )}
         </div>
@@ -6469,7 +6469,7 @@ function PowerPlateCard({ plate }) {
               <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-amber-800 mb-1">
                 Why this meal today
               </p>
-              <p className="text-[13px] text-slate-800 leading-relaxed m-0">{why_this_meal}</p>
+              <p className="text-[14px] text-slate-800 leading-relaxed m-0">{why_this_meal}</p>
             </div>
           )}
           {groceries.length > 0 && (
@@ -6479,7 +6479,7 @@ function PowerPlateCard({ plate }) {
               </p>
               <ul className="space-y-1.5">
                 {groceries.map((g, i) => (
-                  <li key={i} className="text-[16px] text-slate-700 leading-snug flex gap-2">
+                  <li key={i} className="text-[16px] text-slate-800 leading-snug flex gap-2">
                     <span className="text-amber-500 font-bold flex-shrink-0">·</span>
                     <span>{g}</span>
                   </li>
@@ -6494,7 +6494,7 @@ function PowerPlateCard({ plate }) {
               </p>
               <ol className="space-y-2">
                 {prep_steps.map((s, i) => (
-                  <li key={i} className="text-[16px] text-slate-700 leading-relaxed flex gap-2.5">
+                  <li key={i} className="text-[16px] text-slate-800 leading-relaxed flex gap-2.5">
                     <span className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-800 text-[12px] font-bold flex items-center justify-center mt-0.5">
                       {i + 1}
                     </span>
@@ -6512,7 +6512,7 @@ function PowerPlateCard({ plate }) {
               </p>
               <ul className="space-y-1.5">
                 {swap_options.map((s, i) => (
-                  <li key={i} className="text-[15px] text-slate-700 leading-snug flex gap-2">
+                  <li key={i} className="text-[15px] text-slate-800 leading-snug flex gap-2">
                     <span className="text-amber-500 flex-shrink-0">↔</span>
                     <span>{s}</span>
                   </li>
@@ -6540,7 +6540,7 @@ function SignatureFooter({ verified, hash, compact }) {
   return (
     <footer className={compact ? "pt-6 text-center" : "pt-8 text-center"}>
       {!compact && (
-        <p className="text-[15px] text-slate-700 max-w-md mx-auto leading-relaxed px-4">
+        <p className="text-[15px] text-slate-800 max-w-md mx-auto leading-relaxed px-4">
           Informational and educational use only. Not investment, financial, tax, or medical advice. Consult a licensed financial advisor or healthcare professional before making decisions. Past performance does not guarantee future results. AI-generated content may be inaccurate — verify before acting. <a href="/about" className="underline">About</a> · <a href="/privacy" className="underline">Privacy</a> · <a href="/terms" className="underline">Terms</a> · <a href="/support" className="underline">Support</a>
         </p>
       )}
@@ -6585,7 +6585,7 @@ function SignatureFooter({ verified, hash, compact }) {
         {verified ? <ShieldCheck className="w-3 h-3" /> : <ShieldAlert className="w-3 h-3" />}
         {verified ? "Signed · TP·ME·2026" : "MODIFIED"}
       </div>
-      <p className="text-[9px] text-slate-700 mt-1.5 font-mono tracking-wider">© 2026 T-SPOT · sha {hash}</p>
+      <p className="text-[9px] text-slate-800 mt-1.5 font-mono tracking-wider">© 2026 T-SPOT · sha {hash}</p>
     </footer>
   );
 }
@@ -6630,10 +6630,10 @@ function InAppBrowser({ url, onClose }) {
             <ExternalLink className="w-5 h-5 text-amber-700" />
           </div>
           <h3 className="text-[17px] font-semibold text-slate-900 mb-2">Opened in your browser</h3>
-          <p className="text-[14px] text-slate-700 leading-relaxed mb-1">
+          <p className="text-[14px] text-slate-800 leading-relaxed mb-1">
             <span className="font-semibold break-all">{hostname}</span>
           </p>
-          <p className="text-[13px] text-slate-600 leading-relaxed mb-5">
+          <p className="text-[14px] text-slate-600 leading-relaxed mb-5">
             Switch to your browser to view the source. Come back here when done.
           </p>
           <button
@@ -6667,18 +6667,18 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
       <div className="flex items-center gap-2 bg-white border-b border-slate-200 px-3 py-3 shadow-sm flex-shrink-0">
         <button
           onClick={onClose}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition text-slate-700"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition text-slate-800"
           aria-label="Close brokerage guide"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex-1 min-w-0 px-1">
-          <p className="text-[12px] uppercase tracking-wider text-slate-700 font-semibold leading-tight">Brokerage Help</p>
+          <p className="text-[12px] uppercase tracking-wider text-slate-800 font-semibold leading-tight">Brokerage Help</p>
           <p className="text-[16px] text-slate-900 font-semibold truncate">Where to find your CSV</p>
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition text-slate-700"
+          className="p-1.5 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition text-slate-800"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
@@ -6725,11 +6725,11 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
                       </h3>
                       <ExternalLink className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
                     </div>
-                    <p className="text-[13px] text-slate-700 leading-snug font-medium">
+                    <p className="text-[14px] text-slate-800 leading-snug font-medium">
                       {b.path}
                     </p>
                     {b.notes && (
-                      <p className="text-[12px] text-slate-700 leading-snug mt-1 italic">
+                      <p className="text-[12px] text-slate-800 leading-snug mt-1 italic">
                         {b.notes}
                       </p>
                     )}
@@ -6739,7 +6739,7 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
             ))}
           </div>
 
-          <p className="text-[12px] text-slate-700 leading-relaxed italic text-center mt-4">
+          <p className="text-[12px] text-slate-800 leading-relaxed italic text-center mt-4">
             Don't see your brokerage? Most platforms support CSV export under "Statements,"
             "Documents," or "Account History." Look on desktop if you can't find it on mobile.
           </p>
