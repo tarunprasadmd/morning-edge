@@ -5370,16 +5370,16 @@ function ChatSheet({
           {!showCashInput ? (
             <button
               onClick={() => { setShowCashInput(true); setCashDraft(cashBalance != null ? String(cashBalance) : ""); }}
-              className="w-full flex items-center justify-between text-[12px] text-slate-700 hover:text-slate-900 transition"
+              className="w-full flex items-center justify-between text-[14px] text-slate-700 hover:text-slate-900 transition"
             >
               <span className="flex items-center gap-1.5">
-                <Briefcase className="w-3 h-3" />
+                <Briefcase className="w-3.5 h-3.5" />
                 {cashBalance != null
                   ? <>Cash to deploy: <span className="font-semibold text-slate-900">${cashBalance.toLocaleString()}</span></>
                   : "Set cash to deploy (optional, helps with sizing math)"
                 }
               </span>
-              <Pencil className="w-3 h-3" />
+              <Pencil className="w-3.5 h-3.5" />
             </button>
           ) : (
             <div className="flex items-center gap-2">
@@ -5412,10 +5412,10 @@ function ChatSheet({
 
         {/* Card context preview */}
         <div className="px-4 py-2.5 bg-violet-50/50 border-b border-violet-100">
-          <p className="text-[11px] uppercase tracking-wider font-bold text-violet-700 mb-0.5">
+          <p className="text-[12px] uppercase tracking-wider font-bold text-violet-700 mb-0.5">
             About:
           </p>
-          <p className="text-[13px] text-slate-700 leading-snug line-clamp-2">
+          <p className="text-[15px] text-slate-800 leading-relaxed line-clamp-3">
             {context.description}
           </p>
         </div>
@@ -5428,7 +5428,7 @@ function ChatSheet({
                 style={{ background: "linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%)" }}>
                 <Sparkles className="w-6 h-6 text-violet-700" strokeWidth={2} />
               </div>
-              <p className="text-[15px] text-slate-700 mb-4 max-w-xs leading-relaxed" style={{ fontFamily: SERIF }}>
+              <p className="text-[16px] text-slate-800 mb-4 max-w-xs leading-relaxed" style={{ fontFamily: SERIF }}>
                 {context.type === "general"
                   ? "Ask me anything about your portfolio, today's market, or the brief."
                   : "Ask anything about this. I know your portfolio and today's market read."}
@@ -5438,7 +5438,7 @@ function ChatSheet({
                   <button
                     key={i}
                     onClick={() => onSend(q)}
-                    className="text-left text-[13px] px-3 py-2 rounded-lg border border-violet-200 bg-white hover:bg-violet-50 active:bg-violet-100 transition text-slate-800"
+                    className="text-left text-[15px] px-3.5 py-2.5 rounded-lg border border-violet-200 bg-white hover:bg-violet-50 active:bg-violet-100 transition text-slate-900"
                   >
                     {q}
                   </button>
@@ -5451,7 +5451,7 @@ function ChatSheet({
             ))
           )}
           {loading && (
-            <div className="flex items-center gap-2 text-[13px] text-slate-500 italic px-1">
+            <div className="flex items-center gap-2 text-[14px] text-slate-600 italic px-1">
               <span className="inline-block w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
               Thinking…
             </div>
@@ -5461,10 +5461,10 @@ function ChatSheet({
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-rose-700 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] text-rose-900 font-semibold leading-snug">
+                  <p className="text-[14px] text-rose-900 font-semibold leading-snug">
                     Couldn't get a response
                   </p>
-                  <p className="text-[12px] text-rose-700 leading-snug mt-0.5">
+                  <p className="text-[13px] text-rose-800 leading-snug mt-0.5">
                     The AI is taking longer than usual. Try sending your question again, or check back in a moment.
                   </p>
                 </div>
@@ -5489,13 +5489,13 @@ function ChatSheet({
               placeholder={loading ? "Waiting…" : "Type your question…"}
               rows={1}
               disabled={loading}
-              className="flex-1 px-3 py-2 text-[14px] border border-slate-300 rounded-xl outline-none focus:border-violet-500 resize-none max-h-32"
-              style={{ minHeight: 40 }}
+              className="flex-1 px-3.5 py-2.5 text-[16px] border border-slate-300 rounded-xl outline-none focus:border-violet-500 resize-none max-h-32"
+              style={{ minHeight: 44 }}
             />
             <button
               onClick={() => { if (input.trim()) onSend(input); }}
               disabled={loading || !input.trim()}
-              className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition active:scale-95 disabled:opacity-50"
+              className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition active:scale-95 disabled:opacity-50"
               style={{
                 background: input.trim() && !loading
                   ? "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)"
@@ -5503,10 +5503,10 @@ function ChatSheet({
               }}
               aria-label="Send message"
             >
-              <ArrowRight className="w-4 h-4 text-white" strokeWidth={3} />
+              <ArrowRight className="w-5 h-5 text-white" strokeWidth={3} />
             </button>
           </div>
-          <p className="text-[10px] text-slate-500 italic mt-1.5 text-center">
+          <p className="text-[12px] text-slate-600 italic mt-2 text-center">
             Informational only. Not financial advice.
           </p>
         </div>
@@ -6144,10 +6144,10 @@ function ChatMessageBubble({ role, content }) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-[14px] leading-relaxed whitespace-pre-wrap break-words ${
+        className={`max-w-[85%] px-3.5 py-3 rounded-2xl text-[16px] leading-relaxed whitespace-pre-wrap break-words ${
           isUser
             ? "bg-slate-900 text-white rounded-br-md"
-            : "bg-violet-50 text-slate-800 border border-violet-100 rounded-bl-md"
+            : "bg-violet-50 text-slate-900 border border-violet-100 rounded-bl-md"
         }`}
         style={isUser ? {} : { fontFamily: SERIF }}
       >
