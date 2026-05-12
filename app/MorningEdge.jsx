@@ -1116,11 +1116,11 @@ export default function MorningEdge() {
 
   // ─── Live price fetching ─────────────────────────────────────────
   // When holdings load (or change), fetch current prices from /api/prices.
-  // Updates each holding's gainPct based on today's price change.
-  // The /api/prices endpoint uses Finnhub when FINNHUB_API_KEY is set on
-  // Vercel; without the key it returns an empty object and the ticker
-  // gracefully shows no percentages (see HoldingsMarquee).
-  // We refetch every 5 minutes during market hours, and on first load.
+  // Updates each holding's gainPct (which becomes today's % change) and
+  // currentPrice + dayChange. /api/prices uses yahoo-finance2 (free, no key
+  // needed). We refetch every 5 minutes while the app is open and on first
+  // load. Silent failure on any error — better to show no percentages than
+  // fake ones.
   useEffect(() => {
     if (phase !== "app") return;
     if (!holdings || holdings.length === 0) return;
@@ -1166,7 +1166,7 @@ export default function MorningEdge() {
     };
 
     // Fetch immediately, then refresh every 5 minutes while the app is
-    // open. This keeps the ticker fresh without hammering Finnhub.
+    // open. This keeps the ticker fresh without hammering the data source.
     fetchPrices();
     const interval = setInterval(fetchPrices, 5 * 60 * 1000);
     return () => {
@@ -1643,10 +1643,30 @@ export default function MorningEdge() {
     await Store.del("me-progress");
     await Store.del("me-holdings");
     await Store.del("me-briefs"); await Store.del("me-accounts");
+    // Clear ALL chat conversations (one localStorage key per card: me-chat-{id})
+    try {
+      const toDelete = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("me-chat-")) toDelete.push(k);
+      }
+      toDelete.forEach((k) => localStorage.removeItem(k));
+    } catch (_e) { /* ignore */ }
     setName(""); setPortfolio([]); setHoldings([]); setAccountsState([]); setHoldingsRefreshedAt(null);
     setBrief(null); setCompletedDecisions({}); setRoutineDays({});
     setTempName(""); setTempPortfolio([]);
     setShowSettings(false); setPhase("onboard-1");
+  };
+
+  // Clear the current chat's conversation only — useful when prior turns
+  // are stuck with the model insisting "I can't fetch live prices" from
+  // before the tools were wired up. Doesn't touch any other chat or data.
+  const clearCurrentChat = () => {
+    if (!chatContext || !chatContext.id) return;
+    try { localStorage.removeItem(`me-chat-${chatContext.id}`); } catch (_e) { /* ignore */ }
+    setChatMessages([]);
+    setChatError(null);
+    setChatInput("");
   };
   const addTicker = () => {
     const t = tickerInput.trim().toUpperCase();
@@ -1657,9 +1677,9 @@ export default function MorningEdge() {
 
   // CSV import — parses common brokerage exports (Fidelity, Schwab, Robinhood, Webull, E*Trade, Vanguard).
   // Extracts symbol + quantity + cost basis + current value + gain%.
-  // All data stays on device — never sent to any server beyond the brief generation request.
-  // Multi-account: each upload is staged in pendingCsvUpload, then committed under a user-supplied label.
-  const handleCsvUpload = (e) => {console.log("CSV UPLOAD FIRED", e.target.files);
+  // Holdings are sent to /api/brief for generation but never stored server-side beyond a short-lived cache.
+  // On successful upload we commit directly and close the import modal so the user sees the populated holdings.
+  const handleCsvUpload = (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     setCsvImportMessage(null);
@@ -1741,16 +1761,39 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           return;
         }
 
-        // Stage the upload — user must label the account before commit
-       const _label = guess || "Account";
-            const _newAccountId = `acct_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-            const _newAccount = { id: _newAccountId, name: _label, brokerage: guess || "", uploadedAt: Date.now(), holdingCount: newHoldings.length };
-            const _tagged = newHoldings.map((h) => ({ ...h, accountId: _newAccountId }));
-            setAccountsState((prev) => [...prev, _newAccount]);
-            setHoldings((prev) => [...prev, ..._tagged]);
-            setHoldingsRefreshedAt(Date.now());
-            setPortfolio((prev) => Array.from(new Set([...prev, ...Array.from(tickers)])));
-            setCsvImportMessage({ type: "ok", text: `Added ${newHoldings.length} positions.` }); 
+        // Commit directly — label is derived from the filename's brokerage guess.
+        // (Modal closes after a short delay so the user sees the success message,
+        // then sees their populated holdings beneath.)
+        const label = guess || "Account";
+        const newAccountId = `acct_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+        const newAccount = {
+          id: newAccountId,
+          name: label,
+          brokerage: guess || "",
+          uploadedAt: Date.now(),
+          holdingCount: newHoldings.length,
+        };
+        const tagged = newHoldings.map((h) => ({ ...h, accountId: newAccountId }));
+        const withQty = newHoldings.filter((h) => h.qty != null).length;
+
+        setAccountsState((prev) => [...prev, newAccount]);
+        setHoldings((prev) => [...prev, ...tagged]);
+        setHoldingsRefreshedAt(Date.now());
+        setPortfolio((prev) => Array.from(new Set([...prev, ...Array.from(tickers)])));
+        setCsvImportMessage({
+          type: "ok",
+          text: `Added ${newHoldings.length} position${newHoldings.length === 1 ? "" : "s"} under "${label}"${withQty ? ` · ${withQty} with shares` : ""}.`,
+        });
+
+        // Close the import modal after a beat so the user sees the success message
+        // and then sees their freshly populated holdings (the modal had been hiding them).
+        setTimeout(() => {
+          setShowCsvImport(false);
+          // If no brief yet, auto-generate one now that we have holdings.
+          if (!brief && !loading) {
+            setTimeout(() => generateBrief(), 100);
+          }
+        }, 1200);
       } catch (err) {
         setCsvImportMessage({ type: "error", text: "Couldn't parse that file. Make sure it's a CSV." });
       }
@@ -1894,7 +1937,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 Welcome <span className="italic text-slate-700">aboard.</span>
               </h1>
               <p className="text-[16px] text-slate-700 mb-5 leading-relaxed">
-                30-second setup. Your data stays on your device.
+                30-second setup. No account, no sign-in.
               </p>
               <label className="text-[13px] uppercase tracking-widest text-slate-700 font-semibold mb-2 block">What should we call you?</label>
               <input
@@ -2084,7 +2127,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 <ChevronRight className="w-3 h-3" />
               </button>
               <p className="text-[12px] text-slate-700 italic mt-2 leading-snug">
-                We never see your password. We only read the CSV you upload. Holdings stay on this device until a brief is generated, and are never stored on our servers.
+                We never see your password. We only read the CSV you upload. Holdings are sent to our server only when generating a brief, then cached briefly under a non-identifying hash. See <a href="/privacy" className="underline">Privacy Policy</a> for details.
               </p>
             </div>
 
@@ -2183,7 +2226,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 </div>
               )}
               <p className="text-[12px] text-slate-700 leading-relaxed mt-2">
-                Holdings stay on your device. We only send them to generate today's brief — never stored on any server.
+                Holdings are sent to our server only to generate your brief, then cached briefly under a non-identifying hash.
               </p>
             </div>
           </div>
@@ -2496,6 +2539,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           }}
           onSend={sendChatMessage}
           onClose={closeChat}
+          onClearChat={clearCurrentChat}
         />
       )}
 
@@ -3004,7 +3048,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         style={{ color: "#D4A574" }} />
                     </div>
                     <p className="text-[13px] text-slate-500 mt-3 ml-14 leading-relaxed">
-                      Tap to open. Upload a CSV from any brokerage. Holdings stay on your device.
+                      Tap to open. Upload a CSV from any brokerage. Read-only — we never see your password.
                     </p>
                   </button>
                 )}
@@ -3479,7 +3523,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 {/* Three boxed sub-sections — Whales, Congress, Hedge Funds */}
                 <div className="space-y-3">
                   {/* Whales (institutional 13F filings) */}
-                  <div className="rounded-xl border-2 border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_6%,#f1f1ee_9%,#f6f5f1_45%,#fef3c7_100%)] shadow-[inset_0_1.5px_0_rgba(255,255,255,1),inset_0_-2px_4px_rgba(120,53,15,0.08),0_4px_12px_-2px_rgba(0,0,0,0.1)] p-3.5">
+                  <div className="rounded-xl border-2 border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#fdfcf8_25%,#fbf7ed_60%,#faf2dd_85%,#fef7df_100%)] shadow-[inset_0_1.5px_0_rgba(255,255,255,1),inset_0_-2px_4px_rgba(120,53,15,0.06),0_4px_12px_-2px_rgba(0,0,0,0.1)] p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
                       <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
@@ -3504,7 +3548,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   </div>
 
                   {/* Congress (STOCK Act disclosures) */}
-                  <div className="rounded-xl border-2 border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_6%,#f1f1ee_9%,#f6f5f1_45%,#fef3c7_100%)] shadow-[inset_0_1.5px_0_rgba(255,255,255,1),inset_0_-2px_4px_rgba(120,53,15,0.08),0_4px_12px_-2px_rgba(0,0,0,0.1)] p-3.5">
+                  <div className="rounded-xl border-2 border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#fdfcf8_25%,#fbf7ed_60%,#faf2dd_85%,#fef7df_100%)] shadow-[inset_0_1.5px_0_rgba(255,255,255,1),inset_0_-2px_4px_rgba(120,53,15,0.06),0_4px_12px_-2px_rgba(0,0,0,0.1)] p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
                       <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
@@ -3529,7 +3573,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   </div>
 
                   {/* Hedge Funds — always render so users see the section is intentional */}
-                  <div className="rounded-xl border-2 border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_6%,#f1f1ee_9%,#f6f5f1_45%,#fef3c7_100%)] shadow-[inset_0_1.5px_0_rgba(255,255,255,1),inset_0_-2px_4px_rgba(120,53,15,0.08),0_4px_12px_-2px_rgba(0,0,0,0.1)] p-3.5">
+                  <div className="rounded-xl border-2 border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#fdfcf8_25%,#fbf7ed_60%,#faf2dd_85%,#fef7df_100%)] shadow-[inset_0_1.5px_0_rgba(255,255,255,1),inset_0_-2px_4px_rgba(120,53,15,0.06),0_4px_12px_-2px_rgba(0,0,0,0.1)] p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
                       <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
@@ -4147,8 +4191,7 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
                     {/* Only render the percentage if we have a real value.
                         m.change comes from h.gainPct on user holdings —
                         which is null/undefined until live prices are
-                        fetched. Once the prices endpoint is wired up
-                        with a Finnhub key, this will populate. */}
+                        fetched from /api/prices (uses yahoo-finance2). */}
                     {m.change != null && Number(m.change) !== 0 && (
                       <span className={up ? "text-emerald-300 font-bold" : "text-rose-300 font-bold"}>
                         {up ? "+" : ""}
@@ -5132,6 +5175,7 @@ function ChatSheet({
   onSetCash,      // (n) => void
   onSend,         // (text) => void
   onClose,        // () => void
+  onClearChat,    // () => void — wipes this chat's conversation only
 }) {
   const scrollRef = React.useRef(null);
   const inputRef = React.useRef(null);
@@ -5255,13 +5299,25 @@ function ChatSheet({
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 active:bg-slate-200 transition"
-            aria-label="Close chat"
-          >
-            <X className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
-          </button>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {messages && messages.length > 0 && (
+              <button
+                onClick={onClearChat}
+                className="px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 transition border border-slate-200"
+                aria-label="Clear conversation"
+                title="Clear this conversation"
+              >
+                Clear
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 active:bg-slate-200 transition"
+              aria-label="Close chat"
+            >
+              <X className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
+            </button>
+          </div>
         </div>
 
         {/* Cash balance setter (collapsed pill, expandable) */}
@@ -6440,7 +6496,7 @@ function SignatureFooter({ verified, hash, compact }) {
     <footer className={compact ? "pt-6 text-center" : "pt-8 text-center"}>
       {!compact && (
         <p className="text-[15px] text-slate-700 max-w-md mx-auto leading-relaxed px-4">
-          Informational and educational use only. Not investment, financial, tax, or medical advice. Consult a licensed financial advisor or healthcare professional before making decisions. Past performance does not guarantee future results. AI-generated content may be inaccurate — verify before acting. Your data stays on your device. <a href="/about" className="underline">About</a> · <a href="/privacy" className="underline">Privacy</a> · <a href="/terms" className="underline">Terms</a> · <a href="/support" className="underline">Support</a>
+          Informational and educational use only. Not investment, financial, tax, or medical advice. Consult a licensed financial advisor or healthcare professional before making decisions. Past performance does not guarantee future results. AI-generated content may be inaccurate — verify before acting. <a href="/about" className="underline">About</a> · <a href="/privacy" className="underline">Privacy</a> · <a href="/terms" className="underline">Terms</a> · <a href="/support" className="underline">Support</a>
         </p>
       )}
 
@@ -6604,8 +6660,8 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
             )}
             <p className="mt-2 font-semibold text-amber-900">
               We never see your password. We only read the CSV you upload. Holdings
-              stay on your device until a brief is generated, and are never stored
-              on our servers.
+              are sent to our server only when generating a brief, then cached briefly
+              under a non-identifying hash. See <a href="/privacy" className="underline">Privacy Policy</a> for details.
             </p>
           </div>
 
