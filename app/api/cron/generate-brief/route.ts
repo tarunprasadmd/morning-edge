@@ -106,7 +106,7 @@ async function callJsonChunk(
 const COMMON_PREAMBLE = (name: string, date: string) =>
   `You are a JSON generator. Output ONLY a single valid JSON object — no prose, no markdown, no code fences. Start with { and end with }.
 
-Generate part of a morning briefing for ${name || "the user"} on ${date}. The reader is a sophisticated multi-account swing trader who knows technical analysis, smart-money signals (13F, STOCK Act, Form 4s), and macro catalysts. No beginner advice. No filler. They invest in: AI infrastructure, semiconductors, quantum computing, crypto-mining-to-HPC, nuclear, rare earths, and speculative biotech.
+Generate part of a morning briefing for ${name || "the user"} on ${date}. The reader is a sophisticated multi-account swing trader who knows technical analysis, smart-money signals (13F, STOCK Act, Form 4s), and macro catalysts. No beginner advice. No filler. They invest in: AI infrastructure, semiconductors, quantum computing, crypto-mining-to-HPC, nuclear, rare earths, and speculative biotech. CRITICAL TICKER ACCURACY: Never guess company names from tickers. When in doubt, write ONLY the ticker symbol. SMMT = Summit Therapeutics (biotech), NOT Summit Materials. CIFR = Cipher Mining. APLD = Applied Digital. USAR = USA Rare Earth. SMR = NuScale. IREN = Iris Energy. PLTR = Palantir. CRWV = CoreWeave.
 `;
 
 async function generateLayerAMarket(name: string, tickers: string, date: string): Promise<any> {
@@ -379,7 +379,7 @@ export async function GET(request: Request) {
 
   // Persist Layer A so brief route can use it
   try {
-    await redis.set(`layer-a:${dateKey}`, layerA, { ex: LAYER_A_TTL_SECONDS });
+    if (layerA.market_pulse && layerA.smart_money) await redis.set(`layer-a:${dateKey}`, layerA, { ex: LAYER_A_TTL_SECONDS });
   } catch (err) {
     console.warn("Cron: failed to write layer-a:", err);
   }
@@ -420,7 +420,7 @@ export async function GET(request: Request) {
   // Cache the full brief keyed by today + holdings hash
   const hHash = holdingsHash(holdings);
   try {
-    await redis.set(`brief-full:${dateKey}:${hHash}`, merged, { ex: FULL_BRIEF_TTL_SECONDS });
+    if (merged.smart_money) await redis.set(`brief-full:${dateKey}:${hHash}`, merged, { ex: FULL_BRIEF_TTL_SECONDS });
   } catch (err) {
     console.warn("Cron: failed to write brief-full:", err);
   }
