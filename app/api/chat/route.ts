@@ -459,8 +459,8 @@ export async function POST(req: Request) {
       conversation.push({ role: "assistant", content: response.content });
 
       // Collect any tool_use blocks
-      const toolUseBlocks = response.content.filter((b: any) => b.type === "tool_use");
-      const textBlocks = response.content.filter((b: any) => b.type === "text");
+      const toolUseBlocks: any[] = response.content.filter((b: any) => b.type === "tool_use") as any[];
+      const textBlocks: any[] = response.content.filter((b: any) => b.type === "text") as any[];
 
       if (toolUseBlocks.length === 0 || response.stop_reason === "end_turn") {
         // No more tools to run — collect text and exit
