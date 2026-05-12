@@ -19,7 +19,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
-import yahooFinance from "yahoo-finance2";
+import YahooFinance from "yahoo-finance2";
 import { Redis } from "@upstash/redis";
 
 export const runtime = "nodejs";
@@ -29,6 +29,9 @@ export const dynamic = "force-dynamic";
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
+
+// yahoo-finance2 v3 requires instantiation (changed from v2 singleton)
+const yahooFinance: any = new (YahooFinance as any)();
 
 // ─── Rate limiting via Upstash INCR ──────────────────────────────────
 // Defends against abuse if the endpoint is ever crawled or hit by a
