@@ -2064,7 +2064,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         window.open(b.url, "_blank", "noopener,noreferrer");
                       }
                     }}
-                    className="w-full flex items-center gap-2 bg-white border border-amber-200 rounded-lg px-2.5 py-2 hover:border-amber-300 hover:bg-amber-50/60 active:bg-amber-100 transition text-left"
+                    className="w-full flex items-center gap-2 bg-white border-2 border-amber-200 rounded-lg px-2.5 py-2 hover:border-amber-300 hover:bg-amber-50/60 active:bg-amber-100 transition text-left"
                   >
                     <span className="text-[15px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate" style={{ fontFamily: SERIF }}>
                       {b.name}
@@ -2158,7 +2158,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               {holdings.length > 0 && (
                 <div className={`mt-2 px-3 py-2 rounded-md text-[13px] ${
                   holdingsAgeDays != null && holdingsAgeDays > 7
-                    ? "bg-amber-50 border border-amber-200 text-amber-900"
+                    ? "bg-amber-50 border-2 border-amber-200 text-amber-900"
                     : "bg-slate-100 border border-slate-200 text-slate-700"
                 }`}>
                   <p className="font-semibold mb-0.5">
@@ -2637,7 +2637,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 </div>
               ) : (
                 // Untagged legacy holdings — show a "Clear holdings" option
-                <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+                <div className="flex items-center gap-2 bg-amber-50 border-2 border-amber-200 rounded-xl px-3 py-2.5">
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-semibold text-amber-900">
                       {holdings.length} unassigned position{holdings.length === 1 ? "" : "s"}
@@ -2707,7 +2707,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             })()}
           </button>
           {error && (
-            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2 text-[16px] text-amber-800">
+            <div className="mt-3 p-3 bg-amber-50 border-2 border-amber-200 rounded-xl flex gap-2 text-[16px] text-amber-800">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span className="break-words">{error}</span>
             </div>
@@ -2716,7 +2716,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
       )}
       {error && brief && !loading && (
         <div className="relative px-6 pb-2">
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2 text-[16px] text-amber-800">
+          <div className="p-3 bg-amber-50 border-2 border-amber-200 rounded-xl flex gap-2 text-[16px] text-amber-800">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span className="break-words">{error}</span>
           </div>
@@ -3300,7 +3300,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
                 {/* Compact summary banner — Today's Edge alerts + Most Bought/Sold tiles */}
                 {brief.smart_money.summary && (
-                  <div className="mb-5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 px-3.5 py-3">
+                  <div className="mb-5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 px-3.5 py-3">
                     <div className="flex items-center gap-2 mb-1">
                       <Sparkles className="w-3 h-3 text-amber-700" />
                       <p className="text-[12px] uppercase tracking-[0.2em] text-amber-800 font-bold">
@@ -3479,7 +3479,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 {/* Three boxed sub-sections — Whales, Congress, Hedge Funds */}
                 <div className="space-y-3">
                   {/* Whales (institutional 13F filings) */}
-                  <div className="rounded-xl border border-amber-200 bg-white/60 p-3.5">
+                  <div className="rounded-xl border-2 border-amber-200 bg-white/60 p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
                       <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
@@ -3504,7 +3504,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   </div>
 
                   {/* Congress (STOCK Act disclosures) */}
-                  <div className="rounded-xl border border-amber-200 bg-white/60 p-3.5">
+                  <div className="rounded-xl border-2 border-amber-200 bg-white/60 p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
                       <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
@@ -3529,7 +3529,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   </div>
 
                   {/* Hedge Funds — always render so users see the section is intentional */}
-                  <div className="rounded-xl border border-amber-200 bg-white/60 p-3.5">
+                  <div className="rounded-xl border-2 border-amber-200 bg-white/60 p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
                       <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
@@ -3569,9 +3569,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   <p className="text-[13px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-3">
                     Whales · Congress · Hedge Funds
                   </p>
-                  <div className="rounded-xl bg-amber-50/60 border border-amber-200 p-4">
+                  <div className="rounded-xl bg-amber-50/60 border-2 border-amber-200 p-4">
                     <p className="text-[14px] text-amber-900 leading-relaxed m-0">
-                      Couldn't load institutional flow data right now. Pull to refresh, or check back in a few minutes.
+                     Couldn't load institutional flow data right now. Pull to refresh, or check back in a few minutes.
                     </p>
                   </div>
                 </div>
@@ -3731,7 +3731,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         <Utensils className="w-3 h-3" /> Daily Power Plate
                       </p>
                       {brief.power_plate.style && (
-                        <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200 font-semibold">
+                        <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border-2 border-amber-200 font-semibold">
                           {brief.power_plate.style}
                         </span>
                       )}
@@ -4443,7 +4443,7 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
             </div>
           )}
           {detail.tip && (
-            <div className="rounded-lg bg-amber-100/60 border border-amber-200 px-3 py-2 mb-3">
+            <div className="rounded-lg bg-amber-100/60 border-2 border-amber-200 px-3 py-2 mb-3">
               <p className="text-[10px] uppercase tracking-wider font-bold text-amber-800 mb-0.5">Pro tip</p>
               <p className="text-[13px] text-amber-900 leading-relaxed m-0">{detail.tip}</p>
             </div>
@@ -5658,7 +5658,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
               </p>
             </div>
           ) : (
-            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+            <div className="rounded-lg bg-amber-50 border-2 border-amber-200 p-3">
               <p className="text-[13px] text-amber-900 m-0 leading-relaxed">
                 Deeper reasoning isn't available for this card yet — pull-to-refresh your brief to regenerate, or tap "Ask about this" below to get a custom explanation right now.
               </p>
@@ -6322,7 +6322,7 @@ function PowerPlateCard({ plate }) {
     pairing,
   } = plate;
   return (
-    <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50/70 to-orange-50/40 overflow-hidden">
+    <div className="rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50/70 to-orange-50/40 overflow-hidden">
       {/* Header — always visible */}
       <div className="px-4 pt-4 pb-3">
         <p className="text-[16px] font-bold text-slate-900 leading-snug mb-1.5" style={{ fontFamily: SERIF }}>
@@ -6348,7 +6348,7 @@ function PowerPlateCard({ plate }) {
         </div>
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full text-left px-3 py-2 rounded-lg bg-white border border-amber-200 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-between"
+          className="w-full text-left px-3 py-2 rounded-lg bg-white border-2 border-amber-200 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-between"
         >
           <span className="text-[15px] font-semibold text-slate-800 flex items-center gap-1.5">
             <ShoppingBasket className="w-3.5 h-3.5 text-amber-700" />
@@ -6364,7 +6364,7 @@ function PowerPlateCard({ plate }) {
           {/* Why this meal today — context paragraph explaining nutritional rationale.
               Tucked inside the expanded view so the card stays compact when collapsed. */}
           {why_this_meal && (
-            <div className="rounded-lg bg-white/70 border border-amber-200/60 px-3 py-2.5 mt-3">
+            <div className="rounded-lg bg-white/70 border-2 border-amber-200/60 px-3 py-2.5 mt-3">
               <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-amber-800 mb-1">
                 Why this meal today
               </p>
@@ -6421,7 +6421,7 @@ function PowerPlateCard({ plate }) {
           )}
           {/* Pairing suggestion — drink/side */}
           {pairing && (
-            <div className="rounded-lg bg-amber-100/50 border border-amber-200 px-3 py-2.5">
+            <div className="rounded-lg bg-amber-100/50 border-2 border-amber-200 px-3 py-2.5">
               <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-amber-800 mb-1">
                 Pair with
               </p>
@@ -6586,7 +6586,7 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
 
       <div className="flex-1 overflow-y-auto bg-slate-50">
         <div className="px-4 py-4">
-          <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-3 mb-4 text-[15px] text-amber-900 leading-relaxed">
+          <div className="rounded-xl bg-amber-50 border-2 border-amber-200 px-3 py-3 mb-4 text-[15px] text-amber-900 leading-relaxed">
             <p className="font-semibold mb-1">How this works</p>
             {isMobile ? (
               <p>
