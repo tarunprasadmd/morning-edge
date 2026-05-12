@@ -9,12 +9,16 @@
 // CRON_SECRET environment variable. We verify the Authorization header
 // matches "Bearer ${CRON_SECRET}" before doing any work.
 //
-// Status: idempotent. Safe to run multiple times per day; it just
-// overwrites the cache.
+// Cache safety: Layer A and brief-full are written ONLY when their
+// content is genuinely populated. An empty smart_money block (whales,
+// congress, hedge funds all empty arrays) is treated as a failed
+// generation and NOT cached — preventing poisoned cache from serving
+// blank Insider Flow boxes for hours.
 
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { Redis } from "@upstash/redis"; import crypto from "crypto";
+import { Redis } from "@upstash/redis";
+import crypto from "crypto";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -28,15 +32,31 @@ let redis: Redis | null = null;
 try {
   const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (url && token) {
-    redis = new Redis({ url, token });
-  }
+  if (url && token) redis = new Redis({ url, token });
 } catch (err) {
-  console.warn("Cron Upstash init failed:", err);
+  console.warn("Cron: Upstash init failed:", err);
 }
 
 const LAYER_A_TTL_SECONDS = 30 * 60 * 60;
 const FULL_BRIEF_TTL_SECONDS = 30 * 60 * 60;
+
+// ─── Content validation helpers ──────────────────────────────────────
+// Single source of truth for "is this content actually populated".
+// Used in both write guards and any future read paths.
+
+function hasSmartMoneyContent(sm: any): boolean {
+  if (!sm || typeof sm !== "object") return false;
+  const whaleN = Array.isArray(sm.whale_moves) ? sm.whale_moves.length : 0;
+  const congressN = Array.isArray(sm.congress_moves) ? sm.congress_moves.length : 0;
+  const hedgeN = Array.isArray(sm.hedge_fund_moves) ? sm.hedge_fund_moves.length : 0;
+  return (whaleN + congressN + hedgeN) > 0;
+}
+
+function hasMarketPulseContent(mp: any): boolean {
+  if (!mp || typeof mp !== "object") return false;
+  if (!mp.summary || typeof mp.summary !== "string" || mp.summary.length < 5) return false;
+  return true;
+}
 
 function todayDateString(): string {
   return new Date().toISOString().slice(0, 10);
@@ -47,19 +67,11 @@ function holdingsHash(holdings: any[]): string {
     .map((h: any) => `${h.symbol}:${h.qty ?? ""}:${h.accountId ?? ""}`)
     .sort()
     .join(",");
-  // Simple hash without crypto to keep cron route lightweight
-  let h = 0;
-  for (let i = 0; i < fp.length; i++) {
-    h = ((h << 5) - h) + fp.charCodeAt(i);
-    h = h & h;
-  }
   return crypto.createHash("sha256").update(fp).digest("hex").slice(0, 16);
 }
 
-// Cron-side helpers — use the @anthropic-ai/sdk to call into the same
-// generation logic as the brief route, but without importing from it
-// (Next.js route segments can't import each other directly).
-
+// Strip <cite> tags from model output — they're meant for inline citation
+// but show up as visible <cite> text in JSON strings when web_search is used.
 function stripCiteTags<T>(value: T): T {
   if (typeof value === "string") {
     return value
@@ -77,23 +89,44 @@ function stripCiteTags<T>(value: T): T {
   return value;
 }
 
+// Retry wrapper for Anthropic calls — two attempts with 1.5s backoff on
+// transient/5xx errors. Schema errors fail fast.
+async function callWithRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
+  try {
+    return await fn();
+  } catch (err: any) {
+    const status = err?.status || err?.response?.status;
+    const transient = !status || status >= 500 || status === 429;
+    if (!transient) {
+      console.warn(`Cron ${label}: non-retriable error:`, err?.message || err);
+      throw err;
+    }
+    console.warn(`Cron ${label}: transient error, retrying once:`, err?.message || err);
+    await new Promise((r) => setTimeout(r, 1500));
+    return await fn();
+  }
+}
+
 async function callJsonChunk(
   prompt: string,
-  opts: { search?: boolean; maxTokens?: number; maxSearches?: number; model?: string } = {}
+  opts: { search?: boolean; maxTokens?: number; maxSearches?: number; model?: string; label?: string } = {}
 ) {
-  const { search = false, maxTokens = 2500, maxSearches = 3, model = "claude-sonnet-4-5" } = opts;
-  const response = await anthropic.messages.create({
-    model,
-    max_tokens: maxTokens,
-    ...(search
-      ? {
-          tools: [
-            { type: "web_search_20250305", name: "web_search", max_uses: maxSearches } as any,
-          ],
-        }
-      : {}),
-    messages: [{ role: "user", content: prompt }],
-  });
+  const { search = false, maxTokens = 2500, maxSearches = 3, model = "claude-sonnet-4-5", label = "chunk" } = opts;
+  const response = await callWithRetry(() =>
+    anthropic.messages.create({
+      model,
+      max_tokens: maxTokens,
+      ...(search
+        ? {
+            tools: [
+              { type: "web_search_20250305", name: "web_search", max_uses: maxSearches } as any,
+            ],
+          }
+        : {}),
+      messages: [{ role: "user", content: prompt }],
+    }),
+    label
+  );
   const textBlocks = response.content.filter((b: any) => b.type === "text");
   const rawText = textBlocks.map((b: any) => b.text || "").join("\n");
   const cleaned = rawText.replace(/```json\s*/gi, "").replace(/```/g, "").trim();
@@ -139,7 +172,7 @@ Return ONLY this JSON:
 todays_edge_market: 0-3 risk flags only if genuinely time-sensitive. Empty arrays fine.
 radar_candidates: 8-10 high-conviction thematic stocks across AI/semis/nuclear/quantum/rare earths/biotech/crypto infra. Each entry MUST include deep_reasoning.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 6000, maxSearches: 3 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 6000, maxSearches: 3, label: "layerA-market" });
 }
 
 async function generateSmartMoney(name: string, date: string): Promise<any> {
@@ -168,9 +201,12 @@ CRITICAL DATA RULES:
 - whale_moves/congress_moves/hedge_fund_moves: 3-5 entries each. Every entry MUST be a SPECIFIC TRADE by a NAMED person/fund with a real ticker. Empty arrays fine.
 - BAD examples never to include: news commentary, calendar notes, vague exposure summaries, political headlines, generic crowd statements.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 8000, maxSearches: 4 });
+  return callJsonChunk(prompt, { search: true, maxTokens: 8000, maxSearches: 4, label: "smart-money" });
 }
 
+// Holdings block — IMPORTANT: cost field from the frontend is per-share
+// average cost basis (Fidelity CSV format), labeled clearly to avoid the
+// LLM misreading "$5.99 cost" as a total dollar value.
 function formatHoldingsBlock(
   holdings: any[],
   accounts: any[] | undefined,
@@ -192,10 +228,11 @@ function formatHoldingsBlock(
   const formatHolding = (h: any) => {
     const parts = [`${h.symbol}`];
     if (h.qty != null) parts.push(`${h.qty} sh`);
-    if (h.cost != null) parts.push(`@ $${h.cost.toFixed(2)} cost`);
+    // Per-share average cost basis — be explicit so the model doesn't confuse it with total dollars
+    if (h.cost != null) parts.push(`@ $${h.cost.toFixed(2)}/share avg cost`);
     if (h.gainPct != null) {
       const sign = h.gainPct >= 0 ? "+" : "";
-      parts.push(`${sign}${h.gainPct.toFixed(1)}%`);
+      parts.push(`${sign}${h.gainPct.toFixed(1)}% total return`);
     }
     return "    • " + parts.join(", ");
   };
@@ -208,7 +245,7 @@ function formatHoldingsBlock(
   }
   const ageNote = holdingsAgeDays != null && holdingsAgeDays > 7
     ? ` (${holdingsAgeDays} days old)` : "";
-  return `\n\nUSER'S HOLDINGS${ageNote}:\n${groupBlocks.join("\n\n")}\n`;
+  return `\n\nUSER'S HOLDINGS${ageNote} — costs are PER-SHARE averages, NOT totals:\n${groupBlocks.join("\n\n")}\n`;
 }
 
 async function generateLightChunk(
@@ -268,9 +305,11 @@ Return ONLY this JSON:
 }
 ${accountRule}
 
+CRITICAL: holdings 'cost' is PER-SHARE average. To get total $ basis, multiply cost × qty.
+
 CRITICAL TICKER ACCURACY: Never guess company names. SMMT is Summit Therapeutics (NOT Summit Materials). CIFR is Cipher Mining. APLD is Applied Digital. USAR is USA Rare Earth. SMR is NuScale. IREN is Iris Energy. When in doubt, use ticker only.`;
 
-  return callJsonChunk(prompt, { maxTokens: 8000, model: "claude-haiku-4-5" });
+  return callJsonChunk(prompt, { maxTokens: 8000, model: "claude-haiku-4-5", label: "light" });
 }
 
 async function generateConvictionFromContext(
@@ -313,15 +352,16 @@ conviction_watch: 8-10 entries across user's positions.
 opportunity_watch: 6-8 ideas NOT in user's holdings, matching themes.
 NEVER use placeholders like N/A. Empty arrays acceptable.`;
 
-  return callJsonChunk(prompt, { search: false, maxTokens: 12000, model: "claude-sonnet-4-5" });
+  return callJsonChunk(prompt, { search: false, maxTokens: 12000, model: "claude-sonnet-4-5", label: "conviction" });
 }
 
 // Main cron handler
 export async function GET(request: Request) {
+  const requestId = Math.random().toString(36).slice(2, 10);
+
   // Verify Vercel cron auth. Two valid auth methods:
   //   1. CRON_SECRET env var set → require "Authorization: Bearer ${CRON_SECRET}"
-  //   2. Vercel's automatic x-vercel-cron header (sent by Vercel's cron runner)
-  // If neither is configured, we still allow (useful for local dev).
+  //   2. Vercel's automatic x-vercel-cron header
   const authHeader = request.headers.get("authorization");
   const vercelCronHeader = request.headers.get("x-vercel-cron");
   const userAgent = request.headers.get("user-agent") || "";
@@ -332,8 +372,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   } else if (!vercelCronHeader && !isVercelCronUA) {
-    // No CRON_SECRET set and not coming from Vercel cron — only allow during
-    // active development. In production, you should set CRON_SECRET.
     if (process.env.NODE_ENV === "production") {
       return NextResponse.json({
         error: "Set CRON_SECRET env var to enable cron auth",
@@ -362,6 +400,7 @@ export async function GET(request: Request) {
   const tickers = (watchlist && watchlist.length) ? watchlist.join(", ") : "general market";
 
   const startTime = Date.now();
+  console.log(`[cron ${requestId}] start date=${dateKey} holdings=${holdings.length} watchlist=${watchlist.length}`);
 
   // Generate Layer A (market data) in parallel
   const [marketResult, smResult] = await Promise.allSettled([
@@ -372,19 +411,35 @@ export async function GET(request: Request) {
   const layerA: any = { generatedAt: new Date().toISOString(), date: dateKey };
   if (marketResult.status === "fulfilled" && marketResult.value) {
     Object.assign(layerA, marketResult.value);
+  } else if (marketResult.status === "rejected") {
+    console.warn(`[cron ${requestId}] layer-a market failed:`, marketResult.reason?.message);
   }
   if (smResult.status === "fulfilled" && smResult.value) {
     Object.assign(layerA, smResult.value);
+  } else if (smResult.status === "rejected") {
+    console.warn(`[cron ${requestId}] smart-money failed:`, smResult.reason?.message);
   }
 
-  // Persist Layer A so brief route can use it
-  try {
-    if (layerA.market_pulse && layerA.smart_money) await redis.set(`layer-a:${dateKey}`, layerA, { ex: LAYER_A_TTL_SECONDS });
-  } catch (err) {
-    console.warn("Cron: failed to write layer-a:", err);
+  // ─── Write Layer A only if BOTH market_pulse and smart_money have ──
+  // genuine content. The old guard `if (market_pulse && smart_money)`
+  // passed when smart_money existed as an object with empty arrays —
+  // which then served as a poisoned cache for hours.
+  const layerAHasContent =
+    hasMarketPulseContent(layerA.market_pulse) && hasSmartMoneyContent(layerA.smart_money);
+  if (layerAHasContent) {
+    try {
+      await redis.set(`layer-a:${dateKey}`, layerA, { ex: LAYER_A_TTL_SECONDS });
+      console.log(`[cron ${requestId}] wrote layer-a (content-validated)`);
+    } catch (err) {
+      console.warn(`[cron ${requestId}] failed to write layer-a:`, err);
+    }
+  } else {
+    console.warn(
+      `[cron ${requestId}] SKIPPED layer-a write — market_pulse_ok=${hasMarketPulseContent(layerA.market_pulse)} smart_money_ok=${hasSmartMoneyContent(layerA.smart_money)}`
+    );
   }
 
-  // Generate Layer B in parallel (deterministic + 2 LLM calls)
+  // Generate Layer B in parallel
   const ownedSet = new Set((holdings || []).map((h: any) => (h.symbol || "").toUpperCase()));
   const layerEdge = layerA?.todays_edge_market || {};
   const binaryCatalysts = Array.isArray(layerEdge.binary_catalysts) ? layerEdge.binary_catalysts : [];
@@ -417,30 +472,40 @@ export async function GET(request: Request) {
   if (lightResult.status === "fulfilled" && lightResult.value) Object.assign(merged, lightResult.value);
   if (convictionResult.status === "fulfilled" && convictionResult.value) Object.assign(merged, convictionResult.value);
 
-  // Cache the full brief keyed by today + holdings hash
+  // ─── Write brief-full only when smart_money has populated arrays ──
   const hHash = holdingsHash(holdings);
-  try {
-    if (merged.smart_money && (merged.smart_money.whale_moves?.length || merged.smart_money.congress_moves?.length || merged.smart_money.hedge_fund_moves?.length)) await redis.set(`brief-full:${dateKey}:${hHash}`, merged, { ex: FULL_BRIEF_TTL_SECONDS }); 
-  } catch (err) {
-    console.warn("Cron: failed to write brief-full:", err);
+  const fullHasContent = hasSmartMoneyContent(merged.smart_money);
+  if (fullHasContent) {
+    try {
+      await redis.set(`brief-full:${dateKey}:${hHash}`, merged, { ex: FULL_BRIEF_TTL_SECONDS });
+      console.log(`[cron ${requestId}] wrote brief-full hash=${hHash} (content-validated)`);
+    } catch (err) {
+      console.warn(`[cron ${requestId}] failed to write brief-full:`, err);
+    }
+  } else {
+    console.warn(`[cron ${requestId}] SKIPPED brief-full write — smart_money empty`);
   }
 
   const elapsedMs = Date.now() - startTime;
+  console.log(`[cron ${requestId}] done elapsed=${elapsedMs}ms`);
 
   return NextResponse.json({
     ok: true,
+    requestId,
     dateKey,
     holdingsHash: hHash,
     elapsedMs,
     layerA: {
-      market_pulse: !!layerA?.market_pulse,
-      smart_money: !!layerA?.smart_money,
+      market_pulse: hasMarketPulseContent(layerA?.market_pulse),
+      smart_money: hasSmartMoneyContent(layerA?.smart_money),
       radar_candidates: radarCandidates.length,
+      cached: layerAHasContent,
     },
     fullBrief: {
       keys: Object.keys(merged),
       light_ok: lightResult.status === "fulfilled",
       conviction_ok: convictionResult.status === "fulfilled",
+      cached: fullHasContent,
     },
   });
 }
