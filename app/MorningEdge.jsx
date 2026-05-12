@@ -3479,7 +3479,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 {/* Three boxed sub-sections — Whales, Congress, Hedge Funds */}
                 <div className="space-y-3">
                   {/* Whales (institutional 13F filings) */}
-                  <div className="rounded-xl border-2 border-amber-200 bg-white/60 p-3.5">
+                  <div className="rounded-xl border-2 border-amber-200 bg-white/25 backdrop-blur-md shadow-md p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
                       <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
@@ -3504,7 +3504,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   </div>
 
                   {/* Congress (STOCK Act disclosures) */}
-                  <div className="rounded-xl border-2 border-amber-200 bg-white/60 p-3.5">
+                  <div className="rounded-xl border-2 border-amber-200 bg-white/25 backdrop-blur-md shadow-md p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
                       <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
@@ -3529,7 +3529,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   </div>
 
                   {/* Hedge Funds — always render so users see the section is intentional */}
-                  <div className="rounded-xl border-2 border-amber-200 bg-white/60 p-3.5">
+                  <div className="rounded-xl border-2 border-amber-200 bg-white/25 backdrop-blur-md shadow-md p-3.5">
                     <div className="flex items-center justify-between mb-2.5">
                       <h3 className="text-[13px] uppercase tracking-[0.18em] text-amber-800 font-bold flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
