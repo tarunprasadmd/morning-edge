@@ -3105,7 +3105,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                 className="w-full h-full text-left transition-all duration-150 active:scale-[0.99] hover:shadow-md"
                                 style={{
                                   background: sigTheme.bg,
-                                  border: `1px solid ${sigTheme.border}`,
+                                  border: `2px solid ${sigTheme.border}`,
                                   borderRadius: 10,
                                   padding: "6px 8px",
                                   boxShadow: `0 1px 4px -2px ${sigTheme.shadow}`,
@@ -5057,7 +5057,7 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
       className="text-left transition-all duration-150 active:scale-[0.99] hover:shadow-md w-full h-full"
       style={{
         background: theme.bg,
-        border: `1px solid ${theme.border}`,
+        border: `2px solid ${theme.border}`,
         borderRadius: 10,
         padding: "6px 8px",
         boxShadow: `0 1px 4px -2px ${theme.shadow}`,
