@@ -2391,9 +2391,12 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           <button
             onClick={generateBrief}
             disabled={loading}
-            className="relative rounded-2xl shadow-lg overflow-hidden text-left active:scale-[0.99] transition disabled:opacity-60"
+            className="relative rounded-2xl shadow-xl overflow-hidden text-left active:scale-[0.99] transition disabled:opacity-60"
             style={{
               background: "linear-gradient(160deg, #1E293B 0%, #312E81 60%, #1E1B4B 100%)",
+              border: "1px solid rgba(212, 165, 116, 0.45)",
+              boxShadow:
+                "0 8px 24px -4px rgba(30, 27, 75, 0.5), inset 0 1px 0 rgba(212, 165, 116, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.04)",
             }}
           >
             <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
@@ -2432,9 +2435,12 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 }
               }, 50);
             }}
-            className="relative rounded-2xl shadow-lg overflow-hidden text-left active:scale-[0.99] transition"
+            className="relative rounded-2xl shadow-xl overflow-hidden text-left active:scale-[0.99] transition"
             style={{
               background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
+              border: "1px solid rgba(212, 165, 116, 0.45)",
+              boxShadow:
+                "0 8px 24px -4px rgba(2, 6, 23, 0.5), inset 0 1px 0 rgba(212, 165, 116, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.04)",
             }}
           >
             <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
@@ -4421,15 +4427,23 @@ function FilterPill({ active, onClick, emoji, icon, label, accent }) {
   return (
     <button
       onClick={onClick}
-      className={`relative py-3.5 px-2 rounded-xl flex flex-col items-center gap-1.5 border transition-all duration-150 ${
+      className={`relative py-3.5 px-2 rounded-xl flex flex-col items-center gap-1.5 border-2 transition-all duration-150 ${
         active
-          ? `${a.bg} ${a.text} border-transparent shadow-md ring-2 ring-offset-1 ${a.ring}`
-          : "bg-white border-slate-200 text-slate-800 hover:border-slate-300 hover:shadow-sm"
+          ? `${a.bg} ${a.text} border-transparent shadow-lg ring-2 ring-offset-2 ${a.ring}`
+          : "bg-white border-slate-300 text-slate-900 shadow-md hover:border-slate-400 hover:shadow-lg active:scale-[0.98]"
       }`}
+      style={
+        active
+          ? undefined
+          : {
+              boxShadow:
+                "0 4px 12px -2px rgba(15, 23, 42, 0.12), 0 2px 4px -1px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
+            }
+      }
     >
       {/* Color dot indicator when not active — tells the user this filter has a color identity */}
       {!active && accent && (
-        <span className={`absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full ${a.dot}`} />
+        <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${a.dot} ring-1 ring-white`} />
       )}
       {/* Icon (larger now) */}
       <span className={active ? "text-white" : ""}>
