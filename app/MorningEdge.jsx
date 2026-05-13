@@ -1937,7 +1937,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 Welcome <span className="italic text-slate-800">aboard.</span>
               </h1>
               <p className="text-[16px] text-slate-800 mb-5 leading-relaxed">
-                30-second setup. No account, no sign-in.
+                30-second setup. No account, no sign-in, no tracking. Your data isn't sold, shared, or used to train any AI model.
               </p>
               <label className="text-[14px] uppercase tracking-widest text-slate-800 font-semibold mb-2 block">What should we call you?</label>
               <input
@@ -3798,14 +3798,19 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
                 {/* Contemplation */}
                 {brief.clarity.contemplation && (
-                  <div className="mb-5">
-                    <p className="text-[12px] uppercase tracking-[0.2em] text-violet-600 font-semibold mb-2 flex items-center gap-2">
-                      <Sparkles className="w-3 h-3" /> Today's Contemplation
+                  <div className="mb-5 rounded-2xl p-5"
+                    style={{
+                      background: "linear-gradient(135deg, #fdf4ff 0%, #fae8ff 60%, #f5d0fe 100%)",
+                      border: "1px solid #f5d0fe",
+                      boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
+                    }}>
+                    <p className="text-[12px] uppercase tracking-[0.2em] text-fuchsia-700 font-semibold mb-3 flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5" /> Today's Contemplation
                     </p>
-                    <p className="text-[16px] text-slate-800 leading-relaxed italic" style={{ fontFamily: SERIF }}>
+                    <p className="text-[18px] text-slate-900 leading-relaxed italic" style={{ fontFamily: SERIF }}>
                       {brief.clarity.contemplation}
                     </p>
-                    <p className="text-[14px] text-slate-800 mt-2 leading-relaxed">
+                    <p className="text-[13px] text-fuchsia-800 mt-3 leading-relaxed font-medium">
                       Sit with this for 60 seconds before market open. No phone.
                     </p>
                   </div>
@@ -3813,48 +3818,50 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
                 {/* Eastern wisdom quote */}
                 {brief.clarity.eastern_wisdom && (
-                  <div className="mb-5 pl-4 border-l-2 border-violet-300">
-                    <p className="text-[12px] uppercase tracking-[0.2em] text-violet-600 font-semibold mb-2">
+                  <div className="mb-5 rounded-2xl p-5 relative overflow-hidden"
+                    style={{
+                      background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                      border: "1px solid #fcd34d",
+                      boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
+                    }}>
+                    {/* Decorative quote mark */}
+                    <span
+                      aria-hidden
+                      style={{
+                        position: "absolute",
+                        top: -8,
+                        left: 14,
+                        fontSize: 80,
+                        lineHeight: 1,
+                        color: "rgba(180, 83, 9, 0.18)",
+                        fontFamily: SERIF,
+                        userSelect: "none",
+                      }}
+                    >
+                      "
+                    </span>
+                    <p className="text-[12px] uppercase tracking-[0.2em] text-amber-800 font-semibold mb-3 relative">
                       Eastern Wisdom
                     </p>
-                    <p className="text-[16px] text-slate-800 leading-relaxed" style={{ fontFamily: SERIF }}>
-                      "{brief.clarity.eastern_wisdom.quote || brief.clarity.eastern_wisdom}"
+                    <p className="text-[17px] text-slate-900 leading-relaxed relative" style={{ fontFamily: SERIF }}>
+                      {brief.clarity.eastern_wisdom.quote || brief.clarity.eastern_wisdom}
                     </p>
                     {brief.clarity.eastern_wisdom.source && (
-                      <p className="text-[14px] text-violet-700 mt-2 font-medium">
+                      <p className="text-[13px] text-amber-900 mt-3 font-semibold tracking-wide relative">
                         — {brief.clarity.eastern_wisdom.source}
                       </p>
                     )}
                   </div>
                 )}
 
-                {/* Breath practice */}
+                {/* Interactive breath practice — animated guide with start/pause */}
                 {brief.clarity.breath_practice && (
-                  <div className="rounded-xl p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-100">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                        <Activity className="w-4 h-4 text-violet-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[12px] uppercase tracking-[0.2em] text-violet-700 font-semibold mb-1">
-                          {brief.clarity.breath_practice.name || "Breath Practice"}
-                        </p>
-                        <p className="text-[16px] text-slate-800 font-semibold leading-snug mb-1" style={{ fontFamily: SERIF }}>
-                          {brief.clarity.breath_practice.pattern || brief.clarity.breath_practice}
-                        </p>
-                        {brief.clarity.breath_practice.description && (
-                          <p className="text-[15px] text-slate-800 leading-relaxed">
-                            {brief.clarity.breath_practice.description}
-                          </p>
-                        )}
-                        {brief.clarity.breath_practice.rounds && (
-                          <p className="text-[14px] text-violet-700 font-semibold mt-1.5">
-                            {brief.clarity.breath_practice.rounds}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <InteractiveBreathGuide
+                    name={brief.clarity.breath_practice.name || "Breath Practice"}
+                    pattern={brief.clarity.breath_practice.pattern || brief.clarity.breath_practice}
+                    description={brief.clarity.breath_practice.description}
+                    rounds={brief.clarity.breath_practice.rounds}
+                  />
                 )}
               </div>
             </Card>
@@ -5042,15 +5049,15 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
             <Sparkles className="w-4 h-4 text-white" strokeWidth={2.5} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className={`text-[14px] font-bold leading-tight ${p.ticker}`} style={{ fontFamily: SERIF }}>
+            <p className={`text-[15px] font-bold leading-tight ${p.ticker}`} style={{ fontFamily: SERIF }}>
               {item.ticker}
             </p>
             {item.theme && (
-              <p className={`text-[10px] font-semibold tracking-wide leading-tight truncate ${p.theme}`}>
+              <p className={`text-[11px] font-semibold tracking-wide leading-tight truncate ${p.theme}`}>
                 {item.theme}
               </p>
             )}
-            <p className="text-[11px] text-slate-800 mt-0.5 leading-tight truncate">
+            <p className="text-[13px] text-slate-900 mt-0.5 leading-snug truncate">
               {item.fits_gap || item.headline || item.why_now || "Tap for reasoning"}
             </p>
           </div>
@@ -5061,7 +5068,7 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 
   return (
     <div>
-      <p className="text-[12px] text-slate-800 italic mb-3 px-1">
+      <p className="text-[14px] text-slate-800 italic mb-3 px-1">
         High-conviction names outside your portfolio, plus catalyst setups on watch. Tap any row for the full thesis.
       </p>
 
@@ -5103,7 +5110,7 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
               .map((o, i) => renderRow(o, i, DISCOVERY_COOL, "opportunity"))
           ) : (
             <div className="rounded-lg bg-emerald-50/60 border border-emerald-200 p-3">
-              <p className="text-[11px] text-emerald-900 leading-relaxed m-0">
+              <p className="text-[13px] text-emerald-900 leading-relaxed m-0">
                 No high-conviction buys today. Quality over quantity.
               </p>
             </div>
@@ -5117,7 +5124,7 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
               .map((r, i) => renderRow(r, i, DISCOVERY_WARM, "radar"))
           ) : (
             <div className="rounded-lg bg-fuchsia-50/60 border border-fuchsia-200 p-3">
-              <p className="text-[11px] text-fuchsia-900 leading-relaxed m-0">
+              <p className="text-[13px] text-fuchsia-900 leading-relaxed m-0">
                 Markets quiet on your themes today.
               </p>
             </div>
@@ -5125,7 +5132,7 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
         </div>
       </div>
 
-      <p className="mt-3 text-[11px] text-slate-800 leading-relaxed italic px-1">
+      <p className="mt-3 text-[13px] text-slate-800 leading-relaxed italic px-1">
         Picks chosen to fit your existing themes and fill diversification gaps. Educational only — verify before buying.
       </p>
     </div>
@@ -5160,30 +5167,30 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
       <div className="flex items-center gap-1.5">
         <div
           className="flex-shrink-0 flex items-center justify-center"
-          style={{ width: 24, height: 24, borderRadius: 6, background: theme.iconBg }}
+          style={{ width: 26, height: 26, borderRadius: 6, background: theme.iconBg }}
         >
-          <Icon className="w-3 h-3" style={{ color: "white", strokeWidth: 2.6 }} />
+          <Icon className="w-3.5 h-3.5" style={{ color: "white", strokeWidth: 2.6 }} />
         </div>
         {parsed.ticker && (
           <p
-            className="text-[14px] font-bold m-0 leading-tight truncate"
+            className="text-[15px] font-bold m-0 leading-tight truncate"
             style={{ color: "#0f172a", fontFamily: SERIF }}
           >
             {parsed.ticker}
           </p>
         )}
-        <span className="ml-auto text-[8.5px] font-bold tracking-[0.14em] uppercase" style={{ color: theme.labelText }}>
+        <span className="ml-auto text-[9px] font-bold tracking-[0.14em] uppercase" style={{ color: theme.labelText }}>
           {parsed.typeLabel}
         </span>
         {done && (
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" strokeWidth={2.5} />
+          <CheckCircle2 className="w-4 h-4 text-emerald-700 flex-shrink-0" strokeWidth={2.5} />
         )}
       </div>
 
-      {/* Center text block — the action itself, single-line clamp keeps box compact */}
+      {/* Center text block — the action itself, two-line clamp keeps box compact */}
       <div className="flex-1 min-w-0">
-        <p className="text-[11.5px] m-0 leading-snug" style={{
-          color: "#1e293b",
+        <p className="text-[13px] m-0 leading-snug" style={{
+          color: "#0f172a",
           display: "-webkit-box",
           WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical",
@@ -5194,7 +5201,7 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
             : (parsed.headline || decision)}
         </p>
         {parsed.account && (
-          <p className="text-[8.5px] font-semibold uppercase tracking-wider mt-0.5 m-0" style={{ color: theme.accentText }}>
+          <p className="text-[9px] font-semibold uppercase tracking-wider mt-0.5 m-0" style={{ color: theme.accentText }}>
             {parsed.account}
           </p>
         )}
@@ -6139,7 +6146,246 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
 }
 
 // Single chat bubble — user (right, dark) or assistant (left, light).
-function ChatMessageBubble({ role, content }) {
+// ────────────────────────────────────────────────────────────────────
+// InteractiveBreathGuide — animated breath practice. The circle expands
+// during INHALE, holds at full size during HOLD-IN, contracts during
+// EXHALE, holds at small size during HOLD-OUT. Phase label changes,
+// countdown ticks, round counter advances. Tap the circle to start/pause.
+//
+// Pattern parsing is lenient: extracts numbers from the string, supports:
+//   "4-4-4-4" (box breath, in-hold-out-hold)
+//   "4-7-8"   (4-7-8 breathing, in-hold-out)
+//   "5-5"     (coherent, in-out)
+//   "4s in, 4s hold, 4s out, 4s hold" (verbose form)
+//
+// Falls back to a 4-4-4-4 default if no numbers can be parsed.
+// ────────────────────────────────────────────────────────────────────
+function parseBreathPattern(pattern) {
+  const defaultPhases = [
+    { name: "Inhale", duration: 4 },
+    { name: "Hold", duration: 4 },
+    { name: "Exhale", duration: 4 },
+    { name: "Hold", duration: 4 },
+  ];
+  if (!pattern || typeof pattern !== "string") return defaultPhases;
+  const nums = (pattern.match(/\d+/g) || []).map(Number).filter((n) => n > 0 && n < 30);
+  if (nums.length === 2) {
+    return [
+      { name: "Inhale", duration: nums[0] },
+      { name: "Exhale", duration: nums[1] },
+    ];
+  }
+  if (nums.length === 3) {
+    return [
+      { name: "Inhale", duration: nums[0] },
+      { name: "Hold", duration: nums[1] },
+      { name: "Exhale", duration: nums[2] },
+    ];
+  }
+  if (nums.length >= 4) {
+    return [
+      { name: "Inhale", duration: nums[0] },
+      { name: "Hold", duration: nums[1] },
+      { name: "Exhale", duration: nums[2] },
+      { name: "Hold", duration: nums[3] },
+    ];
+  }
+  return defaultPhases;
+}
+
+function parseRoundCount(rounds) {
+  if (typeof rounds === "number") return Math.min(Math.max(rounds, 1), 30);
+  if (typeof rounds !== "string") return 6;
+  const n = parseInt((rounds.match(/\d+/) || ["6"])[0], 10);
+  return Math.min(Math.max(n, 1), 30);
+}
+
+function InteractiveBreathGuide({ name, pattern, description, rounds }) {
+  const phases = React.useMemo(() => parseBreathPattern(pattern), [pattern]);
+  const totalRounds = React.useMemo(() => parseRoundCount(rounds), [rounds]);
+
+  const [running, setRunning] = React.useState(false);
+  const [done, setDone] = React.useState(false);
+  const [phaseIdx, setPhaseIdx] = React.useState(0);
+  const [roundIdx, setRoundIdx] = React.useState(0);
+  const [timeLeft, setTimeLeft] = React.useState(phases[0]?.duration || 4);
+  // scale: 0.55 = small (exhaled), 1.0 = large (inhaled)
+  const [scale, setScale] = React.useState(0.55);
+  // transition duration in seconds — set to phase length on Inhale/Exhale,
+  // 0 during holds (so scale doesn't drift)
+  const [transitionDur, setTransitionDur] = React.useState(0.4);
+
+  // 1-second ticker drives the countdown and phase advance.
+  React.useEffect(() => {
+    if (!running || done) return;
+    const interval = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t > 1) return t - 1;
+        // Phase complete — advance to next phase (and possibly next round)
+        setPhaseIdx((p) => {
+          const next = p + 1;
+          if (next >= phases.length) {
+            setRoundIdx((r) => {
+              const nextR = r + 1;
+              if (nextR >= totalRounds) {
+                setDone(true);
+                setRunning(false);
+              }
+              return nextR;
+            });
+            return 0;
+          }
+          return next;
+        });
+        return 0; // overwritten by the phaseIdx effect below
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [running, done, phases.length, totalRounds]);
+
+  // When phase changes, reset the countdown to that phase's duration and
+  // set the scale target + transition duration to animate the circle.
+  React.useEffect(() => {
+    const phase = phases[phaseIdx];
+    if (!phase) return;
+    setTimeLeft(phase.duration);
+    if (phase.name === "Inhale") {
+      setTransitionDur(phase.duration);
+      setScale(1.0);
+    } else if (phase.name === "Exhale") {
+      setTransitionDur(phase.duration);
+      setScale(0.55);
+    }
+    // Hold phases: leave scale alone; the previous transition holds the circle steady
+  }, [phaseIdx, phases]);
+
+  const handleToggle = () => {
+    if (done) {
+      // Reset and restart
+      setDone(false);
+      setPhaseIdx(0);
+      setRoundIdx(0);
+      setTimeLeft(phases[0].duration);
+      setScale(0.55);
+      setTransitionDur(0.4);
+      setTimeout(() => setRunning(true), 50);
+      return;
+    }
+    setRunning((r) => !r);
+  };
+
+  const currentPhase = phases[phaseIdx];
+  const phaseLabel = done
+    ? "Complete"
+    : !running && roundIdx === 0 && phaseIdx === 0
+      ? "Tap to begin"
+      : currentPhase?.name || "Ready";
+
+  return (
+    <div
+      className="rounded-2xl p-5 border"
+      style={{
+        background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #ede9fe 100%)",
+        borderColor: "#ddd6fe",
+        boxShadow: "0 4px 16px -4px rgba(139, 92, 246, 0.15), inset 0 1.5px 0 rgba(255,255,255,0.9)",
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[12px] uppercase tracking-[0.2em] text-violet-700 font-semibold">
+            {name}
+          </p>
+          <p className="text-[15px] text-slate-900 font-semibold mt-0.5" style={{ fontFamily: SERIF }}>
+            {pattern}
+          </p>
+        </div>
+        <div className="flex flex-col items-end text-right ml-2">
+          <p className="text-[10px] uppercase tracking-wider text-violet-700 font-semibold">Round</p>
+          <p className="text-[18px] font-bold text-slate-900" style={{ fontFamily: SERIF }}>
+            {Math.min(roundIdx + (running || done ? 1 : 0), totalRounds)} / {totalRounds}
+          </p>
+        </div>
+      </div>
+
+      {/* Animated circle — tap to start/pause */}
+      <button
+        onClick={handleToggle}
+        className="relative w-full flex flex-col items-center justify-center py-5 select-none"
+        style={{ minHeight: 220 }}
+        aria-label={running ? "Pause breath practice" : "Start breath practice"}
+      >
+        {/* Outer ring (decorative pulse) */}
+        <div
+          aria-hidden
+          className="absolute"
+          style={{
+            width: 200,
+            height: 200,
+            borderRadius: "50%",
+            border: "1.5px dashed rgba(139, 92, 246, 0.25)",
+          }}
+        />
+        {/* Main breathing circle */}
+        <div
+          style={{
+            width: 200,
+            height: 200,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle at 30% 30%, #c4b5fd 0%, #8b5cf6 55%, #6d28d9 100%)",
+            transform: `scale(${scale})`,
+            transition: `transform ${transitionDur}s ease-in-out`,
+            boxShadow:
+              "0 10px 30px -5px rgba(139, 92, 246, 0.5), inset 0 2px 0 rgba(255,255,255,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div className="text-center" style={{ color: "white" }}>
+            <p className="text-[11px] uppercase tracking-[0.22em] font-bold opacity-90">
+              {phaseLabel}
+            </p>
+            {running && !done && (
+              <p className="text-[40px] font-bold leading-none mt-1" style={{ fontFamily: SERIF }}>
+                {timeLeft}
+              </p>
+            )}
+            {!running && !done && (roundIdx > 0 || phaseIdx > 0) && (
+              <p className="text-[11px] mt-2 opacity-80">Paused</p>
+            )}
+            {done && (
+              <p className="text-[11px] mt-2 opacity-90">Tap to restart</p>
+            )}
+            {!running && roundIdx === 0 && phaseIdx === 0 && !done && (
+              <p className="text-[11px] mt-2 opacity-90">Tap the circle</p>
+            )}
+          </div>
+        </div>
+      </button>
+
+      {/* Description / phase tip */}
+      {description && (
+        <p className="text-[14px] text-slate-800 leading-relaxed mt-1 text-center px-2">
+          {description}
+        </p>
+      )}
+
+      {/* Why it helps — wellbeing framing tied to the app's healing/charity mission */}
+      <div className="mt-4 pt-3 border-t border-violet-200/60">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-violet-700 font-semibold mb-1.5 text-center">
+          Why this matters
+        </p>
+        <p className="text-[13px] text-slate-800 leading-relaxed text-center italic">
+          Sixty seconds of breath before the open lowers your heart rate, sharpens decision-making, and breaks the morning's reactive momentum. The market will wait.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+
   const isUser = role === "user";
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
@@ -6541,7 +6787,7 @@ function SignatureFooter({ verified, hash, compact }) {
     <footer className={compact ? "pt-6 text-center" : "pt-8 text-center"}>
       {!compact && (
         <p className="text-[15px] text-slate-800 max-w-md mx-auto leading-relaxed px-4">
-          Informational and educational use only. Not investment, financial, tax, or medical advice. Consult a licensed financial advisor or healthcare professional before making decisions. Past performance does not guarantee future results. AI-generated content may be inaccurate — verify before acting. <a href="/about" className="underline">About</a> · <a href="/privacy" className="underline">Privacy</a> · <a href="/terms" className="underline">Terms</a> · <a href="/support" className="underline">Support</a>
+          Informational and educational use only. Not investment, financial, tax, or medical advice. Consult a licensed financial advisor or healthcare professional before making decisions. Past performance does not guarantee future results. AI-generated content may be inaccurate — verify before acting. No account, no tracking, no ads — your data isn't sold or used to train AI. <a href="/about" className="underline">About</a> · <a href="/privacy" className="underline">Privacy</a> · <a href="/terms" className="underline">Terms</a> · <a href="/support" className="underline">Support</a>
         </p>
       )}
 
