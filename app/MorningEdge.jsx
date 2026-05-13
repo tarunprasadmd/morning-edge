@@ -3534,28 +3534,57 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     className="rounded-2xl border p-4 relative overflow-hidden"
                     style={{
                       background:
-                        "linear-gradient(135deg, rgba(254,240,218,0.96) 0%, rgba(251,211,141,0.82) 35%, rgba(217,119,6,0.55) 75%, rgba(146,64,14,0.42) 100%)",
-                      borderColor: "rgba(146, 64, 14, 0.38)",
+                        "linear-gradient(135deg, rgba(254,247,229,0.97) 0%, rgba(252,231,189,0.85) 40%, rgba(229,164,73,0.45) 80%, rgba(168,103,40,0.30) 100%)",
+                      borderColor: "rgba(146, 64, 14, 0.32)",
                       boxShadow:
-                        "inset 0 1.5px 0 rgba(255,253,245,0.95), inset 0 -3px 12px rgba(146,64,14,0.16), 0 6px 20px -4px rgba(146,64,14,0.25)",
+                        "inset 0 1.5px 0 rgba(255,253,245,0.95), inset 0 -3px 12px rgba(146,64,14,0.12), 0 6px 20px -4px rgba(146,64,14,0.20)",
                       backdropFilter: "blur(2px)",
                     }}
                   >
-                    {/* Subtle arch ornament — top-right corner flourish */}
-                    <div
-                      aria-hidden
+                    {/* Watermark: Spanish hacienda silhouette */}
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 240 130"
+                      preserveAspectRatio="xMidYMid meet"
                       style={{
                         position: "absolute",
-                        top: -12,
-                        right: -12,
-                        width: 80,
-                        height: 80,
-                        borderRadius: "50%",
-                        background: "radial-gradient(circle at center, rgba(255,237,213,0.45) 0%, transparent 70%)",
+                        right: -6,
+                        bottom: -2,
+                        width: 195,
+                        height: 105,
+                        opacity: 0.11,
                         pointerEvents: "none",
+                        color: "#78350f",
                       }}
-                    />
-                    <div className="flex items-center justify-between mb-3 relative">
+                    >
+                      <g fill="currentColor">
+                        {/* Left wing pitched roof */}
+                        <polygon points="10,55 50,32 90,55" />
+                        {/* Right wing pitched roof */}
+                        <polygon points="150,55 190,32 230,55" />
+                        {/* Center tower roof */}
+                        <polygon points="78,42 120,16 162,42" />
+                        {/* Left wing walls */}
+                        <rect x="15" y="55" width="70" height="65" />
+                        {/* Right wing walls */}
+                        <rect x="155" y="55" width="70" height="65" />
+                        {/* Center walls */}
+                        <rect x="83" y="42" width="74" height="78" />
+                        {/* Cross/finial on center peak */}
+                        <rect x="118" y="6" width="4" height="14" />
+                        <rect x="113" y="9" width="14" height="3" />
+                      </g>
+                      {/* Arched openings (white = sky behind arches) */}
+                      <g fill="rgba(255, 247, 230, 0.6)">
+                        <path d="M 113 78 Q 113 64 120 64 Q 127 64 127 78 L 127 120 L 113 120 Z" />
+                        <path d="M 30 75 Q 30 65 36 65 Q 42 65 42 75 L 42 92 L 30 92 Z" />
+                        <path d="M 50 75 Q 50 65 56 65 Q 62 65 62 75 L 62 92 L 50 92 Z" />
+                        <path d="M 178 75 Q 178 65 184 65 Q 190 65 190 75 L 190 92 L 178 92 Z" />
+                        <path d="M 198 75 Q 198 65 204 65 Q 210 65 210 75 L 210 92 L 198 92 Z" />
+                      </g>
+                    </svg>
+
+                    <div className="flex items-center justify-between mb-3 relative" style={{ zIndex: 1 }}>
                       <h3 className="text-[14px] uppercase tracking-[0.2em] font-bold flex items-center gap-2" style={{ color: "#78350f", fontFamily: SERIF }}>
                         <span
                           className="inline-flex items-center justify-center"
@@ -3578,13 +3607,13 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         (w) => w && (typeof w === "string" ? !/DATA_UNAVAIL|^N\/?A$|^NONE$/i.test(w) : !/DATA_UNAVAIL|^N\/?A$|^NONE$/i.test(w.text || ""))
                       );
                       return moves.length > 0 ? (
-                        <ul className="space-y-1 relative">
+                        <ul className="space-y-1 relative" style={{ zIndex: 1 }}>
                           {moves.map((w, i) => (
                             <SmartMoneyRow key={i} item={w} category="whale" onOpenSourceDetail={(d) => setSourceDetail(d)} />
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-[14px] italic relative" style={{ color: "rgba(120, 53, 15, 0.7)" }}>No notable 13F activity in the latest filing window.</p>
+                        <p className="text-[14px] italic relative" style={{ color: "rgba(120, 53, 15, 0.7)", zIndex: 1 }}>No notable 13F activity in the latest filing window.</p>
                       );
                     })()}
                   </div>
@@ -3594,10 +3623,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     className="rounded-2xl border p-4 relative overflow-hidden"
                     style={{
                       background:
-                        "linear-gradient(135deg, rgba(254,252,240,0.97) 0%, rgba(252,228,168,0.78) 30%, rgba(202,138,4,0.42) 70%, rgba(30,58,138,0.30) 100%)",
-                      borderColor: "rgba(30, 58, 138, 0.40)",
+                        "linear-gradient(135deg, rgba(254,253,245,0.98) 0%, rgba(252,234,180,0.78) 35%, rgba(220,160,30,0.32) 75%, rgba(30,58,138,0.22) 100%)",
+                      borderColor: "rgba(30, 58, 138, 0.32)",
                       boxShadow:
-                        "inset 0 1.5px 0 rgba(255,253,235,0.95), inset 0 -3px 12px rgba(30,58,138,0.14), 0 6px 20px -4px rgba(202,138,4,0.22)",
+                        "inset 0 1.5px 0 rgba(255,253,235,0.95), inset 0 -3px 12px rgba(30,58,138,0.10), 0 6px 20px -4px rgba(202,138,4,0.18)",
                       backdropFilter: "blur(2px)",
                     }}
                   >
@@ -3614,7 +3643,64 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         pointerEvents: "none",
                       }}
                     />
-                    <div className="flex items-center justify-between mb-3 relative">
+                    {/* Watermark: Capitol Hill silhouette — dome, columns, pediment, flagpole */}
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 240 130"
+                      preserveAspectRatio="xMidYMid meet"
+                      style={{
+                        position: "absolute",
+                        right: -8,
+                        bottom: -4,
+                        width: 200,
+                        height: 108,
+                        opacity: 0.11,
+                        pointerEvents: "none",
+                        color: "#1e3a8a",
+                      }}
+                    >
+                      <g fill="currentColor">
+                        {/* Base building (long wings) */}
+                        <rect x="10" y="92" width="220" height="34" />
+                        {/* Top step / base trim */}
+                        <rect x="2" y="124" width="236" height="4" />
+                        {/* Steps below */}
+                        <rect x="30" y="118" width="180" height="4" />
+                        {/* Left wing columns */}
+                        <rect x="30" y="72" width="4" height="20" />
+                        <rect x="42" y="72" width="4" height="20" />
+                        <rect x="54" y="72" width="4" height="20" />
+                        <rect x="66" y="72" width="4" height="20" />
+                        {/* Right wing columns */}
+                        <rect x="170" y="72" width="4" height="20" />
+                        <rect x="182" y="72" width="4" height="20" />
+                        <rect x="194" y="72" width="4" height="20" />
+                        <rect x="206" y="72" width="4" height="20" />
+                        {/* Wing roof lines */}
+                        <rect x="26" y="68" width="48" height="4" />
+                        <rect x="166" y="68" width="48" height="4" />
+                        {/* Central portico columns */}
+                        <rect x="92" y="60" width="5" height="32" />
+                        <rect x="106" y="60" width="5" height="32" />
+                        <rect x="120" y="60" width="5" height="32" />
+                        <rect x="134" y="60" width="5" height="32" />
+                        <rect x="148" y="60" width="5" height="32" />
+                        {/* Pediment (triangular crown above central columns) */}
+                        <polygon points="84,60 120,42 156,60" />
+                        {/* Dome drum (cylindrical base of dome) */}
+                        <rect x="100" y="32" width="40" height="10" />
+                        {/* Dome (semicircle) */}
+                        <path d="M 100 32 Q 100 8 120 8 Q 140 8 140 32 Z" />
+                        {/* Cupola (small lantern on top) */}
+                        <rect x="115" y="0" width="10" height="10" />
+                        {/* Flagpole */}
+                        <rect x="119" y="-6" width="2" height="8" />
+                        {/* Flag */}
+                        <polygon points="121,-4 127,-2 121,0" />
+                      </g>
+                    </svg>
+
+                    <div className="flex items-center justify-between mb-3 relative" style={{ zIndex: 1 }}>
                       <h3 className="text-[14px] uppercase tracking-[0.22em] font-bold flex items-center gap-2" style={{ color: "#172554", fontFamily: SERIF }}>
                         <span
                           className="inline-flex items-center justify-center"
@@ -3637,13 +3723,13 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         (c) => c && (typeof c === "string" ? !/DATA_UNAVAIL|^N\/?A$|^NONE$/i.test(c) : !/DATA_UNAVAIL|^N\/?A$|^NONE$/i.test(c.text || ""))
                       );
                       return moves.length > 0 ? (
-                        <ul className="space-y-1 relative">
+                        <ul className="space-y-1 relative" style={{ zIndex: 1 }}>
                           {moves.map((c, i) => (
                             <SmartMoneyRow key={i} item={c} category="congress" onOpenSourceDetail={(d) => setSourceDetail(d)} />
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-[14px] italic relative" style={{ color: "rgba(23, 37, 84, 0.7)" }}>No new STOCK Act disclosures in the latest window.</p>
+                        <p className="text-[14px] italic relative" style={{ color: "rgba(23, 37, 84, 0.7)", zIndex: 1 }}>No new STOCK Act disclosures in the latest window.</p>
                       );
                     })()}
                   </div>
@@ -3653,10 +3739,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     className="rounded-2xl border p-4 relative overflow-hidden"
                     style={{
                       background:
-                        "linear-gradient(135deg, rgba(254,242,242,0.95) 0%, rgba(251,207,232,0.72) 30%, rgba(168,162,158,0.50) 65%, rgba(51,65,85,0.35) 100%)",
-                      borderColor: "rgba(51, 65, 85, 0.38)",
+                        "linear-gradient(135deg, rgba(255,247,247,0.97) 0%, rgba(252,220,232,0.72) 35%, rgba(190,190,195,0.42) 75%, rgba(60,75,95,0.25) 100%)",
+                      borderColor: "rgba(51, 65, 85, 0.32)",
                       boxShadow:
-                        "inset 0 1.5px 0 rgba(255,255,255,0.92), inset 0 -3px 12px rgba(51,65,85,0.14), 0 6px 20px -4px rgba(225,29,72,0.22)",
+                        "inset 0 1.5px 0 rgba(255,255,255,0.92), inset 0 -3px 12px rgba(51,65,85,0.10), 0 6px 20px -4px rgba(225,29,72,0.18)",
                       backdropFilter: "blur(2px)",
                     }}
                   >
@@ -3674,7 +3760,74 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         pointerEvents: "none",
                       }}
                     />
-                    <div className="flex items-center justify-between mb-3 relative">
+                    {/* Watermark: NYC skyline silhouette */}
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 260 130"
+                      preserveAspectRatio="xMidYMid meet"
+                      style={{
+                        position: "absolute",
+                        right: -6,
+                        bottom: -2,
+                        width: 215,
+                        height: 110,
+                        opacity: 0.13,
+                        pointerEvents: "none",
+                        color: "#334155",
+                      }}
+                    >
+                      <g fill="currentColor">
+                        {/* Buildings, left to right, varying heights */}
+                        <rect x="2" y="76" width="20" height="50" />
+                        <rect x="25" y="58" width="22" height="68" />
+                        <rect x="50" y="68" width="18" height="58" />
+                        <rect x="71" y="42" width="26" height="84" />
+                        {/* Tapered roof on building 4 */}
+                        <polygon points="71,42 84,32 97,42" />
+                        {/* Central Empire State-like tower */}
+                        <rect x="101" y="22" width="26" height="104" />
+                        <polygon points="101,22 114,8 127,22" />
+                        <rect x="113" y="-2" width="2" height="12" />
+                        {/* Buildings continuing */}
+                        <rect x="130" y="50" width="20" height="76" />
+                        <rect x="153" y="60" width="22" height="66" />
+                        <rect x="178" y="36" width="24" height="90" />
+                        {/* Antenna on building */}
+                        <rect x="189" y="22" width="2" height="14" />
+                        <rect x="205" y="64" width="20" height="62" />
+                        <rect x="228" y="52" width="18" height="74" />
+                        <rect x="249" y="70" width="11" height="56" />
+                      </g>
+                      {/* Window dot accents — subtle */}
+                      <g fill="rgba(255, 255, 255, 0.35)">
+                        <rect x="106" y="32" width="2" height="3" />
+                        <rect x="112" y="32" width="2" height="3" />
+                        <rect x="118" y="32" width="2" height="3" />
+                        <rect x="106" y="40" width="2" height="3" />
+                        <rect x="112" y="40" width="2" height="3" />
+                        <rect x="118" y="40" width="2" height="3" />
+                        <rect x="106" y="48" width="2" height="3" />
+                        <rect x="112" y="48" width="2" height="3" />
+                        <rect x="118" y="48" width="2" height="3" />
+                        <rect x="106" y="56" width="2" height="3" />
+                        <rect x="112" y="56" width="2" height="3" />
+                        <rect x="118" y="56" width="2" height="3" />
+                        <rect x="77" y="52" width="2" height="2" />
+                        <rect x="83" y="52" width="2" height="2" />
+                        <rect x="89" y="52" width="2" height="2" />
+                        <rect x="77" y="60" width="2" height="2" />
+                        <rect x="83" y="60" width="2" height="2" />
+                        <rect x="89" y="60" width="2" height="2" />
+                        <rect x="184" y="46" width="2" height="2" />
+                        <rect x="190" y="46" width="2" height="2" />
+                        <rect x="196" y="46" width="2" height="2" />
+                        <rect x="184" y="54" width="2" height="2" />
+                        <rect x="190" y="54" width="2" height="2" />
+                        <rect x="196" y="54" width="2" height="2" />
+                      </g>
+                    </svg>
+
+                    <div className="flex items-center justify-between mb-3 relative" style={{ zIndex: 1 }}>
                       <h3 className="text-[14px] uppercase tracking-[0.22em] font-bold flex items-center gap-2" style={{ color: "#0f172a", fontFamily: SERIF }}>
                         <span
                           className="inline-flex items-center justify-center"
@@ -3697,13 +3850,13 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         (h) => h && (typeof h === "string" ? !/DATA_UNAVAIL|^N\/?A$|^NONE$/i.test(h) : !/DATA_UNAVAIL|^N\/?A$|^NONE$/i.test(h.text || ""))
                       );
                       return moves.length > 0 ? (
-                        <ul className="space-y-1 relative">
+                        <ul className="space-y-1 relative" style={{ zIndex: 1 }}>
                           {moves.map((h, i) => (
                             <SmartMoneyRow key={i} item={h} category="hedge" onOpenSourceDetail={(d) => setSourceDetail(d)} />
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-[14px] italic relative" style={{ color: "rgba(15, 23, 42, 0.7)" }}>No major fund rotations flagged today.</p>
+                        <p className="text-[14px] italic relative" style={{ color: "rgba(15, 23, 42, 0.7)", zIndex: 1 }}>No major fund rotations flagged today.</p>
                       );
                     })()}
                   </div>
