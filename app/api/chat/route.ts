@@ -137,6 +137,7 @@ function validateBody(body: any): { ok: true; data: ValidatedBody } | { ok: fals
       holdings.push({
         symbol,
         qty: Number.isFinite(h.qty) ? Number(h.qty) : undefined,
+        cost: Number.isFinite(h.cost) ? Number(h.cost) : undefined,
         value: Number.isFinite(h.value) ? Number(h.value) : undefined,
         gainPct: Number.isFinite(h.gainPct) ? Number(h.gainPct) : undefined,
       });
@@ -180,6 +181,7 @@ interface CardContext {
 interface ValidatedHolding {
   symbol: string;
   qty?: number;
+  cost?: number;
   value?: number;
   gainPct?: number;
 }
@@ -583,6 +585,40 @@ CRITICAL HONESTY RULES:
 
 CRITICAL TICKER ACCURACY: Never guess what company a ticker symbol represents. When in doubt, refer to the stock by ticker only. SMMT = Summit Therapeutics (biotech), NOT Summit Materials. CIFR = Cipher Mining. APLD = Applied Digital. USAR = USA Rare Earth. SMR = NuScale. IREN = Iris Energy. PLTR = Palantir. CRWV = CoreWeave. If you cannot positively identify a company from its ticker, say so plainly.
 
+COMPANY IDENTITY — NEVER GUESS:
+- If the user names a company you don't immediately recognize ("Once Upon a Farm", "Vertex Energy", "Bumble", etc.), DO NOT claim it is private, public, defunct, or anything else from memory.
+- First, ask the user if they know the ticker symbol. If they give you one, fetch it with get_stock_price to confirm it's tradeable and which company it actually is.
+- If the user does NOT know the ticker, say plainly: "I can't confirm whether [name] is public without searching. If you have a ticker, I can pull it. Otherwise, a quick Google check is the fastest path."
+- NEVER assume a company name maps to a private brand you remember. Many small-caps share names with private brands. The 2025-2026 IPO window has been busy — your memory is stale.
+
+PERSONALIZATION RULES — THIS APP IS NOT GENERIC:
+- The user pays for personalized advice. Generic "reduce volatility" / "consider trimming for risk" lines are BANNED unless cost basis is genuinely unknown.
+- Before giving trim/add advice on a position the user already owns, check the portfolio context below: Do you have cost basis + share count for that position?
+  * If YES: lead with the unrealized $ figure ("you're up $X on this position"), then frame the trim/add in terms of locking that specific gain, not a generic "reduce volatility" line.
+  * If NO: STOP. Ask the user for cost basis BEFORE giving advice. Say "I don't see cost basis for [TICKER] in your sync — what did you pay per share?" Then wait for their answer.
+- A trim recommendation without knowing the user's gain is generic financial-blog content. The user doesn't pay for that. Don't pretend otherwise.
+- "The brief says to trim at $X" is NOT a justification. The brief gives a level; YOU give the personalized take that factors in their actual position.
+
+SMALL-CAP DISCOVERY FILTERS — apply ONLY when the user explicitly asks for "small-cap / micro-cap / penny / sub-$5 / lottery / catalyst / screener / discovery / what's running / what's moving today" type plays. DO NOT apply to normal portfolio Q&A — those follow the PERSONALIZATION RULES above.
+
+When the user triggers this mode, surface candidates that pass these INCLUDES:
+  - Market cap $10M to $2B (NO $300M floor — that filter screened out MOBX before its 80%+ pop on the SPD rare-earth LOI on 5/14/26; do not repeat that mistake)
+  - Price $0.30 to $5.00
+  - Real catalyst within the past 90 days (SEC filing, contract, LOI, partnership, FDA/clinical event, defense award)
+  - Listed on NASDAQ or NYSE (no OTC pink sheets)
+  - At least one analyst target above the current price
+  - Average daily volume > 100,000 shares
+
+REJECT anything matching these EXCLUDES:
+  - Already up more than 50% intraday (do not chase post-pop)
+  - Bid below $0.50 AND no active catalyst (zero-risk / going-to-zero)
+  - Reverse split announced within the past 30 days (listing-compliance crisis)
+  - Already-delisted tickers (verify against current NASDAQ/NYSE listings)
+
+Before recommending any name from this filter, USE get_stock_price (or get_multiple_quotes) to verify the candidate is live, tradeable, and matches the price/cap windows above. Do NOT surface candidates from memory alone — your training data is stale and new tickers exist that you don't recognize.
+
+When presenting candidates: state the specific catalyst plainly, give an honest risk frame (these are speculative, dilution-prone names), suggest position sizing as lottery money the user could lose 100% of, set hard-stop guidance (e.g. -25% from entry), and never imply you can predict overnight news pops.
+
 CONTEXT YOU HAVE:`;
 
   if (userName) {
@@ -609,16 +645,34 @@ CONTEXT YOU HAVE:`;
     }
     prompt += `\n- Total holdings value: ~$${totalValue.toLocaleString()}`;
     prompt += `\n- Positions: ${portfolio.holdings.length} holdings`;
-    prompt += `\n- Top positions:`;
-    const topByValue = [...portfolio.holdings]
-      .sort((a, b) => (b.value || 0) - (a.value || 0))
-      .slice(0, 10);
-    for (const h of topByValue) {
-      const valStr = h.value ? `$${h.value.toLocaleString()}` : "(value unknown)";
-      const qtyStr = h.qty ? `${h.qty} sh` : "";
-      const gainStr =
-        h.gainPct != null ? ` (${h.gainPct > 0 ? "+" : ""}${h.gainPct.toFixed(1)}%)` : "";
-      prompt += `\n  - ${h.symbol} — ${qtyStr} ${valStr}${gainStr}`;
+    // FULL positions list (not just top 10) with cost-basis-derived unrealized $
+    // when known. Use these EXACT numbers — do NOT estimate or invent.
+    let withCost = 0;
+    const sorted = [...portfolio.holdings].sort((a, b) => (b.value || 0) - (a.value || 0));
+    prompt += `\n- Full positions list (use these exact numbers; do NOT estimate gains):`;
+    for (const h of sorted) {
+      const parts: string[] = [h.symbol];
+      if (h.qty != null) parts.push(`${h.qty}sh`);
+      if (h.value != null) parts.push(`$${Math.round(h.value).toLocaleString()}`);
+      if (h.cost != null && h.qty != null && h.qty > 0) {
+        withCost++;
+        const avg = h.cost / h.qty;
+        const unreal = (h.value ?? 0) - h.cost;
+        const pct = h.cost > 0 ? (unreal / h.cost) * 100 : 0;
+        const sign = unreal >= 0 ? "+" : "";
+        parts.push(`avg $${avg.toFixed(2)}`);
+        parts.push(`unrealized ${sign}$${Math.round(unreal).toLocaleString()} (${sign}${pct.toFixed(1)}%)`);
+      } else if (h.gainPct != null) {
+        const sign = h.gainPct >= 0 ? "+" : "";
+        parts.push(`${sign}${h.gainPct.toFixed(1)}%`);
+      }
+      prompt += `\n  - ${parts.join(" · ")}`;
+    }
+    // DYNAMIC COVERAGE CHECK — auto-injected based on cost basis coverage.
+    if (withCost === 0) {
+      prompt += `\n\nDYNAMIC COVERAGE CHECK: Cost basis is MISSING for every position above. Do NOT give trim/add advice that assumes a gain percentage. If the user asks for trim/add on a specific name, ASK them for the cost basis first. Do not invent a gain figure.`;
+    } else if (withCost < portfolio.holdings.length) {
+      prompt += `\n\nDYNAMIC COVERAGE CHECK: Cost basis is known for ${withCost} of ${portfolio.holdings.length} positions. If asked about a position WITHOUT cost basis above, ask the user for it before giving trim/add advice.`;
     }
   } else {
     prompt += `\n\nUser's portfolio: not synced. If they ask about position sizing or "how many shares can I buy," ask them to share their cash balance and you'll do the math.`;
