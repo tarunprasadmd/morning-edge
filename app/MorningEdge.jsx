@@ -3193,26 +3193,54 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                   holding: holdings.find(h => h.symbol === c.ticker),
                                   chatDescription: `${signalLabel} ${c.ticker}${c.action ? ` — ${c.action}` : ""}${c.why_now ? `. ${c.why_now}` : ""}${c.deep_reasoning ? ` Full reasoning: ${c.deep_reasoning}` : ""}`,
                                 })}
-                                className="w-full h-full text-left transition-all duration-150 active:scale-[0.99] hover:shadow-md"
+                                className="relative w-full h-full text-left overflow-hidden transition-all duration-150 active:scale-[0.98] active:translate-y-px"
                                 style={{
-                                  background: sigTheme.bg,
-                                  border: `2px solid ${sigTheme.border}`,
-                                  borderRadius: 10,
-                                  padding: "6px 8px",
-                                  boxShadow: `0 3px 10px -3px ${sigTheme.shadow}, inset 0 1.5px 0 rgba(255,255,255,0.85), inset 0 -1.5px 0 rgba(0,0,0,0.05)`,
+                                  background: `linear-gradient(160deg, ${sigTheme.bg} 0%, ${sigTheme.bg} 55%, rgba(0,0,0,0.04) 100%)`,
+                                  border: `1px solid ${sigTheme.border}`,
+                                  borderRadius: 16,
+                                  padding: "10px 10px 8px",
+                                  boxShadow: `0 8px 20px -4px ${sigTheme.shadow}, 0 0 18px ${sigTheme.shadow}, inset 0 2px 3px rgba(255,255,255,0.85), inset 0 -3px 8px rgba(0,0,0,0.10)`,
                                   display: "flex",
                                   flexDirection: "column",
-                                  gap: 4,
-                                  minHeight: 68,
+                                  gap: 5,
+                                  minHeight: 78,
                                 }}
                               >
+                                {/* Top specular highlight */}
+                                <span
+                                  className="absolute top-1 left-1.5 right-1.5 h-[42%] pointer-events-none"
+                                  style={{
+                                    background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)",
+                                    borderTopLeftRadius: "0.9rem",
+                                    borderTopRightRadius: "0.9rem",
+                                    borderBottomLeftRadius: "0.45rem",
+                                    borderBottomRightRadius: "0.45rem",
+                                  }}
+                                />
                                 {/* Top row: colored icon square + ticker + label — matches Today's Moves */}
-                                <div className="flex items-center gap-1.5">
+                                <div className="relative flex items-center gap-1.5">
                                   <div
-                                    className="flex-shrink-0 flex items-center justify-center"
-                                    style={{ width: 24, height: 24, borderRadius: 6, background: sigTheme.iconBg }}
+                                    className="relative flex-shrink-0 flex items-center justify-center overflow-hidden"
+                                    style={{
+                                      width: 26,
+                                      height: 26,
+                                      borderRadius: 7,
+                                      background: `linear-gradient(160deg, ${sigTheme.iconBg} 0%, ${sigTheme.iconBg} 60%, rgba(0,0,0,0.20) 100%)`,
+                                      boxShadow: `0 3px 8px ${sigTheme.shadow}, inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.30)`,
+                                      border: "1px solid rgba(255,255,255,0.25)",
+                                    }}
                                   >
-                                    <SignalIcon className="w-3 h-3" style={{ color: "white", strokeWidth: 2.6 }} />
+                                    <span
+                                      className="absolute top-0.5 left-0.5 right-0.5 h-[45%] pointer-events-none"
+                                      style={{
+                                        background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 100%)",
+                                        borderTopLeftRadius: "6px",
+                                        borderTopRightRadius: "6px",
+                                        borderBottomLeftRadius: "3px",
+                                        borderBottomRightRadius: "3px",
+                                      }}
+                                    />
+                                    <SignalIcon className="relative w-3 h-3" style={{ color: "white", strokeWidth: 2.6 }} />
                                   </div>
                                   {c.ticker && (
                                     <p
@@ -3227,7 +3255,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                   </span>
                                 </div>
                                 {/* Reasoning preview */}
-                                <div className="flex-1 min-w-0">
+                                <div className="relative flex-1 min-w-0">
                                   <p className="text-[11.5px] m-0 leading-snug" style={{
                                     color: "#1e293b",
                                     display: "-webkit-box",
@@ -3646,18 +3674,37 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     </svg>
 
                     <div className="flex items-center justify-between mb-3 relative" style={{ zIndex: 1 }}>
-                      <h3 className="text-[14px] uppercase tracking-[0.2em] font-bold flex items-center gap-2" style={{ color: "#78350f", fontFamily: SERIF }}>
+                      <h3 className="text-[15px] uppercase tracking-[0.22em] font-extrabold flex items-center gap-2.5"
+                        style={{
+                          fontFamily: SERIF,
+                          background: "linear-gradient(180deg, #FCD34D 0%, #92400E 55%, #451A03 100%)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text",
+                          filter: "drop-shadow(0 1px 1px rgba(120,53,15,0.45)) drop-shadow(0 0 6px rgba(252,211,77,0.35))",
+                        }}>
                         <span
-                          className="inline-flex items-center justify-center"
+                          className="relative inline-flex items-center justify-center overflow-hidden"
                           style={{
-                            width: 22,
-                            height: 22,
-                            borderRadius: 6,
-                            background: "linear-gradient(135deg, #fbbf24 0%, #b45309 60%, #78350f 100%)",
-                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 4px rgba(146,64,14,0.4)",
+                            width: 26,
+                            height: 26,
+                            borderRadius: 8,
+                            background: "linear-gradient(160deg, #FBBF24 0%, #B45309 55%, #78350F 100%)",
+                            boxShadow: "0 3px 8px rgba(146,64,14,0.55), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(120,53,15,0.35)",
+                            border: "1px solid rgba(255,255,255,0.30)",
                           }}
                         >
-                          <Crown className="w-3 h-3" style={{ color: "#fef3c7", strokeWidth: 2.5 }} />
+                          <span
+                            className="absolute top-0.5 left-0.5 right-0.5 h-[45%] pointer-events-none"
+                            style={{
+                              background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)",
+                              borderTopLeftRadius: "6px",
+                              borderTopRightRadius: "6px",
+                              borderBottomLeftRadius: "3px",
+                              borderBottomRightRadius: "3px",
+                            }}
+                          />
+                          <Crown className="relative w-3.5 h-3.5" style={{ color: "#FEF3C7", strokeWidth: 2.5 }} />
                         </span>
                         Institutional Whales
                       </h3>
@@ -3762,18 +3809,37 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     </svg>
 
                     <div className="flex items-center justify-between mb-3 relative" style={{ zIndex: 1 }}>
-                      <h3 className="text-[14px] uppercase tracking-[0.22em] font-bold flex items-center gap-2" style={{ color: "#172554", fontFamily: SERIF }}>
+                      <h3 className="text-[15px] uppercase tracking-[0.22em] font-extrabold flex items-center gap-2.5"
+                        style={{
+                          fontFamily: SERIF,
+                          background: "linear-gradient(180deg, #FCD34D 0%, #1E3A8A 55%, #0F172A 100%)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text",
+                          filter: "drop-shadow(0 1px 1px rgba(23,37,84,0.45)) drop-shadow(0 0 6px rgba(252,211,77,0.30))",
+                        }}>
                         <span
-                          className="inline-flex items-center justify-center"
+                          className="relative inline-flex items-center justify-center overflow-hidden"
                           style={{
-                            width: 22,
-                            height: 22,
-                            borderRadius: 6,
-                            background: "linear-gradient(135deg, #fbbf24 0%, #ca8a04 45%, #1e3a8a 100%)",
-                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 4px rgba(30,58,138,0.35)",
+                            width: 26,
+                            height: 26,
+                            borderRadius: 8,
+                            background: "linear-gradient(160deg, #FBBF24 0%, #CA8A04 45%, #1E3A8A 100%)",
+                            boxShadow: "0 3px 8px rgba(30,58,138,0.50), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(23,37,84,0.30)",
+                            border: "1px solid rgba(255,255,255,0.30)",
                           }}
                         >
-                          <Landmark className="w-3 h-3" style={{ color: "#fefce8", strokeWidth: 2.5 }} />
+                          <span
+                            className="absolute top-0.5 left-0.5 right-0.5 h-[45%] pointer-events-none"
+                            style={{
+                              background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)",
+                              borderTopLeftRadius: "6px",
+                              borderTopRightRadius: "6px",
+                              borderBottomLeftRadius: "3px",
+                              borderBottomRightRadius: "3px",
+                            }}
+                          />
+                          <Landmark className="relative w-3.5 h-3.5" style={{ color: "#FEFCE8", strokeWidth: 2.5 }} />
                         </span>
                         Congress
                       </h3>
@@ -3889,18 +3955,37 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     </svg>
 
                     <div className="flex items-center justify-between mb-3 relative" style={{ zIndex: 1 }}>
-                      <h3 className="text-[14px] uppercase tracking-[0.22em] font-bold flex items-center gap-2" style={{ color: "#0f172a", fontFamily: SERIF }}>
+                      <h3 className="text-[15px] uppercase tracking-[0.22em] font-extrabold flex items-center gap-2.5"
+                        style={{
+                          fontFamily: SERIF,
+                          background: "linear-gradient(180deg, #FB7185 0%, #475569 55%, #0F172A 100%)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text",
+                          filter: "drop-shadow(0 1px 1px rgba(15,23,42,0.45)) drop-shadow(0 0 6px rgba(251,113,133,0.30))",
+                        }}>
                         <span
-                          className="inline-flex items-center justify-center"
+                          className="relative inline-flex items-center justify-center overflow-hidden"
                           style={{
-                            width: 22,
-                            height: 22,
-                            borderRadius: 6,
-                            background: "linear-gradient(135deg, #fb7185 0%, #94a3b8 50%, #1e293b 100%)",
-                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45), 0 2px 4px rgba(51,65,85,0.4)",
+                            width: 26,
+                            height: 26,
+                            borderRadius: 8,
+                            background: "linear-gradient(160deg, #FB7185 0%, #94A3B8 50%, #1E293B 100%)",
+                            boxShadow: "0 3px 8px rgba(51,65,85,0.50), inset 0 1.5px 2px rgba(255,255,255,0.50), inset 0 -2px 4px rgba(15,23,42,0.35)",
+                            border: "1px solid rgba(255,255,255,0.30)",
                           }}
                         >
-                          <Building2 className="w-3 h-3" style={{ color: "#fef2f2", strokeWidth: 2.5 }} />
+                          <span
+                            className="absolute top-0.5 left-0.5 right-0.5 h-[45%] pointer-events-none"
+                            style={{
+                              background: "linear-gradient(to bottom, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                              borderTopLeftRadius: "6px",
+                              borderTopRightRadius: "6px",
+                              borderBottomLeftRadius: "3px",
+                              borderBottomRightRadius: "3px",
+                            }}
+                          />
+                          <Building2 className="relative w-3.5 h-3.5" style={{ color: "#FEF2F2", strokeWidth: 2.5 }} />
                         </span>
                         Hedge Funds
                       </h3>
@@ -4805,25 +4890,57 @@ function MindsetRow({ icon, kicker, body, color }) {
 }
 
 function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, detail }) {
+  // REDUCED color saturation per Tarun's request — soft pastel gloss instead of full color.
   const colorMap = {
-    rose: { dot: "bg-rose-100 text-rose-600", panel: "bg-rose-50 border-rose-100" },
-    amber: { dot: "bg-amber-100 text-amber-700", panel: "bg-amber-50 border-amber-100" },
-    teal: { dot: "bg-teal-100 text-teal-700", panel: "bg-teal-50 border-teal-100" },
+    rose: { iconBg: "#fda4af", iconShadow: "rgba(244,114,182,0.25)", panel: "bg-rose-50 border-rose-100", iconColor: "#9F1239" },
+    amber: { iconBg: "#fcd34d", iconShadow: "rgba(245,158,11,0.25)", panel: "bg-amber-50 border-amber-100", iconColor: "#92400E" },
+    teal: { iconBg: "#5eead4", iconShadow: "rgba(20,184,166,0.25)", panel: "bg-teal-50 border-teal-100", iconColor: "#115E59" },
   };
   const c = colorMap[color] || colorMap.rose;
   return (
     <div>
       <button
         onClick={onToggle}
-        className="w-full flex gap-3 items-start text-left p-2 -mx-2 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition"
+        className="relative w-full flex gap-3 items-start text-left p-3 my-1 rounded-2xl overflow-hidden transition active:scale-[0.99] active:translate-y-px"
+        style={{
+          background: "linear-gradient(160deg, rgba(255,255,255,0.95) 0%, rgba(250,251,252,0.85) 55%, rgba(241,245,249,0.75) 100%)",
+          border: "1px solid rgba(203,213,225,0.55)",
+          boxShadow:
+            "0 5px 14px -3px rgba(15,23,42,0.10), 0 1px 4px rgba(15,23,42,0.05), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -2px 5px rgba(15,23,42,0.05)",
+        }}
       >
-        <div className={`flex-shrink-0 w-9 h-9 rounded-full ${c.dot} flex items-center justify-center`}>
-          {icon}
+        {/* Soft top specular highlight (less saturated than action buttons) */}
+        <span
+          className="absolute top-0.5 left-1.5 right-1.5 h-[42%] pointer-events-none"
+          style={{
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)",
+            borderTopLeftRadius: "1rem",
+            borderTopRightRadius: "1rem",
+            borderBottomLeftRadius: "0.5rem",
+            borderBottomRightRadius: "0.5rem",
+          }}
+        />
+        <div
+          className="relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+          style={{
+            background: `linear-gradient(160deg, ${c.iconBg} 0%, ${c.iconBg} 60%, rgba(0,0,0,0.10) 100%)`,
+            boxShadow: `0 3px 8px ${c.iconShadow}, inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(0,0,0,0.10)`,
+            border: "1px solid rgba(255,255,255,0.45)",
+            color: c.iconColor,
+          }}
+        >
+          <span
+            className="absolute top-0.5 left-1 right-1 h-[45%] pointer-events-none rounded-t-full"
+            style={{
+              background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+            }}
+          />
+          <span className="relative">{icon}</span>
         </div>
-        <div className="flex-1 pt-0.5 min-w-0">
+        <div className="relative flex-1 pt-0.5 min-w-0">
           <p className="text-[12px] uppercase tracking-[0.2em] text-slate-800 font-semibold mb-1 flex items-center gap-2">
             {kicker}
-            <span className="text-slate-300 text-base leading-none">{expanded ? "−" : "+"}</span>
+            <span className="text-slate-400 text-base leading-none">{expanded ? "−" : "+"}</span>
           </p>
           <p className="text-[16px] leading-relaxed text-slate-800" style={{ fontFamily: SERIF }}>{body}</p>
         </div>
@@ -5498,12 +5615,46 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
       <button
         key={i}
         onClick={() => onOpenReading(reading)}
-        className={`text-left rounded-lg ${p.rowBg} border ${p.border} hover:shadow-md active:scale-[0.98] transition-all overflow-hidden flex items-stretch`}
+        className="relative text-left overflow-hidden flex items-stretch transition-all active:scale-[0.98] active:translate-y-px"
+        style={{
+          background: `linear-gradient(160deg, ${p.rowBgHex || "#ffffff"} 0%, ${p.rowBgHex || "#f8fafc"} 55%, rgba(0,0,0,0.04) 100%)`,
+          border: `1px solid ${p.borderHex || "rgba(148,163,184,0.4)"}`,
+          borderRadius: 14,
+          boxShadow:
+            "0 6px 16px -3px rgba(15,23,42,0.12), 0 0 18px rgba(15,23,42,0.05), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 6px rgba(15,23,42,0.06)",
+        }}
       >
-        <div className={`w-1 ${p.stripe}`} />
-        <div className="flex items-center gap-2 px-2 py-2 flex-1 min-w-0">
-          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${p.iconBg} flex items-center justify-center shadow-sm flex-shrink-0`}>
-            <Sparkles className="w-4 h-4 text-white" strokeWidth={2.5} />
+        {/* Top specular highlight */}
+        <span
+          className="absolute top-0.5 left-1.5 right-1.5 h-[45%] pointer-events-none"
+          style={{
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)",
+            borderTopLeftRadius: "0.75rem",
+            borderTopRightRadius: "0.75rem",
+            borderBottomLeftRadius: "0.4rem",
+            borderBottomRightRadius: "0.4rem",
+          }}
+        />
+        <div className={`relative w-1 ${p.stripe}`} />
+        <div className="relative flex items-center gap-2 px-2 py-2.5 flex-1 min-w-0">
+          <div
+            className={`relative w-9 h-9 rounded-lg bg-gradient-to-br ${p.iconBg} flex items-center justify-center flex-shrink-0 overflow-hidden`}
+            style={{
+              boxShadow: "0 3px 8px rgba(0,0,0,0.18), inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.25)",
+              border: "1px solid rgba(255,255,255,0.25)",
+            }}
+          >
+            <span
+              className="absolute top-0.5 left-0.5 right-0.5 h-[45%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                borderTopLeftRadius: "6px",
+                borderTopRightRadius: "6px",
+                borderBottomLeftRadius: "3px",
+                borderBottomRightRadius: "3px",
+              }}
+            />
+            <Sparkles className="relative w-4 h-4 text-white" strokeWidth={2.5} />
           </div>
           <div className="min-w-0 flex-1">
             <p className={`text-[15px] font-bold leading-tight ${p.ticker}`} style={{ fontFamily: SERIF }}>
@@ -5529,31 +5680,43 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
         High-conviction names outside your portfolio, plus catalyst setups on watch. Tap any row for the full thesis.
       </p>
 
-      {/* Two-column header: NEW BUYS + WATCHING */}
+      {/* Two-column header: NEW BUYS + WATCHING — glossy glass-pill */}
       <div className="grid grid-cols-2 gap-2 mb-2">
-        <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 px-2.5 py-2 shadow-sm">
-          <div className="flex items-center gap-1.5">
+        <div className="relative rounded-2xl px-2.5 py-2 overflow-hidden"
+          style={{
+            background: "linear-gradient(160deg, #34D399 0%, #10B981 55%, #047857 100%)",
+            border: "1px solid rgba(255,255,255,0.30)",
+            boxShadow: "0 8px 20px -4px rgba(16,185,129,0.50), 0 0 22px rgba(52,211,153,0.30), inset 0 2px 3px rgba(255,255,255,0.40), inset 0 -3px 8px rgba(0,0,0,0.25)",
+          }}>
+          <span className="absolute top-1 left-1.5 right-1.5 h-[42%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "1rem", borderTopRightRadius: "1rem", borderBottomLeftRadius: "0.5rem", borderBottomRightRadius: "0.5rem" }} />
+          <div className="relative flex items-center gap-1.5">
             <Sparkles className="w-3 h-3 text-white" strokeWidth={2.5} />
-            <p className="text-[10px] font-bold tracking-wider text-white">NEW BUYS</p>
+            <p className="text-[10px] font-extrabold tracking-[0.18em] text-white drop-shadow-sm">NEW BUYS</p>
             {hasOpportunity && (
-              <span className="ml-auto text-[9px] font-bold text-emerald-700 bg-white px-1.5 py-0.5 rounded-full">
+              <span className="ml-auto text-[9px] font-bold text-emerald-700 bg-white px-1.5 py-0.5 rounded-full shadow-sm">
                 {opportunity.length}
               </span>
             )}
           </div>
-          <p className="text-[9.5px] mt-0.5 leading-tight text-white/90">High conviction · not held</p>
+          <p className="relative text-[9.5px] mt-0.5 leading-tight text-white/95 font-medium">High conviction · not held</p>
         </div>
-        <div className="rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-600 px-2.5 py-2 shadow-sm">
-          <div className="flex items-center gap-1.5">
+        <div className="relative rounded-2xl px-2.5 py-2 overflow-hidden"
+          style={{
+            background: "linear-gradient(160deg, #E879F9 0%, #C026D3 55%, #6B21A8 100%)",
+            border: "1px solid rgba(255,255,255,0.30)",
+            boxShadow: "0 8px 20px -4px rgba(192,38,211,0.50), 0 0 22px rgba(232,121,249,0.30), inset 0 2px 3px rgba(255,255,255,0.40), inset 0 -3px 8px rgba(0,0,0,0.25)",
+          }}>
+          <span className="absolute top-1 left-1.5 right-1.5 h-[42%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "1rem", borderTopRightRadius: "1rem", borderBottomLeftRadius: "0.5rem", borderBottomRightRadius: "0.5rem" }} />
+          <div className="relative flex items-center gap-1.5">
             <Telescope className="w-3 h-3 text-white" strokeWidth={2.5} />
-            <p className="text-[10px] font-bold tracking-wider text-white">WATCHING</p>
+            <p className="text-[10px] font-extrabold tracking-[0.18em] text-white drop-shadow-sm">WATCHING</p>
             {hasRadar && (
-              <span className="ml-auto text-[9px] font-bold text-fuchsia-700 bg-white px-1.5 py-0.5 rounded-full">
+              <span className="ml-auto text-[9px] font-bold text-fuchsia-700 bg-white px-1.5 py-0.5 rounded-full shadow-sm">
                 {radar.length}
               </span>
             )}
           </div>
-          <p className="text-[9.5px] mt-0.5 leading-tight text-white/90">Setting up · catalyst ahead</p>
+          <p className="relative text-[9.5px] mt-0.5 leading-tight text-white/95 font-medium">Setting up · catalyst ahead</p>
         </div>
       </div>
 
@@ -5603,30 +5766,69 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
 
   const opacity = dismissed ? 0.4 : done ? 0.7 : 1;
 
+  // Try to detect a risk tier from the decision text so we can show a badge.
+  const tierMatch = /(LOWER|LOW|MEDIUM|MED|HIGHER|HIGH)\s*[-·:]?\s*RISK/i.exec(decision || "");
+  const tier = tierMatch ? tierMatch[1].toUpperCase() : null;
+  const tierBadge = tier === "LOWER" || tier === "LOW"
+    ? { dot: "🟢", label: "LOWER RISK", bg: "rgba(16,185,129,0.18)", color: "#065F46", border: "rgba(16,185,129,0.5)" }
+    : tier === "MEDIUM" || tier === "MED"
+    ? { dot: "🟡", label: "MEDIUM RISK", bg: "rgba(245,158,11,0.18)", color: "#92400E", border: "rgba(245,158,11,0.5)" }
+    : tier === "HIGHER" || tier === "HIGH"
+    ? { dot: "🔴", label: "HIGH RISK", bg: "rgba(239,68,68,0.18)", color: "#7F1D1D", border: "rgba(239,68,68,0.5)" }
+    : null;
+
   return (
     <button
       onClick={() => onOpen(idx)}
-      className="text-left transition-all duration-150 active:scale-[0.99] hover:shadow-md w-full h-full"
+      className="relative text-left overflow-hidden transition-all duration-150 active:scale-[0.98] active:translate-y-px w-full h-full"
       style={{
-        background: theme.bg,
-        border: `2px solid ${theme.border}`,
-        borderRadius: 10,
-        padding: "6px 8px",
-        boxShadow: `0 3px 10px -3px ${theme.shadow}, inset 0 1.5px 0 rgba(255,255,255,0.85), inset 0 -1.5px 0 rgba(0,0,0,0.05)`,
+        background: `linear-gradient(160deg, ${theme.bg} 0%, ${theme.bg} 55%, rgba(0,0,0,0.04) 100%)`,
+        border: `1px solid ${theme.border}`,
+        borderRadius: 16,
+        padding: "10px 10px 8px",
+        boxShadow: `0 8px 20px -4px ${theme.shadow}, 0 0 18px ${theme.shadow}, inset 0 2px 3px rgba(255,255,255,0.85), inset 0 -3px 8px rgba(0,0,0,0.10)`,
         opacity,
         display: "flex",
         flexDirection: "column",
-        gap: 4,
-        minHeight: 68,
+        gap: 5,
+        minHeight: 78,
       }}
     >
+      {/* Top specular highlight */}
+      <span
+        className="absolute top-1 left-1.5 right-1.5 h-[42%] pointer-events-none"
+        style={{
+          background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)",
+          borderTopLeftRadius: "0.9rem",
+          borderTopRightRadius: "0.9rem",
+          borderBottomLeftRadius: "0.45rem",
+          borderBottomRightRadius: "0.45rem",
+        }}
+      />
       {/* Top row: Icon + ticker + done check */}
-      <div className="flex items-center gap-1.5">
+      <div className="relative flex items-center gap-1.5">
         <div
-          className="flex-shrink-0 flex items-center justify-center"
-          style={{ width: 26, height: 26, borderRadius: 6, background: theme.iconBg }}
+          className="relative flex-shrink-0 flex items-center justify-center overflow-hidden"
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: 8,
+            background: `linear-gradient(160deg, ${theme.iconBg} 0%, ${theme.iconBg} 60%, rgba(0,0,0,0.20) 100%)`,
+            boxShadow: `0 3px 8px ${theme.shadow}, inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.30)`,
+            border: "1px solid rgba(255,255,255,0.25)",
+          }}
         >
-          <Icon className="w-3.5 h-3.5" style={{ color: "white", strokeWidth: 2.6 }} />
+          <span
+            className="absolute top-0.5 left-0.5 right-0.5 h-[45%] pointer-events-none"
+            style={{
+              background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 100%)",
+              borderTopLeftRadius: "6px",
+              borderTopRightRadius: "6px",
+              borderBottomLeftRadius: "3px",
+              borderBottomRightRadius: "3px",
+            }}
+          />
+          <Icon className="relative w-3.5 h-3.5" style={{ color: "white", strokeWidth: 2.6 }} />
         </div>
         {parsed.ticker && (
           <p
@@ -5644,8 +5846,22 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
         )}
       </div>
 
+      {/* Risk tier badge (if detected) */}
+      {tierBadge && (
+        <div className="relative inline-flex items-center gap-1 self-start px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider"
+          style={{
+            background: tierBadge.bg,
+            color: tierBadge.color,
+            border: `1px solid ${tierBadge.border}`,
+          }}
+        >
+          <span>{tierBadge.dot}</span>
+          <span>{tierBadge.label}</span>
+        </div>
+      )}
+
       {/* Center text block — the action itself, two-line clamp keeps box compact */}
-      <div className="flex-1 min-w-0">
+      <div className="relative flex-1 min-w-0">
         <p className="text-[13px] m-0 leading-snug" style={{
           color: "#0f172a",
           display: "-webkit-box",
