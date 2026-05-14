@@ -5650,94 +5650,88 @@ function ChatSheet({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)" }}>
-              <Sparkles className="w-4 h-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[14px] font-bold text-slate-900 truncate" style={{ fontFamily: SERIF }}>
-                Ask Morning Edge
-              </p>
-              <p className="text-[11px] text-slate-800 truncate uppercase tracking-wider">
-                {context.type === "general" ? "Anything goes" : context.type}{context.ticker ? ` · ${context.ticker}` : ""}
-              </p>
-            </div>
+        {/* Header — single slim row: icon + title + cash + clear + close */}
+        <div className="flex items-center px-3 py-2 border-b border-slate-200 gap-2">
+          {/* Icon */}
+          <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
+            style={{ background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)" }}>
+            <Sparkles className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
           </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {messages && messages.length > 0 && (
-              <button
-                onClick={onClearChat}
-                className="px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-800 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 transition border border-slate-200"
-                aria-label="Clear conversation"
-                title="Clear this conversation"
-              >
-                Clear
-              </button>
-            )}
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 active:bg-slate-200 transition"
-              aria-label="Close chat"
-            >
-              <X className="w-4 h-4 text-slate-800" strokeWidth={2.5} />
-            </button>
+          {/* Title + subtitle stacked inline-tight */}
+          <div className="min-w-0 flex-1 flex flex-col leading-tight">
+            <p className="text-[13px] font-bold text-slate-900 truncate" style={{ fontFamily: SERIF }}>
+              Ask Morning Edge
+            </p>
+            <p className="text-[9px] text-slate-500 truncate uppercase tracking-wider">
+              {context.type === "general" ? "Anything goes" : context.type}{context.ticker ? ` · ${context.ticker}` : ""}
+            </p>
           </div>
-        </div>
-
-        {/* Cash balance setter (collapsed pill, expandable) */}
-        <div className="px-4 py-2 bg-slate-50 border-b border-slate-200">
-          {!showCashInput ? (
+          {/* Inline cash pill (click to expand) */}
+          <button
+            onClick={() => { setShowCashInput((s) => !s); setCashDraft(cashBalance != null ? String(cashBalance) : ""); }}
+            className="flex-shrink-0 text-[11px] font-semibold text-slate-700 hover:text-slate-900 px-2 py-1 rounded-full bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition flex items-center gap-1 border border-slate-200"
+            title="Set cash to deploy"
+            aria-label="Set cash to deploy"
+          >
+            <Briefcase className="w-3 h-3" />
+            {cashBalance != null ? `$${cashBalance.toLocaleString()}` : "Cash"}
+          </button>
+          {/* Clear button (only when messages exist) */}
+          {messages && messages.length > 0 && (
             <button
-              onClick={() => { setShowCashInput(true); setCashDraft(cashBalance != null ? String(cashBalance) : ""); }}
-              className="w-full flex items-center justify-between text-[14px] text-slate-800 hover:text-slate-900 transition"
+              onClick={onClearChat}
+              className="flex-shrink-0 px-2 py-1 rounded-full text-[10px] font-semibold text-slate-800 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 transition border border-slate-200"
+              aria-label="Clear conversation"
+              title="Clear this conversation"
             >
-              <span className="flex items-center gap-1.5">
-                <Briefcase className="w-3.5 h-3.5" />
-                {cashBalance != null
-                  ? <>Cash to deploy: <span className="font-semibold text-slate-900">${cashBalance.toLocaleString()}</span></>
-                  : "Set cash to deploy (optional, helps with sizing math)"
-                }
-              </span>
-              <Pencil className="w-3.5 h-3.5" />
+              Clear
             </button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <span className="text-[12px] text-slate-800 flex-shrink-0">Cash $</span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={cashDraft}
-                onChange={(e) => setCashDraft(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") submitCash(); }}
-                className="flex-1 px-2 py-1 text-[14px] border border-slate-300 rounded outline-none focus:border-violet-500"
-                placeholder="e.g. 5000"
-                autoFocus
-              />
-              <button
-                onClick={submitCash}
-                className="px-3 py-1 text-[12px] font-semibold bg-slate-900 text-white rounded hover:bg-slate-800 active:bg-slate-700"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => setShowCashInput(false)}
-                className="text-[12px] text-slate-500 hover:text-slate-800"
-              >
-                Cancel
-              </button>
-            </div>
           )}
+          {/* Close */}
+          <button
+            onClick={onClose}
+            className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center hover:bg-slate-100 active:bg-slate-200 transition"
+            aria-label="Close chat"
+          >
+            <X className="w-3.5 h-3.5 text-slate-800" strokeWidth={2.5} />
+          </button>
         </div>
 
-        {/* Card context preview */}
-        <div className="px-4 py-2.5 bg-violet-50/50 border-b border-violet-100">
-          <p className="text-[12px] uppercase tracking-wider font-bold text-violet-700 mb-0.5">
+        {/* Cash input — slides down only when editing */}
+        {showCashInput && (
+          <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
+            <span className="text-[12px] text-slate-800 flex-shrink-0">Cash $</span>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={cashDraft}
+              onChange={(e) => setCashDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") submitCash(); }}
+              className="flex-1 px-2 py-1 text-[14px] border border-slate-300 rounded outline-none focus:border-violet-500"
+              placeholder="e.g. 5000"
+              autoFocus
+            />
+            <button
+              onClick={submitCash}
+              className="px-3 py-1 text-[12px] font-semibold bg-slate-900 text-white rounded hover:bg-slate-800 active:bg-slate-700"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setShowCashInput(false)}
+              className="text-[12px] text-slate-500 hover:text-slate-800"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {/* Card context preview — compact */}
+        <div className="px-3 py-1.5 bg-violet-50/50 border-b border-violet-100">
+          <p className="text-[9px] uppercase tracking-wider font-bold text-violet-700 mb-0.5">
             About:
           </p>
-          <p className="text-[15px] text-slate-800 leading-relaxed line-clamp-3">
+          <p className="text-[13px] text-slate-800 leading-snug line-clamp-2">
             {context.description}
           </p>
         </div>
