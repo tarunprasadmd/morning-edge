@@ -321,6 +321,22 @@ ${accountRule}
 
 CRITICAL: holdings 'cost' is PER-SHARE average. To get total $ basis, multiply cost × qty.
 
+PLAIN ENGLISH IN THE SHORT DECISION FIELD — write so a non-trader understands at a glance:
+- Use "shares" not "sh" or "SH" (e.g. "Sell 350 shares" not "Sell 350SH").
+- Use "$" + dollar gain alongside percentage when the cost basis is known (e.g. "SIDU is up $980 (+12.3%) on 700 shares" — not "SIDU +12.3% on 700SH").
+- Spell out times explicitly: "at market open (9:30 AM ET)" not just "Market Open."
+- BAN these trader-slang phrases in the short decision text: "house money", "lock 50%", "ride the rest", "scale out", "let it run", "size up", "size down", "trim into strength", "fade", "chase", "leg in", "swing", "tape." Use plain replacements:
+  * "house money" → "the rest is pure profit — anything from here is bonus"
+  * "lock 50% gain" → "take half your profit off the table"
+  * "scale out" → "sell in pieces"
+  * "trim into strength" → "sell some while the price is high"
+- The short decision must still be ONE concrete trade (not multiple steps), under ~25 words, but in language an investor who's NOT a day-trader can read in 3 seconds and understand.
+
+GOOD short-decision example (plain English):
+  "SIDU is up $980 (+12.3%) on 700 shares — sell 350 shares at market open (9:30 AM ET) to take half your profit off the table. The remaining 350 shares are pure profit from here."
+BAD short-decision example (jargon — rejected):
+  "SIDU +12.3% on 700SH — Lock 50% gain. Sell 350SH at Market Open; House money from here."
+
 ABSOLUTE BAN ON CONDITIONALS AND HOMEWORK — applies to BOTH decisions AND decisions_reasoning:
 - Every decision must be a SINGLE concrete trade. ZERO conditionals. ZERO homework. The user pays this app TO DO the research — never tell them to do it.
 - ANY decision OR reasoning string containing the words "check if", "verify", "reassess", "wait for", "depending on", "see if", "if silent", "if any", "if execs sold", "if they", or any phrase like "if X then do A else do B" is INVALID and must be rewritten as a single direct stance.
@@ -337,7 +353,7 @@ REAL GOOD EXAMPLE (acceptable rewrite of same setup):
 
 CRITICAL TICKER ACCURACY: Never guess company names. SMMT is Summit Therapeutics (NOT Summit Materials). CIFR is Cipher Mining. APLD is Applied Digital. USAR is USA Rare Earth. SMR is NuScale. IREN is Iris Energy. When in doubt, use ticker only.`;
 
-  return callJsonChunk(prompt, { maxTokens: 8000, model: "claude-sonnet-4-5", label: "light" });
+  return callJsonChunk(prompt, { maxTokens: 5000, model: "claude-haiku-4-5", label: "light" });
 }
 
 async function generateConvictionFromContext(
@@ -537,4 +553,3 @@ export async function GET(request: Request) {
     },
   });
 }
-
