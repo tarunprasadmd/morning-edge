@@ -396,7 +396,7 @@ conviction_watch: 8-10 entries across user's positions.
 opportunity_watch: 6-8 ideas NOT in user's holdings, matching themes.
 NEVER use placeholders like N/A. Empty arrays acceptable.`;
 
-  return callJsonChunk(prompt, { search: false, maxTokens: 12000, model: "claude-sonnet-4-5", label: "conviction" });
+  return callJsonChunk(prompt, { search: false, maxTokens: 12000, model: "claude-haiku-4-5", label: "conviction" });
 }
 
 // Main cron handler
