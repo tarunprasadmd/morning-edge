@@ -418,11 +418,16 @@ function parseDecision(text) {
 // Each maps to a tailwind+inline color set so the cards are vibrant
 // but readable.
 const DECISION_THEMES = {
-  trim:    { bg: "linear-gradient(135deg, #fef2f2 0%, #fde3e3 100%)", border: "#fca5a5", iconBg: "#dc2626", labelText: "#7f1d1d", accentText: "#991b1b", chevron: "#7f1d1d", shadow: "rgba(220,38,38,0.18)" },
-  add:     { bg: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)", border: "#6ee7b7", iconBg: "#059669", labelText: "#064e3b", accentText: "#047857", chevron: "#064e3b", shadow: "rgba(5,150,105,0.18)" },
-  watch:   { bg: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)", border: "#fcd34d", iconBg: "#d97706", labelText: "#78350f", accentText: "#92400e", chevron: "#78350f", shadow: "rgba(217,119,6,0.18)" },
-  protect: { bg: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)", border: "#93c5fd", iconBg: "#2563eb", labelText: "#1e3a8a", accentText: "#1e40af", chevron: "#1e3a8a", shadow: "rgba(37,99,235,0.18)" },
-  act:     { bg: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)", border: "#cbd5e1", iconBg: "#475569", labelText: "#0f172a", accentText: "#334155", chevron: "#0f172a", shadow: "rgba(71,85,105,0.18)" },
+  trim:    { bg: "linear-gradient(135deg, #fef2f2 0%, #fde3e3 100%)", border: "#fca5a5", iconBg: "#dc2626", labelText: "#7f1d1d", accentText: "#991b1b", chevron: "#7f1d1d", shadow: "rgba(220,38,38,0.18)",
+             deepBg: "linear-gradient(160deg, #fb7185 0%, #dc2626 55%, #7f1d1d 100%)", glow: "rgba(220,38,38,0.55)", borderDeep: "rgba(127,29,29,0.55)", iconBgDeep: "linear-gradient(160deg, #fecaca 0%, #f87171 100%)", iconColor: "#7f1d1d" },
+  add:     { bg: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)", border: "#6ee7b7", iconBg: "#059669", labelText: "#064e3b", accentText: "#047857", chevron: "#064e3b", shadow: "rgba(5,150,105,0.18)",
+             deepBg: "linear-gradient(160deg, #34d399 0%, #059669 55%, #065f46 100%)", glow: "rgba(16,185,129,0.55)", borderDeep: "rgba(6,95,70,0.55)", iconBgDeep: "linear-gradient(160deg, #d1fae5 0%, #6ee7b7 100%)", iconColor: "#064e3b" },
+  watch:   { bg: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)", border: "#fcd34d", iconBg: "#d97706", labelText: "#78350f", accentText: "#92400e", chevron: "#78350f", shadow: "rgba(217,119,6,0.18)",
+             deepBg: "linear-gradient(160deg, #fbbf24 0%, #d97706 55%, #78350f 100%)", glow: "rgba(217,119,6,0.55)", borderDeep: "rgba(120,53,15,0.55)", iconBgDeep: "linear-gradient(160deg, #fef3c7 0%, #fcd34d 100%)", iconColor: "#78350f" },
+  protect: { bg: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)", border: "#93c5fd", iconBg: "#2563eb", labelText: "#1e3a8a", accentText: "#1e40af", chevron: "#1e3a8a", shadow: "rgba(37,99,235,0.18)",
+             deepBg: "linear-gradient(160deg, #60a5fa 0%, #2563eb 55%, #1e3a8a 100%)", glow: "rgba(37,99,235,0.55)", borderDeep: "rgba(30,58,138,0.55)", iconBgDeep: "linear-gradient(160deg, #dbeafe 0%, #93c5fd 100%)", iconColor: "#1e3a8a" },
+  act:     { bg: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)", border: "#cbd5e1", iconBg: "#475569", labelText: "#0f172a", accentText: "#334155", chevron: "#0f172a", shadow: "rgba(71,85,105,0.18)",
+             deepBg: "linear-gradient(160deg, #475569 0%, #1e293b 55%, #0f172a 100%)", glow: "rgba(71,85,105,0.55)", borderDeep: "rgba(15,23,42,0.55)", iconBgDeep: "linear-gradient(160deg, #f1f5f9 0%, #cbd5e1 100%)", iconColor: "#1e293b" },
 };
 
 // ─── Demo brief ─────────────────────────────────────────────────────
@@ -3195,29 +3200,29 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                 })}
                                 className="relative w-full h-full text-left overflow-hidden transition-all duration-150 active:scale-[0.98] active:translate-y-px"
                                 style={{
-                                  background: `linear-gradient(160deg, ${sigTheme.bg} 0%, ${sigTheme.bg} 55%, rgba(0,0,0,0.04) 100%)`,
-                                  border: `1px solid ${sigTheme.border}`,
-                                  borderRadius: 16,
+                                  background: sigTheme.deepBg,
+                                  border: `1px solid ${sigTheme.borderDeep}`,
+                                  borderRadius: 18,
                                   padding: "10px 10px 8px",
-                                  boxShadow: `0 8px 20px -4px ${sigTheme.shadow}, 0 0 18px ${sigTheme.shadow}, inset 0 2px 3px rgba(255,255,255,0.85), inset 0 -3px 8px rgba(0,0,0,0.10)`,
+                                  boxShadow: `0 12px 28px -4px ${sigTheme.glow}, 0 4px 14px ${sigTheme.glow}, 0 0 28px ${sigTheme.glow}, inset 0 2px 4px rgba(255,255,255,0.35), inset 0 -4px 10px rgba(0,0,0,0.30)`,
                                   display: "flex",
                                   flexDirection: "column",
                                   gap: 5,
-                                  minHeight: 78,
+                                  minHeight: 84,
                                 }}
                               >
                                 {/* Top specular highlight */}
                                 <span
                                   className="absolute top-1 left-1.5 right-1.5 h-[42%] pointer-events-none"
                                   style={{
-                                    background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)",
-                                    borderTopLeftRadius: "0.9rem",
-                                    borderTopRightRadius: "0.9rem",
-                                    borderBottomLeftRadius: "0.45rem",
-                                    borderBottomRightRadius: "0.45rem",
+                                    background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%)",
+                                    borderTopLeftRadius: "1rem",
+                                    borderTopRightRadius: "1rem",
+                                    borderBottomLeftRadius: "0.5rem",
+                                    borderBottomRightRadius: "0.5rem",
                                   }}
                                 />
-                                {/* Top row: colored icon square + ticker + label — matches Today's Moves */}
+                                {/* Top row: colored icon square + ticker + label */}
                                 <div className="relative flex items-center gap-1.5">
                                   <div
                                     className="relative flex-shrink-0 flex items-center justify-center overflow-hidden"
@@ -3225,43 +3230,33 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                       width: 26,
                                       height: 26,
                                       borderRadius: 7,
-                                      background: `linear-gradient(160deg, ${sigTheme.iconBg} 0%, ${sigTheme.iconBg} 60%, rgba(0,0,0,0.20) 100%)`,
-                                      boxShadow: `0 3px 8px ${sigTheme.shadow}, inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.30)`,
-                                      border: "1px solid rgba(255,255,255,0.25)",
+                                      background: sigTheme.iconBgDeep,
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.25), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 4px rgba(0,0,0,0.15)",
+                                      border: "1px solid rgba(255,255,255,0.55)",
                                     }}
                                   >
-                                    <span
-                                      className="absolute top-0.5 left-0.5 right-0.5 h-[45%] pointer-events-none"
-                                      style={{
-                                        background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 100%)",
-                                        borderTopLeftRadius: "6px",
-                                        borderTopRightRadius: "6px",
-                                        borderBottomLeftRadius: "3px",
-                                        borderBottomRightRadius: "3px",
-                                      }}
-                                    />
-                                    <SignalIcon className="relative w-3 h-3" style={{ color: "white", strokeWidth: 2.6 }} />
+                                    <SignalIcon className="relative w-3 h-3" style={{ color: sigTheme.iconColor, strokeWidth: 2.7 }} />
                                   </div>
                                   {c.ticker && (
                                     <p
-                                      className="text-[14px] font-bold m-0 leading-tight truncate"
-                                      style={{ color: "#0f172a", fontFamily: SERIF }}
+                                      className="text-[14px] font-bold m-0 leading-tight truncate text-white drop-shadow"
+                                      style={{ fontFamily: SERIF }}
                                     >
                                       {c.ticker}
                                     </p>
                                   )}
-                                  <span className="ml-auto text-[8.5px] font-bold tracking-[0.14em] uppercase" style={{ color: sigTheme.labelText }}>
+                                  <span className="ml-auto text-[8.5px] font-bold tracking-[0.14em] uppercase text-white/90">
                                     {signalLabel}
                                   </span>
                                 </div>
-                                {/* Reasoning preview */}
+                                {/* Reasoning preview — white text on deep bg */}
                                 <div className="relative flex-1 min-w-0">
-                                  <p className="text-[11.5px] m-0 leading-snug" style={{
-                                    color: "#1e293b",
+                                  <p className="text-[11.5px] m-0 leading-snug text-white" style={{
                                     display: "-webkit-box",
                                     WebkitLineClamp: 2,
                                     WebkitBoxOrient: "vertical",
                                     overflow: "hidden",
+                                    textShadow: "0 1px 2px rgba(0,0,0,0.25)",
                                   }}>
                                     {hasAction && c.action ? c.action : summaryLine}
                                   </p>
@@ -4206,34 +4201,38 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   Contemplation · Wisdom · Breath
                 </p>
 
-                {/* Contemplation */}
+                {/* Contemplation — glossy fuchsia glass */}
                 {brief.clarity.contemplation && (
-                  <div className="mb-5 rounded-2xl p-5"
+                  <div className="relative mb-5 rounded-2xl p-5 overflow-hidden"
                     style={{
-                      background: "linear-gradient(135deg, #fdf4ff 0%, #fae8ff 60%, #f5d0fe 100%)",
-                      border: "1px solid #f5d0fe",
-                      boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
+                      background: "linear-gradient(160deg, #f0abfc 0%, #c026d3 55%, #6b21a8 100%)",
+                      border: "1px solid rgba(255,255,255,0.30)",
+                      boxShadow: "0 14px 32px -6px rgba(192,38,211,0.50), 0 4px 14px rgba(107,33,168,0.40), 0 0 30px rgba(232,121,249,0.25), inset 0 2px 4px rgba(255,255,255,0.45), inset 0 -5px 14px rgba(0,0,0,0.30)",
                     }}>
-                    <p className="text-[12px] uppercase tracking-[0.2em] text-fuchsia-700 font-semibold mb-3 flex items-center gap-2">
+                    <span className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
+                      style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 50%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.9rem", borderTopRightRadius: "0.9rem", borderBottomLeftRadius: "0.5rem", borderBottomRightRadius: "0.5rem" }} />
+                    <p className="relative text-[12px] uppercase tracking-[0.22em] text-fuchsia-100 font-bold mb-3 flex items-center gap-2 drop-shadow">
                       <Sparkles className="w-3.5 h-3.5" /> Today's Contemplation
                     </p>
-                    <p className="text-[18px] text-slate-900 leading-relaxed italic" style={{ fontFamily: SERIF }}>
+                    <p className="relative text-[18px] text-white leading-relaxed italic" style={{ fontFamily: SERIF, textShadow: "0 1px 2px rgba(0,0,0,0.30)" }}>
                       {brief.clarity.contemplation}
                     </p>
-                    <p className="text-[13px] text-fuchsia-800 mt-3 leading-relaxed font-medium">
+                    <p className="relative text-[13px] text-fuchsia-100 mt-3 leading-relaxed font-medium">
                       Sit with this for 60 seconds before market open. No phone.
                     </p>
                   </div>
                 )}
 
-                {/* Eastern wisdom quote */}
+                {/* Eastern wisdom — glossy amber/gold glass */}
                 {brief.clarity.eastern_wisdom && (
-                  <div className="mb-5 rounded-2xl p-5 relative overflow-hidden"
+                  <div className="relative mb-5 rounded-2xl p-5 overflow-hidden"
                     style={{
-                      background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
-                      border: "1px solid #fcd34d",
-                      boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
+                      background: "linear-gradient(160deg, #fbbf24 0%, #d97706 55%, #78350f 100%)",
+                      border: "1px solid rgba(255,255,255,0.30)",
+                      boxShadow: "0 14px 32px -6px rgba(217,119,6,0.50), 0 4px 14px rgba(120,53,15,0.40), 0 0 30px rgba(251,191,36,0.25), inset 0 2px 4px rgba(255,255,255,0.45), inset 0 -5px 14px rgba(0,0,0,0.30)",
                     }}>
+                    <span className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
+                      style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 50%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.9rem", borderTopRightRadius: "0.9rem", borderBottomLeftRadius: "0.5rem", borderBottomRightRadius: "0.5rem" }} />
                     {/* Decorative quote mark */}
                     <span
                       aria-hidden
@@ -4243,21 +4242,21 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         left: 14,
                         fontSize: 80,
                         lineHeight: 1,
-                        color: "rgba(180, 83, 9, 0.18)",
+                        color: "rgba(255, 255, 255, 0.25)",
                         fontFamily: SERIF,
                         userSelect: "none",
                       }}
                     >
                       "
                     </span>
-                    <p className="text-[12px] uppercase tracking-[0.2em] text-amber-800 font-semibold mb-3 relative">
+                    <p className="relative text-[12px] uppercase tracking-[0.22em] text-amber-50 font-bold mb-3 drop-shadow">
                       Eastern Wisdom
                     </p>
-                    <p className="text-[17px] text-slate-900 leading-relaxed relative" style={{ fontFamily: SERIF }}>
+                    <p className="relative text-[17px] text-white leading-relaxed" style={{ fontFamily: SERIF, textShadow: "0 1px 2px rgba(0,0,0,0.30)" }}>
                       {brief.clarity.eastern_wisdom.quote || brief.clarity.eastern_wisdom}
                     </p>
                     {brief.clarity.eastern_wisdom.source && (
-                      <p className="text-[13px] text-amber-900 mt-3 font-semibold tracking-wide relative">
+                      <p className="relative text-[13px] text-amber-100 mt-3 font-semibold tracking-wide">
                         — {brief.clarity.eastern_wisdom.source}
                       </p>
                     )}
@@ -4401,18 +4400,18 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
         }}
         className={`relative w-full text-left overflow-hidden flex items-center gap-2.5 px-3 py-2.5 my-1 transition cursor-pointer active:scale-[0.99] active:translate-y-px`}
         style={{
-          background: "linear-gradient(160deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0.20) 100%)",
-          border: `1px solid ${theme.chipBorder}`,
+          background: "linear-gradient(160deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.75) 55%, rgba(255,255,255,0.60) 100%)",
+          border: "1px solid rgba(148,163,184,0.40)",
           borderRadius: 14,
           boxShadow:
-            "0 4px 12px -2px rgba(15,23,42,0.10), 0 1px 3px rgba(15,23,42,0.06), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 5px rgba(15,23,42,0.05)",
+            "0 3px 8px -2px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.04), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -1.5px 4px rgba(15,23,42,0.04)",
         }}
       >
-        {/* Top specular highlight */}
+        {/* Subtle top specular highlight */}
         <span
-          className="absolute top-0.5 left-1.5 right-1.5 h-[45%] pointer-events-none"
+          className="absolute top-0.5 left-1.5 right-1.5 h-[42%] pointer-events-none"
           style={{
-            background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)",
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)",
             borderTopLeftRadius: "0.75rem",
             borderTopRightRadius: "0.75rem",
             borderBottomLeftRadius: "0.4rem",
@@ -4424,33 +4423,22 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
             className="relative px-2.5 py-1 rounded-md font-bold flex-shrink-0 text-center overflow-hidden"
             style={{
               fontFamily: SERIF,
-              fontSize: 14,
+              fontSize: 13.5,
               letterSpacing: "0.02em",
-              minWidth: 60,
-              background: theme.chipBg,
-              color: theme.chipText,
-              border: `1px solid ${theme.chipBorder}`,
-              boxShadow: "0 2px 6px rgba(0,0,0,0.15), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -1.5px 4px rgba(0,0,0,0.10)",
+              minWidth: 56,
+              background: "linear-gradient(160deg, #f8fafc 0%, #e2e8f0 100%)",
+              color: "#0f172a",
+              border: "1px solid rgba(148,163,184,0.45)",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.08), inset 0 1px 1.5px rgba(255,255,255,0.95), inset 0 -1px 2px rgba(15,23,42,0.06)",
             }}
           >
-            {/* Ticker chip specular */}
-            <span
-              className="absolute top-0 left-0.5 right-0.5 h-[45%] pointer-events-none"
-              style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
-                borderTopLeftRadius: "5px",
-                borderTopRightRadius: "5px",
-                borderBottomLeftRadius: "3px",
-                borderBottomRightRadius: "3px",
-              }}
-            />
             <span className="relative">{ticker}</span>
           </span>
         )}
-        <span className="relative flex-1 text-[15px] leading-snug" style={{ color: theme.bodyText, fontWeight: 500 }}>
+        <span className="relative flex-1 text-[14.5px] leading-snug" style={{ color: "#0f172a", fontWeight: 500 }}>
           {text}
         </span>
-        <ChevronRight className="relative w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: theme.chevron }} strokeWidth={2.5} />
+        <ChevronRight className="relative w-4 h-4 flex-shrink-0 mt-0.5 text-slate-500" strokeWidth={2.5} />
       </button>
     </li>
   );
@@ -5407,7 +5395,7 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
           : "linear-gradient(160deg, #ffffff 0%, #f8fafc 55%, #e2e8f0 100%)",
         border: `1px solid ${theme.heroBorder}`,
         borderRadius: 18,
-        padding: "10px 12px",
+        padding: "12px 14px",
         cursor: "pointer",
         boxShadow:
           "0 6px 16px -3px rgba(15,23,42,0.12), 0 2px 6px rgba(15,23,42,0.06), inset 0 2px 3px rgba(255,255,255,1), inset 0 -2px 6px rgba(15,23,42,0.08)",
@@ -5424,34 +5412,20 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
           borderBottomRightRadius: "0.5rem",
         }}
       />
-      <div className="relative flex items-start gap-3">
+      <div className="relative flex items-start gap-2.5">
+        {/* Small colored dot instead of numbered badge */}
         <span
-          className="relative flex-shrink-0 inline-flex items-center justify-center text-[12px] font-bold overflow-hidden"
+          className="flex-shrink-0 mt-1.5"
           style={{
-            width: 26,
-            height: 26,
-            borderRadius: 10,
-            background: `linear-gradient(160deg, ${theme.bulletDot} 0%, ${theme.bulletDot} 60%, rgba(0,0,0,0.18) 100%)`,
-            color: "white",
-            boxShadow: `0 3px 8px ${theme.badge}, inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.25)`,
-            border: "1px solid rgba(255,255,255,0.25)",
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: theme.bulletDot,
+            boxShadow: `0 0 0 2px rgba(255,255,255,0.85), 0 2px 4px ${theme.badge}`,
           }}
-        >
-          {/* Number badge specular */}
-          <span
-            className="absolute top-0.5 left-0.5 right-0.5 h-[45%] pointer-events-none"
-            style={{
-              background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 100%)",
-              borderTopLeftRadius: "8px",
-              borderTopRightRadius: "8px",
-              borderBottomLeftRadius: "4px",
-              borderBottomRightRadius: "4px",
-            }}
-          />
-          <span className="relative">{index}</span>
-        </span>
+        />
         <span
-          className="flex-1 text-[15px] leading-snug pt-0.5"
+          className="flex-1 text-[15px] leading-snug"
           style={{ color: "#0f172a", fontFamily: SERIF, fontWeight: 500 }}
         >
           {colorizePercents(text)}
@@ -5468,7 +5442,7 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
       </div>
       {open && (
         <div
-          className="relative mt-2 pl-9 pr-1 pt-2 border-t text-[14px] leading-relaxed"
+          className="relative mt-2 pl-5 pr-1 pt-2 border-t text-[14px] leading-relaxed"
           style={{ borderColor: theme.heroBorder, color: "#334155", fontFamily: SERIF }}
         >
           {expansion}
@@ -5676,9 +5650,15 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 
   return (
     <div>
-      <p className="text-[14px] text-slate-800 italic mb-3 px-1">
+      <p className="text-[14px] text-slate-800 italic mb-2 px-1">
         High-conviction names outside your portfolio, plus catalyst setups on watch. Tap any row for the full thesis.
       </p>
+      {/* Risk-tier legend so the user knows what the colors mean */}
+      <div className="mb-3 px-2 py-2 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-around text-[11px] font-semibold text-slate-700">
+        <span className="flex items-center gap-1">🟢 <span>LOWER RISK</span></span>
+        <span className="flex items-center gap-1">🟡 <span>MEDIUM RISK</span></span>
+        <span className="flex items-center gap-1">🔴 <span>HIGH RISK</span></span>
+      </div>
 
       {/* Two-column header: NEW BUYS + WATCHING — glossy glass-pill */}
       <div className="grid grid-cols-2 gap-2 mb-2">
@@ -5770,11 +5750,11 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
   const tierMatch = /(LOWER|LOW|MEDIUM|MED|HIGHER|HIGH)\s*[-·:]?\s*RISK/i.exec(decision || "");
   const tier = tierMatch ? tierMatch[1].toUpperCase() : null;
   const tierBadge = tier === "LOWER" || tier === "LOW"
-    ? { dot: "🟢", label: "LOWER RISK", bg: "rgba(16,185,129,0.18)", color: "#065F46", border: "rgba(16,185,129,0.5)" }
+    ? { dot: "🟢", label: "LOWER RISK" }
     : tier === "MEDIUM" || tier === "MED"
-    ? { dot: "🟡", label: "MEDIUM RISK", bg: "rgba(245,158,11,0.18)", color: "#92400E", border: "rgba(245,158,11,0.5)" }
+    ? { dot: "🟡", label: "MEDIUM RISK" }
     : tier === "HIGHER" || tier === "HIGH"
-    ? { dot: "🔴", label: "HIGH RISK", bg: "rgba(239,68,68,0.18)", color: "#7F1D1D", border: "rgba(239,68,68,0.5)" }
+    ? { dot: "🔴", label: "HIGH RISK" }
     : null;
 
   return (
@@ -5782,27 +5762,27 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
       onClick={() => onOpen(idx)}
       className="relative text-left overflow-hidden transition-all duration-150 active:scale-[0.98] active:translate-y-px w-full h-full"
       style={{
-        background: `linear-gradient(160deg, ${theme.bg} 0%, ${theme.bg} 55%, rgba(0,0,0,0.04) 100%)`,
-        border: `1px solid ${theme.border}`,
-        borderRadius: 16,
+        background: theme.deepBg,
+        border: `1px solid ${theme.borderDeep}`,
+        borderRadius: 18,
         padding: "10px 10px 8px",
-        boxShadow: `0 8px 20px -4px ${theme.shadow}, 0 0 18px ${theme.shadow}, inset 0 2px 3px rgba(255,255,255,0.85), inset 0 -3px 8px rgba(0,0,0,0.10)`,
+        boxShadow: `0 12px 28px -4px ${theme.glow}, 0 4px 14px ${theme.glow}, 0 0 28px ${theme.glow}, inset 0 2px 4px rgba(255,255,255,0.35), inset 0 -4px 10px rgba(0,0,0,0.30)`,
         opacity,
         display: "flex",
         flexDirection: "column",
         gap: 5,
-        minHeight: 78,
+        minHeight: 84,
       }}
     >
-      {/* Top specular highlight */}
+      {/* Top specular highlight — the glass reflection */}
       <span
         className="absolute top-1 left-1.5 right-1.5 h-[42%] pointer-events-none"
         style={{
-          background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)",
-          borderTopLeftRadius: "0.9rem",
-          borderTopRightRadius: "0.9rem",
-          borderBottomLeftRadius: "0.45rem",
-          borderBottomRightRadius: "0.45rem",
+          background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%)",
+          borderTopLeftRadius: "1rem",
+          borderTopRightRadius: "1rem",
+          borderBottomLeftRadius: "0.5rem",
+          borderBottomRightRadius: "0.5rem",
         }}
       />
       {/* Top row: Icon + ticker + done check */}
@@ -5813,46 +5793,37 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
             width: 28,
             height: 28,
             borderRadius: 8,
-            background: `linear-gradient(160deg, ${theme.iconBg} 0%, ${theme.iconBg} 60%, rgba(0,0,0,0.20) 100%)`,
-            boxShadow: `0 3px 8px ${theme.shadow}, inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.30)`,
-            border: "1px solid rgba(255,255,255,0.25)",
+            background: theme.iconBgDeep,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.25), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 4px rgba(0,0,0,0.15)",
+            border: "1px solid rgba(255,255,255,0.55)",
           }}
         >
-          <span
-            className="absolute top-0.5 left-0.5 right-0.5 h-[45%] pointer-events-none"
-            style={{
-              background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 100%)",
-              borderTopLeftRadius: "6px",
-              borderTopRightRadius: "6px",
-              borderBottomLeftRadius: "3px",
-              borderBottomRightRadius: "3px",
-            }}
-          />
-          <Icon className="relative w-3.5 h-3.5" style={{ color: "white", strokeWidth: 2.6 }} />
+          <Icon className="relative w-3.5 h-3.5" style={{ color: theme.iconColor, strokeWidth: 2.7 }} />
         </div>
         {parsed.ticker && (
           <p
-            className="text-[15px] font-bold m-0 leading-tight truncate"
-            style={{ color: "#0f172a", fontFamily: SERIF }}
+            className="text-[15px] font-bold m-0 leading-tight truncate text-white drop-shadow"
+            style={{ fontFamily: SERIF }}
           >
             {parsed.ticker}
           </p>
         )}
-        <span className="ml-auto text-[9px] font-bold tracking-[0.14em] uppercase" style={{ color: theme.labelText }}>
+        <span className="ml-auto text-[9px] font-bold tracking-[0.14em] uppercase text-white/90">
           {parsed.typeLabel}
         </span>
         {done && (
-          <CheckCircle2 className="w-4 h-4 text-emerald-700 flex-shrink-0" strokeWidth={2.5} />
+          <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" strokeWidth={2.5} />
         )}
       </div>
 
-      {/* Risk tier badge (if detected) */}
+      {/* Risk tier badge (if detected) — shown against the deep background as a frosted chip */}
       {tierBadge && (
         <div className="relative inline-flex items-center gap-1 self-start px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider"
           style={{
-            background: tierBadge.bg,
-            color: tierBadge.color,
-            border: `1px solid ${tierBadge.border}`,
+            background: "rgba(255,255,255,0.85)",
+            color: "#0f172a",
+            border: "1px solid rgba(255,255,255,0.65)",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
           }}
         >
           <span>{tierBadge.dot}</span>
@@ -5860,21 +5831,21 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
         </div>
       )}
 
-      {/* Center text block — the action itself, two-line clamp keeps box compact */}
+      {/* Center text block — the action itself, white text on deep bg */}
       <div className="relative flex-1 min-w-0">
-        <p className="text-[13px] m-0 leading-snug" style={{
-          color: "#0f172a",
+        <p className="text-[13px] m-0 leading-snug text-white" style={{
           display: "-webkit-box",
           WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical",
           overflow: "hidden",
+          textShadow: "0 1px 2px rgba(0,0,0,0.25)",
         }}>
           {parsed.ticker
             ? (parsed.headline || decision).replace(parsed.ticker, "").replace(/^[\s:.\-—]+/, "")
             : (parsed.headline || decision)}
         </p>
         {parsed.account && (
-          <p className="text-[9px] font-semibold uppercase tracking-wider mt-0.5 m-0" style={{ color: theme.accentText }}>
+          <p className="text-[9px] font-semibold uppercase tracking-wider mt-0.5 m-0 text-white/80">
             {parsed.account}
           </p>
         )}
@@ -6962,26 +6933,28 @@ function InteractiveBreathGuide({ name, pattern, description, rounds }) {
 
   return (
     <div
-      className="rounded-2xl p-5 border"
+      className="relative rounded-2xl p-5 overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #ede9fe 100%)",
-        borderColor: "#ddd6fe",
-        boxShadow: "0 4px 16px -4px rgba(139, 92, 246, 0.15), inset 0 1.5px 0 rgba(255,255,255,0.9)",
+        background: "linear-gradient(160deg, #c4b5fd 0%, #7c3aed 55%, #4c1d95 100%)",
+        border: "1px solid rgba(255,255,255,0.30)",
+        boxShadow: "0 14px 32px -6px rgba(124,58,237,0.50), 0 4px 14px rgba(76,29,149,0.40), 0 0 30px rgba(196,181,253,0.25), inset 0 2px 4px rgba(255,255,255,0.45), inset 0 -5px 14px rgba(0,0,0,0.30)",
       }}
     >
+      <span className="absolute top-1 left-2 right-2 h-[35%] pointer-events-none"
+        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.9rem", borderTopRightRadius: "0.9rem", borderBottomLeftRadius: "0.5rem", borderBottomRightRadius: "0.5rem" }} />
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="relative flex items-center justify-between mb-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[12px] uppercase tracking-[0.2em] text-violet-700 font-semibold">
+          <p className="text-[12px] uppercase tracking-[0.22em] text-violet-100 font-bold drop-shadow">
             {name}
           </p>
-          <p className="text-[15px] text-slate-900 font-semibold mt-0.5" style={{ fontFamily: SERIF }}>
+          <p className="text-[15px] text-white font-semibold mt-0.5" style={{ fontFamily: SERIF, textShadow: "0 1px 2px rgba(0,0,0,0.30)" }}>
             {pattern}
           </p>
         </div>
         <div className="flex flex-col items-end text-right ml-2">
-          <p className="text-[10px] uppercase tracking-wider text-violet-700 font-semibold">Round</p>
-          <p className="text-[18px] font-bold text-slate-900" style={{ fontFamily: SERIF }}>
+          <p className="text-[10px] uppercase tracking-wider text-violet-100 font-bold">Round</p>
+          <p className="text-[18px] font-bold text-white" style={{ fontFamily: SERIF, textShadow: "0 1px 2px rgba(0,0,0,0.30)" }}>
             {Math.min(roundIdx + (running || done ? 1 : 0), totalRounds)} / {totalRounds}
           </p>
         </div>
