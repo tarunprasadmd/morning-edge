@@ -23,7 +23,7 @@ import YahooFinance from "yahoo-finance2";
 import { Redis } from "@upstash/redis";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 90;
 export const dynamic = "force-dynamic";
 
 const anthropic = new Anthropic({
@@ -459,10 +459,13 @@ export async function POST(req: Request) {
     }));
 
     // ─── Agentic tool-use loop ──────────────────────────────────────
-    // Up to 5 rounds. Each round: call Claude; if it returns tool_use
-    // blocks, execute them and append tool_result blocks; loop.
-    // Otherwise, extract final text and return.
-    const MAX_ROUNDS = 5;
+    // Up to 3 rounds (was 5 — most queries resolve in 1-2). Each round:
+    // call Claude; if tool_use blocks come back, execute them and append
+    // tool_result; loop. Otherwise extract final text and return.
+    // Using Haiku 4.5 instead of Sonnet for 3-5x faster responses — the
+    // chat is structured by the system prompt format, doesn't need Sonnet
+    // depth for stock Q&A with live tools.
+    const MAX_ROUNDS = 3;
     let conversation: any[] = [...trimmedMessages];
     let finalText = "";
     let totalInputTokens = 0;
@@ -472,8 +475,8 @@ export async function POST(req: Request) {
     for (let round = 0; round < MAX_ROUNDS; round++) {
       const response = await callWithRetry(() =>
         anthropic.messages.create({
-          model: "claude-sonnet-4-5",
-          max_tokens: 1200,
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 1000,
           system: systemPrompt,
           tools: TOOLS as any,
           messages: conversation,
