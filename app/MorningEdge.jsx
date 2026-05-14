@@ -2387,21 +2387,34 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           without going back. Step 2 of the flow after picking a pillar. */}
       <div className="relative px-4 pb-4">
         <div className="grid grid-cols-2 gap-3">
-          {/* GENERATE BRIEF — deep navy → indigo gradient */}
+          {/* GENERATE BRIEF — glass-pill: deep navy/indigo with white specular highlight */}
           <button
             onClick={generateBrief}
             disabled={loading}
-            className="relative rounded-2xl shadow-xl overflow-hidden text-left active:scale-[0.99] transition disabled:opacity-60"
+            className="relative rounded-[1.75rem] overflow-hidden text-left active:scale-[0.98] active:translate-y-px transition disabled:opacity-60"
             style={{
               background: "linear-gradient(160deg, #1E293B 0%, #312E81 60%, #1E1B4B 100%)",
-              border: "1px solid rgba(212, 165, 116, 0.45)",
+              border: "1px solid rgba(212, 165, 116, 0.55)",
               boxShadow:
-                "0 8px 24px -4px rgba(30, 27, 75, 0.5), inset 0 1px 0 rgba(212, 165, 116, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.04)",
+                "0 14px 36px -6px rgba(99, 102, 241, 0.6), 0 4px 16px rgba(30, 27, 75, 0.45), 0 0 40px rgba(129, 140, 248, 0.25), inset 0 2px 4px rgba(255, 255, 255, 0.35), inset 0 -6px 14px rgba(0, 0, 0, 0.45)",
             }}
           >
+            {/* Top specular highlight — the glass reflection */}
+            <div
+              className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 45%, rgba(255,255,255,0) 100%)",
+                borderTopLeftRadius: "1.5rem",
+                borderTopRightRadius: "1.5rem",
+                borderBottomLeftRadius: "1rem",
+                borderBottomRightRadius: "1rem",
+              }}
+            />
+            {/* Gold thin highlight on the very top edge */}
             <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-25"
+            {/* Soft inner colored glow */}
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-30 pointer-events-none"
               style={{ background: "radial-gradient(circle, #818CF8 0%, transparent 60%)" }} />
             <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
               <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow"
@@ -2417,14 +2430,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   style={{ fontFamily: SERIF, fontWeight: 500, color: "#F8FAFC" }}>
                   {brief ? "Regenerate" : "Generate Brief"}
                 </p>
-                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.65)" }}>
+                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.7)" }}>
                   {loading ? "Reading the tape…" : brief ? "Pull fresh data" : "See today's tape"}
                 </p>
               </div>
             </div>
           </button>
 
-          {/* SYNC PORTFOLIO — black & gold */}
+          {/* SYNC PORTFOLIO — glass-pill: deep black with gold specular highlight */}
           <button
             onClick={() => {
               setShowCsvImport(true);
@@ -2435,17 +2448,28 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 }
               }, 50);
             }}
-            className="relative rounded-2xl shadow-xl overflow-hidden text-left active:scale-[0.99] transition"
+            className="relative rounded-[1.75rem] overflow-hidden text-left active:scale-[0.98] active:translate-y-px transition"
             style={{
               background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
-              border: "1px solid rgba(212, 165, 116, 0.45)",
+              border: "1px solid rgba(212, 165, 116, 0.55)",
               boxShadow:
-                "0 8px 24px -4px rgba(2, 6, 23, 0.5), inset 0 1px 0 rgba(212, 165, 116, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.04)",
+                "0 14px 36px -6px rgba(2, 6, 23, 0.55), 0 4px 16px rgba(212, 165, 116, 0.18), 0 0 40px rgba(212, 165, 116, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.28), inset 0 -6px 14px rgba(0, 0, 0, 0.5)",
             }}
           >
+            {/* Top specular highlight */}
+            <div
+              className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.18) 45%, rgba(255,255,255,0) 100%)",
+                borderTopLeftRadius: "1.5rem",
+                borderTopRightRadius: "1.5rem",
+                borderBottomLeftRadius: "1rem",
+                borderBottomRightRadius: "1rem",
+              }}
+            />
             <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-25"
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-30 pointer-events-none"
               style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
             <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
               <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow"
@@ -2461,7 +2485,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   style={{ fontFamily: SERIF, fontWeight: 500, color: "#F8FAFC" }}>
                   Sync Portfolio
                 </p>
-                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.65)" }}>
+                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.7)" }}>
                   {holdings.length > 0 ? `${holdings.length} positions` : "Connect holdings"}
                 </p>
               </div>
