@@ -567,7 +567,7 @@ conviction_watch: 8-10 entries. Mix add/hold/trim. EVERY entry MUST include deep
 opportunity_watch: 6-8 ideas NOT in user's holdings. Match themes.
 NEVER use placeholders like "DATA_UNAVAILABLE", "N/A", "NONE". Empty arrays are fine.`;
 
-  return callJsonChunk(prompt, { search: false, maxTokens: 7000, model: "claude-sonnet-4-5", label: "conviction" });
+  return callJsonChunk(prompt, { search: false, maxTokens: 7000, model: "claude-haiku-4-5", label: "conviction" });
 }
 
 async function generateLayerB(opts: {
