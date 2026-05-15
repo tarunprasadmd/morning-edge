@@ -5647,18 +5647,18 @@ function ChatSheet({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+        {/* Header — slim compact row */}
+        <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
               style={{ background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)" }}>
-              <Sparkles className="w-4 h-4 text-white" strokeWidth={2.5} />
+              <Sparkles className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[14px] font-bold text-slate-900 truncate" style={{ fontFamily: SERIF }}>
+              <p className="text-[13px] font-bold text-slate-900 truncate leading-tight" style={{ fontFamily: SERIF }}>
                 Ask Morning Edge
               </p>
-              <p className="text-[11px] text-slate-800 truncate uppercase tracking-wider">
+              <p className="text-[10px] text-slate-600 truncate uppercase tracking-wider leading-tight">
                 {context.type === "general" ? "Anything goes" : context.type}{context.ticker ? ` · ${context.ticker}` : ""}
               </p>
             </div>
@@ -5667,7 +5667,7 @@ function ChatSheet({
             {messages && messages.length > 0 && (
               <button
                 onClick={onClearChat}
-                className="px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-800 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 transition border border-slate-200"
+                className="px-2 py-0.5 rounded-full text-[11px] font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 transition border border-slate-200"
                 aria-label="Clear conversation"
                 title="Clear this conversation"
               >
@@ -5676,10 +5676,10 @@ function ChatSheet({
             )}
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 active:bg-slate-200 transition"
+              className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-slate-100 active:bg-slate-200 transition"
               aria-label="Close chat"
             >
-              <X className="w-4 h-4 text-slate-800" strokeWidth={2.5} />
+              <X className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
             </button>
           </div>
         </div>
@@ -5729,12 +5729,10 @@ function ChatSheet({
           )}
         </div>
 
-        {/* Card context preview */}
-        <div className="px-4 py-2.5 bg-violet-50/50 border-b border-violet-100">
-          <p className="text-[12px] uppercase tracking-wider font-bold text-violet-700 mb-0.5">
-            About:
-          </p>
-          <p className="text-[15px] text-slate-800 leading-relaxed line-clamp-3">
+        {/* Card context preview — slim one-liner */}
+        <div className="px-3 py-1.5 bg-violet-50/60 border-b border-violet-100">
+          <p className="text-[12px] text-slate-700 leading-snug line-clamp-1">
+            <span className="font-bold text-violet-700 uppercase tracking-wider text-[10px] mr-1.5">About:</span>
             {context.description}
           </p>
         </div>
