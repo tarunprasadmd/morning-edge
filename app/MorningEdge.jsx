@@ -418,14 +418,19 @@ function parseDecision(text) {
 // Each maps to a tailwind+inline color set so the cards are vibrant
 // but readable.
 const DECISION_THEMES = {
-  trim:    { bg: "linear-gradient(135deg, #fef2f2 0%, #fde3e3 100%)", border: "#fca5a5", iconBg: "#dc2626", labelText: "#7f1d1d", accentText: "#991b1b", chevron: "#7f1d1d", shadow: "rgba(220,38,38,0.18)",
-             deepBg: "linear-gradient(160deg, #fee2e2 0%, #fecaca 55%, #fca5a5 100%)", glow: "rgba(252,165,165,0.35)", borderDeep: "rgba(248,113,113,0.40)", iconBgDeep: "linear-gradient(160deg, #ffffff 0%, #fef2f2 100%)", iconColor: "#991b1b" },
+  // TRIM — soft coral/rose. Calmer than red but still says "reduce".
+  trim:    { bg: "linear-gradient(135deg, #fef2f2 0%, #fde3e3 100%)", border: "#fca5a5", iconBg: "#dc2626", labelText: "#881337", accentText: "#9f1239", chevron: "#881337", shadow: "rgba(244,114,182,0.18)",
+             deepBg: "linear-gradient(160deg, #ffe4e6 0%, #fecdd3 55%, #fda4af 100%)", glow: "rgba(253,164,175,0.35)", borderDeep: "rgba(251,113,133,0.40)", iconBgDeep: "linear-gradient(160deg, #ffffff 0%, #ffe4e6 100%)", iconColor: "#9f1239" },
+  // ADD — soft mint/sage. Reads "grow / nourish".
   add:     { bg: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)", border: "#6ee7b7", iconBg: "#059669", labelText: "#064e3b", accentText: "#047857", chevron: "#064e3b", shadow: "rgba(5,150,105,0.18)",
              deepBg: "linear-gradient(160deg, #d1fae5 0%, #a7f3d0 55%, #6ee7b7 100%)", glow: "rgba(110,231,183,0.35)", borderDeep: "rgba(52,211,153,0.40)", iconBgDeep: "linear-gradient(160deg, #ffffff 0%, #ecfdf5 100%)", iconColor: "#065f46" },
-  watch:   { bg: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)", border: "#fcd34d", iconBg: "#d97706", labelText: "#78350f", accentText: "#92400e", chevron: "#78350f", shadow: "rgba(217,119,6,0.18)",
-             deepBg: "linear-gradient(160deg, #fef3c7 0%, #fde68a 55%, #fcd34d 100%)", glow: "rgba(252,211,77,0.35)", borderDeep: "rgba(251,191,36,0.40)", iconBgDeep: "linear-gradient(160deg, #ffffff 0%, #fffbeb 100%)", iconColor: "#92400e" },
+  // WATCH — soft lilac (REPLACED amber). Reads "patience / observe".
+  watch:   { bg: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)", border: "#c4b5fd", iconBg: "#7c3aed", labelText: "#4c1d95", accentText: "#5b21b6", chevron: "#4c1d95", shadow: "rgba(167,139,250,0.18)",
+             deepBg: "linear-gradient(160deg, #ede9fe 0%, #ddd6fe 55%, #c4b5fd 100%)", glow: "rgba(196,181,253,0.35)", borderDeep: "rgba(167,139,250,0.40)", iconBgDeep: "linear-gradient(160deg, #ffffff 0%, #f5f3ff 100%)", iconColor: "#5b21b6" },
+  // PROTECT — soft periwinkle. Reads "stable / shielded".
   protect: { bg: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)", border: "#93c5fd", iconBg: "#2563eb", labelText: "#1e3a8a", accentText: "#1e40af", chevron: "#1e3a8a", shadow: "rgba(37,99,235,0.18)",
              deepBg: "linear-gradient(160deg, #dbeafe 0%, #bfdbfe 55%, #93c5fd 100%)", glow: "rgba(147,197,253,0.35)", borderDeep: "rgba(96,165,250,0.40)", iconBgDeep: "linear-gradient(160deg, #ffffff 0%, #eff6ff 100%)", iconColor: "#1e40af" },
+  // ACT — soft slate. Reads "neutral / general action".
   act:     { bg: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)", border: "#cbd5e1", iconBg: "#475569", labelText: "#0f172a", accentText: "#334155", chevron: "#0f172a", shadow: "rgba(71,85,105,0.18)",
              deepBg: "linear-gradient(160deg, #f1f5f9 0%, #e2e8f0 55%, #cbd5e1 100%)", glow: "rgba(203,213,225,0.40)", borderDeep: "rgba(148,163,184,0.40)", iconBgDeep: "linear-gradient(160deg, #ffffff 0%, #f8fafc 100%)", iconColor: "#1e293b" },
 };
@@ -3439,72 +3444,72 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             </p>
                           </div>
                           <div className="space-y-1.5">
-                            {/* Earnings alerts — RED glossy */}
+                            {/* Earnings alerts — soft coral pink */}
                             {(brief.todays_edge.earnings_alerts || []).map((e, i) => (
                               <button
                                 key={`earn-${i}`}
                                 onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${e.ticker.toUpperCase()}`)}
                                 className="relative w-full flex items-center gap-2 overflow-hidden px-3 py-2 transition active:scale-[0.99] active:translate-y-px text-left"
                                 style={{
-                                  background: "linear-gradient(160deg, #fecaca 0%, #fca5a5 55%, #ef4444 100%)",
-                                  border: "1px solid rgba(127,29,29,0.45)",
+                                  background: "linear-gradient(160deg, #ffe4e6 0%, #fecdd3 55%, #fda4af 100%)",
+                                  border: "1px solid rgba(251,113,133,0.40)",
                                   borderRadius: 12,
-                                  boxShadow: "0 5px 14px -3px rgba(239,68,68,0.40), 0 0 18px rgba(252,165,165,0.30), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 5px rgba(127,29,29,0.25)",
+                                  boxShadow: "0 5px 14px -3px rgba(253,164,175,0.35), 0 0 18px rgba(253,164,175,0.20), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 5px rgba(159,18,57,0.10)",
                                 }}
                               >
-                                <span className="absolute top-0.5 left-1.5 right-1.5 h-[45%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.6rem", borderTopRightRadius: "0.6rem", borderBottomLeftRadius: "0.35rem", borderBottomRightRadius: "0.35rem" }} />
-                                <span className="relative text-[9px] uppercase tracking-wider font-bold text-rose-900 flex-shrink-0">Earnings</span>
-                                <span className="relative text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{e.ticker}</span>
-                                <span className="relative text-[14px] text-rose-950 flex-1 leading-tight truncate">
+                                <span className="absolute top-0.5 left-1.5 right-1.5 h-[45%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.6rem", borderTopRightRadius: "0.6rem", borderBottomLeftRadius: "0.35rem", borderBottomRightRadius: "0.35rem" }} />
+                                <span className="relative text-[9px] uppercase tracking-wider font-bold flex-shrink-0" style={{ color: "#881337" }}>Earnings</span>
+                                <span className="relative text-[16px] font-bold flex-shrink-0" style={{ color: "#0f172a", fontFamily: SERIF }}>{e.ticker}</span>
+                                <span className="relative text-[14px] flex-1 leading-tight truncate" style={{ color: "#881337" }}>
                                   {e.when}{e.your_shares ? ` · ${e.your_shares} sh` : ""}
                                 </span>
-                                <ExternalLink className="relative w-3 h-3 text-rose-900 flex-shrink-0" />
+                                <ExternalLink className="relative w-3 h-3 flex-shrink-0" style={{ color: "#881337" }} />
                               </button>
                             ))}
-                            {/* Binary catalysts — AMBER glossy */}
+                            {/* Binary catalysts — soft lilac */}
                             {(brief.todays_edge.binary_catalysts || []).map((c, i) => (
                               <button
                                 key={`cat-${i}`}
                                 onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${c.ticker.toUpperCase()}`)}
                                 className="relative w-full flex items-center gap-2 overflow-hidden px-3 py-2 transition active:scale-[0.99] active:translate-y-px text-left"
                                 style={{
-                                  background: "linear-gradient(160deg, #fde68a 0%, #fbbf24 55%, #d97706 100%)",
-                                  border: "1px solid rgba(120,53,15,0.45)",
+                                  background: "linear-gradient(160deg, #ede9fe 0%, #ddd6fe 55%, #c4b5fd 100%)",
+                                  border: "1px solid rgba(167,139,250,0.40)",
                                   borderRadius: 12,
-                                  boxShadow: "0 5px 14px -3px rgba(217,119,6,0.40), 0 0 18px rgba(251,191,36,0.30), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 5px rgba(120,53,15,0.25)",
+                                  boxShadow: "0 5px 14px -3px rgba(196,181,253,0.35), 0 0 18px rgba(196,181,253,0.20), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 5px rgba(76,29,149,0.10)",
                                 }}
                               >
-                                <span className="absolute top-0.5 left-1.5 right-1.5 h-[45%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.6rem", borderTopRightRadius: "0.6rem", borderBottomLeftRadius: "0.35rem", borderBottomRightRadius: "0.35rem" }} />
-                                <span className="relative text-[9px] uppercase tracking-wider font-bold text-amber-950 flex-shrink-0">Catalyst</span>
-                                <span className="relative text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{c.ticker}</span>
+                                <span className="absolute top-0.5 left-1.5 right-1.5 h-[45%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.6rem", borderTopRightRadius: "0.6rem", borderBottomLeftRadius: "0.35rem", borderBottomRightRadius: "0.35rem" }} />
+                                <span className="relative text-[9px] uppercase tracking-wider font-bold flex-shrink-0" style={{ color: "#4c1d95" }}>Catalyst</span>
+                                <span className="relative text-[16px] font-bold flex-shrink-0" style={{ color: "#0f172a", fontFamily: SERIF }}>{c.ticker}</span>
                                 <div className="relative flex-1 min-w-0">
-                                  <p className="text-[14px] text-amber-950 leading-tight font-semibold truncate">{c.event}</p>
-                                  {c.context && <p className="text-[12px] text-amber-900 leading-tight truncate">{c.context}</p>}
+                                  <p className="text-[14px] leading-tight font-semibold truncate" style={{ color: "#4c1d95" }}>{c.event}</p>
+                                  {c.context && <p className="text-[12px] leading-tight truncate" style={{ color: "#5b21b6" }}>{c.context}</p>}
                                 </div>
-                                <ExternalLink className="relative w-3 h-3 text-amber-900 flex-shrink-0" />
+                                <ExternalLink className="relative w-3 h-3 flex-shrink-0" style={{ color: "#4c1d95" }} />
                               </button>
                             ))}
-                            {/* Risk flags — ORANGE glossy */}
+                            {/* Risk flags — soft dusty rose */}
                             {(brief.todays_edge.risk_flags || []).map((r, i) => (
                               <button
                                 key={`risk-${i}`}
                                 onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${r.ticker.toUpperCase()}`)}
                                 className="relative w-full flex items-center gap-2 overflow-hidden px-3 py-2 transition active:scale-[0.99] active:translate-y-px text-left"
                                 style={{
-                                  background: "linear-gradient(160deg, #fed7aa 0%, #fb923c 55%, #c2410c 100%)",
-                                  border: "1px solid rgba(124,45,18,0.45)",
+                                  background: "linear-gradient(160deg, #fce7f3 0%, #fbcfe8 55%, #f9a8d4 100%)",
+                                  border: "1px solid rgba(244,114,182,0.40)",
                                   borderRadius: 12,
-                                  boxShadow: "0 5px 14px -3px rgba(194,65,12,0.40), 0 0 18px rgba(251,146,60,0.30), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 5px rgba(124,45,18,0.25)",
+                                  boxShadow: "0 5px 14px -3px rgba(249,168,212,0.35), 0 0 18px rgba(251,207,232,0.20), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 5px rgba(157,23,77,0.10)",
                                 }}
                               >
-                                <span className="absolute top-0.5 left-1.5 right-1.5 h-[45%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.6rem", borderTopRightRadius: "0.6rem", borderBottomLeftRadius: "0.35rem", borderBottomRightRadius: "0.35rem" }} />
-                                <span className="relative text-[9px] uppercase tracking-wider font-bold text-orange-950 flex-shrink-0">Risk</span>
-                                <span className="relative text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{r.ticker}</span>
+                                <span className="absolute top-0.5 left-1.5 right-1.5 h-[45%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.6rem", borderTopRightRadius: "0.6rem", borderBottomLeftRadius: "0.35rem", borderBottomRightRadius: "0.35rem" }} />
+                                <span className="relative text-[9px] uppercase tracking-wider font-bold flex-shrink-0" style={{ color: "#9d174d" }}>Risk</span>
+                                <span className="relative text-[16px] font-bold flex-shrink-0" style={{ color: "#0f172a", fontFamily: SERIF }}>{r.ticker}</span>
                                 <div className="relative flex-1 min-w-0">
-                                  <p className="text-[14px] text-orange-950 leading-tight font-semibold truncate">{r.flag}</p>
-                                  {r.suggested_action && <p className="text-[12px] text-orange-900 leading-tight truncate">→ {r.suggested_action}</p>}
+                                  <p className="text-[14px] leading-tight font-semibold truncate" style={{ color: "#9d174d" }}>{r.flag}</p>
+                                  {r.suggested_action && <p className="text-[12px] leading-tight truncate" style={{ color: "#be185d" }}>→ {r.suggested_action}</p>}
                                 </div>
-                                <ExternalLink className="relative w-3 h-3 text-orange-900 flex-shrink-0" />
+                                <ExternalLink className="relative w-3 h-3 flex-shrink-0" style={{ color: "#9d174d" }} />
                               </button>
                             ))}
                           </div>
@@ -4389,6 +4394,15 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
   }
   const { text, ticker, why_matters } = item || {};
 
+  // Subtle category tint — each box's rows pick up a soft hint of color so they
+  // read as part of the parent theme without being loud.
+  const categoryTint = {
+    whale:    { bg: "linear-gradient(160deg, #fffbeb 0%, #fef3c7 55%, #fde68a 100%)", border: "rgba(251,191,36,0.30)", glow: "rgba(252,211,77,0.18)" },
+    congress: { bg: "linear-gradient(160deg, #eff6ff 0%, #dbeafe 55%, #bfdbfe 100%)", border: "rgba(96,165,250,0.30)", glow: "rgba(147,197,253,0.18)" },
+    hedge:    { bg: "linear-gradient(160deg, #fdf2f8 0%, #fce7f3 55%, #fbcfe8 100%)", border: "rgba(244,114,182,0.30)", glow: "rgba(251,207,232,0.18)" },
+  };
+  const tint = categoryTint[category] || categoryTint.whale;
+
   return (
     <li>
       <button
@@ -4401,18 +4415,18 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
         }}
         className={`relative w-full text-left overflow-hidden flex items-center gap-2.5 px-3 py-2.5 my-1 transition cursor-pointer active:scale-[0.99] active:translate-y-px`}
         style={{
-          background: "linear-gradient(160deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.75) 55%, rgba(255,255,255,0.60) 100%)",
-          border: "1px solid rgba(148,163,184,0.40)",
+          background: tint.bg,
+          border: `1px solid ${tint.border}`,
           borderRadius: 14,
           boxShadow:
-            "0 3px 8px -2px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.04), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -1.5px 4px rgba(15,23,42,0.04)",
+            `0 4px 10px -2px ${tint.glow}, 0 1px 3px rgba(15,23,42,0.05), inset 0 1.5px 2px rgba(255,255,255,0.90), inset 0 -1.5px 4px rgba(15,23,42,0.04)`,
         }}
       >
         {/* Subtle top specular highlight */}
         <span
           className="absolute top-0.5 left-1.5 right-1.5 h-[42%] pointer-events-none"
           style={{
-            background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)",
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 100%)",
             borderTopLeftRadius: "0.75rem",
             borderTopRightRadius: "0.75rem",
             borderBottomLeftRadius: "0.4rem",
@@ -4427,7 +4441,7 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
               fontSize: 13.5,
               letterSpacing: "0.02em",
               minWidth: 56,
-              background: "linear-gradient(160deg, #f8fafc 0%, #e2e8f0 100%)",
+              background: "linear-gradient(160deg, #ffffff 0%, #f8fafc 100%)",
               color: "#0f172a",
               border: "1px solid rgba(148,163,184,0.45)",
               boxShadow: "0 1px 3px rgba(0,0,0,0.08), inset 0 1px 1.5px rgba(255,255,255,0.95), inset 0 -1px 2px rgba(15,23,42,0.06)",
@@ -5586,7 +5600,7 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
           deep_reasoning: item.deep_reasoning,
           chatDescription: `${item.ticker}${item.theme ? ` (${item.theme})` : ""}: ${item.headline}${item.why_now ? `. ${item.why_now}` : ""}${item.deep_reasoning ? ` Full reasoning: ${item.deep_reasoning}` : ""}`,
         };
-    // Detect risk tier from the row's text — overrides palette so colors mean RISK, not just decoration.
+    // Detect risk tier from the row's text so the STAR ICON (not the whole row) shows risk.
     const fullText = `${item.headline || ""} ${item.fits_gap || ""} ${item.why_now || ""} ${item.deep_reasoning || ""}`;
     const riskMatch = /(LOWER|LOW|MEDIUM|MED|HIGHER|HIGH)\s*[-·:]?\s*RISK/i.exec(fullText);
     const riskTier = riskMatch
@@ -5594,14 +5608,14 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
         : (riskMatch[1].toUpperCase() === "MEDIUM" || riskMatch[1].toUpperCase() === "MED") ? "MEDIUM"
         : "HIGH")
       : null;
-    // Map risk tier → glass color palette (matches the 🟢🟡🔴 legend at the top of Discovery)
-    const riskPalette = riskTier === "LOWER"
-      ? { bg: "linear-gradient(160deg, #d1fae5 0%, #a7f3d0 55%, #6ee7b7 100%)", border: "rgba(52,211,153,0.40)", glow: "rgba(110,231,183,0.30)", stripe: "bg-emerald-500", iconBg: "linear-gradient(160deg, #34d399 0%, #059669 100%)", dot: "🟢", label: "LOWER" }
+    // Only the icon badge color reflects risk — row background stays neutral cream.
+    const riskIcon = riskTier === "LOWER"
+      ? { iconBg: "linear-gradient(160deg, #6ee7b7 0%, #059669 100%)", iconColor: "white", badgeDot: "🟢", badgeLabel: "LOWER" }
       : riskTier === "MEDIUM"
-      ? { bg: "linear-gradient(160deg, #fef3c7 0%, #fde68a 55%, #fcd34d 100%)", border: "rgba(251,191,36,0.40)", glow: "rgba(252,211,77,0.30)", stripe: "bg-amber-500", iconBg: "linear-gradient(160deg, #fbbf24 0%, #d97706 100%)", dot: "🟡", label: "MEDIUM" }
+      ? { iconBg: "linear-gradient(160deg, #fcd34d 0%, #d97706 100%)", iconColor: "white", badgeDot: "🟡", badgeLabel: "MEDIUM" }
       : riskTier === "HIGH"
-      ? { bg: "linear-gradient(160deg, #fee2e2 0%, #fecaca 55%, #fca5a5 100%)", border: "rgba(248,113,113,0.40)", glow: "rgba(252,165,165,0.30)", stripe: "bg-rose-500", iconBg: "linear-gradient(160deg, #f87171 0%, #dc2626 100%)", dot: "🔴", label: "HIGH" }
-      : null;
+      ? { iconBg: "linear-gradient(160deg, #fda4af 0%, #dc2626 100%)", iconColor: "white", badgeDot: "🔴", badgeLabel: "HIGH" }
+      : { iconBg: "linear-gradient(160deg, #cbd5e1 0%, #64748b 100%)", iconColor: "white", badgeDot: null, badgeLabel: null };
 
     return (
       <button
@@ -5609,33 +5623,31 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
         onClick={() => onOpenReading(reading)}
         className="relative text-left overflow-hidden flex items-stretch transition-all active:scale-[0.98] active:translate-y-px"
         style={{
-          background: riskPalette ? riskPalette.bg : `linear-gradient(160deg, ${p.rowBgHex || "#ffffff"} 0%, ${p.rowBgHex || "#f8fafc"} 55%, rgba(0,0,0,0.04) 100%)`,
-          border: `1px solid ${riskPalette ? riskPalette.border : (p.borderHex || "rgba(148,163,184,0.4)")}`,
+          background: "linear-gradient(160deg, #ffffff 0%, #fafaf9 55%, #f5f5f4 100%)",
+          border: "1px solid rgba(214,211,209,0.55)",
           borderRadius: 14,
-          boxShadow: riskPalette
-            ? `0 6px 16px -3px ${riskPalette.glow}, 0 0 18px ${riskPalette.glow}, inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 6px rgba(15,23,42,0.06)`
-            : "0 6px 16px -3px rgba(15,23,42,0.12), 0 0 18px rgba(15,23,42,0.05), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 6px rgba(15,23,42,0.06)",
+          boxShadow: "0 5px 14px -3px rgba(15,23,42,0.10), 0 0 16px rgba(15,23,42,0.04), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -2px 6px rgba(15,23,42,0.05)",
         }}
       >
         {/* Top specular highlight */}
         <span
           className="absolute top-0.5 left-1.5 right-1.5 h-[45%] pointer-events-none"
           style={{
-            background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)",
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
             borderTopLeftRadius: "0.75rem",
             borderTopRightRadius: "0.75rem",
             borderBottomLeftRadius: "0.4rem",
             borderBottomRightRadius: "0.4rem",
           }}
         />
-        <div className={`relative w-1 ${riskPalette ? riskPalette.stripe : p.stripe}`} />
-        <div className="relative flex items-center gap-2 px-2 py-2.5 flex-1 min-w-0">
+        <div className="relative flex items-center gap-2 px-3 py-2.5 flex-1 min-w-0">
+          {/* Star icon badge — color reflects RISK (green/yellow/red) */}
           <div
             className="relative w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
             style={{
-              background: riskPalette ? riskPalette.iconBg : undefined,
-              boxShadow: "0 3px 8px rgba(0,0,0,0.18), inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.25)",
-              border: "1px solid rgba(255,255,255,0.25)",
+              background: riskIcon.iconBg,
+              boxShadow: "0 3px 8px rgba(0,0,0,0.18), inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.20)",
+              border: "1px solid rgba(255,255,255,0.30)",
             }}
           >
             <span
@@ -5648,7 +5660,6 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
                 borderBottomRightRadius: "3px",
               }}
             />
-            {!riskPalette && <div className={`absolute inset-0 bg-gradient-to-br ${p.iconBg} pointer-events-none -z-10`} />}
             <Sparkles className="relative w-4 h-4 text-white" strokeWidth={2.5} />
           </div>
           <div className="min-w-0 flex-1">
@@ -5656,18 +5667,18 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
               <p className="text-[15px] font-bold leading-tight text-slate-900" style={{ fontFamily: SERIF }}>
                 {item.ticker}
               </p>
-              {riskPalette && (
-                <span className="text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-white/90 text-slate-900 border border-slate-200 shadow-sm">
-                  {riskPalette.dot} {riskPalette.label}
+              {riskIcon.badgeDot && (
+                <span className="text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-white text-slate-900 border border-slate-200 shadow-sm">
+                  {riskIcon.badgeDot} {riskIcon.badgeLabel}
                 </span>
               )}
             </div>
             {item.theme && (
-              <p className="text-[11px] font-semibold tracking-wide leading-tight truncate text-slate-700">
+              <p className="text-[11px] font-semibold tracking-wide leading-tight truncate text-slate-600">
                 {item.theme}
               </p>
             )}
-            <p className="text-[13px] text-slate-900 mt-0.5 leading-snug truncate">
+            <p className="text-[13px] text-slate-800 mt-0.5 leading-snug truncate">
               {item.fits_gap || item.headline || item.why_now || "Tap for reasoning"}
             </p>
           </div>
