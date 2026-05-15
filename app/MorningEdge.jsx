@@ -2912,7 +2912,38 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
             return (
               <Card theme={themes.pulse}>
-                <CardHeader icon={<Sun className="w-4 h-4" />} label="Market Pulse" theme={themes.pulse} />
+                {/* Market Pulse — navy/gold glossy heading (matches twin royal buttons) */}
+                <div className="relative flex items-center gap-3 px-5 py-4 border-b overflow-hidden"
+                  style={{
+                    background: "linear-gradient(160deg, #1E293B 0%, #312E81 60%, #1E1B4B 100%)",
+                    borderColor: "rgba(212, 165, 116, 0.35)",
+                  }}>
+                  <div className="absolute top-0 left-0 right-0 h-[2px]"
+                    style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+                  <span className="absolute top-1 left-3 right-3 h-[40%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0) 100%)",
+                      borderTopLeftRadius: "0.5rem",
+                      borderTopRightRadius: "0.5rem",
+                    }} />
+                  <div className="relative w-9 h-9 rounded-full flex items-center justify-center overflow-hidden"
+                    style={{
+                      background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)",
+                      boxShadow: "0 2px 6px rgba(212,165,116,0.45), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(146,64,14,0.20)",
+                    }}>
+                    <span className="absolute top-0.5 left-1 right-1 h-[45%] pointer-events-none rounded-t-full"
+                      style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)" }} />
+                    <span className="relative" style={{ color: "#1E293B" }}><Sun className="w-4 h-4" /></span>
+                  </div>
+                  <h2 className="relative text-[14px] uppercase tracking-[0.22em] font-bold"
+                    style={{
+                      background: "linear-gradient(180deg, #F5D08C 0%, #D4A574 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      filter: "drop-shadow(0 1px 1px rgba(146,64,14,0.30))",
+                    }}>Market Pulse</h2>
+                </div>
 
                 {/* Hero — compact tone read, takes minimal vertical space */}
                 <div
@@ -5205,7 +5236,7 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
         borderRadius: 16,
         padding: "12px 14px",
         cursor: "pointer",
-        boxShadow: `0 6px 16px -3px ${palette.glow}, 0 2px 6px rgba(15,23,42,0.06), inset 0 2px 3px rgba(255,255,255,0.95), inset 0 -2px 6px rgba(15,23,42,0.06)`,
+        boxShadow: "0 4px 12px -2px rgba(15,23,42,0.18), 0 2px 4px rgba(15,23,42,0.10), inset 0 2px 3px rgba(255,255,255,0.95), inset 0 -2px 6px rgba(15,23,42,0.06)",
       }}
     >
       {/* Top specular highlight — the glass reflection */}
