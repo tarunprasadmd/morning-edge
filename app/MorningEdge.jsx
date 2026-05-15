@@ -1896,48 +1896,13 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 14%, #DDD6FE 30%, #C7D2FE 45%, #A5B4FC 60%, #818CF8 75%, #4338CA 100%)",
       }}>
         <div className="relative z-10 px-6 pt-16 pb-12 flex flex-col items-center max-w-md mx-auto">
-          {/* Branded mark — royal navy with rising financial arrow navigating waters */}
-          <div className="relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-2xl mb-5 overflow-hidden"
-            style={{
-              background: "linear-gradient(160deg, #1E3A8A 0%, #0F172A 55%, #020617 100%)",
-              border: "1.5px solid rgba(212, 165, 116, 0.55)",
-              boxShadow: "0 12px 28px -4px rgba(15,23,42,0.55), 0 0 36px rgba(129,140,248,0.30), inset 0 2px 4px rgba(255,255,255,0.20), inset 0 -4px 10px rgba(0,0,0,0.45)",
-            }}>
-            {/* Top specular highlight */}
-            <span className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
-              style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.10) 55%, rgba(255,255,255,0) 100%)",
-                borderTopLeftRadius: "0.9rem",
-                borderTopRightRadius: "0.9rem",
-                borderBottomLeftRadius: "0.5rem",
-                borderBottomRightRadius: "0.5rem",
-              }} />
-            {/* Gold accent line on top */}
-            <div className="absolute top-0 left-0 right-0 h-[2px]"
-              style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            {/* Wave at bottom — navigating through waters */}
-            <svg className="absolute bottom-0 left-0 right-0" viewBox="0 0 80 14" preserveAspectRatio="none" style={{ height: 14, width: "100%", opacity: 0.45 }}>
-              <path d="M0 7 Q 10 1, 20 7 T 40 7 T 60 7 T 80 7 L 80 14 L 0 14 Z" fill="#D4A574" />
-              <path d="M0 9 Q 10 4, 20 9 T 40 9 T 60 9 T 80 9 L 80 14 L 0 14 Z" fill="#F5D08C" opacity="0.55" />
-            </svg>
-            {/* Rising arrow + ME text */}
-            <div className="relative flex items-center gap-0.5">
-              <span className="text-[28px] font-bold tracking-tight leading-none"
-                style={{
-                  fontFamily: SERIF,
-                  fontStyle: "italic",
-                  background: "linear-gradient(180deg, #FEF3C7 0%, #F5D08C 55%, #D4A574 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.45))",
-                }}>ME</span>
-              {/* Rising arrow */}
-              <svg viewBox="0 0 16 24" style={{ height: 26, width: 16 }}>
-                <path d="M8 22 L8 6 M3 11 L8 6 L13 11" stroke="#F5D08C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              </svg>
-            </div>
-          </div>
+          {/* Branded mark — Morning Edge crown + arrow logo */}
+          <img
+            src="/morning-edge-logo.png"
+            alt="Morning Edge"
+            className="w-24 h-24 rounded-2xl mb-5 animate-pulse"
+            style={{ boxShadow: "0 14px 32px -4px rgba(15,23,42,0.55), 0 0 36px rgba(212,165,116,0.30)" }}
+          />
           <p className="text-[14px] uppercase tracking-[0.3em] text-white/95 font-bold mb-2 drop-shadow-md">Morning Edge</p>
           
           {/* Loading status — explicit, never blank */}
@@ -1959,42 +1924,12 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
       }}>
         <MountainScene />
         <div className="relative z-10 px-6 pt-16 pb-12 flex flex-col items-center max-w-md mx-auto">
-          <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl mb-5 overflow-hidden"
-            style={{
-              background: "linear-gradient(160deg, #1E3A8A 0%, #0F172A 55%, #020617 100%)",
-              border: "1.5px solid rgba(212, 165, 116, 0.55)",
-              boxShadow: "0 10px 24px -4px rgba(15,23,42,0.50), 0 0 28px rgba(129,140,248,0.25), inset 0 2px 4px rgba(255,255,255,0.18), inset 0 -3px 8px rgba(0,0,0,0.45)",
-            }}>
-            <span className="absolute top-1 left-1.5 right-1.5 h-[42%] pointer-events-none"
-              style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.10) 55%, rgba(255,255,255,0) 100%)",
-                borderTopLeftRadius: "0.85rem",
-                borderTopRightRadius: "0.85rem",
-                borderBottomLeftRadius: "0.45rem",
-                borderBottomRightRadius: "0.45rem",
-              }} />
-            <div className="absolute top-0 left-0 right-0 h-[1.5px]"
-              style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            <svg className="absolute bottom-0 left-0 right-0" viewBox="0 0 64 12" preserveAspectRatio="none" style={{ height: 12, width: "100%", opacity: 0.45 }}>
-              <path d="M0 6 Q 8 1, 16 6 T 32 6 T 48 6 T 64 6 L 64 12 L 0 12 Z" fill="#D4A574" />
-              <path d="M0 8 Q 8 3, 16 8 T 32 8 T 48 8 T 64 8 L 64 12 L 0 12 Z" fill="#F5D08C" opacity="0.55" />
-            </svg>
-            <div className="relative flex items-center gap-0.5">
-              <span className="text-[22px] font-bold tracking-tight leading-none"
-                style={{
-                  fontFamily: SERIF,
-                  fontStyle: "italic",
-                  background: "linear-gradient(180deg, #FEF3C7 0%, #F5D08C 55%, #D4A574 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.40))",
-                }}>ME</span>
-              <svg viewBox="0 0 14 22" style={{ height: 22, width: 14 }}>
-                <path d="M7 20 L7 5 M3 9 L7 5 L11 9" stroke="#F5D08C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              </svg>
-            </div>
-          </div>
+          <img
+            src="/morning-edge-logo.png"
+            alt="Morning Edge"
+            className="w-20 h-20 rounded-2xl mb-5"
+            style={{ boxShadow: "0 12px 28px -4px rgba(15,23,42,0.50), 0 0 28px rgba(212,165,116,0.25)" }}
+          />
           <p className="text-base font-bold text-slate-900 tracking-wide mb-1" style={{ fontFamily: SERIF }}>Morning Edge</p>
           <div className="flex gap-2 mb-8">
             <div className={`h-1.5 rounded-full transition-all ${phase === "onboard-1" ? "w-8 bg-slate-900" : "w-2 bg-slate-400"}`} />
@@ -2033,55 +1968,22 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {phase === "onboard-2" && (
             <div className="w-full bg-white rounded-3xl p-6 shadow-xl border border-slate-100">
               <h1 className="text-3xl text-slate-900 mb-2 leading-tight" style={{ fontFamily: SERIF, fontWeight: 500 }}>
-                Build your <span className="italic text-slate-800">watchlist.</span>
+                Bring your <span className="italic text-slate-800">portfolio.</span>
               </h1>
-              <p className="text-[16px] text-slate-800 mb-5">Add tickers you track. Edit anytime.</p>
-              <div className="flex gap-2 mb-3">
-                <input
-                  value={tickerInput}
-                  onChange={(e) => setTickerInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      const t = tickerInput.trim().toUpperCase();
-                      if (t && !tempPortfolio.includes(t)) setTempPortfolio([...tempPortfolio, t]);
-                      setTickerInput("");
-                    }
-                  }}
-                  placeholder="Ticker (e.g. NVDA)"
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[16px] focus:outline-none focus:border-slate-900 focus:bg-white"
-                />
-                <button
-                  onClick={() => {
-                    const t = tickerInput.trim().toUpperCase();
-                    if (t && !tempPortfolio.includes(t)) setTempPortfolio([...tempPortfolio, t]);
-                    setTickerInput("");
-                  }}
-                  className="px-4 py-2.5 bg-slate-900 text-white rounded-xl font-semibold text-[16px]">Add</button>
+              <p className="text-[15px] text-slate-800 mb-5 leading-relaxed">
+                Morning Edge personalizes everything around your actual holdings — current value, gains, and what to do next. You'll build a watchlist later from inside the Playbook, based on stocks that match your convictions.
+              </p>
+              <div className="mb-5 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                <p className="text-[13px] text-slate-800 font-semibold mb-2 flex items-center gap-1.5">
+                  <Briefcase className="w-3.5 h-3.5" /> What you'll do next
+                </p>
+                <ol className="text-[14px] text-slate-700 leading-relaxed space-y-1.5 list-decimal list-inside">
+                  <li>Tap <span className="font-semibold">Sync Portfolio</span> on the home screen</li>
+                  <li>Upload a CSV from your brokerage (Fidelity, Schwab, Robinhood…)</li>
+                  <li>Tap <span className="font-semibold">Generate Brief</span> for your personalized read</li>
+                </ol>
+                <p className="text-[12px] text-slate-600 italic mt-2">Don't have a CSV ready? You can still explore — sync anytime.</p>
               </div>
-              <p className="text-[12px] uppercase tracking-widest text-slate-800 font-semibold mb-2">Suggestions</p>
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {SUGGESTED.filter((s) => !tempPortfolio.includes(s)).map((s) => (
-                  <button key={s} onClick={() => setTempPortfolio([...tempPortfolio, s])}
-                    className="px-2.5 py-1 rounded-lg text-[14px] font-semibold bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200">
-                    + {s}
-                  </button>
-                ))}
-              </div>
-              {tempPortfolio.length > 0 && (
-                <>
-                  <p className="text-[12px] uppercase tracking-widest text-slate-800 font-semibold mb-2">Your picks ({tempPortfolio.length})</p>
-                  <div className="flex flex-wrap gap-1.5 mb-5">
-                    {tempPortfolio.map((t) => (
-                      <span key={t} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg text-[14px] text-slate-800 font-medium">
-                        {t}
-                        <button onClick={() => setTempPortfolio(tempPortfolio.filter((x) => x !== t))} className="hover:text-rose-600">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                </>
-              )}
               <button onClick={completeOnboarding}
                 className="w-full py-3.5 rounded-xl font-semibold text-white bg-slate-900 hover:bg-slate-800 flex items-center justify-center gap-2">
                 <Sparkles className="w-4 h-4" /> Begin
@@ -2316,41 +2218,12 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
       <header className="relative px-6 pt-10 pb-6">
         <div className="flex items-start justify-between mb-7">
           <div className="flex items-center gap-3">
-            <div className="relative w-11 h-11 rounded-xl flex items-center justify-center shadow-lg overflow-hidden"
-              style={{
-                background: "linear-gradient(160deg, #1E3A8A 0%, #0F172A 55%, #020617 100%)",
-                border: "1px solid rgba(212, 165, 116, 0.50)",
-                boxShadow: "0 6px 16px -3px rgba(15,23,42,0.45), 0 0 18px rgba(129,140,248,0.20), inset 0 1.5px 3px rgba(255,255,255,0.18), inset 0 -2px 5px rgba(0,0,0,0.40)",
-              }}>
-              <span className="absolute top-0.5 left-1 right-1 h-[42%] pointer-events-none"
-                style={{
-                  background: "linear-gradient(to bottom, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 55%, rgba(255,255,255,0) 100%)",
-                  borderTopLeftRadius: "0.65rem",
-                  borderTopRightRadius: "0.65rem",
-                  borderBottomLeftRadius: "0.35rem",
-                  borderBottomRightRadius: "0.35rem",
-                }} />
-              <div className="absolute top-0 left-0 right-0 h-[1.5px]"
-                style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-              <svg className="absolute bottom-0 left-0 right-0" viewBox="0 0 44 8" preserveAspectRatio="none" style={{ height: 8, width: "100%", opacity: 0.45 }}>
-                <path d="M0 4 Q 5.5 1, 11 4 T 22 4 T 33 4 T 44 4 L 44 8 L 0 8 Z" fill="#D4A574" />
-              </svg>
-              <div className="relative flex items-center gap-px">
-                <span className="text-[14px] font-bold tracking-tight leading-none"
-                  style={{
-                    fontFamily: SERIF,
-                    fontStyle: "italic",
-                    background: "linear-gradient(180deg, #FEF3C7 0%, #F5D08C 60%, #D4A574 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                    filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.40))",
-                  }}>ME</span>
-                <svg viewBox="0 0 10 16" style={{ height: 14, width: 10 }}>
-                  <path d="M5 14 L5 3 M2 6 L5 3 L8 6" stroke="#F5D08C" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                </svg>
-              </div>
-            </div>
+            <img
+              src="/morning-edge-logo.png"
+              alt="Morning Edge"
+              className="w-11 h-11 rounded-xl"
+              style={{ boxShadow: "0 6px 16px -3px rgba(15,23,42,0.45)" }}
+            />
             <div>
               <p className="text-base font-bold text-slate-900 tracking-wide leading-tight" style={{ fontFamily: SERIF }}>Morning Edge</p>             </div>           </div>
           <div className="flex gap-2">
@@ -7389,3 +7262,4 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
