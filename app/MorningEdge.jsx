@@ -3209,7 +3209,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                   border: `1px solid ${sigTheme.borderDeep}`,
                                   borderRadius: 18,
                                   padding: "10px 10px 8px",
-                                  boxShadow: `0 12px 28px -4px ${sigTheme.glow}, 0 4px 14px ${sigTheme.glow}, 0 0 28px ${sigTheme.glow}, inset 0 2px 4px rgba(255,255,255,0.35), inset 0 -4px 10px rgba(0,0,0,0.30)`,
+                                  boxShadow: "0 4px 12px -2px rgba(15,23,42,0.10), 0 1px 3px rgba(15,23,42,0.06), inset 0 2px 3px rgba(255,255,255,0.95), inset 0 -2px 6px rgba(15,23,42,0.05)",
                                   display: "flex",
                                   flexDirection: "column",
                                   gap: 5,
@@ -4892,11 +4892,34 @@ function Card({ children, theme }) {
 
 function CardHeader({ icon, label, theme }) {
   return (
-    <div className={`flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-gradient-to-r ${theme.tint}`}>
-      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${theme.gradient} flex items-center justify-center text-white shadow-sm`}>
-        {icon}
+    <div className="relative flex items-center gap-3 px-5 py-4 border-b overflow-hidden"
+      style={{
+        background: "linear-gradient(160deg, #1E293B 0%, #312E81 60%, #1E1B4B 100%)",
+        borderColor: "rgba(212, 165, 116, 0.35)",
+      }}>
+      {/* Gold accent line on top — matches the twin royal buttons */}
+      <div className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+      {/* Subtle inner top glow */}
+      <span className="absolute top-1 left-3 right-3 h-[35%] pointer-events-none"
+        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 100%)" }} />
+      <div className="relative w-9 h-9 rounded-full flex items-center justify-center overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)",
+          boxShadow: "0 2px 6px rgba(212,165,116,0.45), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(146,64,14,0.20)",
+        }}>
+        <span className="absolute top-0.5 left-1 right-1 h-[45%] pointer-events-none rounded-t-full"
+          style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)" }} />
+        <span className="relative" style={{ color: "#1E293B" }}>{icon}</span>
       </div>
-      <h2 className="text-[14px] uppercase tracking-[0.22em] text-slate-800 font-bold">{label}</h2>
+      <h2 className="relative text-[14px] uppercase tracking-[0.22em] font-bold"
+        style={{
+          background: "linear-gradient(180deg, #F5D08C 0%, #D4A574 100%)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+          filter: "drop-shadow(0 1px 1px rgba(146,64,14,0.30))",
+        }}>{label}</h2>
     </div>
   );
 }
@@ -5647,7 +5670,8 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
           deep_reasoning: item.deep_reasoning,
           chatDescription: `${item.ticker}${item.theme ? ` (${item.theme})` : ""}: ${item.headline}${item.why_now ? `. ${item.why_now}` : ""}${item.deep_reasoning ? ` Full reasoning: ${item.deep_reasoning}` : ""}`,
         };
-    // Detect risk tier from the row's text so the STAR ICON (not the whole row) shows risk.
+    // Detect risk tier from the row's text so the ROUND STAR ICON shows risk
+    // matching the legend at the top: 🟢 green = LOWER, 🟡 yellow = MEDIUM, 🔴 red = HIGH.
     const fullText = `${item.headline || ""} ${item.fits_gap || ""} ${item.why_now || ""} ${item.deep_reasoning || ""}`;
     const riskMatch = /(LOWER|LOW|MEDIUM|MED|HIGHER|HIGH)\s*[-·:]?\s*RISK/i.exec(fullText);
     const riskTier = riskMatch
@@ -5655,14 +5679,14 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
         : (riskMatch[1].toUpperCase() === "MEDIUM" || riskMatch[1].toUpperCase() === "MED") ? "MEDIUM"
         : "HIGH")
       : null;
-    // Only the icon badge color reflects risk — row background stays neutral cream.
+    // Round icon palette — colors match the 🟢🟡🔴 legend exactly.
     const riskIcon = riskTier === "LOWER"
-      ? { iconBg: "linear-gradient(160deg, #6ee7b7 0%, #059669 100%)", iconColor: "white", badgeDot: "🟢", badgeLabel: "LOWER" }
+      ? { iconBg: "linear-gradient(160deg, #34d399 0%, #059669 100%)", glow: "rgba(52,211,153,0.45)" }
       : riskTier === "MEDIUM"
-      ? { iconBg: "linear-gradient(160deg, #fcd34d 0%, #d97706 100%)", iconColor: "white", badgeDot: "🟡", badgeLabel: "MEDIUM" }
+      ? { iconBg: "linear-gradient(160deg, #fcd34d 0%, #d97706 100%)", glow: "rgba(252,211,77,0.45)" }
       : riskTier === "HIGH"
-      ? { iconBg: "linear-gradient(160deg, #fda4af 0%, #dc2626 100%)", iconColor: "white", badgeDot: "🔴", badgeLabel: "HIGH" }
-      : { iconBg: "linear-gradient(160deg, #cbd5e1 0%, #64748b 100%)", iconColor: "white", badgeDot: null, badgeLabel: null };
+      ? { iconBg: "linear-gradient(160deg, #fb7185 0%, #dc2626 100%)", glow: "rgba(248,113,113,0.45)" }
+      : { iconBg: "linear-gradient(160deg, #cbd5e1 0%, #64748b 100%)", glow: "rgba(148,163,184,0.30)" };
 
     return (
       <button
@@ -5673,7 +5697,7 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
           background: "linear-gradient(160deg, #ffffff 0%, #fafaf9 55%, #f5f5f4 100%)",
           border: "1px solid rgba(214,211,209,0.55)",
           borderRadius: 14,
-          boxShadow: "0 5px 14px -3px rgba(15,23,42,0.10), 0 0 16px rgba(15,23,42,0.04), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -2px 6px rgba(15,23,42,0.05)",
+          boxShadow: "0 5px 14px -3px rgba(15,23,42,0.10), 0 1px 3px rgba(15,23,42,0.06), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -2px 6px rgba(15,23,42,0.05)",
         }}
       >
         {/* Top specular highlight */}
@@ -5687,24 +5711,20 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
             borderBottomRightRadius: "0.4rem",
           }}
         />
-        <div className="relative flex items-center gap-2 px-3 py-2.5 flex-1 min-w-0">
-          {/* Star icon badge — color reflects RISK (green/yellow/red) */}
+        <div className="relative flex items-center gap-2.5 px-3 py-2.5 flex-1 min-w-0">
+          {/* ROUND star icon — color matches legend (green/yellow/red) */}
           <div
-            className="relative w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
+            className="relative w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
             style={{
               background: riskIcon.iconBg,
-              boxShadow: "0 3px 8px rgba(0,0,0,0.18), inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.20)",
-              border: "1px solid rgba(255,255,255,0.30)",
+              boxShadow: `0 3px 10px ${riskIcon.glow}, inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(0,0,0,0.22)`,
+              border: "1px solid rgba(255,255,255,0.45)",
             }}
           >
             <span
-              className="absolute top-0.5 left-0.5 right-0.5 h-[45%] pointer-events-none"
+              className="absolute top-0.5 left-1 right-1 h-[45%] pointer-events-none rounded-t-full"
               style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
-                borderTopLeftRadius: "6px",
-                borderTopRightRadius: "6px",
-                borderBottomLeftRadius: "3px",
-                borderBottomRightRadius: "3px",
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
               }}
             />
             <Sparkles className="relative w-4 h-4 text-white" strokeWidth={2.5} />
@@ -5845,7 +5865,7 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
         border: `1px solid ${theme.borderDeep}`,
         borderRadius: 18,
         padding: "10px 10px 8px",
-        boxShadow: `0 12px 28px -4px ${theme.glow}, 0 4px 14px ${theme.glow}, 0 0 28px ${theme.glow}, inset 0 2px 4px rgba(255,255,255,0.35), inset 0 -4px 10px rgba(0,0,0,0.30)`,
+        boxShadow: "0 4px 12px -2px rgba(15,23,42,0.10), 0 1px 3px rgba(15,23,42,0.06), inset 0 2px 3px rgba(255,255,255,0.95), inset 0 -2px 6px rgba(15,23,42,0.05)",
         opacity,
         display: "flex",
         flexDirection: "column",
@@ -7760,4 +7780,3 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
-
