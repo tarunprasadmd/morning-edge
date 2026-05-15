@@ -3226,18 +3226,79 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         <SortBtn id="totalPct" label="Total %" />
                       </div>
                       <div className="space-y-1.5">
-                        {entries.map((entry, i) => (
-                          <UnifiedPlaybookCard
-                            key={`${entry.symbol}-${i}`}
-                            entry={entry}
-                            onOpen={(e) => {
-                              // If there's an underlying decision index, open the decision modal.
-                              if (e._decisionIdx != null && e._decisionIdx >= 0) {
-                                setOpenDecisionIdx(e._decisionIdx);
-                              }
-                            }}
-                          />
-                        ))}
+                        {(() => {
+                          const acts = entries.filter((e) => e.action === "TRIM" || e.action === "ADD");
+                          const monitors = entries.filter((e) => e.action === "HOLD" || e.action === "WATCH");
+                          return (
+                            <div className="grid grid-cols-2 gap-2">
+                              {/* LEFT: ACT TODAY (TRIM + ADD) */}
+                              <div className="space-y-1">
+                                <div className="rounded-lg px-2 py-1.5 text-center"
+                                  style={{
+                                    background: "linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)",
+                                    border: "1px solid rgba(220,38,38,0.30)",
+                                  }}>
+                                  <p className="text-[9px] uppercase tracking-[0.18em] font-bold m-0 leading-tight" style={{ color: "#991B1B" }}>
+                                    Act Today
+                                  </p>
+                                  <p className="text-[8px] m-0 leading-tight" style={{ color: "#7F1D1D" }}>
+                                    {acts.length} trim/add
+                                  </p>
+                                </div>
+                                {acts.length > 0 ? (
+                                  acts.map((entry, i) => (
+                                    <UnifiedPlaybookCard
+                                      key={`act-${entry.symbol}-${i}`}
+                                      entry={entry}
+                                      onOpen={(e) => {
+                                        if (e._decisionIdx != null && e._decisionIdx >= 0) {
+                                          setOpenDecisionIdx(e._decisionIdx);
+                                        }
+                                      }}
+                                    />
+                                  ))
+                                ) : (
+                                  <p className="text-[10px] text-slate-500 italic text-center py-3">
+                                    No action items today.
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* RIGHT: MONITOR (HOLD + WATCH) */}
+                              <div className="space-y-1">
+                                <div className="rounded-lg px-2 py-1.5 text-center"
+                                  style={{
+                                    background: "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)",
+                                    border: "1px solid rgba(217,119,6,0.30)",
+                                  }}>
+                                  <p className="text-[9px] uppercase tracking-[0.18em] font-bold m-0 leading-tight" style={{ color: "#78350F" }}>
+                                    Monitor
+                                  </p>
+                                  <p className="text-[8px] m-0 leading-tight" style={{ color: "#92400E" }}>
+                                    {monitors.length} hold/watch
+                                  </p>
+                                </div>
+                                {monitors.length > 0 ? (
+                                  monitors.map((entry, i) => (
+                                    <UnifiedPlaybookCard
+                                      key={`mon-${entry.symbol}-${i}`}
+                                      entry={entry}
+                                      onOpen={(e) => {
+                                        if (e._decisionIdx != null && e._decisionIdx >= 0) {
+                                          setOpenDecisionIdx(e._decisionIdx);
+                                        }
+                                      }}
+                                    />
+                                  ))
+                                ) : (
+                                  <p className="text-[10px] text-slate-500 italic text-center py-3">
+                                    No monitored positions.
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   );
@@ -5633,14 +5694,14 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
   };
   const r = entry.risk ? riskStyle[entry.risk] : null;
 
-  // Direction-based color coding (today's move)
+  // Direction-based color coding (today's move) — slightly stronger tint for visibility
   const isUp = entry.changePct != null && entry.changePct >= 0;
   const isDown = entry.changePct != null && entry.changePct < 0;
   const directionTint = isUp
-    ? "linear-gradient(90deg, #ffffff 0%, #ffffff 65%, #d1fae5 100%)"
+    ? "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)"
     : isDown
-    ? "linear-gradient(90deg, #ffffff 0%, #ffffff 65%, #fee2e2 100%)"
-    : "linear-gradient(90deg, #ffffff 0%, #ffffff 100%)";
+    ? "linear-gradient(135deg, #fff5f5 0%, #fee2e2 100%)"
+    : "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)";
   const stripeColor = isUp ? "#10B981" : isDown ? "#DC2626" : "#94A3B8";
 
   // P&L coloring
@@ -5650,99 +5711,97 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
   const todayColor = entry.todayDollar == null ? "#64748B" : todayDollarPositive ? "#059669" : "#DC2626";
 
   return (
-    <div className="relative rounded-xl overflow-hidden"
+    <div className="relative rounded-lg overflow-hidden"
       style={{
         background: directionTint,
-        border: `1px solid ${isUp ? "rgba(16,185,129,0.30)" : isDown ? "rgba(220,38,38,0.30)" : "rgba(148,163,184,0.30)"}`,
-        boxShadow: "0 2px 6px -1px rgba(15,23,42,0.10), inset 0 1px 2px rgba(255,255,255,0.85)",
+        border: `1px solid ${isUp ? "rgba(16,185,129,0.40)" : isDown ? "rgba(220,38,38,0.40)" : "rgba(148,163,184,0.40)"}`,
+        boxShadow: "0 1.5px 4px -1px rgba(15,23,42,0.10), inset 0 1px 1.5px rgba(255,255,255,0.85)",
       }}>
-      {/* Left direction stripe — bold visual indicator */}
+      {/* Left direction stripe */}
       <div className="absolute top-0 left-0 bottom-0 w-[3px]"
         style={{ background: stripeColor }} />
-      {/* Main tappable row — 1 dense line */}
+      {/* Tappable row */}
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="relative w-full text-left transition-all active:scale-[0.995] active:translate-y-px"
+        className="relative w-full text-left transition-all active:translate-y-px"
       >
-        <div className="pl-3 pr-2 py-2 flex items-center gap-2">
-          {/* Ticker — large, bold */}
-          <span className="text-[15px] font-bold tracking-tight flex-shrink-0" style={{ fontFamily: SERIF, color: "#0F172A", minWidth: 50 }}>
-            {entry.symbol}
-          </span>
-          {/* Risk dot */}
-          {r && (
-            <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold flex-shrink-0"
-              style={{ background: r.color, color: "#fff" }}
-              title={`${entry.risk} risk`}>
-              {r.label}
+        <div className="pl-2 pr-1.5 py-1.5">
+          {/* TOP LINE: ticker + action chip */}
+          <div className="flex items-center gap-1 mb-0.5">
+            <span className="text-[13px] font-bold tracking-tight leading-none flex-1 truncate" style={{ fontFamily: SERIF, color: "#0F172A" }}>
+              {entry.symbol}
             </span>
-          )}
-          {/* Price */}
-          {entry.currentPrice != null && (
-            <span className="text-[13px] font-semibold flex-shrink-0" style={{ color: "#0F172A" }}>
-              ${entry.currentPrice.toFixed(2)}
-            </span>
-          )}
-          {/* Today's % change — strong arrow + colored */}
-          {entry.changePct != null && !Number.isNaN(entry.changePct) && (
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-extrabold flex-shrink-0"
+            {r && (
+              <span className="w-3 h-3 rounded-full flex items-center justify-center text-[7px] font-bold flex-shrink-0"
+                style={{ background: r.color, color: "#fff" }}
+                title={`${entry.risk} risk`}>
+                {r.label}
+              </span>
+            )}
+            <div className="relative inline-flex items-center rounded overflow-hidden font-bold tracking-wider uppercase text-white flex-shrink-0"
               style={{
-                background: isUp ? "rgba(16,185,129,0.15)" : "rgba(220,38,38,0.15)",
-                color: isUp ? "#059669" : "#DC2626",
+                background: a.bg,
+                border: `1px solid ${a.border}`,
+                boxShadow: `0 1px 2px ${a.glow}, inset 0 1px 1px rgba(255,255,255,0.40)`,
+                fontSize: 8.5,
+                padding: "1.5px 5px",
               }}>
-              <span style={{ fontSize: 13, lineHeight: 1, fontWeight: 900 }}>{isUp ? "▲" : "▼"}</span>
-              {Math.abs(entry.changePct).toFixed(2)}%
-            </span>
-          )}
-          {/* Spacer */}
-          <span className="flex-1" />
-          {/* Action chip — small glossy */}
-          <div className="relative inline-flex items-center rounded-md overflow-hidden font-bold tracking-wider uppercase text-white flex-shrink-0"
-            style={{
-              background: a.bg,
-              border: `1px solid ${a.border}`,
-              boxShadow: `0 1px 3px ${a.glow}, inset 0 1px 1.5px rgba(255,255,255,0.40), inset 0 -1px 2px rgba(0,0,0,0.25)`,
-              fontSize: 9.5,
-              padding: "2.5px 7px",
-            }}>
-            <span className="absolute top-0 left-0.5 right-0.5 h-[42%] pointer-events-none rounded-t-md"
-              style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.10) 55%, rgba(255,255,255,0) 100%)" }} />
-            <span className="relative">{entry.action}</span>
+              <span className="relative">{entry.action}</span>
+            </div>
           </div>
-        </div>
-        {/* Sub-line: qty + total gains (tiny) */}
-        <div className="pl-3 pr-2 pb-1.5 -mt-0.5 flex items-center gap-2 text-[10.5px]">
-          <span className="text-slate-600">
-            {entry.qty != null && entry.cost != null ? <>{entry.qty}sh · ${entry.cost.toFixed(2)}</> : ""}
-          </span>
-          {entry.todayDollar != null && (
-            <span className="font-semibold" style={{ color: todayColor }}>
-              T: {todayDollarPositive ? "+" : ""}${Math.abs(entry.todayDollar).toFixed(0)}
-            </span>
+          {/* PRICE + CHANGE LINE */}
+          <div className="flex items-center gap-1 mb-0.5">
+            {entry.currentPrice != null && (
+              <span className="text-[11px] font-semibold" style={{ color: "#0F172A" }}>
+                ${entry.currentPrice.toFixed(2)}
+              </span>
+            )}
+            {entry.changePct != null && !Number.isNaN(entry.changePct) && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold"
+                style={{ color: isUp ? "#059669" : "#DC2626" }}>
+                <span style={{ fontSize: 11, lineHeight: 1, fontWeight: 900 }}>{isUp ? "▲" : "▼"}</span>
+                {Math.abs(entry.changePct).toFixed(1)}%
+              </span>
+            )}
+            <ChevronRight className="w-3 h-3 ml-auto text-slate-400 transition-transform"
+              style={{ transform: expanded ? "rotate(90deg)" : "none" }} />
+          </div>
+          {/* GAINS LINE — T:today L:lifetime */}
+          {(entry.todayDollar != null || entry.totalDollar != null) && (
+            <div className="flex items-center gap-1.5 text-[9.5px] leading-tight">
+              {entry.todayDollar != null && (
+                <span className="font-semibold" style={{ color: todayColor }}>
+                  T:{todayDollarPositive ? "+" : ""}${Math.abs(entry.todayDollar).toFixed(0)}
+                </span>
+              )}
+              {entry.totalDollar != null && (
+                <span className="font-bold" style={{ color: pnlColor }}>
+                  L:{pnlPositive ? "+" : ""}${Math.abs(entry.totalDollar).toFixed(0)}
+                </span>
+              )}
+              {entry.totalPct != null && (
+                <span className="font-bold" style={{ color: pnlColor }}>
+                  ({pnlPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%)
+                </span>
+              )}
+            </div>
           )}
-          {entry.totalDollar != null && (
-            <span className="font-bold" style={{ color: pnlColor }}>
-              L: {pnlPositive ? "+" : ""}${Math.abs(entry.totalDollar).toFixed(0)} ({pnlPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%)
-            </span>
-          )}
-          <ChevronRight className="w-3 h-3 ml-auto text-slate-400 transition-transform"
-            style={{ transform: expanded ? "rotate(90deg)" : "none" }} />
         </div>
       </button>
       {/* Expanded view — inline chart + actions */}
       {expanded && (
-        <div className="pl-3 pr-2 pb-3 pt-1 border-t" style={{ borderColor: "rgba(148,163,184,0.20)" }}>
+        <div className="pl-2 pr-1.5 pb-2 pt-1 border-t" style={{ borderColor: "rgba(148,163,184,0.25)" }}>
           <StockChart ticker={entry.symbol} />
           {entry.reasoning && (
-            <p className="text-[12px] text-slate-700 leading-snug mt-2 italic">
+            <p className="text-[10.5px] text-slate-700 leading-snug mt-1.5 italic">
               {entry.reasoning}
             </p>
           )}
           {entry._decisionIdx != null && entry._decisionIdx >= 0 && (
             <button
               onClick={(e) => { e.stopPropagation(); onOpen && onOpen(entry); }}
-              className="mt-2 px-3 py-1.5 rounded-lg text-[11px] font-bold text-white"
+              className="mt-2 px-2 py-1 rounded text-[9.5px] font-bold text-white"
               style={{ background: "linear-gradient(160deg, #1E293B 0%, #312E81 100%)" }}>
               Full reasoning →
             </button>
