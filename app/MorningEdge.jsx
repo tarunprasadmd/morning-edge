@@ -872,6 +872,11 @@ export default function MorningEdge() {
   const [loadingStatusIdx, setLoadingStatusIdx] = useState(0); // rotates through personalized status messages while brief loads
   const [error, setError] = useState(null);
   const [openDecisionIdx, setOpenDecisionIdx] = useState(null); // null when closed; otherwise the index of the decision being viewed in the detail modal
+  // Playbook sort state — lets the user reorganize like a brokerage account.
+  // sortBy: "todayPct" | "todayDollar" | "totalPct" | "totalDollar" | "ticker"
+  // sortDir: "desc" (biggest first) | "asc" (smallest first)
+  const [playbookSortBy, setPlaybookSortBy] = useState("todayPct");
+  const [playbookSortDir, setPlaybookSortDir] = useState("desc");
   const [showSettings, setShowSettings] = useState(false);
   const [showBrokerageGuide, setShowBrokerageGuide] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
@@ -3161,31 +3166,79 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   // const heldSymbols = new Set(holdings.map((h) => h.symbol));
                   // opportunities.forEach((o) => { ... });
 
-                  // Sort by action priority: TRIM and ADD first, then WATCH, then HOLD
-                  const priority = { TRIM: 0, ADD: 1, WATCH: 2, HOLD: 3 };
-                  entries.sort((a, b) => {
-                    const pa = priority[a.action] ?? 99;
-                    const pb = priority[b.action] ?? 99;
-                    if (pa !== pb) return pa - pb;
-                    // within same action, larger absolute P&L first
-                    return Math.abs(b.pnl || 0) - Math.abs(a.pnl || 0);
+                  // Add today's $ change per holding (for sorting)
+                  entries.forEach((e) => {
+                    const h = holdings.find((hh) => hh.symbol === e.symbol);
+                    e.todayDollar = h && typeof h.dayChange === "number" ? h.dayChange * (h.qty || 0) : null;
+                    e.todayPct = e.changePct;
+                    e.totalDollar = e.pnl;
+                    e.totalPct = e.pnlPct;
                   });
 
+                  // Sort by user-selected criterion
+                  const dirMult = playbookSortDir === "asc" ? 1 : -1;
+                  entries.sort((a, b) => {
+                    const av = a[playbookSortBy];
+                    const bv = b[playbookSortBy];
+                    if (av == null && bv == null) return 0;
+                    if (av == null) return 1;
+                    if (bv == null) return -1;
+                    if (playbookSortBy === "ticker") return dirMult * a.symbol.localeCompare(b.symbol);
+                    return dirMult * (av - bv);
+                  });
+
+                  // Helper for sort button styling
+                  const SortBtn = ({ id, label }) => {
+                    const active = playbookSortBy === id;
+                    return (
+                      <button
+                        onClick={() => {
+                          if (active) {
+                            setPlaybookSortDir(playbookSortDir === "desc" ? "asc" : "desc");
+                          } else {
+                            setPlaybookSortBy(id);
+                            setPlaybookSortDir("desc");
+                          }
+                        }}
+                        className={`relative flex-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1.5 rounded-md transition-all active:scale-[0.97] overflow-hidden ${active ? "text-white" : "text-amber-900"}`}
+                        style={{
+                          background: active
+                            ? "linear-gradient(160deg, #F59E0B 0%, #D97706 60%, #92400E 100%)"
+                            : "linear-gradient(160deg, #FFFBEB 0%, #FEF3C7 100%)",
+                          border: active ? "1px solid rgba(146,64,14,0.55)" : "1px solid rgba(217,119,6,0.30)",
+                          boxShadow: active
+                            ? "0 3px 8px -1px rgba(217,119,6,0.45), inset 0 1.5px 2px rgba(255,255,255,0.40), inset 0 -1.5px 3px rgba(0,0,0,0.20)"
+                            : "0 1px 3px rgba(146,64,14,0.10), inset 0 1.5px 2px rgba(255,255,255,0.85)",
+                        }}
+                      >
+                        {label}{active ? (playbookSortDir === "desc" ? " ▼" : " ▲") : ""}
+                      </button>
+                    );
+                  };
+
                   return (
-                    <div className="space-y-1.5">
-                      {entries.map((entry, i) => (
-                        <UnifiedPlaybookCard
-                          key={`${entry.symbol}-${i}`}
-                          entry={entry}
-                          onOpen={(e) => {
-                            // If there's an underlying decision index, open the decision modal.
-                            // For new opportunities (no decision index), no modal yet — future work.
-                            if (e._decisionIdx != null && e._decisionIdx >= 0) {
-                              setOpenDecisionIdx(e._decisionIdx);
-                            }
-                          }}
-                        />
-                      ))}
+                    <div>
+                      {/* Sort buttons row — brokerage-style reorganize controls */}
+                      <div className="flex gap-1.5 mb-2 px-0.5">
+                        <SortBtn id="todayDollar" label="Today $" />
+                        <SortBtn id="todayPct" label="Today %" />
+                        <SortBtn id="totalDollar" label="Total $" />
+                        <SortBtn id="totalPct" label="Total %" />
+                      </div>
+                      <div className="space-y-1.5">
+                        {entries.map((entry, i) => (
+                          <UnifiedPlaybookCard
+                            key={`${entry.symbol}-${i}`}
+                            entry={entry}
+                            onOpen={(e) => {
+                              // If there's an underlying decision index, open the decision modal.
+                              if (e._decisionIdx != null && e._decisionIdx >= 0) {
+                                setOpenDecisionIdx(e._decisionIdx);
+                              }
+                            }}
+                          />
+                        ))}
+                      </div>
                     </div>
                   );
                 })()}
@@ -5560,9 +5613,9 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 // not just the brief's decisions. Color-coded by action type with a separate
 // risk-tier dot indicator.
 function UnifiedPlaybookCard({ entry, onOpen }) {
-  // Action chip styling — TRIM/ADD/HOLD/WATCH each have their own gradient
-  // and importance tier. TRIM and ADD are loudest (action today).
-  // HOLD and WATCH are subtler (passive monitoring).
+  const [expanded, setExpanded] = React.useState(false);
+
+  // Action chip styling
   const actionStyle = {
     TRIM:  { bg: "linear-gradient(160deg, #FCA5A5 0%, #DC2626 60%, #991B1B 100%)", glow: "rgba(220,38,38,0.45)",  border: "rgba(153,27,27,0.55)" },
     ADD:   { bg: "linear-gradient(160deg, #6EE7B7 0%, #059669 60%, #064E3B 100%)", glow: "rgba(5,150,105,0.45)",  border: "rgba(6,78,59,0.55)" },
@@ -5571,90 +5624,132 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
   };
   const a = actionStyle[entry.action] || actionStyle.HOLD;
 
-  // Risk dot — small inline indicator. 4 tiers using the same color family as actions
-  // but with a slightly different role (lower-saturation, smaller circle).
+  // Risk dot
   const riskStyle = {
-    LOWER:  { color: "#10B981", label: "Low" },
-    MEDIUM: { color: "#F59E0B", label: "Med" },
-    HIGHER: { color: "#EA580C", label: "Higher" },
-    HIGH:   { color: "#DC2626", label: "High" },
+    LOWER:  { color: "#10B981", label: "L" },
+    MEDIUM: { color: "#F59E0B", label: "M" },
+    HIGHER: { color: "#EA580C", label: "H" },
+    HIGH:   { color: "#DC2626", label: "X" },
   };
   const r = entry.risk ? riskStyle[entry.risk] : null;
 
-  // Live P&L coloring
-  const pnlPositive = entry.pnl != null && entry.pnl > 0;
-  const pnlColor = entry.pnl == null ? "#64748B" : pnlPositive ? "#059669" : "#DC2626";
+  // Direction-based color coding (today's move)
+  const isUp = entry.changePct != null && entry.changePct >= 0;
+  const isDown = entry.changePct != null && entry.changePct < 0;
+  const directionTint = isUp
+    ? "linear-gradient(90deg, #ffffff 0%, #ffffff 65%, #d1fae5 100%)"
+    : isDown
+    ? "linear-gradient(90deg, #ffffff 0%, #ffffff 65%, #fee2e2 100%)"
+    : "linear-gradient(90deg, #ffffff 0%, #ffffff 100%)";
+  const stripeColor = isUp ? "#10B981" : isDown ? "#DC2626" : "#94A3B8";
+
+  // P&L coloring
+  const pnlPositive = entry.totalDollar != null && entry.totalDollar > 0;
+  const pnlColor = entry.totalDollar == null ? "#64748B" : pnlPositive ? "#059669" : "#DC2626";
+  const todayDollarPositive = entry.todayDollar != null && entry.todayDollar > 0;
+  const todayColor = entry.todayDollar == null ? "#64748B" : todayDollarPositive ? "#059669" : "#DC2626";
 
   return (
-    <button
-      type="button"
-      onClick={() => onOpen && onOpen(entry)}
-      className="relative w-full text-left rounded-xl overflow-hidden transition-all active:scale-[0.99] active:translate-y-px"
+    <div className="relative rounded-xl overflow-hidden"
       style={{
-        background: "linear-gradient(160deg, #FFFFFF 0%, #FFFBEB 100%)",
-        border: "1px solid rgba(217,119,6,0.30)",
-        boxShadow: "0 4px 10px -2px rgba(146,64,14,0.15), 0 1px 3px rgba(15,23,42,0.06), inset 0 1.5px 2px rgba(255,255,255,0.95)",
-      }}
-    >
-      {/* Amber stripe on top — Wealth pillar identity */}
-      <div className="absolute top-0 left-0 right-0 h-[3px]"
-        style={{ background: "linear-gradient(90deg, #FCD34D 0%, #F59E0B 50%, #92400E 100%)" }} />
-
-      <div className="px-3 py-2 pt-2.5">
-        {/* LINE 1: ticker + risk + price/change + action chip (right) */}
-        <div className="flex items-center gap-2 mb-1">
-          <h3 className="text-[16px] font-bold tracking-tight leading-none" style={{ fontFamily: SERIF, color: "#0F172A" }}>
+        background: directionTint,
+        border: `1px solid ${isUp ? "rgba(16,185,129,0.30)" : isDown ? "rgba(220,38,38,0.30)" : "rgba(148,163,184,0.30)"}`,
+        boxShadow: "0 2px 6px -1px rgba(15,23,42,0.10), inset 0 1px 2px rgba(255,255,255,0.85)",
+      }}>
+      {/* Left direction stripe — bold visual indicator */}
+      <div className="absolute top-0 left-0 bottom-0 w-[3px]"
+        style={{ background: stripeColor }} />
+      {/* Main tappable row — 1 dense line */}
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="relative w-full text-left transition-all active:scale-[0.995] active:translate-y-px"
+      >
+        <div className="pl-3 pr-2 py-2 flex items-center gap-2">
+          {/* Ticker — large, bold */}
+          <span className="text-[15px] font-bold tracking-tight flex-shrink-0" style={{ fontFamily: SERIF, color: "#0F172A", minWidth: 50 }}>
             {entry.symbol}
-          </h3>
+          </span>
+          {/* Risk dot */}
           {r && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
-              style={{ background: `${r.color}18`, color: r.color, border: `1px solid ${r.color}50` }}>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: r.color }} />
+            <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold flex-shrink-0"
+              style={{ background: r.color, color: "#fff" }}
+              title={`${entry.risk} risk`}>
               {r.label}
             </span>
           )}
+          {/* Price */}
           {entry.currentPrice != null && (
-            <span className="text-[13px] font-semibold" style={{ color: "#0F172A" }}>
+            <span className="text-[13px] font-semibold flex-shrink-0" style={{ color: "#0F172A" }}>
               ${entry.currentPrice.toFixed(2)}
             </span>
           )}
+          {/* Today's % change — strong arrow + colored */}
           {entry.changePct != null && !Number.isNaN(entry.changePct) && (
-            <span className="text-[11px] font-semibold"
-              style={{ color: entry.changePct >= 0 ? "#059669" : "#DC2626" }}>
-              {entry.changePct >= 0 ? "↑" : "↓"}{Math.abs(entry.changePct).toFixed(1)}%
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-extrabold flex-shrink-0"
+              style={{
+                background: isUp ? "rgba(16,185,129,0.15)" : "rgba(220,38,38,0.15)",
+                color: isUp ? "#059669" : "#DC2626",
+              }}>
+              <span style={{ fontSize: 13, lineHeight: 1, fontWeight: 900 }}>{isUp ? "▲" : "▼"}</span>
+              {Math.abs(entry.changePct).toFixed(2)}%
             </span>
           )}
-          {/* Action chip pushed to the right */}
-          <div className="ml-auto relative inline-flex items-center rounded-md overflow-hidden font-bold tracking-wider uppercase text-white flex-shrink-0"
+          {/* Spacer */}
+          <span className="flex-1" />
+          {/* Action chip — small glossy */}
+          <div className="relative inline-flex items-center rounded-md overflow-hidden font-bold tracking-wider uppercase text-white flex-shrink-0"
             style={{
               background: a.bg,
               border: `1px solid ${a.border}`,
-              boxShadow: `0 2px 5px -1px ${a.glow}, inset 0 1px 1.5px rgba(255,255,255,0.40), inset 0 -1px 2px rgba(0,0,0,0.25)`,
-              fontSize: 10,
-              padding: "3px 8px",
+              boxShadow: `0 1px 3px ${a.glow}, inset 0 1px 1.5px rgba(255,255,255,0.40), inset 0 -1px 2px rgba(0,0,0,0.25)`,
+              fontSize: 9.5,
+              padding: "2.5px 7px",
             }}>
             <span className="absolute top-0 left-0.5 right-0.5 h-[42%] pointer-events-none rounded-t-md"
               style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.10) 55%, rgba(255,255,255,0) 100%)" }} />
             <span className="relative">{entry.action}</span>
           </div>
         </div>
-
-        {/* LINE 2: qty · cost · P&L (single dense line) */}
-        {entry.qty != null && entry.cost != null && (
-          <p className="text-[11.5px] text-slate-700 leading-snug">
-            {entry.qty}sh · ${entry.cost.toFixed(2)}
-            {entry.pnl != null && (
-              <>
-                <span className="mx-1 text-slate-400">·</span>
-                <span className="font-bold" style={{ color: pnlColor }}>
-                  {pnlPositive ? "+" : ""}${Math.abs(entry.pnl).toFixed(0)} ({pnlPositive ? "+" : ""}{entry.pnlPct.toFixed(1)}%)
-                </span>
-              </>
-            )}
-          </p>
-        )}
-      </div>
-    </button>
+        {/* Sub-line: qty + total gains (tiny) */}
+        <div className="pl-3 pr-2 pb-1.5 -mt-0.5 flex items-center gap-2 text-[10.5px]">
+          <span className="text-slate-600">
+            {entry.qty != null && entry.cost != null ? <>{entry.qty}sh · ${entry.cost.toFixed(2)}</> : ""}
+          </span>
+          {entry.todayDollar != null && (
+            <span className="font-semibold" style={{ color: todayColor }}>
+              T: {todayDollarPositive ? "+" : ""}${Math.abs(entry.todayDollar).toFixed(0)}
+            </span>
+          )}
+          {entry.totalDollar != null && (
+            <span className="font-bold" style={{ color: pnlColor }}>
+              L: {pnlPositive ? "+" : ""}${Math.abs(entry.totalDollar).toFixed(0)} ({pnlPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%)
+            </span>
+          )}
+          <ChevronRight className="w-3 h-3 ml-auto text-slate-400 transition-transform"
+            style={{ transform: expanded ? "rotate(90deg)" : "none" }} />
+        </div>
+      </button>
+      {/* Expanded view — inline chart + actions */}
+      {expanded && (
+        <div className="pl-3 pr-2 pb-3 pt-1 border-t" style={{ borderColor: "rgba(148,163,184,0.20)" }}>
+          <StockChart ticker={entry.symbol} />
+          {entry.reasoning && (
+            <p className="text-[12px] text-slate-700 leading-snug mt-2 italic">
+              {entry.reasoning}
+            </p>
+          )}
+          {entry._decisionIdx != null && entry._decisionIdx >= 0 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onOpen && onOpen(entry); }}
+              className="mt-2 px-3 py-1.5 rounded-lg text-[11px] font-bold text-white"
+              style={{ background: "linear-gradient(160deg, #1E293B 0%, #312E81 100%)" }}>
+              Full reasoning →
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
