@@ -3619,16 +3619,15 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
                 {/* Three boxed sub-sections — Whales, Congress, Hedge Funds */}
                 <div className="space-y-3">
-                  {/* Whales — HACIENDA: Spanish villa, terracotta, warm bronze, old-money mansion */}
+                  {/* Whales — cool teal/emerald cream, sophisticated. */}
                   <div
                     className="rounded-2xl border p-4 relative overflow-hidden"
                     style={{
                       background:
-                        "linear-gradient(135deg, rgba(254,247,229,0.97) 0%, rgba(252,231,189,0.85) 40%, rgba(229,164,73,0.45) 80%, rgba(168,103,40,0.30) 100%)",
-                      borderColor: "rgba(146, 64, 14, 0.32)",
+                        "linear-gradient(135deg, rgba(240,253,250,0.97) 0%, rgba(204,251,241,0.85) 40%, rgba(94,234,212,0.30) 80%, rgba(20,184,166,0.18) 100%)",
+                      borderColor: "rgba(15, 118, 110, 0.32)",
                       boxShadow:
-                        "inset 0 1.5px 0 rgba(255,253,245,0.95), inset 0 -3px 12px rgba(146,64,14,0.12), 0 6px 20px -4px rgba(146,64,14,0.20)",
-                      backdropFilter: "blur(2px)",
+                        "inset 0 1.5px 0 rgba(255,255,255,0.95), inset 0 -3px 12px rgba(15,118,110,0.10), 0 6px 20px -4px rgba(20,184,166,0.18)",
                     }}
                   >
                     {/* Watermark: Spanish hacienda silhouette */}
@@ -3678,11 +3677,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       <h3 className="text-[15px] uppercase tracking-[0.22em] font-extrabold flex items-center gap-2.5"
                         style={{
                           fontFamily: SERIF,
-                          background: "linear-gradient(180deg, #FCD34D 0%, #92400E 55%, #451A03 100%)",
+                          background: "linear-gradient(180deg, #14b8a6 0%, #0d9488 55%, #134e4a 100%)",
                           WebkitBackgroundClip: "text",
                           WebkitTextFillColor: "transparent",
                           backgroundClip: "text",
-                          filter: "drop-shadow(0 1px 1px rgba(120,53,15,0.45)) drop-shadow(0 0 6px rgba(252,211,77,0.35))",
+                          filter: "drop-shadow(0 1px 1px rgba(15,118,110,0.45)) drop-shadow(0 0 6px rgba(94,234,212,0.30))",
                         }}>
                         <span
                           className="relative inline-flex items-center justify-center overflow-hidden"
@@ -3690,8 +3689,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             width: 26,
                             height: 26,
                             borderRadius: 8,
-                            background: "linear-gradient(160deg, #FBBF24 0%, #B45309 55%, #78350F 100%)",
-                            boxShadow: "0 3px 8px rgba(146,64,14,0.55), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(120,53,15,0.35)",
+                            background: "linear-gradient(160deg, #14b8a6 0%, #0d9488 55%, #134e4a 100%)",
+                            boxShadow: "0 3px 8px rgba(15,118,110,0.55), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(19,78,74,0.30)",
                             border: "1px solid rgba(255,255,255,0.30)",
                           }}
                         >
@@ -3705,11 +3704,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               borderBottomRightRadius: "3px",
                             }}
                           />
-                          <Crown className="relative w-3.5 h-3.5" style={{ color: "#FEF3C7", strokeWidth: 2.5 }} />
+                          <Crown className="relative w-3.5 h-3.5" style={{ color: "#ccfbf1", strokeWidth: 2.5 }} />
                         </span>
                         Institutional Whales
                       </h3>
-                      <span className="text-[10px] italic font-semibold" style={{ color: "rgba(120, 53, 15, 0.75)" }}>13F filings</span>
+                      <span className="text-[10px] italic font-semibold" style={{ color: "rgba(15, 118, 110, 0.80)" }}>13F filings</span>
                     </div>
                     {(() => {
                       const moves = (brief.smart_money.whale_moves || []).filter(
@@ -3727,16 +3726,15 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     })()}
                   </div>
 
-                  {/* Congress — PRESIDENTIAL: marble parchment, navy + champagne gold, Capitol Hill */}
+                  {/* Congress — cool periwinkle/indigo, sophisticated. */}
                   <div
                     className="rounded-2xl border p-4 relative overflow-hidden"
                     style={{
                       background:
-                        "linear-gradient(135deg, rgba(254,253,245,0.98) 0%, rgba(252,234,180,0.78) 35%, rgba(220,160,30,0.32) 75%, rgba(30,58,138,0.22) 100%)",
-                      borderColor: "rgba(30, 58, 138, 0.32)",
+                        "linear-gradient(135deg, rgba(238,242,255,0.98) 0%, rgba(224,231,255,0.85) 35%, rgba(165,180,252,0.32) 75%, rgba(79,70,229,0.22) 100%)",
+                      borderColor: "rgba(67, 56, 202, 0.32)",
                       boxShadow:
-                        "inset 0 1.5px 0 rgba(255,253,235,0.95), inset 0 -3px 12px rgba(30,58,138,0.10), 0 6px 20px -4px rgba(202,138,4,0.18)",
-                      backdropFilter: "blur(2px)",
+                        "inset 0 1.5px 0 rgba(255,255,255,0.95), inset 0 -3px 12px rgba(49,46,129,0.10), 0 6px 20px -4px rgba(79,70,229,0.18)",
                     }}
                   >
                     {/* Gold-leaf top edge */}
@@ -3813,11 +3811,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       <h3 className="text-[15px] uppercase tracking-[0.22em] font-extrabold flex items-center gap-2.5"
                         style={{
                           fontFamily: SERIF,
-                          background: "linear-gradient(180deg, #FCD34D 0%, #1E3A8A 55%, #0F172A 100%)",
+                          background: "linear-gradient(180deg, #818cf8 0%, #4f46e5 55%, #1e1b4b 100%)",
                           WebkitBackgroundClip: "text",
                           WebkitTextFillColor: "transparent",
                           backgroundClip: "text",
-                          filter: "drop-shadow(0 1px 1px rgba(23,37,84,0.45)) drop-shadow(0 0 6px rgba(252,211,77,0.30))",
+                          filter: "drop-shadow(0 1px 1px rgba(49,46,129,0.45)) drop-shadow(0 0 6px rgba(165,180,252,0.30))",
                         }}>
                         <span
                           className="relative inline-flex items-center justify-center overflow-hidden"
@@ -3825,8 +3823,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             width: 26,
                             height: 26,
                             borderRadius: 8,
-                            background: "linear-gradient(160deg, #FBBF24 0%, #CA8A04 45%, #1E3A8A 100%)",
-                            boxShadow: "0 3px 8px rgba(30,58,138,0.50), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(23,37,84,0.30)",
+                            background: "linear-gradient(160deg, #818cf8 0%, #4f46e5 55%, #312e81 100%)",
+                            boxShadow: "0 3px 8px rgba(67,56,202,0.50), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(30,27,75,0.30)",
                             border: "1px solid rgba(255,255,255,0.30)",
                           }}
                         >
@@ -3840,11 +3838,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               borderBottomRightRadius: "3px",
                             }}
                           />
-                          <Landmark className="relative w-3.5 h-3.5" style={{ color: "#FEFCE8", strokeWidth: 2.5 }} />
+                          <Landmark className="relative w-3.5 h-3.5" style={{ color: "#e0e7ff", strokeWidth: 2.5 }} />
                         </span>
                         Congress
                       </h3>
-                      <span className="text-[10px] italic font-semibold" style={{ color: "rgba(23, 37, 84, 0.75)" }}>STOCK Act · ~30–45d delay</span>
+                      <span className="text-[10px] italic font-semibold" style={{ color: "rgba(67, 56, 202, 0.80)" }}>STOCK Act · ~30–45d delay</span>
                     </div>
                     {(() => {
                       const moves = (brief.smart_money.congress_moves || []).filter(
@@ -3867,11 +3865,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     className="rounded-2xl border p-4 relative overflow-hidden"
                     style={{
                       background:
-                        "linear-gradient(135deg, rgba(255,247,247,0.97) 0%, rgba(252,220,232,0.72) 35%, rgba(190,190,195,0.42) 75%, rgba(60,75,95,0.25) 100%)",
-                      borderColor: "rgba(51, 65, 85, 0.32)",
+                        "linear-gradient(135deg, rgba(255,241,242,0.97) 0%, rgba(255,228,230,0.85) 35%, rgba(253,164,175,0.32) 75%, rgba(190,18,60,0.20) 100%)",
+                      borderColor: "rgba(136, 19, 55, 0.32)",
                       boxShadow:
-                        "inset 0 1.5px 0 rgba(255,255,255,0.92), inset 0 -3px 12px rgba(51,65,85,0.10), 0 6px 20px -4px rgba(225,29,72,0.18)",
-                      backdropFilter: "blur(2px)",
+                        "inset 0 1.5px 0 rgba(255,255,255,0.95), inset 0 -3px 12px rgba(136,19,55,0.10), 0 6px 20px -4px rgba(190,18,60,0.18)",
                     }}
                   >
                     {/* Metallic accent diagonal — subtle skyscraper-glass shimmer */}
@@ -3959,11 +3956,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       <h3 className="text-[15px] uppercase tracking-[0.22em] font-extrabold flex items-center gap-2.5"
                         style={{
                           fontFamily: SERIF,
-                          background: "linear-gradient(180deg, #FB7185 0%, #475569 55%, #0F172A 100%)",
+                          background: "linear-gradient(180deg, #fb7185 0%, #be123c 55%, #4c0519 100%)",
                           WebkitBackgroundClip: "text",
                           WebkitTextFillColor: "transparent",
                           backgroundClip: "text",
-                          filter: "drop-shadow(0 1px 1px rgba(15,23,42,0.45)) drop-shadow(0 0 6px rgba(251,113,133,0.30))",
+                          filter: "drop-shadow(0 1px 1px rgba(136,19,55,0.45)) drop-shadow(0 0 6px rgba(251,113,133,0.30))",
                         }}>
                         <span
                           className="relative inline-flex items-center justify-center overflow-hidden"
@@ -3971,8 +3968,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             width: 26,
                             height: 26,
                             borderRadius: 8,
-                            background: "linear-gradient(160deg, #FB7185 0%, #94A3B8 50%, #1E293B 100%)",
-                            boxShadow: "0 3px 8px rgba(51,65,85,0.50), inset 0 1.5px 2px rgba(255,255,255,0.50), inset 0 -2px 4px rgba(15,23,42,0.35)",
+                            background: "linear-gradient(160deg, #fb7185 0%, #be123c 55%, #881337 100%)",
+                            boxShadow: "0 3px 8px rgba(136,19,55,0.50), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(76,5,25,0.35)",
                             border: "1px solid rgba(255,255,255,0.30)",
                           }}
                         >
@@ -3986,11 +3983,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               borderBottomRightRadius: "3px",
                             }}
                           />
-                          <Building2 className="relative w-3.5 h-3.5" style={{ color: "#FEF2F2", strokeWidth: 2.5 }} />
+                          <Building2 className="relative w-3.5 h-3.5" style={{ color: "#ffe4e6", strokeWidth: 2.5 }} />
                         </span>
                         Hedge Funds
                       </h3>
-                      <span className="text-[10px] italic font-semibold" style={{ color: "rgba(15, 23, 42, 0.75)" }}>fund-level rotations</span>
+                      <span className="text-[10px] italic font-semibold" style={{ color: "rgba(136, 19, 55, 0.80)" }}>fund-level rotations</span>
                     </div>
                     {(() => {
                       const moves = (brief.smart_money.hedge_fund_moves || []).filter(
@@ -4394,14 +4391,36 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
   }
   const { text, ticker, why_matters } = item || {};
 
-  // Subtle category tint — each box's rows pick up a soft hint of color so they
-  // read as part of the parent theme without being loud.
-  const categoryTint = {
-    whale:    { bg: "linear-gradient(160deg, #fffbeb 0%, #fef3c7 55%, #fde68a 100%)", border: "rgba(251,191,36,0.30)", glow: "rgba(252,211,77,0.18)" },
-    congress: { bg: "linear-gradient(160deg, #eff6ff 0%, #dbeafe 55%, #bfdbfe 100%)", border: "rgba(96,165,250,0.30)", glow: "rgba(147,197,253,0.18)" },
-    hedge:    { bg: "linear-gradient(160deg, #fdf2f8 0%, #fce7f3 55%, #fbcfe8 100%)", border: "rgba(244,114,182,0.30)", glow: "rgba(251,207,232,0.18)" },
+  // DEEP GLOSSY palette per category — matches Generate Brief / Sync Portfolio aesthetic.
+  // No gold, no amber, no orange anywhere. Each row reads as a richly-colored glass pill
+  // with a white specular reflection on top + a colored glow underneath.
+  const categoryStyle = {
+    whale: {
+      bg: "linear-gradient(160deg, #14b8a6 0%, #0d9488 55%, #0f766e 100%)",
+      border: "rgba(15,118,110,0.55)",
+      glow: "rgba(20,184,166,0.40)",
+      chipBg: "linear-gradient(160deg, #ccfbf1 0%, #99f6e4 100%)",
+      chipText: "#134e4a",
+      chipBorder: "rgba(15,118,110,0.55)",
+    },
+    congress: {
+      bg: "linear-gradient(160deg, #4f46e5 0%, #4338ca 55%, #312e81 100%)",
+      border: "rgba(49,46,129,0.55)",
+      glow: "rgba(79,70,229,0.40)",
+      chipBg: "linear-gradient(160deg, #e0e7ff 0%, #c7d2fe 100%)",
+      chipText: "#1e1b4b",
+      chipBorder: "rgba(49,46,129,0.55)",
+    },
+    hedge: {
+      bg: "linear-gradient(160deg, #be123c 0%, #9f1239 55%, #881337 100%)",
+      border: "rgba(136,19,55,0.55)",
+      glow: "rgba(190,18,60,0.40)",
+      chipBg: "linear-gradient(160deg, #ffe4e6 0%, #fecdd3 100%)",
+      chipText: "#4c0519",
+      chipBorder: "rgba(136,19,55,0.55)",
+    },
   };
-  const tint = categoryTint[category] || categoryTint.whale;
+  const s = categoryStyle[category] || categoryStyle.whale;
 
   return (
     <li>
@@ -4413,24 +4432,23 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
             onOpenSourceDetail({ category, text, ticker, why_matters });
           }
         }}
-        className={`relative w-full text-left overflow-hidden flex items-center gap-2.5 px-3 py-2.5 my-1 transition cursor-pointer active:scale-[0.99] active:translate-y-px`}
+        className="relative w-full text-left overflow-hidden flex items-center gap-2.5 px-3 py-2.5 my-1.5 transition cursor-pointer active:scale-[0.99] active:translate-y-px"
         style={{
-          background: tint.bg,
-          border: `1px solid ${tint.border}`,
-          borderRadius: 14,
-          boxShadow:
-            `0 4px 10px -2px ${tint.glow}, 0 1px 3px rgba(15,23,42,0.05), inset 0 1.5px 2px rgba(255,255,255,0.90), inset 0 -1.5px 4px rgba(15,23,42,0.04)`,
+          background: s.bg,
+          border: `1px solid ${s.border}`,
+          borderRadius: 16,
+          boxShadow: `0 10px 24px -4px ${s.glow}, 0 4px 14px ${s.glow}, 0 0 28px ${s.glow}, inset 0 2px 4px rgba(255,255,255,0.35), inset 0 -4px 10px rgba(0,0,0,0.30)`,
         }}
       >
-        {/* Subtle top specular highlight */}
+        {/* Strong top specular highlight — matches Generate Brief button */}
         <span
-          className="absolute top-0.5 left-1.5 right-1.5 h-[42%] pointer-events-none"
+          className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
           style={{
-            background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 100%)",
-            borderTopLeftRadius: "0.75rem",
-            borderTopRightRadius: "0.75rem",
-            borderBottomLeftRadius: "0.4rem",
-            borderBottomRightRadius: "0.4rem",
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%)",
+            borderTopLeftRadius: "0.9rem",
+            borderTopRightRadius: "0.9rem",
+            borderBottomLeftRadius: "0.5rem",
+            borderBottomRightRadius: "0.5rem",
           }}
         />
         {ticker && (
@@ -4441,19 +4459,29 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
               fontSize: 13.5,
               letterSpacing: "0.02em",
               minWidth: 56,
-              background: "linear-gradient(160deg, #ffffff 0%, #f8fafc 100%)",
-              color: "#0f172a",
-              border: "1px solid rgba(148,163,184,0.45)",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.08), inset 0 1px 1.5px rgba(255,255,255,0.95), inset 0 -1px 2px rgba(15,23,42,0.06)",
+              background: s.chipBg,
+              color: s.chipText,
+              border: `1px solid ${s.chipBorder}`,
+              boxShadow: "0 2px 5px rgba(0,0,0,0.20), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -1.5px 3px rgba(0,0,0,0.10)",
             }}
           >
+            <span
+              className="absolute top-0 left-0.5 right-0.5 h-[45%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                borderTopLeftRadius: "5px",
+                borderTopRightRadius: "5px",
+                borderBottomLeftRadius: "3px",
+                borderBottomRightRadius: "3px",
+              }}
+            />
             <span className="relative">{ticker}</span>
           </span>
         )}
-        <span className="relative flex-1 text-[14.5px] leading-snug" style={{ color: "#0f172a", fontWeight: 500 }}>
+        <span className="relative flex-1 text-[14.5px] leading-snug text-white font-medium" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.30)" }}>
           {text}
         </span>
-        <ChevronRight className="relative w-4 h-4 flex-shrink-0 mt-0.5 text-slate-500" strokeWidth={2.5} />
+        <ChevronRight className="relative w-4 h-4 flex-shrink-0 mt-0.5 text-white/90" strokeWidth={2.5} />
       </button>
     </li>
   );
@@ -5400,20 +5428,31 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
   // available; this is a graceful fallback.
   const expansion = detail || autoExpand(text);
 
+  // Detect direction from the text so each row gets a light primary color
+  // and a directional marker. Looks for +/- numbers or up/down keywords.
+  const txt = (text || "").toLowerCase();
+  const isUp = /\+\s*\d|\bup\b|gain|rally|surge|climb|rise|higher|bull/i.test(text || "");
+  const isDown = /-\s*\d|\bdown\b|drop|fall|decline|slip|lower|sell|bear/i.test(text || "");
+  const direction = isUp && !isDown ? "up" : isDown && !isUp ? "down" : "neutral";
+
+  // Light primary palettes — no mustard, no amber, no gold.
+  const palette = direction === "up"
+    ? { bg: "linear-gradient(160deg, #ecfdf5 0%, #d1fae5 55%, #a7f3d0 100%)", border: "rgba(52,211,153,0.40)", glow: "rgba(110,231,183,0.25)", marker: "linear-gradient(160deg, #34d399 0%, #059669 100%)", markerIcon: "↑" }
+    : direction === "down"
+    ? { bg: "linear-gradient(160deg, #fff1f2 0%, #ffe4e6 55%, #fecdd3 100%)", border: "rgba(251,113,133,0.40)", glow: "rgba(253,164,175,0.25)", marker: "linear-gradient(160deg, #fb7185 0%, #be123c 100%)", markerIcon: "↓" }
+    : { bg: "linear-gradient(160deg, #eff6ff 0%, #dbeafe 55%, #bfdbfe 100%)", border: "rgba(96,165,250,0.40)", glow: "rgba(147,197,253,0.25)", marker: "linear-gradient(160deg, #60a5fa 0%, #2563eb 100%)", markerIcon: "·" };
+
   return (
     <button
       onClick={() => setOpen((o) => !o)}
       className="relative text-left overflow-hidden transition-all active:scale-[0.99] active:translate-y-px"
       style={{
-        background: open
-          ? "linear-gradient(160deg, #ffffff 0%, #fafbfc 55%, #eef2f7 100%)"
-          : "linear-gradient(160deg, #ffffff 0%, #f8fafc 55%, #e2e8f0 100%)",
-        border: `1px solid ${theme.heroBorder}`,
+        background: palette.bg,
+        border: `1px solid ${palette.border}`,
         borderRadius: 18,
         padding: "12px 14px",
         cursor: "pointer",
-        boxShadow:
-          "0 6px 16px -3px rgba(15,23,42,0.12), 0 2px 6px rgba(15,23,42,0.06), inset 0 2px 3px rgba(255,255,255,1), inset 0 -2px 6px rgba(15,23,42,0.08)",
+        boxShadow: `0 6px 16px -3px ${palette.glow}, 0 2px 6px rgba(15,23,42,0.06), inset 0 2px 3px rgba(255,255,255,0.95), inset 0 -2px 6px rgba(15,23,42,0.06)`,
       }}
     >
       {/* Top specular highlight */}
@@ -5428,17 +5467,25 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
         }}
       />
       <div className="relative flex items-start gap-2.5">
-        {/* Small colored dot instead of numbered badge */}
+        {/* Directional marker — up/down/neutral indicator */}
         <span
-          className="flex-shrink-0 mt-1.5"
+          className="relative flex-shrink-0 inline-flex items-center justify-center text-white font-bold overflow-hidden mt-0.5"
           style={{
-            width: 8,
-            height: 8,
+            width: 20,
+            height: 20,
             borderRadius: "50%",
-            background: theme.bulletDot,
-            boxShadow: `0 0 0 2px rgba(255,255,255,0.85), 0 2px 4px ${theme.badge}`,
+            background: palette.marker,
+            fontSize: 12,
+            boxShadow: "0 2px 5px rgba(0,0,0,0.20), inset 0 1px 1.5px rgba(255,255,255,0.50), inset 0 -1px 2px rgba(0,0,0,0.25)",
+            border: "1px solid rgba(255,255,255,0.40)",
           }}
-        />
+        >
+          <span
+            className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none rounded-t-full"
+            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)" }}
+          />
+          <span className="relative">{palette.markerIcon}</span>
+        </span>
         <span
           className="flex-1 text-[15px] leading-snug"
           style={{ color: "#0f172a", fontFamily: SERIF, fontWeight: 500 }}
@@ -5448,7 +5495,7 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
         <ChevronRight
           className="w-4 h-4 flex-shrink-0 mt-1"
           style={{
-            color: theme.accent,
+            color: "#334155",
             transform: open ? "rotate(90deg)" : "none",
             transition: "transform 0.2s ease",
           }}
@@ -5457,8 +5504,8 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
       </div>
       {open && (
         <div
-          className="relative mt-2 pl-5 pr-1 pt-2 border-t text-[14px] leading-relaxed"
-          style={{ borderColor: theme.heroBorder, color: "#334155", fontFamily: SERIF }}
+          className="relative mt-2 pl-7 pr-1 pt-2 border-t text-[14px] leading-relaxed"
+          style={{ borderColor: palette.border, color: "#334155", fontFamily: SERIF }}
         >
           {expansion}
         </div>
@@ -5663,16 +5710,9 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
             <Sparkles className="relative w-4 h-4 text-white" strokeWidth={2.5} />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <p className="text-[15px] font-bold leading-tight text-slate-900" style={{ fontFamily: SERIF }}>
-                {item.ticker}
-              </p>
-              {riskIcon.badgeDot && (
-                <span className="text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-white text-slate-900 border border-slate-200 shadow-sm">
-                  {riskIcon.badgeDot} {riskIcon.badgeLabel}
-                </span>
-              )}
-            </div>
+            <p className="text-[15px] font-bold leading-tight text-slate-900" style={{ fontFamily: SERIF }}>
+              {item.ticker}
+            </p>
             {item.theme && (
               <p className="text-[11px] font-semibold tracking-wide leading-tight truncate text-slate-600">
                 {item.theme}
@@ -7720,3 +7760,4 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
