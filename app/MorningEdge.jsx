@@ -3155,26 +3155,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     };
                   });
 
-                  // Add NEW opportunities (positions not in holdings)
-                  const heldSymbols = new Set(holdings.map((h) => h.symbol));
-                  opportunities.forEach((o) => {
-                    if (!o || !o.ticker || heldSymbols.has(o.ticker)) return;
-                    entries.push({
-                      symbol: o.ticker,
-                      qty: null,
-                      cost: null,
-                      account: null,
-                      currentPrice: null,
-                      changePct: null,
-                      pnl: null,
-                      pnlPct: null,
-                      action: "ADD",
-                      risk: null,
-                      reasoning: o.why_now || "New opportunity — not yet in portfolio.",
-                      isNew: true,
-                      _opportunity: o,
-                    });
-                  });
+                  // Add NEW opportunities (positions not in holdings) — DISABLED.
+                  // These now live in the Discovery section so Playbook stays focused
+                  // on what the user actually holds.
+                  // const heldSymbols = new Set(holdings.map((h) => h.symbol));
+                  // opportunities.forEach((o) => { ... });
 
                   // Sort by action priority: TRIM and ADD first, then WATCH, then HOLD
                   const priority = { TRIM: 0, ADD: 1, WATCH: 2, HOLD: 3 };
@@ -3187,7 +3172,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   });
 
                   return (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       {entries.map((entry, i) => (
                         <UnifiedPlaybookCard
                           key={`${entry.symbol}-${i}`}
@@ -5604,69 +5589,63 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
     <button
       type="button"
       onClick={() => onOpen && onOpen(entry)}
-      className="relative w-full text-left rounded-2xl overflow-hidden transition-all active:scale-[0.99] active:translate-y-px"
+      className="relative w-full text-left rounded-xl overflow-hidden transition-all active:scale-[0.99] active:translate-y-px"
       style={{
         background: "linear-gradient(160deg, #FFFFFF 0%, #FFFBEB 100%)",
         border: "1px solid rgba(217,119,6,0.30)",
-        boxShadow: "0 6px 16px -3px rgba(146,64,14,0.18), 0 2px 4px rgba(15,23,42,0.06), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -1.5px 4px rgba(146,64,14,0.05)",
+        boxShadow: "0 4px 10px -2px rgba(146,64,14,0.15), 0 1px 3px rgba(15,23,42,0.06), inset 0 1.5px 2px rgba(255,255,255,0.95)",
       }}
     >
       {/* Amber stripe on top — Wealth pillar identity */}
-      <div className="absolute top-0 left-0 right-0 h-1"
+      <div className="absolute top-0 left-0 right-0 h-[3px]"
         style={{ background: "linear-gradient(90deg, #FCD34D 0%, #F59E0B 50%, #92400E 100%)" }} />
 
-      <div className="px-3.5 py-3 pt-4">
-        {/* Top row: ticker · risk · account · NEW badge */}
+      <div className="px-3 py-2 pt-2.5">
+        {/* LINE 1: ticker + risk + price/change + action chip (right) */}
         <div className="flex items-center gap-2 mb-1">
-          <h3 className="text-[18px] font-bold tracking-tight leading-none" style={{ fontFamily: SERIF, color: "#0F172A" }}>
+          <h3 className="text-[16px] font-bold tracking-tight leading-none" style={{ fontFamily: SERIF, color: "#0F172A" }}>
             {entry.symbol}
           </h3>
-          {entry.isNew && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold"
-              style={{ background: "linear-gradient(135deg, #34D399 0%, #059669 100%)", color: "#FFFFFF" }}>
-              NEW
-            </span>
-          )}
           {r && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
               style={{ background: `${r.color}18`, color: r.color, border: `1px solid ${r.color}50` }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: r.color }} />
               {r.label}
             </span>
           )}
-          {entry.account && (
-            <span className="ml-auto text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
-              {entry.account}
+          {entry.currentPrice != null && (
+            <span className="text-[13px] font-semibold" style={{ color: "#0F172A" }}>
+              ${entry.currentPrice.toFixed(2)}
             </span>
           )}
-        </div>
-
-        {/* Price + P&L row */}
-        <div className="flex items-baseline gap-2 mb-1.5 flex-wrap">
-          {entry.currentPrice != null ? (
-            <>
-              <span className="text-[15px] font-bold" style={{ color: "#0F172A" }}>
-                ${entry.currentPrice.toFixed(2)}
-              </span>
-              {entry.changePct != null && !Number.isNaN(entry.changePct) && (
-                <span className="text-[12px] font-semibold"
-                  style={{ color: entry.changePct >= 0 ? "#059669" : "#DC2626" }}>
-                  {entry.changePct >= 0 ? "↑" : "↓"} {Math.abs(entry.changePct).toFixed(2)}%
-                </span>
-              )}
-            </>
-          ) : (
-            <span className="text-[12px] text-slate-500 italic">Live price pending</span>
+          {entry.changePct != null && !Number.isNaN(entry.changePct) && (
+            <span className="text-[11px] font-semibold"
+              style={{ color: entry.changePct >= 0 ? "#059669" : "#DC2626" }}>
+              {entry.changePct >= 0 ? "↑" : "↓"}{Math.abs(entry.changePct).toFixed(1)}%
+            </span>
           )}
+          {/* Action chip pushed to the right */}
+          <div className="ml-auto relative inline-flex items-center rounded-md overflow-hidden font-bold tracking-wider uppercase text-white flex-shrink-0"
+            style={{
+              background: a.bg,
+              border: `1px solid ${a.border}`,
+              boxShadow: `0 2px 5px -1px ${a.glow}, inset 0 1px 1.5px rgba(255,255,255,0.40), inset 0 -1px 2px rgba(0,0,0,0.25)`,
+              fontSize: 10,
+              padding: "3px 8px",
+            }}>
+            <span className="absolute top-0 left-0.5 right-0.5 h-[42%] pointer-events-none rounded-t-md"
+              style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.10) 55%, rgba(255,255,255,0) 100%)" }} />
+            <span className="relative">{entry.action}</span>
+          </div>
         </div>
 
-        {/* Position details: qty · cost basis · P&L */}
+        {/* LINE 2: qty · cost · P&L (single dense line) */}
         {entry.qty != null && entry.cost != null && (
-          <p className="text-[12px] text-slate-700 mb-2 leading-snug">
-            {entry.qty} sh · Cost <span className="font-semibold">${entry.cost.toFixed(2)}</span>
+          <p className="text-[11.5px] text-slate-700 leading-snug">
+            {entry.qty}sh · ${entry.cost.toFixed(2)}
             {entry.pnl != null && (
               <>
-                <span className="mx-1.5 text-slate-400">·</span>
+                <span className="mx-1 text-slate-400">·</span>
                 <span className="font-bold" style={{ color: pnlColor }}>
                   {pnlPositive ? "+" : ""}${Math.abs(entry.pnl).toFixed(0)} ({pnlPositive ? "+" : ""}{entry.pnlPct.toFixed(1)}%)
                 </span>
@@ -5674,27 +5653,6 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
             )}
           </p>
         )}
-
-        {/* Reasoning — short, italic */}
-        {entry.reasoning && (
-          <p className="text-[12.5px] text-slate-700 leading-snug mb-3 italic line-clamp-2">
-            {entry.reasoning}
-          </p>
-        )}
-
-        {/* Action chip — glossy pill with specular highlight */}
-        <div className="relative inline-flex items-center rounded-xl overflow-hidden font-bold tracking-wider uppercase text-white"
-          style={{
-            background: a.bg,
-            border: `1px solid ${a.border}`,
-            boxShadow: `0 4px 10px -2px ${a.glow}, inset 0 1.5px 2px rgba(255,255,255,0.40), inset 0 -1.5px 3px rgba(0,0,0,0.25)`,
-            fontSize: 11,
-            padding: "5px 12px",
-          }}>
-          <span className="absolute top-0 left-1 right-1 h-[42%] pointer-events-none rounded-t-lg"
-            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.10) 55%, rgba(255,255,255,0) 100%)" }} />
-          <span className="relative">{entry.action}{entry.isNew ? " TO PORTFOLIO" : ""}</span>
-        </div>
       </div>
     </button>
   );
