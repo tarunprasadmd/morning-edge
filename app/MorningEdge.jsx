@@ -2984,7 +2984,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             );
           })()}
           {/* PLAYBOOK — tappable check-offs that persist per day */}
-          {visible.decisions && (
+          {visible.decisions && brief && (
             <Card theme={themes.play} pillar="wealth">
               <CardHeader icon={<CheckSquare className="w-4 h-4" />} label="Today's Playbook" theme={themes.play} pillar="wealth" />
               <div className="px-3 py-5">
@@ -2993,15 +2993,43 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 </p>
                 {/* Personalization indicator */}
                 {holdings.length > 0 ? (
-                  <div className="mb-4 flex items-center gap-2 text-[11px] tracking-wider uppercase font-semibold px-1">
-                    <span className="px-2 py-0.5 rounded-full"
-                      style={{ background: "linear-gradient(135deg, #FEF3C7 0%, #FCD34D 100%)", color: "#78350F", border: "1px solid rgba(146,64,14,0.30)" }}>
-                      ✓ Personalized
-                    </span>
-                    <span className="text-slate-700 normal-case tracking-normal text-[12px]">
-                      {holdings.length} position{holdings.length === 1 ? "" : "s"}
-                    </span>
-                  </div>
+                  <>
+                    <div className="mb-3 flex items-center gap-2 text-[11px] tracking-wider uppercase font-semibold px-1">
+                      <span className="px-2 py-0.5 rounded-full"
+                        style={{ background: "linear-gradient(135deg, #FEF3C7 0%, #FCD34D 100%)", color: "#78350F", border: "1px solid rgba(146,64,14,0.30)" }}>
+                        ✓ Personalized
+                      </span>
+                      <span className="text-slate-700 normal-case tracking-normal text-[12px]">
+                        {holdings.length} position{holdings.length === 1 ? "" : "s"} · live prices
+                      </span>
+                    </div>
+                    {/* Re-sync reminder — critical so suggestions stay accurate */}
+                    <button
+                      onClick={() => {
+                        setShowCsvImport(true);
+                        setTimeout(() => {
+                          const el = document.querySelector('[data-csv-import-anchor]');
+                          if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+                        }, 100);
+                      }}
+                      className="w-full mb-4 px-3 py-2.5 rounded-xl text-left transition-all active:scale-[0.99] flex items-start gap-2.5"
+                      style={{
+                        background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
+                        border: "1px solid rgba(217, 119, 6, 0.35)",
+                        boxShadow: "0 2px 6px rgba(146,64,14,0.10), inset 0 1.5px 2px rgba(255,255,255,0.85)",
+                      }}
+                    >
+                      <RefreshCw className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#92400E" }} strokeWidth={2.4} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[12px] font-bold leading-tight" style={{ color: "#78350F" }}>
+                          Positions changed? Re-sync your CSV.
+                        </p>
+                        <p className="text-[11px] leading-snug mt-0.5" style={{ color: "#92400E" }}>
+                          Trade today, add a position, or close one — re-upload so suggestions match what you actually hold. <span className="font-semibold underline">Tap to sync</span>.
+                        </p>
+                      </div>
+                    </button>
+                  </>
                 ) : (
                   <button
                     onClick={() => {
@@ -3042,9 +3070,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 {/* UNIFIED LIST: every holding + new opportunities, sorted by action priority */}
                 {holdings.length > 0 && (() => {
                   // Build entries from holdings + opportunity_watch
-                  const decisions = Array.isArray(brief.decisions) ? brief.decisions : [];
-                  const conviction = Array.isArray(brief.conviction_watch) ? brief.conviction_watch.filter(Boolean) : [];
-                  const opportunities = Array.isArray(brief.opportunity_watch) ? brief.opportunity_watch.filter(Boolean) : [];
+                  const decisions = brief && Array.isArray(brief.decisions) ? brief.decisions : [];
+                  const conviction = brief && Array.isArray(brief.conviction_watch) ? brief.conviction_watch.filter(Boolean) : [];
+                  const opportunities = brief && Array.isArray(brief.opportunity_watch) ? brief.opportunity_watch.filter(Boolean) : [];
 
                   // Helper: extract a clean reasoning string from a decision text
                   const cleanText = (s) => {
@@ -3076,8 +3104,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   // Map every holding to a playbook entry
                   const entries = holdings.map((h) => {
                     const sym = h.symbol;
-                    const live = livePrices && livePrices[sym];
-                    const currentPrice = live && typeof live.current === "number" ? live.current : null;
+                    // Live price data is already merged into the holding object by
+                    // the parent /api/prices polling effect — read directly.
+                    const currentPrice = typeof h.currentPrice === "number" ? h.currentPrice : null;
+                    const changePct = typeof h.gainPct === "number" ? h.gainPct : null;
                     const costBasis = (h.cost || 0) * (h.qty || 0);
                     const currentValue = currentPrice != null ? currentPrice * (h.qty || 0) : null;
                     const pnl = currentValue != null ? currentValue - costBasis : null;
@@ -3114,7 +3144,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       cost: h.cost,
                       account: h.account,
                       currentPrice,
-                      live,
+                      changePct,
                       pnl,
                       pnlPct,
                       action,
@@ -3134,8 +3164,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       qty: null,
                       cost: null,
                       account: null,
-                      currentPrice: livePrices && livePrices[o.ticker] && livePrices[o.ticker].current,
-                      live: livePrices && livePrices[o.ticker],
+                      currentPrice: null,
+                      changePct: null,
                       pnl: null,
                       pnlPct: null,
                       action: "ADD",
@@ -5615,10 +5645,10 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
               <span className="text-[15px] font-bold" style={{ color: "#0F172A" }}>
                 ${entry.currentPrice.toFixed(2)}
               </span>
-              {entry.live?.changePct != null && !Number.isNaN(entry.live.changePct) && (
+              {entry.changePct != null && !Number.isNaN(entry.changePct) && (
                 <span className="text-[12px] font-semibold"
-                  style={{ color: entry.live.changePct >= 0 ? "#059669" : "#DC2626" }}>
-                  {entry.live.changePct >= 0 ? "↑" : "↓"} {Math.abs(entry.live.changePct).toFixed(2)}%
+                  style={{ color: entry.changePct >= 0 ? "#059669" : "#DC2626" }}>
+                  {entry.changePct >= 0 ? "↑" : "↓"} {Math.abs(entry.changePct).toFixed(2)}%
                 </span>
               )}
             </>
@@ -7450,4 +7480,3 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
-
