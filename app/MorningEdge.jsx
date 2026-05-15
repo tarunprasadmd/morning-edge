@@ -419,15 +419,15 @@ function parseDecision(text) {
 // but readable.
 const DECISION_THEMES = {
   trim:    { bg: "linear-gradient(135deg, #fef2f2 0%, #fde3e3 100%)", border: "#fca5a5", iconBg: "#dc2626", labelText: "#7f1d1d", accentText: "#991b1b", chevron: "#7f1d1d", shadow: "rgba(220,38,38,0.18)",
-             deepBg: "linear-gradient(160deg, #fb7185 0%, #dc2626 55%, #7f1d1d 100%)", glow: "rgba(220,38,38,0.55)", borderDeep: "rgba(127,29,29,0.55)", iconBgDeep: "linear-gradient(160deg, #fecaca 0%, #f87171 100%)", iconColor: "#7f1d1d" },
+             deepBg: "linear-gradient(160deg, #fee2e2 0%, #fecaca 55%, #fca5a5 100%)", glow: "rgba(252,165,165,0.35)", borderDeep: "rgba(248,113,113,0.40)", iconBgDeep: "linear-gradient(160deg, #ffffff 0%, #fef2f2 100%)", iconColor: "#991b1b" },
   add:     { bg: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)", border: "#6ee7b7", iconBg: "#059669", labelText: "#064e3b", accentText: "#047857", chevron: "#064e3b", shadow: "rgba(5,150,105,0.18)",
-             deepBg: "linear-gradient(160deg, #34d399 0%, #059669 55%, #065f46 100%)", glow: "rgba(16,185,129,0.55)", borderDeep: "rgba(6,95,70,0.55)", iconBgDeep: "linear-gradient(160deg, #d1fae5 0%, #6ee7b7 100%)", iconColor: "#064e3b" },
+             deepBg: "linear-gradient(160deg, #d1fae5 0%, #a7f3d0 55%, #6ee7b7 100%)", glow: "rgba(110,231,183,0.35)", borderDeep: "rgba(52,211,153,0.40)", iconBgDeep: "linear-gradient(160deg, #ffffff 0%, #ecfdf5 100%)", iconColor: "#065f46" },
   watch:   { bg: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)", border: "#fcd34d", iconBg: "#d97706", labelText: "#78350f", accentText: "#92400e", chevron: "#78350f", shadow: "rgba(217,119,6,0.18)",
-             deepBg: "linear-gradient(160deg, #fbbf24 0%, #d97706 55%, #78350f 100%)", glow: "rgba(217,119,6,0.55)", borderDeep: "rgba(120,53,15,0.55)", iconBgDeep: "linear-gradient(160deg, #fef3c7 0%, #fcd34d 100%)", iconColor: "#78350f" },
+             deepBg: "linear-gradient(160deg, #fef3c7 0%, #fde68a 55%, #fcd34d 100%)", glow: "rgba(252,211,77,0.35)", borderDeep: "rgba(251,191,36,0.40)", iconBgDeep: "linear-gradient(160deg, #ffffff 0%, #fffbeb 100%)", iconColor: "#92400e" },
   protect: { bg: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)", border: "#93c5fd", iconBg: "#2563eb", labelText: "#1e3a8a", accentText: "#1e40af", chevron: "#1e3a8a", shadow: "rgba(37,99,235,0.18)",
-             deepBg: "linear-gradient(160deg, #60a5fa 0%, #2563eb 55%, #1e3a8a 100%)", glow: "rgba(37,99,235,0.55)", borderDeep: "rgba(30,58,138,0.55)", iconBgDeep: "linear-gradient(160deg, #dbeafe 0%, #93c5fd 100%)", iconColor: "#1e3a8a" },
+             deepBg: "linear-gradient(160deg, #dbeafe 0%, #bfdbfe 55%, #93c5fd 100%)", glow: "rgba(147,197,253,0.35)", borderDeep: "rgba(96,165,250,0.40)", iconBgDeep: "linear-gradient(160deg, #ffffff 0%, #eff6ff 100%)", iconColor: "#1e40af" },
   act:     { bg: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)", border: "#cbd5e1", iconBg: "#475569", labelText: "#0f172a", accentText: "#334155", chevron: "#0f172a", shadow: "rgba(71,85,105,0.18)",
-             deepBg: "linear-gradient(160deg, #475569 0%, #1e293b 55%, #0f172a 100%)", glow: "rgba(71,85,105,0.55)", borderDeep: "rgba(15,23,42,0.55)", iconBgDeep: "linear-gradient(160deg, #f1f5f9 0%, #cbd5e1 100%)", iconColor: "#1e293b" },
+             deepBg: "linear-gradient(160deg, #f1f5f9 0%, #e2e8f0 55%, #cbd5e1 100%)", glow: "rgba(203,213,225,0.40)", borderDeep: "rgba(148,163,184,0.40)", iconBgDeep: "linear-gradient(160deg, #ffffff 0%, #f8fafc 100%)", iconColor: "#1e293b" },
 };
 
 // ─── Demo brief ─────────────────────────────────────────────────────
@@ -3231,32 +3231,33 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                       height: 26,
                                       borderRadius: 7,
                                       background: sigTheme.iconBgDeep,
-                                      boxShadow: "0 2px 6px rgba(0,0,0,0.25), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 4px rgba(0,0,0,0.15)",
-                                      border: "1px solid rgba(255,255,255,0.55)",
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.20), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -2px 4px rgba(0,0,0,0.10)",
+                                      border: "1px solid rgba(255,255,255,0.65)",
                                     }}
                                   >
                                     <SignalIcon className="relative w-3 h-3" style={{ color: sigTheme.iconColor, strokeWidth: 2.7 }} />
                                   </div>
                                   {c.ticker && (
                                     <p
-                                      className="text-[14px] font-bold m-0 leading-tight truncate text-white drop-shadow"
-                                      style={{ fontFamily: SERIF }}
+                                      className="text-[14px] font-bold m-0 leading-tight truncate"
+                                      style={{ color: sigTheme.labelText, fontFamily: SERIF, textShadow: "0 1px 1px rgba(255,255,255,0.45)" }}
                                     >
                                       {c.ticker}
                                     </p>
                                   )}
-                                  <span className="ml-auto text-[8.5px] font-bold tracking-[0.14em] uppercase text-white/90">
+                                  <span className="ml-auto text-[8.5px] font-bold tracking-[0.14em] uppercase" style={{ color: sigTheme.labelText }}>
                                     {signalLabel}
                                   </span>
                                 </div>
-                                {/* Reasoning preview — white text on deep bg */}
+                                {/* Reasoning preview — dark text on medium gradient */}
                                 <div className="relative flex-1 min-w-0">
-                                  <p className="text-[11.5px] m-0 leading-snug text-white" style={{
+                                  <p className="text-[11.5px] m-0 leading-snug" style={{
+                                    color: sigTheme.labelText,
                                     display: "-webkit-box",
                                     WebkitLineClamp: 2,
                                     WebkitBoxOrient: "vertical",
                                     overflow: "hidden",
-                                    textShadow: "0 1px 2px rgba(0,0,0,0.25)",
+                                    textShadow: "0 1px 1px rgba(255,255,255,0.35)",
                                   }}>
                                     {hasAction && c.action ? c.action : summaryLine}
                                   </p>
@@ -4201,38 +4202,38 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   Contemplation · Wisdom · Breath
                 </p>
 
-                {/* Contemplation — glossy fuchsia glass */}
+                {/* Contemplation — medium fuchsia glass */}
                 {brief.clarity.contemplation && (
                   <div className="relative mb-5 rounded-2xl p-5 overflow-hidden"
                     style={{
-                      background: "linear-gradient(160deg, #f0abfc 0%, #c026d3 55%, #6b21a8 100%)",
-                      border: "1px solid rgba(255,255,255,0.30)",
-                      boxShadow: "0 14px 32px -6px rgba(192,38,211,0.50), 0 4px 14px rgba(107,33,168,0.40), 0 0 30px rgba(232,121,249,0.25), inset 0 2px 4px rgba(255,255,255,0.45), inset 0 -5px 14px rgba(0,0,0,0.30)",
+                      background: "linear-gradient(160deg, #fae8ff 0%, #f0abfc 55%, #c084fc 100%)",
+                      border: "1px solid rgba(192,132,252,0.55)",
+                      boxShadow: "0 10px 24px -4px rgba(192,132,252,0.40), 0 0 22px rgba(232,121,249,0.20), inset 0 2px 4px rgba(255,255,255,0.85), inset 0 -3px 10px rgba(107,33,168,0.10)",
                     }}>
                     <span className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
-                      style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 50%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.9rem", borderTopRightRadius: "0.9rem", borderBottomLeftRadius: "0.5rem", borderBottomRightRadius: "0.5rem" }} />
-                    <p className="relative text-[12px] uppercase tracking-[0.22em] text-fuchsia-100 font-bold mb-3 flex items-center gap-2 drop-shadow">
+                      style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.9rem", borderTopRightRadius: "0.9rem", borderBottomLeftRadius: "0.5rem", borderBottomRightRadius: "0.5rem" }} />
+                    <p className="relative text-[12px] uppercase tracking-[0.22em] text-fuchsia-900 font-bold mb-3 flex items-center gap-2">
                       <Sparkles className="w-3.5 h-3.5" /> Today's Contemplation
                     </p>
-                    <p className="relative text-[18px] text-white leading-relaxed italic" style={{ fontFamily: SERIF, textShadow: "0 1px 2px rgba(0,0,0,0.30)" }}>
+                    <p className="relative text-[18px] text-slate-900 leading-relaxed italic" style={{ fontFamily: SERIF }}>
                       {brief.clarity.contemplation}
                     </p>
-                    <p className="relative text-[13px] text-fuchsia-100 mt-3 leading-relaxed font-medium">
+                    <p className="relative text-[13px] text-fuchsia-900 mt-3 leading-relaxed font-medium">
                       Sit with this for 60 seconds before market open. No phone.
                     </p>
                   </div>
                 )}
 
-                {/* Eastern wisdom — glossy amber/gold glass */}
+                {/* Eastern wisdom — medium amber/gold glass */}
                 {brief.clarity.eastern_wisdom && (
                   <div className="relative mb-5 rounded-2xl p-5 overflow-hidden"
                     style={{
-                      background: "linear-gradient(160deg, #fbbf24 0%, #d97706 55%, #78350f 100%)",
-                      border: "1px solid rgba(255,255,255,0.30)",
-                      boxShadow: "0 14px 32px -6px rgba(217,119,6,0.50), 0 4px 14px rgba(120,53,15,0.40), 0 0 30px rgba(251,191,36,0.25), inset 0 2px 4px rgba(255,255,255,0.45), inset 0 -5px 14px rgba(0,0,0,0.30)",
+                      background: "linear-gradient(160deg, #fef3c7 0%, #fde68a 55%, #fbbf24 100%)",
+                      border: "1px solid rgba(251,191,36,0.55)",
+                      boxShadow: "0 10px 24px -4px rgba(251,191,36,0.40), 0 0 22px rgba(252,211,77,0.20), inset 0 2px 4px rgba(255,255,255,0.85), inset 0 -3px 10px rgba(120,53,15,0.10)",
                     }}>
                     <span className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
-                      style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 50%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.9rem", borderTopRightRadius: "0.9rem", borderBottomLeftRadius: "0.5rem", borderBottomRightRadius: "0.5rem" }} />
+                      style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.9rem", borderTopRightRadius: "0.9rem", borderBottomLeftRadius: "0.5rem", borderBottomRightRadius: "0.5rem" }} />
                     {/* Decorative quote mark */}
                     <span
                       aria-hidden
@@ -4242,21 +4243,21 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         left: 14,
                         fontSize: 80,
                         lineHeight: 1,
-                        color: "rgba(255, 255, 255, 0.25)",
+                        color: "rgba(146,64,14,0.20)",
                         fontFamily: SERIF,
                         userSelect: "none",
                       }}
                     >
                       "
                     </span>
-                    <p className="relative text-[12px] uppercase tracking-[0.22em] text-amber-50 font-bold mb-3 drop-shadow">
+                    <p className="relative text-[12px] uppercase tracking-[0.22em] text-amber-900 font-bold mb-3">
                       Eastern Wisdom
                     </p>
-                    <p className="relative text-[17px] text-white leading-relaxed" style={{ fontFamily: SERIF, textShadow: "0 1px 2px rgba(0,0,0,0.30)" }}>
+                    <p className="relative text-[17px] text-slate-900 leading-relaxed" style={{ fontFamily: SERIF }}>
                       {brief.clarity.eastern_wisdom.quote || brief.clarity.eastern_wisdom}
                     </p>
                     {brief.clarity.eastern_wisdom.source && (
-                      <p className="relative text-[13px] text-amber-100 mt-3 font-semibold tracking-wide">
+                      <p className="relative text-[13px] text-amber-900 mt-3 font-semibold tracking-wide">
                         — {brief.clarity.eastern_wisdom.source}
                       </p>
                     )}
@@ -5585,17 +5586,35 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
           deep_reasoning: item.deep_reasoning,
           chatDescription: `${item.ticker}${item.theme ? ` (${item.theme})` : ""}: ${item.headline}${item.why_now ? `. ${item.why_now}` : ""}${item.deep_reasoning ? ` Full reasoning: ${item.deep_reasoning}` : ""}`,
         };
+    // Detect risk tier from the row's text — overrides palette so colors mean RISK, not just decoration.
+    const fullText = `${item.headline || ""} ${item.fits_gap || ""} ${item.why_now || ""} ${item.deep_reasoning || ""}`;
+    const riskMatch = /(LOWER|LOW|MEDIUM|MED|HIGHER|HIGH)\s*[-·:]?\s*RISK/i.exec(fullText);
+    const riskTier = riskMatch
+      ? ((riskMatch[1].toUpperCase() === "LOWER" || riskMatch[1].toUpperCase() === "LOW") ? "LOWER"
+        : (riskMatch[1].toUpperCase() === "MEDIUM" || riskMatch[1].toUpperCase() === "MED") ? "MEDIUM"
+        : "HIGH")
+      : null;
+    // Map risk tier → glass color palette (matches the 🟢🟡🔴 legend at the top of Discovery)
+    const riskPalette = riskTier === "LOWER"
+      ? { bg: "linear-gradient(160deg, #d1fae5 0%, #a7f3d0 55%, #6ee7b7 100%)", border: "rgba(52,211,153,0.40)", glow: "rgba(110,231,183,0.30)", stripe: "bg-emerald-500", iconBg: "linear-gradient(160deg, #34d399 0%, #059669 100%)", dot: "🟢", label: "LOWER" }
+      : riskTier === "MEDIUM"
+      ? { bg: "linear-gradient(160deg, #fef3c7 0%, #fde68a 55%, #fcd34d 100%)", border: "rgba(251,191,36,0.40)", glow: "rgba(252,211,77,0.30)", stripe: "bg-amber-500", iconBg: "linear-gradient(160deg, #fbbf24 0%, #d97706 100%)", dot: "🟡", label: "MEDIUM" }
+      : riskTier === "HIGH"
+      ? { bg: "linear-gradient(160deg, #fee2e2 0%, #fecaca 55%, #fca5a5 100%)", border: "rgba(248,113,113,0.40)", glow: "rgba(252,165,165,0.30)", stripe: "bg-rose-500", iconBg: "linear-gradient(160deg, #f87171 0%, #dc2626 100%)", dot: "🔴", label: "HIGH" }
+      : null;
+
     return (
       <button
         key={i}
         onClick={() => onOpenReading(reading)}
         className="relative text-left overflow-hidden flex items-stretch transition-all active:scale-[0.98] active:translate-y-px"
         style={{
-          background: `linear-gradient(160deg, ${p.rowBgHex || "#ffffff"} 0%, ${p.rowBgHex || "#f8fafc"} 55%, rgba(0,0,0,0.04) 100%)`,
-          border: `1px solid ${p.borderHex || "rgba(148,163,184,0.4)"}`,
+          background: riskPalette ? riskPalette.bg : `linear-gradient(160deg, ${p.rowBgHex || "#ffffff"} 0%, ${p.rowBgHex || "#f8fafc"} 55%, rgba(0,0,0,0.04) 100%)`,
+          border: `1px solid ${riskPalette ? riskPalette.border : (p.borderHex || "rgba(148,163,184,0.4)")}`,
           borderRadius: 14,
-          boxShadow:
-            "0 6px 16px -3px rgba(15,23,42,0.12), 0 0 18px rgba(15,23,42,0.05), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 6px rgba(15,23,42,0.06)",
+          boxShadow: riskPalette
+            ? `0 6px 16px -3px ${riskPalette.glow}, 0 0 18px ${riskPalette.glow}, inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 6px rgba(15,23,42,0.06)`
+            : "0 6px 16px -3px rgba(15,23,42,0.12), 0 0 18px rgba(15,23,42,0.05), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 6px rgba(15,23,42,0.06)",
         }}
       >
         {/* Top specular highlight */}
@@ -5609,11 +5628,12 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
             borderBottomRightRadius: "0.4rem",
           }}
         />
-        <div className={`relative w-1 ${p.stripe}`} />
+        <div className={`relative w-1 ${riskPalette ? riskPalette.stripe : p.stripe}`} />
         <div className="relative flex items-center gap-2 px-2 py-2.5 flex-1 min-w-0">
           <div
-            className={`relative w-9 h-9 rounded-lg bg-gradient-to-br ${p.iconBg} flex items-center justify-center flex-shrink-0 overflow-hidden`}
+            className="relative w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
             style={{
+              background: riskPalette ? riskPalette.iconBg : undefined,
               boxShadow: "0 3px 8px rgba(0,0,0,0.18), inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.25)",
               border: "1px solid rgba(255,255,255,0.25)",
             }}
@@ -5628,14 +5648,22 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
                 borderBottomRightRadius: "3px",
               }}
             />
+            {!riskPalette && <div className={`absolute inset-0 bg-gradient-to-br ${p.iconBg} pointer-events-none -z-10`} />}
             <Sparkles className="relative w-4 h-4 text-white" strokeWidth={2.5} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className={`text-[15px] font-bold leading-tight ${p.ticker}`} style={{ fontFamily: SERIF }}>
-              {item.ticker}
-            </p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-[15px] font-bold leading-tight text-slate-900" style={{ fontFamily: SERIF }}>
+                {item.ticker}
+              </p>
+              {riskPalette && (
+                <span className="text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-white/90 text-slate-900 border border-slate-200 shadow-sm">
+                  {riskPalette.dot} {riskPalette.label}
+                </span>
+              )}
+            </div>
             {item.theme && (
-              <p className={`text-[11px] font-semibold tracking-wide leading-tight truncate ${p.theme}`}>
+              <p className="text-[11px] font-semibold tracking-wide leading-tight truncate text-slate-700">
                 {item.theme}
               </p>
             )}
@@ -5794,36 +5822,36 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
             height: 28,
             borderRadius: 8,
             background: theme.iconBgDeep,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.25), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 4px rgba(0,0,0,0.15)",
-            border: "1px solid rgba(255,255,255,0.55)",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.20), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -2px 4px rgba(0,0,0,0.10)",
+            border: "1px solid rgba(255,255,255,0.65)",
           }}
         >
           <Icon className="relative w-3.5 h-3.5" style={{ color: theme.iconColor, strokeWidth: 2.7 }} />
         </div>
         {parsed.ticker && (
           <p
-            className="text-[15px] font-bold m-0 leading-tight truncate text-white drop-shadow"
-            style={{ fontFamily: SERIF }}
+            className="text-[15px] font-bold m-0 leading-tight truncate"
+            style={{ color: theme.labelText, fontFamily: SERIF, textShadow: "0 1px 1px rgba(255,255,255,0.45)" }}
           >
             {parsed.ticker}
           </p>
         )}
-        <span className="ml-auto text-[9px] font-bold tracking-[0.14em] uppercase text-white/90">
+        <span className="ml-auto text-[9px] font-bold tracking-[0.14em] uppercase" style={{ color: theme.labelText }}>
           {parsed.typeLabel}
         </span>
         {done && (
-          <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" strokeWidth={2.5} />
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: theme.labelText }} strokeWidth={2.5} />
         )}
       </div>
 
-      {/* Risk tier badge (if detected) — shown against the deep background as a frosted chip */}
+      {/* Risk tier badge (if detected) — frosted white chip */}
       {tierBadge && (
         <div className="relative inline-flex items-center gap-1 self-start px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider"
           style={{
-            background: "rgba(255,255,255,0.85)",
+            background: "rgba(255,255,255,0.92)",
             color: "#0f172a",
             border: "1px solid rgba(255,255,255,0.65)",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
           }}
         >
           <span>{tierBadge.dot}</span>
@@ -5831,21 +5859,22 @@ function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
         </div>
       )}
 
-      {/* Center text block — the action itself, white text on deep bg */}
+      {/* Center text block — dark text on medium gradient for readability */}
       <div className="relative flex-1 min-w-0">
-        <p className="text-[13px] m-0 leading-snug text-white" style={{
+        <p className="text-[13px] m-0 leading-snug" style={{
+          color: theme.labelText,
           display: "-webkit-box",
           WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical",
           overflow: "hidden",
-          textShadow: "0 1px 2px rgba(0,0,0,0.25)",
+          textShadow: "0 1px 1px rgba(255,255,255,0.35)",
         }}>
           {parsed.ticker
             ? (parsed.headline || decision).replace(parsed.ticker, "").replace(/^[\s:.\-—]+/, "")
             : (parsed.headline || decision)}
         </p>
         {parsed.account && (
-          <p className="text-[9px] font-semibold uppercase tracking-wider mt-0.5 m-0 text-white/80">
+          <p className="text-[9px] font-semibold uppercase tracking-wider mt-0.5 m-0" style={{ color: theme.accentText }}>
             {parsed.account}
           </p>
         )}
@@ -6935,26 +6964,26 @@ function InteractiveBreathGuide({ name, pattern, description, rounds }) {
     <div
       className="relative rounded-2xl p-5 overflow-hidden"
       style={{
-        background: "linear-gradient(160deg, #c4b5fd 0%, #7c3aed 55%, #4c1d95 100%)",
-        border: "1px solid rgba(255,255,255,0.30)",
-        boxShadow: "0 14px 32px -6px rgba(124,58,237,0.50), 0 4px 14px rgba(76,29,149,0.40), 0 0 30px rgba(196,181,253,0.25), inset 0 2px 4px rgba(255,255,255,0.45), inset 0 -5px 14px rgba(0,0,0,0.30)",
+        background: "linear-gradient(160deg, #ede9fe 0%, #c4b5fd 55%, #a78bfa 100%)",
+        border: "1px solid rgba(167,139,250,0.55)",
+        boxShadow: "0 10px 24px -4px rgba(167,139,250,0.40), 0 0 22px rgba(196,181,253,0.20), inset 0 2px 4px rgba(255,255,255,0.85), inset 0 -3px 10px rgba(76,29,149,0.10)",
       }}
     >
       <span className="absolute top-1 left-2 right-2 h-[35%] pointer-events-none"
-        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.9rem", borderTopRightRadius: "0.9rem", borderBottomLeftRadius: "0.5rem", borderBottomRightRadius: "0.5rem" }} />
+        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)", borderTopLeftRadius: "0.9rem", borderTopRightRadius: "0.9rem", borderBottomLeftRadius: "0.5rem", borderBottomRightRadius: "0.5rem" }} />
       {/* Header */}
       <div className="relative flex items-center justify-between mb-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[12px] uppercase tracking-[0.22em] text-violet-100 font-bold drop-shadow">
+          <p className="text-[12px] uppercase tracking-[0.22em] text-violet-900 font-bold">
             {name}
           </p>
-          <p className="text-[15px] text-white font-semibold mt-0.5" style={{ fontFamily: SERIF, textShadow: "0 1px 2px rgba(0,0,0,0.30)" }}>
+          <p className="text-[15px] text-slate-900 font-semibold mt-0.5" style={{ fontFamily: SERIF }}>
             {pattern}
           </p>
         </div>
         <div className="flex flex-col items-end text-right ml-2">
-          <p className="text-[10px] uppercase tracking-wider text-violet-100 font-bold">Round</p>
-          <p className="text-[18px] font-bold text-white" style={{ fontFamily: SERIF, textShadow: "0 1px 2px rgba(0,0,0,0.30)" }}>
+          <p className="text-[10px] uppercase tracking-wider text-violet-900 font-bold">Round</p>
+          <p className="text-[18px] font-bold text-slate-900" style={{ fontFamily: SERIF }}>
             {Math.min(roundIdx + (running || done ? 1 : 0), totalRounds)} / {totalRounds}
           </p>
         </div>
