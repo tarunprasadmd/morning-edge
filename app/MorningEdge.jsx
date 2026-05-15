@@ -2912,38 +2912,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
             return (
               <Card theme={themes.pulse}>
-                {/* Market Pulse — navy/gold glossy heading (matches twin royal buttons) */}
-                <div className="relative flex items-center gap-3 px-5 py-4 border-b overflow-hidden"
-                  style={{
-                    background: "linear-gradient(160deg, #1E293B 0%, #312E81 60%, #1E1B4B 100%)",
-                    borderColor: "rgba(212, 165, 116, 0.35)",
-                  }}>
-                  <div className="absolute top-0 left-0 right-0 h-[2px]"
-                    style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-                  <span className="absolute top-1 left-3 right-3 h-[40%] pointer-events-none"
-                    style={{
-                      background: "linear-gradient(to bottom, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0) 100%)",
-                      borderTopLeftRadius: "0.5rem",
-                      borderTopRightRadius: "0.5rem",
-                    }} />
-                  <div className="relative w-9 h-9 rounded-full flex items-center justify-center overflow-hidden"
-                    style={{
-                      background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)",
-                      boxShadow: "0 2px 6px rgba(212,165,116,0.45), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(146,64,14,0.20)",
-                    }}>
-                    <span className="absolute top-0.5 left-1 right-1 h-[45%] pointer-events-none rounded-t-full"
-                      style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)" }} />
-                    <span className="relative" style={{ color: "#1E293B" }}><Sun className="w-4 h-4" /></span>
-                  </div>
-                  <h2 className="relative text-[14px] uppercase tracking-[0.22em] font-bold"
-                    style={{
-                      background: "linear-gradient(180deg, #F5D08C 0%, #D4A574 100%)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                      filter: "drop-shadow(0 1px 1px rgba(146,64,14,0.30))",
-                    }}>Market Pulse</h2>
-                </div>
+                <CardHeader icon={<Sun className="w-4 h-4" />} label="Market Pulse" theme={themes.pulse} pillar="wealth" />
 
                 {/* Hero — compact tone read, takes minimal vertical space */}
                 <div
@@ -3017,7 +2986,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {/* PLAYBOOK — tappable check-offs that persist per day */}
           {visible.decisions && Array.isArray(brief.decisions) && brief.decisions.length > 0 && (
             <Card theme={themes.play}>
-              <CardHeader icon={<CheckSquare className="w-4 h-4" />} label="Today's Playbook" theme={themes.play} />
+              <CardHeader icon={<CheckSquare className="w-4 h-4" />} label="Today's Playbook" theme={themes.play} pillar="wealth" />
               <div className="px-5 py-6">
                 <p className="text-[14px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-1 -mt-2">
                   Your portfolio at a glance
@@ -3259,7 +3228,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {false && visible.conviction && (
             (Array.isArray(brief.conviction_watch) && brief.conviction_watch.length > 0) ? (
             <Card theme={themes.conviction}>
-              <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Ongoing Watch" theme={themes.conviction} />
+              <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Ongoing Watch" theme={themes.conviction} pillar="wealth" />
               <div className="px-3 pt-1 pb-3 space-y-2">
                 <p className="text-[14px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium px-1 mb-1">
                   Hold · Add · Trim signals worth monitoring
@@ -3341,7 +3310,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               // section header still shows so the user knows the feature
               // exists; the body explains what to do.
               <Card theme={themes.conviction}>
-                <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Ongoing Watch" theme={themes.conviction} />
+                <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Ongoing Watch" theme={themes.conviction} pillar="wealth" />
                 <div className="px-5 pt-1 pb-5">
                   <p className="text-[14px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-3">
                     Hold · Add · Trim signals worth monitoring
@@ -3360,7 +3329,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {visible.smart_money && (
             brief.smart_money ? (
             <Card theme={themes.money}>
-              <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} />
+              <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} pillar="wealth" />
               <div className="px-5 pt-1 pb-5">
                 <p className="text-[14px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-4">
                   Whales · Congress · Hedge Funds
@@ -3889,7 +3858,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               // section header so users know the feature exists, with an
               // honest message about why content is missing today.
               <Card theme={themes.money}>
-                <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} />
+                <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} pillar="wealth" />
                 <div className="px-5 pt-1 pb-5">
                   <p className="text-[14px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-3">
                     Whales · Congress · Hedge Funds
@@ -3913,7 +3882,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             if (!hasRadar && !hasOpportunity) {
               return (
                 <Card theme={themes.radar}>
-                  <CardHeader icon={<Telescope className="w-4 h-4" />} label="Discovery" theme={themes.radar} />
+                  <CardHeader icon={<Telescope className="w-4 h-4" />} label="Discovery" theme={themes.radar} pillar="wealth" />
                   <div className="px-5 pt-1 pb-5">
                     <p className="text-[14px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-3">
                       Opportunities · On Your Radar
@@ -3933,7 +3902,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             const defaultTab = hasOpportunity ? "opportunity" : "radar";
             return (
               <Card theme={themes.radar}>
-                <CardHeader icon={<Telescope className="w-4 h-4" />} label="Discovery" theme={themes.radar} />
+                <CardHeader icon={<Telescope className="w-4 h-4" />} label="Discovery" theme={themes.radar} pillar="wealth" />
                 <div className="px-3 pt-1 pb-4">
                   {/* Tab selector — Opportunity (portfolio-aware buys) vs Radar (general thematic) */}
                   <DiscoverySection
@@ -3952,7 +3921,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
           {visible.mindset && brief.mindset && (
             <Card theme={themes.mindset}>
-              <CardHeader icon={<Heart className="w-4 h-4" />} label="Mindset & Fuel" theme={themes.mindset} />
+              <CardHeader icon={<Heart className="w-4 h-4" />} label="Mindset & Fuel" theme={themes.mindset} pillar="health" />
               <div className="px-5 py-5 space-y-3">
                 <MindsetRowExpandable
                   icon={<Heart className="w-4 h-4" />}
@@ -4071,7 +4040,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {/* CLARITY — spiritual practices: contemplation, eastern wisdom, breath */}
           {visible.clarity_card && brief.clarity && (
             <Card theme={themes.clarity}>
-              <CardHeader icon={<Flower2 className="w-4 h-4" />} label="Clarity" theme={themes.clarity} />
+              <CardHeader icon={<Flower2 className="w-4 h-4" />} label="Clarity" theme={themes.clarity} pillar="clarity" />
               <div className="px-5 pt-1 pb-5">
                 <p className="text-[14px] uppercase tracking-[0.2em] text-violet-700/80 font-medium mb-5">
                   Contemplation · Wisdom · Breath
@@ -4686,7 +4655,78 @@ function Card({ children, theme }) {
   );
 }
 
-function CardHeader({ icon, label, theme }) {
+function CardHeader({ icon, label, theme, pillar }) {
+  // Map pillar → deep saturated gradient + glow for the heading.
+  // wealth = amber/gold, health = emerald, clarity = violet/indigo.
+  const pillarPalette = {
+    wealth: {
+      bg: "linear-gradient(160deg, #F59E0B 0%, #D97706 60%, #92400E 100%)",
+      borderColor: "rgba(146, 64, 14, 0.35)",
+      accentLine: "linear-gradient(90deg, transparent 0%, #FCD34D 30%, #FEF3C7 50%, #FCD34D 70%, transparent 100%)",
+      iconBg: "linear-gradient(135deg, #FEF3C7 0%, #FCD34D 100%)",
+      iconShadow: "0 2px 6px rgba(217,119,6,0.45), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(146,64,14,0.20)",
+      iconColor: "#78350F",
+      textGradient: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 100%)",
+      textShadow: "drop-shadow(0 1px 1px rgba(146,64,14,0.30))",
+    },
+    health: {
+      bg: "linear-gradient(160deg, #34D399 0%, #059669 60%, #065F46 100%)",
+      borderColor: "rgba(6, 95, 70, 0.35)",
+      accentLine: "linear-gradient(90deg, transparent 0%, #A7F3D0 30%, #D1FAE5 50%, #A7F3D0 70%, transparent 100%)",
+      iconBg: "linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)",
+      iconShadow: "0 2px 6px rgba(5,150,105,0.45), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(6,95,70,0.20)",
+      iconColor: "#064E3B",
+      textGradient: "linear-gradient(180deg, #D1FAE5 0%, #A7F3D0 100%)",
+      textShadow: "drop-shadow(0 1px 1px rgba(6,95,70,0.30))",
+    },
+    clarity: {
+      bg: "linear-gradient(160deg, #818CF8 0%, #4F46E5 60%, #312E81 100%)",
+      borderColor: "rgba(49, 46, 129, 0.35)",
+      accentLine: "linear-gradient(90deg, transparent 0%, #C7D2FE 30%, #E0E7FF 50%, #C7D2FE 70%, transparent 100%)",
+      iconBg: "linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)",
+      iconShadow: "0 2px 6px rgba(79,70,229,0.45), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(49,46,129,0.20)",
+      iconColor: "#312E81",
+      textGradient: "linear-gradient(180deg, #E0E7FF 0%, #C7D2FE 100%)",
+      textShadow: "drop-shadow(0 1px 1px rgba(49,46,129,0.30))",
+    },
+  };
+  // If a pillar is specified, render the glossy pillar-colored heading.
+  // Otherwise fall back to the original tint-based styling.
+  const p = pillar ? pillarPalette[pillar] : null;
+  if (p) {
+    return (
+      <div className="relative flex items-center gap-3 px-5 py-4 border-b overflow-hidden"
+        style={{ background: p.bg, borderColor: p.borderColor }}>
+        {/* Accent line on top */}
+        <div className="absolute top-0 left-0 right-0 h-[2px]"
+          style={{ background: p.accentLine }} />
+        {/* Top specular highlight */}
+        <span className="absolute top-1 left-3 right-3 h-[40%] pointer-events-none"
+          style={{
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0) 100%)",
+            borderTopLeftRadius: "0.5rem",
+            borderTopRightRadius: "0.5rem",
+          }} />
+        {/* Glossy icon badge */}
+        <div className="relative w-9 h-9 rounded-full flex items-center justify-center overflow-hidden"
+          style={{ background: p.iconBg, boxShadow: p.iconShadow }}>
+          <span className="absolute top-0.5 left-1 right-1 h-[45%] pointer-events-none rounded-t-full"
+            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)" }} />
+          <span className="relative" style={{ color: p.iconColor }}>{icon}</span>
+        </div>
+        {/* Gradient-text heading */}
+        <h2 className="relative text-[14px] uppercase tracking-[0.22em] font-bold"
+          style={{
+            background: p.textGradient,
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            filter: p.textShadow,
+          }}>{label}</h2>
+      </div>
+    );
+  }
+  // Fallback (no pillar specified): original style
   return (
     <div className={`flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-gradient-to-r ${theme.tint}`}>
       <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${theme.gradient} flex items-center justify-center text-white shadow-sm`}>
