@@ -2360,21 +2360,32 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           without going back. Step 2 of the flow after picking a pillar. */}
       <div className="relative px-4 pb-4">
         <div className="grid grid-cols-2 gap-3">
-          {/* GENERATE BRIEF — deep navy → indigo gradient */}
+          {/* GENERATE BRIEF — glass-pill: deep navy/indigo with white specular highlight */}
           <button
             onClick={generateBrief}
             disabled={loading}
-            className="relative rounded-2xl shadow-xl overflow-hidden text-left active:scale-[0.99] transition disabled:opacity-60"
+            className="relative rounded-[1.75rem] overflow-hidden text-left active:scale-[0.98] active:translate-y-px transition disabled:opacity-60"
             style={{
               background: "linear-gradient(160deg, #1E293B 0%, #312E81 60%, #1E1B4B 100%)",
-              border: "1px solid rgba(212, 165, 116, 0.45)",
+              border: "1px solid rgba(212, 165, 116, 0.55)",
               boxShadow:
-                "0 8px 24px -4px rgba(30, 27, 75, 0.5), inset 0 1px 0 rgba(212, 165, 116, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.04)",
+                "0 14px 36px -6px rgba(99, 102, 241, 0.6), 0 4px 16px rgba(30, 27, 75, 0.45), 0 0 40px rgba(129, 140, 248, 0.25), inset 0 2px 4px rgba(255, 255, 255, 0.35), inset 0 -6px 14px rgba(0, 0, 0, 0.45)",
             }}
           >
+            {/* Top specular highlight — the glass reflection */}
+            <div
+              className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 45%, rgba(255,255,255,0) 100%)",
+                borderTopLeftRadius: "1.5rem",
+                borderTopRightRadius: "1.5rem",
+                borderBottomLeftRadius: "1rem",
+                borderBottomRightRadius: "1rem",
+              }}
+            />
             <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-25"
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-30 pointer-events-none"
               style={{ background: "radial-gradient(circle, #818CF8 0%, transparent 60%)" }} />
             <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
               <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow"
@@ -2390,14 +2401,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   style={{ fontFamily: SERIF, fontWeight: 500, color: "#F8FAFC" }}>
                   {brief ? "Regenerate" : "Generate Brief"}
                 </p>
-                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.65)" }}>
+                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.7)" }}>
                   {loading ? "Reading the tape…" : brief ? "Pull fresh data" : "See today's tape"}
                 </p>
               </div>
             </div>
           </button>
 
-          {/* SYNC PORTFOLIO — black & gold */}
+          {/* SYNC PORTFOLIO — glass-pill: deep black with gold specular highlight */}
           <button
             onClick={() => {
               setShowCsvImport(true);
@@ -2408,17 +2419,27 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 }
               }, 50);
             }}
-            className="relative rounded-2xl shadow-xl overflow-hidden text-left active:scale-[0.99] transition"
+            className="relative rounded-[1.75rem] overflow-hidden text-left active:scale-[0.98] active:translate-y-px transition"
             style={{
               background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
-              border: "1px solid rgba(212, 165, 116, 0.45)",
+              border: "1px solid rgba(212, 165, 116, 0.55)",
               boxShadow:
-                "0 8px 24px -4px rgba(2, 6, 23, 0.5), inset 0 1px 0 rgba(212, 165, 116, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.04)",
+                "0 14px 36px -6px rgba(2, 6, 23, 0.55), 0 4px 16px rgba(212, 165, 116, 0.18), 0 0 40px rgba(212, 165, 116, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.28), inset 0 -6px 14px rgba(0, 0, 0, 0.5)",
             }}
           >
+            <div
+              className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.18) 45%, rgba(255,255,255,0) 100%)",
+                borderTopLeftRadius: "1.5rem",
+                borderTopRightRadius: "1.5rem",
+                borderBottomLeftRadius: "1rem",
+                borderBottomRightRadius: "1rem",
+              }}
+            />
             <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-25"
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-30 pointer-events-none"
               style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
             <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
               <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow"
@@ -2434,7 +2455,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   style={{ fontFamily: SERIF, fontWeight: 500, color: "#F8FAFC" }}>
                   Sync Portfolio
                 </p>
-                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.65)" }}>
+                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.7)" }}>
                   {holdings.length > 0 ? `${holdings.length} positions` : "Connect holdings"}
                 </p>
               </div>
@@ -4390,7 +4411,7 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
       />
 
       <div className="flex items-stretch">
-        {/* Compact ME monogram — matches the app icon, takes minimal space
+        {/* Compact Morning Edge logo — matches the app icon, takes minimal space
             so the ticker has room to breathe. */}
         <div
           className="flex-shrink-0 flex items-center justify-center px-2.5 border-r border-amber-900/40"
@@ -4398,31 +4419,17 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
             background: "linear-gradient(135deg, rgba(245,208,140,0.18) 0%, rgba(212,165,116,0.08) 100%)",
           }}
         >
-          <div
+          <img
+            src="/morning-edge-logo.png"
+            alt="Morning Edge"
             style={{
               width: 28,
               height: 28,
               borderRadius: 6,
-              background: "linear-gradient(135deg, #F5D08C 0%, #D4A574 60%, #B88A4F 100%)",
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 3px rgba(0,0,0,0.25)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              objectFit: "cover",
             }}
-          >
-            <span
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: 14,
-                fontWeight: 700,
-                letterSpacing: "0.02em",
-                color: "#3F2A12",
-                lineHeight: 1,
-              }}
-            >
-              ME
-            </span>
-          </div>
+          />
         </div>
 
         {/* Scrolling banner — tickers on the wall */}
@@ -4529,32 +4536,57 @@ function MountainScene() {
 function FilterPill({ active, onClick, emoji, icon, label, accent }) {
   // accent = { bg, text, ring, dot } -- color tokens for active state and inactive dot indicator
   const a = accent || { bg: "bg-slate-900", text: "text-white", ring: "ring-slate-900", dot: "bg-slate-400" };
+  // Map Tailwind bg classes to gradient + glow colors for the glossy active state.
+  const gradientMap = {
+    "bg-slate-900": { from: "#334155", via: "#1E293B", to: "#0F172A", glow: "rgba(71,85,105,0.55)" },
+    "bg-amber-600": { from: "#F59E0B", via: "#D97706", to: "#92400E", glow: "rgba(245,158,11,0.55)" },
+    "bg-emerald-600": { from: "#34D399", via: "#059669", to: "#065F46", glow: "rgba(16,185,129,0.55)" },
+    "bg-indigo-600": { from: "#818CF8", via: "#4F46E5", to: "#312E81", glow: "rgba(99,102,241,0.55)" },
+  };
+  const g = gradientMap[a.bg] || gradientMap["bg-slate-900"];
   return (
     <button
       onClick={onClick}
-      className={`relative py-3.5 px-2 rounded-xl flex flex-col items-center gap-1.5 border-2 transition-all duration-150 ${
-        active
-          ? `${a.bg} ${a.text} border-transparent shadow-lg ring-2 ring-offset-2 ${a.ring}`
-          : "bg-white border-slate-300 text-slate-900 shadow-md hover:border-slate-400 hover:shadow-lg active:scale-[0.98]"
+      className={`relative py-3.5 px-2 rounded-2xl flex flex-col items-center gap-1.5 overflow-hidden transition-all duration-150 active:scale-[0.97] active:translate-y-px ${
+        active ? a.text : "text-slate-900"
       }`}
       style={
         active
-          ? undefined
+          ? {
+              background: `linear-gradient(160deg, ${g.from} 0%, ${g.via} 55%, ${g.to} 100%)`,
+              border: "1px solid rgba(255,255,255,0.25)",
+              boxShadow: `0 10px 26px -4px ${g.glow}, 0 4px 12px ${g.glow}, inset 0 2px 4px rgba(255,255,255,0.40), inset 0 -4px 10px rgba(0,0,0,0.30)`,
+            }
           : {
+              background: "linear-gradient(160deg, #ffffff 0%, #f8fafc 55%, #e2e8f0 100%)",
+              border: "1px solid rgba(148,163,184,0.45)",
               boxShadow:
-                "0 4px 12px -2px rgba(15, 23, 42, 0.12), 0 2px 4px -1px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
+                "0 6px 16px -3px rgba(15, 23, 42, 0.14), 0 2px 6px rgba(15, 23, 42, 0.08), inset 0 2px 3px rgba(255,255,255,1), inset 0 -2px 6px rgba(15,23,42,0.10)",
             }
       }
     >
+      {/* Top specular highlight — the glass reflection */}
+      <span
+        className="absolute top-1 left-2 right-2 h-[40%] pointer-events-none"
+        style={{
+          background: active
+            ? "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%)"
+            : "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+          borderTopLeftRadius: "1rem",
+          borderTopRightRadius: "1rem",
+          borderBottomLeftRadius: "0.6rem",
+          borderBottomRightRadius: "0.6rem",
+        }}
+      />
       {/* Color dot indicator when not active — tells the user this filter has a color identity */}
       {!active && accent && (
-        <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${a.dot} ring-1 ring-white`} />
+        <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${a.dot} ring-1 ring-white z-10`} />
       )}
-      {/* Icon (larger now) */}
-      <span className={active ? "text-white" : ""}>
+      {/* Icon */}
+      <span className={`relative z-10 ${active ? "text-white" : ""}`}>
         {icon ? React.cloneElement(icon, { className: "w-5 h-5" }) : <span className="text-lg">{emoji}</span>}
       </span>
-      <span className="text-[12px] font-bold uppercase tracking-[0.12em]">{label}</span>
+      <span className="relative z-10 text-[12px] font-bold uppercase tracking-[0.12em]">{label}</span>
     </button>
   );
 }
@@ -7262,4 +7294,3 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
-
