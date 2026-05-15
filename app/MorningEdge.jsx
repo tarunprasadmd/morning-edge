@@ -5161,35 +5161,86 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
   // available; this is a graceful fallback.
   const expansion = detail || autoExpand(text);
 
+  // Detect direction from the row text so each row gets a light pastel color
+  // and a matching directional marker (up/down/neutral).
+  const isUp = /\+\s*\d|\bup\b|gain|rally|surge|climb|rise|higher|bull/i.test(text || "");
+  const isDown = /-\s*\d|\bdown\b|drop|fall|decline|slip|lower|sell|bear/i.test(text || "");
+  const direction = isUp && !isDown ? "up" : isDown && !isUp ? "down" : "neutral";
+
+  // Light pastel palettes — softer than yesterday, glass-pill aesthetic.
+  const palette = direction === "up"
+    ? {
+        bg: "linear-gradient(160deg, #f0fdf4 0%, #dcfce7 55%, #bbf7d0 100%)",
+        border: "rgba(34,197,94,0.35)",
+        glow: "rgba(134,239,172,0.30)",
+        markerBg: "linear-gradient(160deg, #4ade80 0%, #16a34a 100%)",
+        markerGlow: "rgba(74,222,128,0.45)",
+        icon: "↑",
+      }
+    : direction === "down"
+    ? {
+        bg: "linear-gradient(160deg, #fff7f7 0%, #ffe4e6 55%, #fecdd3 100%)",
+        border: "rgba(251,113,133,0.35)",
+        glow: "rgba(253,164,175,0.30)",
+        markerBg: "linear-gradient(160deg, #fb7185 0%, #be123c 100%)",
+        markerGlow: "rgba(251,113,133,0.45)",
+        icon: "↓",
+      }
+    : {
+        bg: "linear-gradient(160deg, #f0f9ff 0%, #e0f2fe 55%, #bae6fd 100%)",
+        border: "rgba(56,189,248,0.35)",
+        glow: "rgba(125,211,252,0.30)",
+        markerBg: "linear-gradient(160deg, #60a5fa 0%, #2563eb 100%)",
+        markerGlow: "rgba(96,165,250,0.45)",
+        icon: "·",
+      };
+
   return (
     <button
       onClick={() => setOpen((o) => !o)}
-      className="text-left transition-all"
+      className="relative text-left overflow-hidden transition-all active:scale-[0.99] active:translate-y-px"
       style={{
-        background: open ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.6)",
-        border: `1px solid ${theme.heroBorder}`,
-        borderRadius: 12,
-        padding: "10px 12px",
-        backdropFilter: "blur(4px)",
+        background: palette.bg,
+        border: `1px solid ${palette.border}`,
+        borderRadius: 16,
+        padding: "12px 14px",
         cursor: "pointer",
+        boxShadow: `0 6px 16px -3px ${palette.glow}, 0 2px 6px rgba(15,23,42,0.06), inset 0 2px 3px rgba(255,255,255,0.95), inset 0 -2px 6px rgba(15,23,42,0.06)`,
       }}
     >
-      <div className="flex items-start gap-3">
+      {/* Top specular highlight — the glass reflection */}
+      <span
+        className="absolute top-0.5 left-1.5 right-1.5 h-[45%] pointer-events-none"
+        style={{
+          background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+          borderTopLeftRadius: "0.9rem",
+          borderTopRightRadius: "0.9rem",
+          borderBottomLeftRadius: "0.5rem",
+          borderBottomRightRadius: "0.5rem",
+        }}
+      />
+      <div className="relative flex items-start gap-2.5">
+        {/* Directional marker — up/down/neutral glossy circle */}
         <span
-          className="flex-shrink-0 inline-flex items-center justify-center text-[12px] font-bold"
+          className="relative flex-shrink-0 inline-flex items-center justify-center text-white font-bold overflow-hidden mt-0.5"
           style={{
-            width: 24,
-            height: 24,
-            borderRadius: 8,
-            background: theme.bulletDot,
-            color: "white",
-            boxShadow: `0 2px 6px ${theme.badge}`,
+            width: 22,
+            height: 22,
+            borderRadius: "50%",
+            background: palette.markerBg,
+            fontSize: 13,
+            boxShadow: `0 3px 7px ${palette.markerGlow}, inset 0 1.5px 2px rgba(255,255,255,0.50), inset 0 -1.5px 2.5px rgba(0,0,0,0.25)`,
+            border: "1px solid rgba(255,255,255,0.40)",
           }}
         >
-          {index}
+          <span
+            className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none rounded-t-full"
+            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)" }}
+          />
+          <span className="relative">{palette.icon}</span>
         </span>
         <span
-          className="flex-1 text-[15px] leading-snug pt-0.5"
+          className="flex-1 text-[15px] leading-snug"
           style={{ color: "#0f172a", fontFamily: SERIF, fontWeight: 500 }}
         >
           {colorizePercents(text)}
@@ -5197,7 +5248,7 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
         <ChevronRight
           className="w-4 h-4 flex-shrink-0 mt-1"
           style={{
-            color: theme.accent,
+            color: "#334155",
             transform: open ? "rotate(90deg)" : "none",
             transition: "transform 0.2s ease",
           }}
@@ -5206,8 +5257,8 @@ function ExpandableLevelRow({ index, text, theme, detail = null }) {
       </div>
       {open && (
         <div
-          className="mt-2 pl-9 pr-1 pt-2 border-t text-[14px] leading-relaxed"
-          style={{ borderColor: theme.heroBorder, color: "#334155", fontFamily: SERIF }}
+          className="relative mt-2 pl-7 pr-1 pt-2 border-t text-[14px] leading-relaxed"
+          style={{ borderColor: palette.border, color: "#334155", fontFamily: SERIF }}
         >
           {expansion}
         </div>
