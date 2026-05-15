@@ -2911,7 +2911,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               };
 
             return (
-              <Card theme={themes.pulse}>
+              <Card theme={themes.pulse} pillar="wealth">
                 <CardHeader icon={<Sun className="w-4 h-4" />} label="Market Pulse" theme={themes.pulse} pillar="wealth" />
 
                 {/* Hero — compact tone read, takes minimal vertical space */}
@@ -2985,7 +2985,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           })()}
           {/* PLAYBOOK — tappable check-offs that persist per day */}
           {visible.decisions && Array.isArray(brief.decisions) && brief.decisions.length > 0 && (
-            <Card theme={themes.play}>
+            <Card theme={themes.play} pillar="wealth">
               <CardHeader icon={<CheckSquare className="w-4 h-4" />} label="Today's Playbook" theme={themes.play} pillar="wealth" />
               <div className="px-5 py-6">
                 <p className="text-[14px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-1 -mt-2">
@@ -3227,7 +3227,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               We hide the standalone conviction card to avoid duplication. */}
           {false && visible.conviction && (
             (Array.isArray(brief.conviction_watch) && brief.conviction_watch.length > 0) ? (
-            <Card theme={themes.conviction}>
+            <Card theme={themes.conviction} pillar="wealth">
               <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Ongoing Watch" theme={themes.conviction} pillar="wealth" />
               <div className="px-3 pt-1 pb-3 space-y-2">
                 <p className="text-[14px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium px-1 mb-1">
@@ -3309,7 +3309,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               // user's holdings today (or holdings aren't synced yet). The
               // section header still shows so the user knows the feature
               // exists; the body explains what to do.
-              <Card theme={themes.conviction}>
+              <Card theme={themes.conviction} pillar="wealth">
                 <CardHeader icon={<TrendingUp className="w-4 h-4" />} label="Your Holdings · Ongoing Watch" theme={themes.conviction} pillar="wealth" />
                 <div className="px-5 pt-1 pb-5">
                   <p className="text-[14px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-3">
@@ -3328,7 +3328,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           )}
           {visible.smart_money && (
             brief.smart_money ? (
-            <Card theme={themes.money}>
+            <Card theme={themes.money} pillar="wealth">
               <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} pillar="wealth" />
               <div className="px-5 pt-1 pb-5">
                 <p className="text-[14px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-4">
@@ -3857,7 +3857,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               // Fallback when smart_money chunk failed entirely - show the
               // section header so users know the feature exists, with an
               // honest message about why content is missing today.
-              <Card theme={themes.money}>
+              <Card theme={themes.money} pillar="wealth">
                 <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} pillar="wealth" />
                 <div className="px-5 pt-1 pb-5">
                   <p className="text-[14px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-3">
@@ -3881,7 +3881,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             // empty, show a graceful empty state.
             if (!hasRadar && !hasOpportunity) {
               return (
-                <Card theme={themes.radar}>
+                <Card theme={themes.radar} pillar="wealth">
                   <CardHeader icon={<Telescope className="w-4 h-4" />} label="Discovery" theme={themes.radar} pillar="wealth" />
                   <div className="px-5 pt-1 pb-5">
                     <p className="text-[14px] uppercase tracking-[0.2em] text-cyan-700/80 font-medium mb-3">
@@ -3901,7 +3901,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             // otherwise Radar. The user can toggle.
             const defaultTab = hasOpportunity ? "opportunity" : "radar";
             return (
-              <Card theme={themes.radar}>
+              <Card theme={themes.radar} pillar="wealth">
                 <CardHeader icon={<Telescope className="w-4 h-4" />} label="Discovery" theme={themes.radar} pillar="wealth" />
                 <div className="px-3 pt-1 pb-4">
                   {/* Tab selector — Opportunity (portfolio-aware buys) vs Radar (general thematic) */}
@@ -3920,7 +3920,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
 
           {visible.mindset && brief.mindset && (
-            <Card theme={themes.mindset}>
+            <Card theme={themes.mindset} pillar="health">
               <CardHeader icon={<Heart className="w-4 h-4" />} label="Mindset & Fuel" theme={themes.mindset} pillar="health" />
               <div className="px-5 py-5 space-y-3">
                 <MindsetRowExpandable
@@ -4039,7 +4039,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
           {/* CLARITY — spiritual practices: contemplation, eastern wisdom, breath */}
           {visible.clarity_card && brief.clarity && (
-            <Card theme={themes.clarity}>
+            <Card theme={themes.clarity} pillar="clarity">
               <CardHeader icon={<Flower2 className="w-4 h-4" />} label="Clarity" theme={themes.clarity} pillar="clarity" />
               <div className="px-5 pt-1 pb-5">
                 <p className="text-[14px] uppercase tracking-[0.2em] text-violet-700/80 font-medium mb-5">
@@ -4550,11 +4550,13 @@ function FilterPill({ active, onClick, emoji, icon, label, accent }) {
   // accent = { bg, text, ring, dot } -- color tokens for active state and inactive dot indicator
   const a = accent || { bg: "bg-slate-900", text: "text-white", ring: "ring-slate-900", dot: "bg-slate-400" };
   // Map Tailwind bg classes to gradient + glow colors for the glossy active state.
+  // Each entry also provides an inactiveTint — a soft pillar-tinted background so the pill
+  // shows its color identity even when not active.
   const gradientMap = {
-    "bg-slate-900": { from: "#334155", via: "#1E293B", to: "#0F172A", glow: "rgba(71,85,105,0.55)" },
-    "bg-amber-600": { from: "#F59E0B", via: "#D97706", to: "#92400E", glow: "rgba(245,158,11,0.55)" },
-    "bg-emerald-600": { from: "#34D399", via: "#059669", to: "#065F46", glow: "rgba(16,185,129,0.55)" },
-    "bg-indigo-600": { from: "#818CF8", via: "#4F46E5", to: "#312E81", glow: "rgba(99,102,241,0.55)" },
+    "bg-slate-900":   { from: "#334155", via: "#1E293B", to: "#0F172A", glow: "rgba(71,85,105,0.55)",  inactiveTint: "linear-gradient(160deg, #ffffff 0%, #f8fafc 55%, #e2e8f0 100%)", inactiveBorder: "rgba(148,163,184,0.45)" },
+    "bg-amber-600":   { from: "#F59E0B", via: "#D97706", to: "#92400E", glow: "rgba(245,158,11,0.55)", inactiveTint: "linear-gradient(160deg, #fffbeb 0%, #fef3c7 55%, #fde68a 100%)", inactiveBorder: "rgba(217,119,6,0.45)" },
+    "bg-emerald-600": { from: "#34D399", via: "#059669", to: "#065F46", glow: "rgba(16,185,129,0.55)", inactiveTint: "linear-gradient(160deg, #ecfdf5 0%, #d1fae5 55%, #a7f3d0 100%)", inactiveBorder: "rgba(5,150,105,0.45)" },
+    "bg-indigo-600":  { from: "#818CF8", via: "#4F46E5", to: "#312E81", glow: "rgba(99,102,241,0.55)", inactiveTint: "linear-gradient(160deg, #eef2ff 0%, #e0e7ff 55%, #c7d2fe 100%)", inactiveBorder: "rgba(79,70,229,0.45)" },
   };
   const g = gradientMap[a.bg] || gradientMap["bg-slate-900"];
   return (
@@ -4571,8 +4573,8 @@ function FilterPill({ active, onClick, emoji, icon, label, accent }) {
               boxShadow: `0 10px 26px -4px ${g.glow}, 0 4px 12px ${g.glow}, inset 0 2px 4px rgba(255,255,255,0.40), inset 0 -4px 10px rgba(0,0,0,0.30)`,
             }
           : {
-              background: "linear-gradient(160deg, #ffffff 0%, #f8fafc 55%, #e2e8f0 100%)",
-              border: "1px solid rgba(148,163,184,0.45)",
+              background: g.inactiveTint,
+              border: `1px solid ${g.inactiveBorder}`,
               boxShadow:
                 "0 6px 16px -3px rgba(15, 23, 42, 0.14), 0 2px 6px rgba(15, 23, 42, 0.08), inset 0 2px 3px rgba(255,255,255,1), inset 0 -2px 6px rgba(15,23,42,0.10)",
             }
@@ -4646,10 +4648,19 @@ function PremiumModal({ onClose }) {
   );
 }
 
-function Card({ children, theme }) {
+function Card({ children, theme, pillar }) {
+  // Pillar-colored top bar so boxes match their pillar identity.
+  const pillarBar = {
+    wealth: "linear-gradient(90deg, #FCD34D 0%, #F59E0B 50%, #92400E 100%)",
+    health: "linear-gradient(90deg, #A7F3D0 0%, #34D399 50%, #065F46 100%)",
+    clarity: "linear-gradient(90deg, #C7D2FE 0%, #818CF8 50%, #312E81 100%)",
+  };
   return (
     <div className="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
-      <div className={`h-1 bg-gradient-to-r ${theme.bar}`} />
+      {pillar
+        ? <div className="h-1" style={{ background: pillarBar[pillar] }} />
+        : <div className={`h-1 bg-gradient-to-r ${theme.bar}`} />
+      }
       {children}
     </div>
   );
@@ -4666,8 +4677,8 @@ function CardHeader({ icon, label, theme, pillar }) {
       iconBg: "linear-gradient(135deg, #FEF3C7 0%, #FCD34D 100%)",
       iconShadow: "0 2px 6px rgba(217,119,6,0.45), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(146,64,14,0.20)",
       iconColor: "#78350F",
-      textGradient: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 100%)",
-      textShadow: "drop-shadow(0 1px 1px rgba(146,64,14,0.30))",
+      textColor: "#FFFFFF",
+      textShadow: "0 1px 2px rgba(120,53,15,0.55), 0 0 8px rgba(252,211,77,0.35)",
     },
     health: {
       bg: "linear-gradient(160deg, #34D399 0%, #059669 60%, #065F46 100%)",
@@ -4676,8 +4687,8 @@ function CardHeader({ icon, label, theme, pillar }) {
       iconBg: "linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)",
       iconShadow: "0 2px 6px rgba(5,150,105,0.45), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(6,95,70,0.20)",
       iconColor: "#064E3B",
-      textGradient: "linear-gradient(180deg, #D1FAE5 0%, #A7F3D0 100%)",
-      textShadow: "drop-shadow(0 1px 1px rgba(6,95,70,0.30))",
+      textColor: "#FFFFFF",
+      textShadow: "0 1px 2px rgba(6,95,70,0.55), 0 0 8px rgba(167,243,208,0.35)",
     },
     clarity: {
       bg: "linear-gradient(160deg, #818CF8 0%, #4F46E5 60%, #312E81 100%)",
@@ -4686,8 +4697,8 @@ function CardHeader({ icon, label, theme, pillar }) {
       iconBg: "linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)",
       iconShadow: "0 2px 6px rgba(79,70,229,0.45), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(49,46,129,0.20)",
       iconColor: "#312E81",
-      textGradient: "linear-gradient(180deg, #E0E7FF 0%, #C7D2FE 100%)",
-      textShadow: "drop-shadow(0 1px 1px rgba(49,46,129,0.30))",
+      textColor: "#FFFFFF",
+      textShadow: "0 1px 2px rgba(49,46,129,0.55), 0 0 8px rgba(199,210,254,0.35)",
     },
   };
   // If a pillar is specified, render the glossy pillar-colored heading.
@@ -4714,14 +4725,11 @@ function CardHeader({ icon, label, theme, pillar }) {
             style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)" }} />
           <span className="relative" style={{ color: p.iconColor }}>{icon}</span>
         </div>
-        {/* Gradient-text heading */}
+        {/* Heading text — bright white with glow */}
         <h2 className="relative text-[14px] uppercase tracking-[0.22em] font-bold"
           style={{
-            background: p.textGradient,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            filter: p.textShadow,
+            color: p.textColor,
+            textShadow: p.textShadow,
           }}>{label}</h2>
       </div>
     );
