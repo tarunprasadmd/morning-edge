@@ -2984,33 +2984,29 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             );
           })()}
           {/* PLAYBOOK — tappable check-offs that persist per day */}
-          {visible.decisions && Array.isArray(brief.decisions) && brief.decisions.length > 0 && (
+          {visible.decisions && (
             <Card theme={themes.play} pillar="wealth">
               <CardHeader icon={<CheckSquare className="w-4 h-4" />} label="Today's Playbook" theme={themes.play} pillar="wealth" />
-              <div className="px-5 py-6">
-                <p className="text-[14px] uppercase tracking-[0.2em] text-emerald-700/80 font-medium mb-1 -mt-2">
-                  Your portfolio at a glance
-                </p>
-                <p className="text-[14px] text-slate-800 italic mb-4">
-                  What to act on today, plus high-conviction signals to monitor. Tap any card for full reasoning.
+              <div className="px-3 py-5">
+                <p className="text-[13px] text-slate-700 italic mb-3 px-1 leading-snug">
+                  Every position with live P&amp;L and a suggested action. Tap any card for full reasoning.
                 </p>
                 {/* Personalization indicator */}
                 {holdings.length > 0 ? (
-                  <div className="mb-4 flex items-center gap-2 text-[12px] tracking-wider uppercase font-semibold">
-                    <span className="px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200">
+                  <div className="mb-4 flex items-center gap-2 text-[11px] tracking-wider uppercase font-semibold px-1">
+                    <span className="px-2 py-0.5 rounded-full"
+                      style={{ background: "linear-gradient(135deg, #FEF3C7 0%, #FCD34D 100%)", color: "#78350F", border: "1px solid rgba(146,64,14,0.30)" }}>
                       ✓ Personalized
                     </span>
-                    <span className="text-slate-800">
-                      Built from your {holdings.length} position{holdings.length === 1 ? "" : "s"}
+                    <span className="text-slate-700 normal-case tracking-normal text-[12px]">
+                      {holdings.length} position{holdings.length === 1 ? "" : "s"}
                     </span>
                   </div>
                 ) : (
                   <button
                     onClick={() => {
-                      // Open the wealth filter and the CSV import panel
                       setFilter("wealth");
                       setShowCsvImport(true);
-                      // Scroll to the wealth section
                       setTimeout(() => {
                         const el = document.querySelector('[data-csv-import-anchor]');
                         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -3032,7 +3028,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           style={{ color: "#D4A574" }}>
                           Unlock Personalized Playbook
                         </p>
-                        <p className="text-[16px] font-semibold leading-snug"
+                        <p className="text-[15px] font-semibold leading-snug"
                           style={{ color: "#F8FAFC", fontFamily: SERIF }}>
                           Sync your portfolio for trade recommendations built on your actual positions.
                         </p>
@@ -3040,189 +3036,148 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       <ArrowRight className="w-5 h-5 flex-shrink-0 transition-transform group-hover:translate-x-0.5"
                         style={{ color: "#D4A574" }} />
                     </div>
-                    <p className="text-[14px] text-slate-500 mt-3 ml-14 leading-relaxed">
-                      Tap to open. Upload a CSV from any brokerage. Read-only — we never see your password.
-                    </p>
                   </button>
                 )}
 
-                {/* Progress bar */}
-                <div className="flex items-center justify-between mb-5">
-                  <p className="text-[12px] tracking-[0.2em] uppercase font-semibold text-slate-800">
-                    {decisionsDoneToday.length} of {brief.decisions.length} done
-                  </p>
-                  <div className="flex-1 ml-3 h-1 rounded-full bg-slate-100 overflow-hidden">
-                    <div className="h-full bg-emerald-500 transition-all duration-300"
-                      style={{ width: `${brief.decisions.length ? (decisionsDoneToday.length / brief.decisions.length) * 100 : 0}%` }} />
-                  </div>
-                </div>
+                {/* UNIFIED LIST: every holding + new opportunities, sorted by action priority */}
+                {holdings.length > 0 && (() => {
+                  // Build entries from holdings + opportunity_watch
+                  const decisions = Array.isArray(brief.decisions) ? brief.decisions : [];
+                  const conviction = Array.isArray(brief.conviction_watch) ? brief.conviction_watch.filter(Boolean) : [];
+                  const opportunities = Array.isArray(brief.opportunity_watch) ? brief.opportunity_watch.filter(Boolean) : [];
 
-                {/* TWO-COLUMN layout: TODAY actions on left, HIGH CONVICTION watch on right.
-                    Each column has its own colorful header so the two are distinct at a glance. */}
-                <div className="grid grid-cols-2 gap-3">
-                  {/* LEFT COLUMN — Today's Moves (act now) */}
-                  <div>
-                    <div className="rounded-lg px-2 py-1.5 mb-2 text-center"
-                      style={{
-                        background: "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)",
-                        border: "1px solid #6ee7b7",
-                      }}>
-                      <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-emerald-900 m-0 leading-tight">
-                        Today's Moves
-                      </p>
-                      <p className="text-[9px] text-emerald-800 m-0 leading-tight mt-0.5">
-                        Act now
-                      </p>
+                  // Helper: extract a clean reasoning string from a decision text
+                  const cleanText = (s) => {
+                    if (!s || typeof s !== "string") return "";
+                    return s.replace(/^[🟢🟡🟠🔴]\s*/, "").replace(/^[A-Z]+:\s*/, "").trim();
+                  };
+
+                  // Helper: infer risk tier from decision text
+                  const inferRisk = (text) => {
+                    if (!text) return null;
+                    if (text.includes("🔴")) return "HIGH";
+                    if (text.includes("🟠")) return "HIGHER";
+                    if (text.includes("🟡")) return "MEDIUM";
+                    if (text.includes("🟢")) return "LOWER";
+                    return null;
+                  };
+
+                  // Helper: infer action from decision/conviction text
+                  const inferAction = (text) => {
+                    if (!text) return null;
+                    const t = text.toLowerCase();
+                    if (/\btrim\b|\bsell\b|\bexit\b|\breduce\b|take profit|lock gain/i.test(t)) return "TRIM";
+                    if (/\badd\b|\bbuy\b|\baccumulate\b|\bincrease\b/i.test(t)) return "ADD";
+                    if (/\bwatch\b|\bmonitor\b|\bwait\b/i.test(t)) return "WATCH";
+                    if (/\bhold\b|\bmaintain\b/i.test(t)) return "HOLD";
+                    return null;
+                  };
+
+                  // Map every holding to a playbook entry
+                  const entries = holdings.map((h) => {
+                    const sym = h.symbol;
+                    const live = livePrices && livePrices[sym];
+                    const currentPrice = live && typeof live.current === "number" ? live.current : null;
+                    const costBasis = (h.cost || 0) * (h.qty || 0);
+                    const currentValue = currentPrice != null ? currentPrice * (h.qty || 0) : null;
+                    const pnl = currentValue != null ? currentValue - costBasis : null;
+                    const pnlPct = pnl != null && costBasis > 0 ? (pnl / costBasis) * 100 : null;
+
+                    // Look for explicit brief decision for this ticker
+                    const decisionText = decisions.find((d) => typeof d === "string" && new RegExp(`\\b${sym}\\b`).test(d));
+                    const convEntry = conviction.find((c) => c && c.ticker === sym);
+
+                    let action = null;
+                    let risk = null;
+                    let reasoning = null;
+
+                    if (decisionText) {
+                      action = inferAction(decisionText);
+                      risk = inferRisk(decisionText);
+                      reasoning = cleanText(decisionText);
+                    } else if (convEntry) {
+                      action = (convEntry.action || "").toString().toUpperCase().includes("TRIM") ? "TRIM"
+                             : (convEntry.action || "").toString().toUpperCase().includes("ADD") ? "ADD"
+                             : "WATCH";
+                      reasoning = convEntry.why_now || convEntry.signal || "Conviction watch — monitoring.";
+                    }
+
+                    // Default to HOLD if nothing else flagged
+                    if (!action) {
+                      action = "HOLD";
+                      reasoning = reasoning || "Monitored. No flagged action today.";
+                    }
+
+                    return {
+                      symbol: sym,
+                      qty: h.qty,
+                      cost: h.cost,
+                      account: h.account,
+                      currentPrice,
+                      live,
+                      pnl,
+                      pnlPct,
+                      action,
+                      risk,
+                      reasoning,
+                      isNew: false,
+                      _decisionIdx: decisionText ? decisions.indexOf(decisionText) : null,
+                    };
+                  });
+
+                  // Add NEW opportunities (positions not in holdings)
+                  const heldSymbols = new Set(holdings.map((h) => h.symbol));
+                  opportunities.forEach((o) => {
+                    if (!o || !o.ticker || heldSymbols.has(o.ticker)) return;
+                    entries.push({
+                      symbol: o.ticker,
+                      qty: null,
+                      cost: null,
+                      account: null,
+                      currentPrice: livePrices && livePrices[o.ticker] && livePrices[o.ticker].current,
+                      live: livePrices && livePrices[o.ticker],
+                      pnl: null,
+                      pnlPct: null,
+                      action: "ADD",
+                      risk: null,
+                      reasoning: o.why_now || "New opportunity — not yet in portfolio.",
+                      isNew: true,
+                      _opportunity: o,
+                    });
+                  });
+
+                  // Sort by action priority: TRIM and ADD first, then WATCH, then HOLD
+                  const priority = { TRIM: 0, ADD: 1, WATCH: 2, HOLD: 3 };
+                  entries.sort((a, b) => {
+                    const pa = priority[a.action] ?? 99;
+                    const pb = priority[b.action] ?? 99;
+                    if (pa !== pb) return pa - pb;
+                    // within same action, larger absolute P&L first
+                    return Math.abs(b.pnl || 0) - Math.abs(a.pnl || 0);
+                  });
+
+                  return (
+                    <div className="space-y-2">
+                      {entries.map((entry, i) => (
+                        <UnifiedPlaybookCard
+                          key={`${entry.symbol}-${i}`}
+                          entry={entry}
+                          onOpen={(e) => {
+                            // If there's an underlying decision index, open the decision modal.
+                            // For new opportunities (no decision index), no modal yet — future work.
+                            if (e._decisionIdx != null && e._decisionIdx >= 0) {
+                              setOpenDecisionIdx(e._decisionIdx);
+                            }
+                          }}
+                        />
+                      ))}
                     </div>
-                    <ol className="flex flex-col gap-2 list-none p-0 m-0">
-                      {brief.decisions.map((d, i) => {
-                        const done = decisionsDoneToday.includes(i);
-                        const dismissed = decisionsDismissedToday.includes(i);
-                        return (
-                          <li key={i} className="m-0 p-0">
-                            <PlaybookActionCard
-                              decision={d}
-                              idx={i}
-                              done={done}
-                              dismissed={dismissed}
-                              onOpen={(idx) => setOpenDecisionIdx(idx)}
-                            />
-                          </li>
-                        );
-                      })}
-                    </ol>
-                  </div>
-
-                  {/* RIGHT COLUMN — High Conviction (watch / monitor) */}
-                  <div>
-                    <div className="rounded-lg px-2 py-1.5 mb-2 text-center"
-                      style={{
-                        background: "linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%)",
-                        border: "1px solid #a78bfa",
-                      }}>
-                      <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-violet-900 m-0 leading-tight">
-                        High Conviction
-                      </p>
-                      <p className="text-[9px] text-violet-800 m-0 leading-tight mt-0.5">
-                        Worth watching
-                      </p>
-                    </div>
-                    {Array.isArray(brief.conviction_watch) && brief.conviction_watch.length > 0 ? (
-                      <ul className="flex flex-col gap-2 list-none p-0 m-0">
-                        {brief.conviction_watch.filter(Boolean).map((c, i) => {
-                          if (!c || typeof c !== "object") return null;
-                          const hasAction = !!c.action;
-                          const summaryLine = c.note || (c.why_now ? c.why_now.split(/[.!?]/)[0] + "." : "Tap for full reasoning");
-                          // Use the SAME themes/icons as Today's Moves so the columns match.
-                          // Map signal → action type (with sensible fallbacks).
-                          const actionType =
-                            c.signal === "trim" ? "trim"
-                            : c.signal === "add" ? "add"
-                            : c.signal === "protect" ? "protect"
-                            : "watch";
-                          const sigTheme = DECISION_THEMES[actionType] || DECISION_THEMES.watch;
-                          const SignalIcon = ACTION_ICON_MAP[actionType] || Eye;
-                          const signalLabel = (c.signal || "watch").toUpperCase();
-                          return (
-                            <li key={i} className="m-0 p-0">
-                              <button
-                                onClick={() => setReadingPage({
-                                  id: `conviction-${c.ticker || i}-${todayKey}`,
-                                  type: "conviction",
-                                  ticker: c.ticker,
-                                  signal: c.signal,
-                                  headline: `${signalLabel} ${c.ticker}`,
-                                  action: c.action,
-                                  why_now: c.why_now,
-                                  note: c.note,
-                                  deep_reasoning: c.deep_reasoning,
-                                  holding: holdings.find(h => h.symbol === c.ticker),
-                                  chatDescription: `${signalLabel} ${c.ticker}${c.action ? ` — ${c.action}` : ""}${c.why_now ? `. ${c.why_now}` : ""}${c.deep_reasoning ? ` Full reasoning: ${c.deep_reasoning}` : ""}`,
-                                })}
-                                className="w-full h-full text-left transition-all duration-150 active:scale-[0.99] hover:shadow-md"
-                                style={{
-                                  background: sigTheme.bg,
-                                  border: `2px solid ${sigTheme.border}`,
-                                  borderRadius: 10,
-                                  padding: "6px 8px",
-                                  boxShadow: `0 3px 10px -3px ${sigTheme.shadow}, inset 0 1.5px 0 rgba(255,255,255,0.85), inset 0 -1.5px 0 rgba(0,0,0,0.05)`,
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  gap: 4,
-                                  minHeight: 68,
-                                }}
-                              >
-                                {/* Top row: colored icon square + ticker + label — matches Today's Moves */}
-                                <div className="flex items-center gap-1.5">
-                                  <div
-                                    className="flex-shrink-0 flex items-center justify-center"
-                                    style={{ width: 24, height: 24, borderRadius: 6, background: sigTheme.iconBg }}
-                                  >
-                                    <SignalIcon className="w-3 h-3" style={{ color: "white", strokeWidth: 2.6 }} />
-                                  </div>
-                                  {c.ticker && (
-                                    <p
-                                      className="text-[14px] font-bold m-0 leading-tight truncate"
-                                      style={{ color: "#0f172a", fontFamily: SERIF }}
-                                    >
-                                      {c.ticker}
-                                    </p>
-                                  )}
-                                  <span className="ml-auto text-[8.5px] font-bold tracking-[0.14em] uppercase" style={{ color: sigTheme.labelText }}>
-                                    {signalLabel}
-                                  </span>
-                                </div>
-                                {/* Reasoning preview */}
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[11.5px] m-0 leading-snug" style={{
-                                    color: "#1e293b",
-                                    display: "-webkit-box",
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: "vertical",
-                                    overflow: "hidden",
-                                  }}>
-                                    {hasAction && c.action ? c.action : summaryLine}
-                                  </p>
-                                </div>
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    ) : (
-                      // Empty state for conviction column — keeps the column visible
-                      <div className="rounded-xl p-3"
-                        style={{
-                          background: "linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)",
-                          border: "1px solid #c4b5fd",
-                          minHeight: 88,
-                        }}>
-                        <p className="text-[12px] text-violet-900 leading-relaxed m-0">
-                          {(holdings && holdings.length > 0)
-                            ? "Quiet day for your positions. No high-conviction signals."
-                            : "Sync your portfolio to see signals on stocks you own."}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Helper text */}
-                <p className="mt-4 text-[14px] text-slate-800 text-center italic">
-                  Tap any card for full reasoning and to act on it.
-                </p>
-
-                {/* Completion celebration */}
-                {brief.decisions.length > 0 && decisionsDoneToday.length === brief.decisions.length && (
-                  <div className="mt-5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
-                    <p className="text-[16px] font-semibold text-emerald-800" style={{ fontFamily: SERIF }}>
-                      ✓ Day complete. You did the work.
-                    </p>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             </Card>
           )}
+
           {/* Conviction section is now MERGED into Today's Playbook above as the right column.
               We hide the standalone conviction card to avoid duplication. */}
           {false && visible.conviction && (
@@ -5581,72 +5536,132 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
   );
 }
 
-function PlaybookActionCard({ decision, idx, done, dismissed, onOpen }) {
-  const parsed = parseDecision(decision);
-  const theme = DECISION_THEMES[parsed.type] || DECISION_THEMES.act;
-  const Icon = ACTION_ICON_MAP[parsed.type] || CheckSquare;
+// ─── Unified Playbook Card ──────────────────────────────────────────────
+// New design: shows ONE position per card with all key info (ticker, price,
+// P&L, action chip, risk badge). Designed to fit every CSV position cleanly,
+// not just the brief's decisions. Color-coded by action type with a separate
+// risk-tier dot indicator.
+function UnifiedPlaybookCard({ entry, onOpen }) {
+  // Action chip styling — TRIM/ADD/HOLD/WATCH each have their own gradient
+  // and importance tier. TRIM and ADD are loudest (action today).
+  // HOLD and WATCH are subtler (passive monitoring).
+  const actionStyle = {
+    TRIM:  { bg: "linear-gradient(160deg, #FCA5A5 0%, #DC2626 60%, #991B1B 100%)", glow: "rgba(220,38,38,0.45)",  border: "rgba(153,27,27,0.55)" },
+    ADD:   { bg: "linear-gradient(160deg, #6EE7B7 0%, #059669 60%, #064E3B 100%)", glow: "rgba(5,150,105,0.45)",  border: "rgba(6,78,59,0.55)" },
+    HOLD:  { bg: "linear-gradient(160deg, #FDBA74 0%, #C2410C 60%, #7C2D12 100%)", glow: "rgba(194,65,12,0.35)",  border: "rgba(124,45,18,0.55)" },
+    WATCH: { bg: "linear-gradient(160deg, #FCD34D 0%, #D97706 60%, #92400E 100%)", glow: "rgba(217,119,6,0.35)",  border: "rgba(146,64,14,0.55)" },
+  };
+  const a = actionStyle[entry.action] || actionStyle.HOLD;
 
-  const opacity = dismissed ? 0.4 : done ? 0.7 : 1;
+  // Risk dot — small inline indicator. 4 tiers using the same color family as actions
+  // but with a slightly different role (lower-saturation, smaller circle).
+  const riskStyle = {
+    LOWER:  { color: "#10B981", label: "Low" },
+    MEDIUM: { color: "#F59E0B", label: "Med" },
+    HIGHER: { color: "#EA580C", label: "Higher" },
+    HIGH:   { color: "#DC2626", label: "High" },
+  };
+  const r = entry.risk ? riskStyle[entry.risk] : null;
+
+  // Live P&L coloring
+  const pnlPositive = entry.pnl != null && entry.pnl > 0;
+  const pnlColor = entry.pnl == null ? "#64748B" : pnlPositive ? "#059669" : "#DC2626";
 
   return (
     <button
-      onClick={() => onOpen(idx)}
-      className="text-left transition-all duration-150 active:scale-[0.99] hover:shadow-md w-full h-full"
+      type="button"
+      onClick={() => onOpen && onOpen(entry)}
+      className="relative w-full text-left rounded-2xl overflow-hidden transition-all active:scale-[0.99] active:translate-y-px"
       style={{
-        background: theme.bg,
-        border: `2px solid ${theme.border}`,
-        borderRadius: 10,
-        padding: "6px 8px",
-        boxShadow: `0 3px 10px -3px ${theme.shadow}, inset 0 1.5px 0 rgba(255,255,255,0.85), inset 0 -1.5px 0 rgba(0,0,0,0.05)`,
-        opacity,
-        display: "flex",
-        flexDirection: "column",
-        gap: 4,
-        minHeight: 68,
+        background: "linear-gradient(160deg, #FFFFFF 0%, #FFFBEB 100%)",
+        border: "1px solid rgba(217,119,6,0.30)",
+        boxShadow: "0 6px 16px -3px rgba(146,64,14,0.18), 0 2px 4px rgba(15,23,42,0.06), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -1.5px 4px rgba(146,64,14,0.05)",
       }}
     >
-      {/* Top row: Icon + ticker + done check */}
-      <div className="flex items-center gap-1.5">
-        <div
-          className="flex-shrink-0 flex items-center justify-center"
-          style={{ width: 26, height: 26, borderRadius: 6, background: theme.iconBg }}
-        >
-          <Icon className="w-3.5 h-3.5" style={{ color: "white", strokeWidth: 2.6 }} />
-        </div>
-        {parsed.ticker && (
-          <p
-            className="text-[15px] font-bold m-0 leading-tight truncate"
-            style={{ color: "#0f172a", fontFamily: SERIF }}
-          >
-            {parsed.ticker}
-          </p>
-        )}
-        <span className="ml-auto text-[9px] font-bold tracking-[0.14em] uppercase" style={{ color: theme.labelText }}>
-          {parsed.typeLabel}
-        </span>
-        {done && (
-          <CheckCircle2 className="w-4 h-4 text-emerald-700 flex-shrink-0" strokeWidth={2.5} />
-        )}
-      </div>
+      {/* Amber stripe on top — Wealth pillar identity */}
+      <div className="absolute top-0 left-0 right-0 h-1"
+        style={{ background: "linear-gradient(90deg, #FCD34D 0%, #F59E0B 50%, #92400E 100%)" }} />
 
-      {/* Center text block — the action itself, two-line clamp keeps box compact */}
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] m-0 leading-snug" style={{
-          color: "#0f172a",
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-        }}>
-          {parsed.ticker
-            ? (parsed.headline || decision).replace(parsed.ticker, "").replace(/^[\s:.\-—]+/, "")
-            : (parsed.headline || decision)}
-        </p>
-        {parsed.account && (
-          <p className="text-[9px] font-semibold uppercase tracking-wider mt-0.5 m-0" style={{ color: theme.accentText }}>
-            {parsed.account}
+      <div className="px-3.5 py-3 pt-4">
+        {/* Top row: ticker · risk · account · NEW badge */}
+        <div className="flex items-center gap-2 mb-1">
+          <h3 className="text-[18px] font-bold tracking-tight leading-none" style={{ fontFamily: SERIF, color: "#0F172A" }}>
+            {entry.symbol}
+          </h3>
+          {entry.isNew && (
+            <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold"
+              style={{ background: "linear-gradient(135deg, #34D399 0%, #059669 100%)", color: "#FFFFFF" }}>
+              NEW
+            </span>
+          )}
+          {r && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+              style={{ background: `${r.color}18`, color: r.color, border: `1px solid ${r.color}50` }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: r.color }} />
+              {r.label}
+            </span>
+          )}
+          {entry.account && (
+            <span className="ml-auto text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+              {entry.account}
+            </span>
+          )}
+        </div>
+
+        {/* Price + P&L row */}
+        <div className="flex items-baseline gap-2 mb-1.5 flex-wrap">
+          {entry.currentPrice != null ? (
+            <>
+              <span className="text-[15px] font-bold" style={{ color: "#0F172A" }}>
+                ${entry.currentPrice.toFixed(2)}
+              </span>
+              {entry.live?.changePct != null && !Number.isNaN(entry.live.changePct) && (
+                <span className="text-[12px] font-semibold"
+                  style={{ color: entry.live.changePct >= 0 ? "#059669" : "#DC2626" }}>
+                  {entry.live.changePct >= 0 ? "↑" : "↓"} {Math.abs(entry.live.changePct).toFixed(2)}%
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-[12px] text-slate-500 italic">Live price pending</span>
+          )}
+        </div>
+
+        {/* Position details: qty · cost basis · P&L */}
+        {entry.qty != null && entry.cost != null && (
+          <p className="text-[12px] text-slate-700 mb-2 leading-snug">
+            {entry.qty} sh · Cost <span className="font-semibold">${entry.cost.toFixed(2)}</span>
+            {entry.pnl != null && (
+              <>
+                <span className="mx-1.5 text-slate-400">·</span>
+                <span className="font-bold" style={{ color: pnlColor }}>
+                  {pnlPositive ? "+" : ""}${Math.abs(entry.pnl).toFixed(0)} ({pnlPositive ? "+" : ""}{entry.pnlPct.toFixed(1)}%)
+                </span>
+              </>
+            )}
           </p>
         )}
+
+        {/* Reasoning — short, italic */}
+        {entry.reasoning && (
+          <p className="text-[12.5px] text-slate-700 leading-snug mb-3 italic line-clamp-2">
+            {entry.reasoning}
+          </p>
+        )}
+
+        {/* Action chip — glossy pill with specular highlight */}
+        <div className="relative inline-flex items-center rounded-xl overflow-hidden font-bold tracking-wider uppercase text-white"
+          style={{
+            background: a.bg,
+            border: `1px solid ${a.border}`,
+            boxShadow: `0 4px 10px -2px ${a.glow}, inset 0 1.5px 2px rgba(255,255,255,0.40), inset 0 -1.5px 3px rgba(0,0,0,0.25)`,
+            fontSize: 11,
+            padding: "5px 12px",
+          }}>
+          <span className="absolute top-0 left-1 right-1 h-[42%] pointer-events-none rounded-t-lg"
+            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.10) 55%, rgba(255,255,255,0) 100%)" }} />
+          <span className="relative">{entry.action}{entry.isNew ? " TO PORTFOLIO" : ""}</span>
+        </div>
       </div>
     </button>
   );
@@ -7435,3 +7450,4 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
