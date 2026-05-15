@@ -3619,17 +3619,19 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
                 {/* Three boxed sub-sections — Whales, Congress, Hedge Funds */}
                 <div className="space-y-3">
-                  {/* Whales — cool teal/emerald cream, sophisticated. */}
+                  {/* Whales — HACIENDA: deep navy/bronze with gold hacienda silhouette */}
                   <div
                     className="rounded-2xl border p-4 relative overflow-hidden"
                     style={{
-                      background:
-                        "linear-gradient(135deg, rgba(240,253,250,0.97) 0%, rgba(204,251,241,0.85) 40%, rgba(94,234,212,0.30) 80%, rgba(20,184,166,0.18) 100%)",
-                      borderColor: "rgba(15, 118, 110, 0.32)",
+                      background: "linear-gradient(160deg, #1E293B 0%, #312E81 60%, #1E1B4B 100%)",
+                      borderColor: "rgba(212, 165, 116, 0.45)",
                       boxShadow:
-                        "inset 0 1.5px 0 rgba(255,255,255,0.95), inset 0 -3px 12px rgba(15,118,110,0.10), 0 6px 20px -4px rgba(20,184,166,0.18)",
+                        "0 8px 24px -4px rgba(30, 27, 75, 0.45), inset 0 1.5px 0 rgba(212, 165, 116, 0.30), inset 0 -3px 12px rgba(0,0,0,0.30)",
                     }}
                   >
+                    {/* Gold accent line on top — matches twin royal buttons */}
+                    <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
+                      style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
                     {/* Watermark: Spanish hacienda silhouette */}
                     <svg
                       aria-hidden="true"
@@ -3641,9 +3643,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         bottom: -2,
                         width: 195,
                         height: 105,
-                        opacity: 0.11,
+                        opacity: 0.22,
                         pointerEvents: "none",
-                        color: "#78350f",
+                        color: "#D4A574",
                       }}
                     >
                       <g fill="currentColor">
@@ -3663,8 +3665,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         <rect x="118" y="6" width="4" height="14" />
                         <rect x="113" y="9" width="14" height="3" />
                       </g>
-                      {/* Arched openings (white = sky behind arches) */}
-                      <g fill="rgba(255, 247, 230, 0.6)">
+                      {/* Arched openings */}
+                      <g fill="rgba(245, 208, 140, 0.45)">
                         <path d="M 113 78 Q 113 64 120 64 Q 127 64 127 78 L 127 120 L 113 120 Z" />
                         <path d="M 30 75 Q 30 65 36 65 Q 42 65 42 75 L 42 92 L 30 92 Z" />
                         <path d="M 50 75 Q 50 65 56 65 Q 62 65 62 75 L 62 92 L 50 92 Z" />
@@ -3677,11 +3679,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       <h3 className="text-[15px] uppercase tracking-[0.22em] font-extrabold flex items-center gap-2.5"
                         style={{
                           fontFamily: SERIF,
-                          background: "linear-gradient(180deg, #14b8a6 0%, #0d9488 55%, #134e4a 100%)",
+                          background: "linear-gradient(180deg, #FCD34D 0%, #92400E 55%, #451A03 100%)",
                           WebkitBackgroundClip: "text",
                           WebkitTextFillColor: "transparent",
                           backgroundClip: "text",
-                          filter: "drop-shadow(0 1px 1px rgba(15,118,110,0.45)) drop-shadow(0 0 6px rgba(94,234,212,0.30))",
+                          filter: "drop-shadow(0 1px 1px rgba(120,53,15,0.45)) drop-shadow(0 0 6px rgba(252,211,77,0.35))",
                         }}>
                         <span
                           className="relative inline-flex items-center justify-center overflow-hidden"
@@ -3689,8 +3691,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             width: 26,
                             height: 26,
                             borderRadius: 8,
-                            background: "linear-gradient(160deg, #14b8a6 0%, #0d9488 55%, #134e4a 100%)",
-                            boxShadow: "0 3px 8px rgba(15,118,110,0.55), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(19,78,74,0.30)",
+                            background: "linear-gradient(160deg, #FBBF24 0%, #B45309 55%, #78350F 100%)",
+                            boxShadow: "0 3px 8px rgba(146,64,14,0.55), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(120,53,15,0.35)",
                             border: "1px solid rgba(255,255,255,0.30)",
                           }}
                         >
@@ -3704,11 +3706,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               borderBottomRightRadius: "3px",
                             }}
                           />
-                          <Crown className="relative w-3.5 h-3.5" style={{ color: "#ccfbf1", strokeWidth: 2.5 }} />
+                          <Crown className="relative w-3.5 h-3.5" style={{ color: "#FEF3C7", strokeWidth: 2.5 }} />
                         </span>
                         Institutional Whales
                       </h3>
-                      <span className="text-[10px] italic font-semibold" style={{ color: "rgba(15, 118, 110, 0.80)" }}>13F filings</span>
+                      <span className="text-[10px] italic font-semibold" style={{ color: "rgba(120, 53, 15, 0.75)" }}>13F filings</span>
                     </div>
                     {(() => {
                       const moves = (brief.smart_money.whale_moves || []).filter(
@@ -3726,17 +3728,18 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     })()}
                   </div>
 
-                  {/* Congress — cool periwinkle/indigo, sophisticated. */}
+                  {/* Congress — PRESIDENTIAL: deep navy with gold capitol silhouette */}
                   <div
                     className="rounded-2xl border p-4 relative overflow-hidden"
                     style={{
-                      background:
-                        "linear-gradient(135deg, rgba(238,242,255,0.98) 0%, rgba(224,231,255,0.85) 35%, rgba(165,180,252,0.32) 75%, rgba(79,70,229,0.22) 100%)",
-                      borderColor: "rgba(67, 56, 202, 0.32)",
+                      background: "linear-gradient(160deg, #1E293B 0%, #312E81 60%, #1E1B4B 100%)",
+                      borderColor: "rgba(212, 165, 116, 0.45)",
                       boxShadow:
-                        "inset 0 1.5px 0 rgba(255,255,255,0.95), inset 0 -3px 12px rgba(49,46,129,0.10), 0 6px 20px -4px rgba(79,70,229,0.18)",
+                        "0 8px 24px -4px rgba(30, 27, 75, 0.45), inset 0 1.5px 0 rgba(212, 165, 116, 0.30), inset 0 -3px 12px rgba(0,0,0,0.30)",
                     }}
                   >
+                    <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
+                      style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
                     {/* Gold-leaf top edge */}
                     <div
                       aria-hidden
@@ -3761,9 +3764,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         bottom: -4,
                         width: 200,
                         height: 108,
-                        opacity: 0.11,
+                        opacity: 0.22,
                         pointerEvents: "none",
-                        color: "#1e3a8a",
+                        color: "#D4A574",
                       }}
                     >
                       <g fill="currentColor">
@@ -3811,11 +3814,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       <h3 className="text-[15px] uppercase tracking-[0.22em] font-extrabold flex items-center gap-2.5"
                         style={{
                           fontFamily: SERIF,
-                          background: "linear-gradient(180deg, #818cf8 0%, #4f46e5 55%, #1e1b4b 100%)",
+                          background: "linear-gradient(180deg, #FCD34D 0%, #1E3A8A 55%, #0F172A 100%)",
                           WebkitBackgroundClip: "text",
                           WebkitTextFillColor: "transparent",
                           backgroundClip: "text",
-                          filter: "drop-shadow(0 1px 1px rgba(49,46,129,0.45)) drop-shadow(0 0 6px rgba(165,180,252,0.30))",
+                          filter: "drop-shadow(0 1px 1px rgba(23,37,84,0.45)) drop-shadow(0 0 6px rgba(252,211,77,0.30))",
                         }}>
                         <span
                           className="relative inline-flex items-center justify-center overflow-hidden"
@@ -3823,8 +3826,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             width: 26,
                             height: 26,
                             borderRadius: 8,
-                            background: "linear-gradient(160deg, #818cf8 0%, #4f46e5 55%, #312e81 100%)",
-                            boxShadow: "0 3px 8px rgba(67,56,202,0.50), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(30,27,75,0.30)",
+                            background: "linear-gradient(160deg, #FBBF24 0%, #CA8A04 45%, #1E3A8A 100%)",
+                            boxShadow: "0 3px 8px rgba(30,58,138,0.50), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(23,37,84,0.30)",
                             border: "1px solid rgba(255,255,255,0.30)",
                           }}
                         >
@@ -3838,11 +3841,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               borderBottomRightRadius: "3px",
                             }}
                           />
-                          <Landmark className="relative w-3.5 h-3.5" style={{ color: "#e0e7ff", strokeWidth: 2.5 }} />
+                          <Landmark className="relative w-3.5 h-3.5" style={{ color: "#FEFCE8", strokeWidth: 2.5 }} />
                         </span>
                         Congress
                       </h3>
-                      <span className="text-[10px] italic font-semibold" style={{ color: "rgba(67, 56, 202, 0.80)" }}>STOCK Act · ~30–45d delay</span>
+                      <span className="text-[10px] italic font-semibold" style={{ color: "rgba(23, 37, 84, 0.75)" }}>STOCK Act · ~30–45d delay</span>
                     </div>
                     {(() => {
                       const moves = (brief.smart_money.congress_moves || []).filter(
@@ -3861,16 +3864,18 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   </div>
 
                   {/* Hedge Funds — METROPOLITAN: blush-to-slate, rose-gold + steel, sleek NYC skyline */}
+                  {/* Hedge Funds — METROPOLITAN: deep black with rose-gold NYC skyline */}
                   <div
                     className="rounded-2xl border p-4 relative overflow-hidden"
                     style={{
-                      background:
-                        "linear-gradient(135deg, rgba(255,241,242,0.97) 0%, rgba(255,228,230,0.85) 35%, rgba(253,164,175,0.32) 75%, rgba(190,18,60,0.20) 100%)",
-                      borderColor: "rgba(136, 19, 55, 0.32)",
+                      background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
+                      borderColor: "rgba(212, 165, 116, 0.45)",
                       boxShadow:
-                        "inset 0 1.5px 0 rgba(255,255,255,0.95), inset 0 -3px 12px rgba(136,19,55,0.10), 0 6px 20px -4px rgba(190,18,60,0.18)",
+                        "0 8px 24px -4px rgba(2, 6, 23, 0.55), inset 0 1.5px 0 rgba(212, 165, 116, 0.30), inset 0 -3px 12px rgba(0,0,0,0.30)",
                     }}
                   >
+                    <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
+                      style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
                     {/* Metallic accent diagonal — subtle skyscraper-glass shimmer */}
                     <div
                       aria-hidden
@@ -3896,9 +3901,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         bottom: -2,
                         width: 215,
                         height: 110,
-                        opacity: 0.13,
+                        opacity: 0.22,
                         pointerEvents: "none",
-                        color: "#334155",
+                        color: "#D4A574",
                       }}
                     >
                       <g fill="currentColor">
@@ -3956,11 +3961,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       <h3 className="text-[15px] uppercase tracking-[0.22em] font-extrabold flex items-center gap-2.5"
                         style={{
                           fontFamily: SERIF,
-                          background: "linear-gradient(180deg, #fb7185 0%, #be123c 55%, #4c0519 100%)",
+                          background: "linear-gradient(180deg, #FB7185 0%, #475569 55%, #0F172A 100%)",
                           WebkitBackgroundClip: "text",
                           WebkitTextFillColor: "transparent",
                           backgroundClip: "text",
-                          filter: "drop-shadow(0 1px 1px rgba(136,19,55,0.45)) drop-shadow(0 0 6px rgba(251,113,133,0.30))",
+                          filter: "drop-shadow(0 1px 1px rgba(15,23,42,0.45)) drop-shadow(0 0 6px rgba(251,113,133,0.30))",
                         }}>
                         <span
                           className="relative inline-flex items-center justify-center overflow-hidden"
@@ -3968,8 +3973,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             width: 26,
                             height: 26,
                             borderRadius: 8,
-                            background: "linear-gradient(160deg, #fb7185 0%, #be123c 55%, #881337 100%)",
-                            boxShadow: "0 3px 8px rgba(136,19,55,0.50), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(76,5,25,0.35)",
+                            background: "linear-gradient(160deg, #FB7185 0%, #94A3B8 50%, #1E293B 100%)",
+                            boxShadow: "0 3px 8px rgba(51,65,85,0.50), inset 0 1.5px 2px rgba(255,255,255,0.50), inset 0 -2px 4px rgba(15,23,42,0.35)",
                             border: "1px solid rgba(255,255,255,0.30)",
                           }}
                         >
@@ -3983,11 +3988,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               borderBottomRightRadius: "3px",
                             }}
                           />
-                          <Building2 className="relative w-3.5 h-3.5" style={{ color: "#ffe4e6", strokeWidth: 2.5 }} />
+                          <Building2 className="relative w-3.5 h-3.5" style={{ color: "#FEF2F2", strokeWidth: 2.5 }} />
                         </span>
                         Hedge Funds
                       </h3>
-                      <span className="text-[10px] italic font-semibold" style={{ color: "rgba(136, 19, 55, 0.80)" }}>fund-level rotations</span>
+                      <span className="text-[10px] italic font-semibold" style={{ color: "rgba(15, 23, 42, 0.75)" }}>fund-level rotations</span>
                     </div>
                     {(() => {
                       const moves = (brief.smart_money.hedge_fund_moves || []).filter(
@@ -4391,33 +4396,23 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
   }
   const { text, ticker, why_matters } = item || {};
 
-  // DEEP GLOSSY palette per category — matches Generate Brief / Sync Portfolio aesthetic.
-  // No gold, no amber, no orange anywhere. Each row reads as a richly-colored glass pill
-  // with a white specular reflection on top + a colored glow underneath.
+  // DEEP GLOSSY rows — match the twin royal button aesthetic. Dark base with gold accents.
+  // Each category gets a subtle hue shift inside the dark family so they still feel distinct.
   const categoryStyle = {
     whale: {
-      bg: "linear-gradient(160deg, #14b8a6 0%, #0d9488 55%, #0f766e 100%)",
-      border: "rgba(15,118,110,0.55)",
-      glow: "rgba(20,184,166,0.40)",
-      chipBg: "linear-gradient(160deg, #ccfbf1 0%, #99f6e4 100%)",
-      chipText: "#134e4a",
-      chipBorder: "rgba(15,118,110,0.55)",
+      bg: "linear-gradient(160deg, #292524 0%, #1c1917 60%, #0c0a09 100%)",
+      border: "rgba(212, 165, 116, 0.45)",
+      glow: "rgba(212, 165, 116, 0.25)",
     },
     congress: {
-      bg: "linear-gradient(160deg, #4f46e5 0%, #4338ca 55%, #312e81 100%)",
-      border: "rgba(49,46,129,0.55)",
-      glow: "rgba(79,70,229,0.40)",
-      chipBg: "linear-gradient(160deg, #e0e7ff 0%, #c7d2fe 100%)",
-      chipText: "#1e1b4b",
-      chipBorder: "rgba(49,46,129,0.55)",
+      bg: "linear-gradient(160deg, #1E293B 0%, #1E1B4B 60%, #0F0F2E 100%)",
+      border: "rgba(212, 165, 116, 0.45)",
+      glow: "rgba(129, 140, 248, 0.25)",
     },
     hedge: {
-      bg: "linear-gradient(160deg, #be123c 0%, #9f1239 55%, #881337 100%)",
-      border: "rgba(136,19,55,0.55)",
-      glow: "rgba(190,18,60,0.40)",
-      chipBg: "linear-gradient(160deg, #ffe4e6 0%, #fecdd3 100%)",
-      chipText: "#4c0519",
-      chipBorder: "rgba(136,19,55,0.55)",
+      bg: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
+      border: "rgba(212, 165, 116, 0.45)",
+      glow: "rgba(212, 165, 116, 0.20)",
     },
   };
   const s = categoryStyle[category] || categoryStyle.whale;
@@ -4436,19 +4431,21 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
         style={{
           background: s.bg,
           border: `1px solid ${s.border}`,
-          borderRadius: 16,
-          boxShadow: `0 10px 24px -4px ${s.glow}, 0 4px 14px ${s.glow}, 0 0 28px ${s.glow}, inset 0 2px 4px rgba(255,255,255,0.35), inset 0 -4px 10px rgba(0,0,0,0.30)`,
+          borderRadius: 14,
+          boxShadow: `0 6px 16px -3px rgba(0,0,0,0.50), 0 0 18px ${s.glow}, inset 0 1.5px 2px rgba(255,255,255,0.18), inset 0 -2px 6px rgba(0,0,0,0.40)`,
         }}
       >
-        {/* Strong top specular highlight — matches Generate Brief button */}
+        {/* Top specular highlight + thin gold edge */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] z-10"
+          style={{ background: "linear-gradient(90deg, transparent 0%, rgba(212,165,116,0.5) 50%, transparent 100%)" }} />
         <span
           className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
           style={{
-            background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%)",
-            borderTopLeftRadius: "0.9rem",
-            borderTopRightRadius: "0.9rem",
-            borderBottomLeftRadius: "0.5rem",
-            borderBottomRightRadius: "0.5rem",
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.10) 55%, rgba(255,255,255,0) 100%)",
+            borderTopLeftRadius: "0.75rem",
+            borderTopRightRadius: "0.75rem",
+            borderBottomLeftRadius: "0.4rem",
+            borderBottomRightRadius: "0.4rem",
           }}
         />
         {ticker && (
@@ -4459,29 +4456,19 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
               fontSize: 13.5,
               letterSpacing: "0.02em",
               minWidth: 56,
-              background: s.chipBg,
-              color: s.chipText,
-              border: `1px solid ${s.chipBorder}`,
-              boxShadow: "0 2px 5px rgba(0,0,0,0.20), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -1.5px 3px rgba(0,0,0,0.10)",
+              background: "linear-gradient(160deg, #F5D08C 0%, #D4A574 100%)",
+              color: "#1E293B",
+              border: "1px solid rgba(146,64,14,0.45)",
+              boxShadow: "0 2px 5px rgba(0,0,0,0.30), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(146,64,14,0.20)",
             }}
           >
-            <span
-              className="absolute top-0 left-0.5 right-0.5 h-[45%] pointer-events-none"
-              style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
-                borderTopLeftRadius: "5px",
-                borderTopRightRadius: "5px",
-                borderBottomLeftRadius: "3px",
-                borderBottomRightRadius: "3px",
-              }}
-            />
             <span className="relative">{ticker}</span>
           </span>
         )}
-        <span className="relative flex-1 text-[14.5px] leading-snug text-white font-medium" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.30)" }}>
+        <span className="relative flex-1 text-[14.5px] leading-snug text-white font-medium" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.40)" }}>
           {text}
         </span>
-        <ChevronRight className="relative w-4 h-4 flex-shrink-0 mt-0.5 text-white/90" strokeWidth={2.5} />
+        <ChevronRight className="relative w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "#D4A574" }} strokeWidth={2.5} />
       </button>
     </li>
   );
@@ -7780,3 +7767,4 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
