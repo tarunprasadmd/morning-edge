@@ -2218,12 +2218,25 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
       <header className="relative px-6 pt-10 pb-6">
         <div className="flex items-start justify-between mb-7">
           <div className="flex items-center gap-3">
-            <img
-              src="/morning-edge-logo.png"
-              alt="Morning Edge"
-              className="w-11 h-11 rounded-xl"
-              style={{ boxShadow: "0 6px 16px -3px rgba(15,23,42,0.45)" }}
-            />
+            <div className="relative w-11 h-11 rounded-xl overflow-hidden"
+              style={{
+                boxShadow: "0 10px 24px -4px rgba(15,23,42,0.55), 0 0 24px rgba(212,165,116,0.30), inset 0 -3px 8px rgba(0,0,0,0.40)",
+              }}>
+              <img
+                src="/morning-edge-logo.png"
+                alt="Morning Edge"
+                className="w-full h-full object-cover"
+              />
+              {/* Top specular highlight — glass reflection over the logo */}
+              <span className="absolute top-0.5 left-1 right-1 h-[42%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)",
+                  borderTopLeftRadius: "0.65rem",
+                  borderTopRightRadius: "0.65rem",
+                  borderBottomLeftRadius: "0.35rem",
+                  borderBottomRightRadius: "0.35rem",
+                }} />
+            </div>
             <div>
               <p className="text-base font-bold text-slate-900 tracking-wide leading-tight" style={{ fontFamily: SERIF }}>Morning Edge</p>             </div>           </div>
           <div className="flex gap-2">
