@@ -6296,19 +6296,39 @@ function ChatSheet({
             {messages && messages.length > 0 && (
               <button
                 onClick={onClearChat}
-                className="px-2 py-0.5 rounded-full text-[11px] font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 transition border border-slate-200"
+                className="relative px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider text-slate-800 transition active:scale-[0.96] active:translate-y-0.5 overflow-hidden"
+                style={{
+                  background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                  border: "1.5px solid #64748B",
+                  boxShadow: "0 2px 0 #475569, 0 3px 5px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.10)",
+                }}
                 aria-label="Clear conversation"
                 title="Clear this conversation"
               >
-                Clear
+                <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
+                  style={{
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "9999px 9999px 50% 50%",
+                  }} />
+                <span className="relative">Clear</span>
               </button>
             )}
             <button
               onClick={onClose}
-              className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-slate-100 active:bg-slate-200 transition"
+              className="relative w-9 h-9 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 overflow-hidden"
+              style={{
+                background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                border: "1.5px solid #64748B",
+                boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.18), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.15)",
+              }}
               aria-label="Close chat"
             >
-              <X className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "9999px 9999px 50% 50%",
+                }} />
+              <X className="w-4 h-4 text-slate-700 relative" strokeWidth={2.5} />
             </button>
           </div>
         </div>
@@ -6344,15 +6364,36 @@ function ChatSheet({
               />
               <button
                 onClick={submitCash}
-                className="px-3 py-1 text-[12px] font-semibold bg-slate-900 text-white rounded hover:bg-slate-800 active:bg-slate-700"
+                className="relative px-3 py-1.5 text-[12px] font-bold uppercase tracking-wider text-white rounded-lg overflow-hidden transition active:scale-[0.96] active:translate-y-0.5"
+                style={{
+                  background: "linear-gradient(180deg, #818CF8 0%, #6366F1 50%, #4338CA 100%)",
+                  border: "1.5px solid #312E81",
+                  boxShadow: "0 2px 0 #312E81, 0 3px 6px rgba(99,102,241,0.35), inset 0 1.5px 2px rgba(255,255,255,0.50), inset 0 -1.5px 2px rgba(0,0,0,0.25)",
+                  textShadow: "0 1px 1px rgba(0,0,0,0.30)",
+                }}
               >
-                Save
+                <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
+                  style={{
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "0.4rem 0.4rem 50% 50%",
+                  }} />
+                <span className="relative">Save</span>
               </button>
               <button
                 onClick={() => setShowCashInput(false)}
-                className="text-[12px] text-slate-500 hover:text-slate-800"
+                className="relative px-2.5 py-1.5 text-[12px] font-bold uppercase tracking-wider text-slate-800 rounded-lg overflow-hidden transition active:scale-[0.96] active:translate-y-0.5"
+                style={{
+                  background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                  border: "1.5px solid #64748B",
+                  boxShadow: "0 2px 0 #475569, 0 3px 5px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.10)",
+                }}
               >
-                Cancel
+                <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                  style={{
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "0.4rem 0.4rem 50% 50%",
+                  }} />
+                <span className="relative">Cancel</span>
               </button>
             </div>
           )}
@@ -6384,9 +6425,21 @@ function ChatSheet({
                   <button
                     key={i}
                     onClick={() => onSend(q)}
-                    className="text-left text-[15px] px-3.5 py-2.5 rounded-lg border border-violet-200 bg-white hover:bg-violet-50 active:bg-violet-100 transition text-slate-900"
+                    className="relative text-left text-[15px] px-3.5 py-2.5 rounded-2xl text-slate-900 overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
+                    style={{
+                      background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 50%, #DDD6FE 100%)",
+                      border: "1.5px solid #8B5CF6",
+                      boxShadow: "0 2.5px 0 #6D28D9, 0 4px 8px rgba(139,92,246,0.30), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(91,33,182,0.15)",
+                    }}
                   >
-                    {q}
+                    <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                      style={{
+                        background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                        borderRadius: "1rem 1rem 50% 50%",
+                      }} />
+                    <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[15%] pointer-events-none"
+                      style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                    <span className="relative">{q}</span>
                   </button>
                 ))}
               </div>
@@ -6441,15 +6494,28 @@ function ChatSheet({
             <button
               onClick={() => { if (input.trim()) onSend(input); }}
               disabled={loading || !input.trim()}
-              className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition active:scale-95 disabled:opacity-50"
-              style={{
-                background: input.trim() && !loading
-                  ? "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)"
-                  : "#E2E8F0",
+              className="relative flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 disabled:opacity-50 overflow-hidden"
+              style={input.trim() && !loading ? {
+                background: "linear-gradient(180deg, #818CF8 0%, #6366F1 50%, #4338CA 100%)",
+                border: "2px solid #312E81",
+                boxShadow: "0 3px 0 #312E81, 0 5px 12px rgba(99,102,241,0.45), 0 0 14px rgba(129,140,248,0.30), inset 0 1.5px 2px rgba(255,255,255,0.50), inset 0 -2px 4px rgba(0,0,0,0.30)",
+              } : {
+                background: "linear-gradient(180deg, #F1F5F9 0%, #E2E8F0 50%, #CBD5E1 100%)",
+                border: "1.5px solid #94A3B8",
+                boxShadow: "0 2px 0 #64748B, inset 0 1.5px 2px rgba(255,255,255,1)",
               }}
               aria-label="Send message"
             >
-              <ArrowRight className="w-5 h-5 text-white" strokeWidth={3} />
+              {input.trim() && !loading && (
+                <>
+                  <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "9999px 9999px 50% 50%",
+                    }} />
+                </>
+              )}
+              <ArrowRight className="w-5 h-5 text-white relative" strokeWidth={3} />
             </button>
           </div>
           <p className="text-[12px] text-slate-600 italic mt-2 text-center">
