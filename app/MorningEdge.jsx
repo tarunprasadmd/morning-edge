@@ -6028,11 +6028,12 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
         };
     // Heuristic risk inference based on theme keywords (until AI gives us real risk)
     const themeStr = (item.theme || "").toLowerCase();
-    const tickerStr = (item.ticker || "").toUpperCase();
-    let risk = null;
-    if (themeStr.match(/ai|small.?cap|biotech|crypto|emerging|nuclear|quantum/i)) risk = { label: "H", color: "#DC2626" };
-    else if (themeStr.match(/dividend|income|utility|staple|defensive|treasur/i)) risk = { label: "L", color: "#10B981" };
-    else if (item.ticker) risk = { label: "M", color: "#F59E0B" };
+    let risk = { label: "M", color: "#F59E0B", colorDark: "#92400E", title: "Medium risk" };
+    if (themeStr.match(/ai|small.?cap|biotech|crypto|emerging|nuclear|quantum/i)) {
+      risk = { label: "H", color: "#DC2626", colorDark: "#7F1D1D", title: "Higher risk" };
+    } else if (themeStr.match(/dividend|income|utility|staple|defensive|treasur/i)) {
+      risk = { label: "L", color: "#10B981", colorDark: "#047857", title: "Lower risk" };
+    }
 
     // Live price lookup
     const live = livePrices[item.ticker];
@@ -6059,29 +6060,29 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
           }} />
         <div className={`w-1 ${p.stripe} relative`} />
         <div className="flex items-center gap-2 px-2 py-2 flex-1 min-w-0 relative">
-          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${p.iconBg} flex items-center justify-center shadow-sm flex-shrink-0 relative overflow-hidden`}>
-            <span className="absolute top-0.5 left-0.5 right-0.5 h-[50%] pointer-events-none rounded-t-lg"
-              style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)" }} />
-            <Sparkles className="w-4 h-4 text-white relative" strokeWidth={2.5} />
+          {/* Risk-coded square — replaces decorative star, now FUNCTIONAL */}
+          <div className="w-9 h-9 rounded-lg flex flex-col items-center justify-center shadow-sm flex-shrink-0 relative overflow-hidden"
+            style={{
+              background: `linear-gradient(180deg, ${risk.color}DD 0%, ${risk.color} 50%, ${risk.colorDark} 100%)`,
+              border: `1.5px solid ${risk.colorDark}`,
+              boxShadow: `0 1.5px 0 ${risk.colorDark}, inset 0 1.5px 2px rgba(255,255,255,0.55)`,
+            }}
+            title={risk.title}>
+            <span className="absolute top-0.5 left-0.5 right-0.5 h-[45%] pointer-events-none rounded-t-lg"
+              style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
+            <span className="relative text-white font-extrabold leading-none" style={{ fontSize: 14, textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
+              {risk.label}
+            </span>
+            <span className="relative text-white font-bold leading-none uppercase tracking-wider" style={{ fontSize: 6, marginTop: 1, opacity: 0.85 }}>
+              Risk
+            </span>
           </div>
           <div className="min-w-0 flex-1">
-            {/* LINE 1: ticker + risk dot + price + change% */}
+            {/* LINE 1: ticker + price + change% */}
             <div className="flex items-center gap-1.5">
               <p className={`text-[15px] font-bold leading-tight ${p.ticker}`} style={{ fontFamily: SERIF }}>
                 {item.ticker}
               </p>
-              {risk && (
-                <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold text-white flex-shrink-0 relative overflow-hidden"
-                  style={{
-                    background: risk.color,
-                    boxShadow: "inset 0 1px 1px rgba(255,255,255,0.45), 0 1px 2px rgba(0,0,0,0.20)",
-                  }}
-                  title={`${risk.label === "H" ? "Higher" : risk.label === "L" ? "Lower" : "Medium"} risk`}>
-                  <span className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none"
-                    style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0) 100%)", borderRadius: "50% 50% 0 0" }} />
-                  <span className="relative">{risk.label}</span>
-                </span>
-              )}
               {currentPrice != null && (
                 <span className="text-[11.5px] font-semibold text-slate-900">
                   ${currentPrice.toFixed(2)}
