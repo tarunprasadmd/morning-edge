@@ -2029,7 +2029,19 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 <Sparkles className="w-4 h-4 relative" /> <span className="relative">Begin</span>
               </button>
               <button onClick={() => setPhase("onboard-1")}
-                className="w-full py-2 mt-2 text-[16px] text-slate-800 hover:text-slate-900">← Back</button>
+                className="relative w-full py-2 mt-2 rounded-2xl text-[14px] font-semibold text-slate-800 overflow-hidden transition active:scale-[0.97] active:translate-y-0.5 flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                  border: "1.5px solid #64748B",
+                  boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.10)",
+                }}>
+                <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                  style={{
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "1rem 1rem 50% 50%",
+                  }} />
+                <span className="relative">← Back</span>
+              </button>
             </div>
           )}
 
@@ -5012,8 +5024,19 @@ function PremiumModal({ onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-slate-800 hover:text-slate-900">
-          <X className="w-5 h-5" />
+        <button onClick={onClose}
+          className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center overflow-hidden transition active:scale-[0.92] active:translate-y-0.5"
+          style={{
+            background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+            border: "1.5px solid #64748B",
+            boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.15)",
+          }}>
+          <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+            style={{
+              background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+              borderRadius: "9999px 9999px 50% 50%",
+            }} />
+          <X className="w-5 h-5 text-slate-800 relative" strokeWidth={2.5} />
         </button>
         <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center shadow-md bg-gradient-to-br from-amber-500 to-orange-500">
           <Crown className="w-6 h-6 text-white" />
@@ -5041,8 +5064,21 @@ function PremiumModal({ onClose }) {
             </li>
           ))}
         </ul>
-        <button className="w-full py-3.5 rounded-xl font-semibold text-white shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500">
-          <Lock className="w-4 h-4" /> Join the waitlist
+        <button className="relative w-full py-3.5 rounded-2xl font-semibold text-white flex items-center justify-center gap-2 overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
+          style={{
+            background: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #B45309 100%)",
+            border: "2px solid #92400E",
+            boxShadow: "0 4px 0 #78350F, 0 6px 14px rgba(217,119,6,0.45), 0 0 20px rgba(252,211,77,0.40), inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -3px 6px rgba(120,53,15,0.35)",
+            textShadow: "0 1px 2px rgba(120,53,15,0.55)",
+          }}>
+          <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+            style={{
+              background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+              borderRadius: "1rem 1rem 50% 50%",
+            }} />
+          <span className="absolute bottom-1 left-[30%] right-[30%] h-[18%] pointer-events-none"
+            style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+          <Lock className="w-4 h-4 relative" /> <span className="relative">Join the waitlist</span>
         </button>
         <p className="text-[12px] text-slate-800 text-center mt-3">Coming soon.</p>
       </div>
@@ -6714,11 +6750,20 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
             </p>
             <button
               onClick={onClose}
-              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition active:scale-90"
-              style={{ background: "rgba(255,255,255,0.7)" }}
+              className="relative flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center overflow-hidden transition active:scale-[0.92] active:translate-y-0.5"
+              style={{
+                background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                border: "1.5px solid #64748B",
+                boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.20)",
+              }}
               aria-label="Close"
             >
-              <X className="w-4 h-4 text-slate-800" strokeWidth={2.5} />
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "9999px 9999px 50% 50%",
+                }} />
+              <X className="w-4 h-4 text-slate-800 relative" strokeWidth={2.5} />
             </button>
           </div>
 
@@ -6812,10 +6857,19 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                   href={`https://www.investing.com/search/?q=${data.ticker}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
-                  style={{ borderColor: "#e2e8f0" }}
+                  className="relative block w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
                 >
-                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "1rem 1rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
                     Investing.com — {data.ticker}
                   </p>
                   <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
@@ -6826,10 +6880,19 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                   href={`https://seekingalpha.com/symbol/${data.ticker}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
-                  style={{ borderColor: "#e2e8f0" }}
+                  className="relative block w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
                 >
-                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "1rem 1rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
                     Seeking Alpha — {data.ticker}
                   </p>
                   <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
@@ -6840,10 +6903,19 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                   href={`https://finance.yahoo.com/quote/${data.ticker}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
-                  style={{ borderColor: "#e2e8f0" }}
+                  className="relative block w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
                 >
-                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "1rem 1rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
                     Yahoo Finance — {data.ticker}
                   </p>
                   <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
@@ -6854,10 +6926,19 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                   href={`https://fintel.io/so/us/${data.ticker.toLowerCase()}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
-                  style={{ borderColor: "#e2e8f0" }}
+                  className="relative block w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
                 >
-                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "1rem 1rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
                     Fintel — {data.ticker} institutional ownership
                   </p>
                   <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
@@ -6878,14 +6959,23 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
         <div className="px-5 pt-3 pb-4 border-t border-slate-200 bg-white">
           <button
             onClick={() => onAskAboutThis(data)}
-            className="w-full py-3 rounded-xl font-bold text-[15px] tracking-wide transition active:scale-[0.98] flex items-center justify-center gap-2 text-white"
+            className="relative w-full py-3 rounded-2xl font-bold text-[15px] tracking-wide flex items-center justify-center gap-2 text-white overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
             style={{
-              background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
-              boxShadow: "0 6px 18px -3px rgba(67,56,202,0.55), inset 0 1px 0 rgba(255,255,255,0.25)", border: "2px solid #4338CA",
+              background: "linear-gradient(180deg, #818CF8 0%, #6366F1 50%, #4338CA 100%)",
+              border: "2px solid #312E81",
+              boxShadow: "0 4px 0 #312E81, 0 6px 14px rgba(99,102,241,0.45), 0 0 18px rgba(129,140,248,0.30), inset 0 2px 3px rgba(255,255,255,0.50), inset 0 -3px 6px rgba(0,0,0,0.30)",
+              textShadow: "0 1px 2px rgba(0,0,0,0.40)",
             }}
           >
-            <Sparkles className="w-4 h-4" strokeWidth={2.5} />
-            Ask about this — your situation
+            <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1rem 1rem 50% 50%",
+              }} />
+            <span className="absolute bottom-1 left-[30%] right-[30%] h-[18%] pointer-events-none"
+              style={{ background: "linear-gradient(to top, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+            <Sparkles className="w-4 h-4 relative" strokeWidth={2.5} />
+            <span className="relative">Ask about this — your situation</span>
           </button>
           <p className="text-[11px] text-slate-500 italic text-center mt-2">
             Talk to AI about how this fits your portfolio, your cash, your concerns.
