@@ -2334,25 +2334,58 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           <div className="flex gap-2">
             {true && (
               <button onClick={shareBrief}
-                className="p-2.5 rounded-full bg-white border border-slate-200 shadow-md transition active:scale-90 active:bg-slate-100 hover:bg-slate-50"
+                className="relative w-10 h-10 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 overflow-hidden"
+                style={{
+                  background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                  border: "1.5px solid #64748B",
+                  boxShadow: "0 2.5px 0 #475569, 0 4px 8px rgba(15,23,42,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.15)",
+                }}
                 aria-label="Share">
-                <Share2 className="w-4 h-4 text-slate-800" />
+                <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                  style={{
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "9999px 9999px 50% 50%",
+                  }} />
+                <Share2 className="w-4 h-4 text-slate-800 relative" />
               </button>
             )}
             <button onClick={() => setShowPremium(true)}
-              className="p-2.5 rounded-full text-white shadow-md bg-gradient-to-br from-amber-500 to-orange-500 transition active:scale-90 hover:from-amber-600 hover:to-orange-600"
+              className="relative w-10 h-10 rounded-full flex items-center justify-center text-white transition active:scale-[0.92] active:translate-y-0.5 overflow-hidden"
+              style={{
+                background: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #B45309 100%)",
+                border: "1.5px solid #92400E",
+                boxShadow: "0 2.5px 0 #78350F, 0 4px 10px rgba(217,119,6,0.45), 0 0 14px rgba(252,211,77,0.35), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 4px rgba(120,53,15,0.30)",
+                textShadow: "0 1px 1px rgba(120,53,15,0.45)",
+              }}
               aria-label="Premium">
-              <Crown className="w-4 h-4" />
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "9999px 9999px 50% 50%",
+                }} />
+              <Crown className="w-4 h-4 relative" />
             </button>
             <button onClick={() => setShowSettings(!showSettings)}
-              className={`p-2.5 rounded-full border shadow-md transition active:scale-90 ${
-                showSettings
-                  ? "bg-slate-900 border-slate-900"
-                  : "bg-white border-slate-200 hover:bg-slate-50 active:bg-slate-100"
-              }`}
+              className="relative w-10 h-10 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 overflow-hidden"
+              style={showSettings ? {
+                background: "linear-gradient(180deg, #334155 0%, #1E293B 50%, #020617 100%)",
+                border: "1.5px solid #020617",
+                boxShadow: "0 2.5px 0 #020617, 0 4px 8px rgba(2,6,23,0.45), inset 0 1.5px 2px rgba(255,255,255,0.30), inset 0 -2px 4px rgba(0,0,0,0.40)",
+              } : {
+                background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                border: "1.5px solid #64748B",
+                boxShadow: "0 2.5px 0 #475569, 0 4px 8px rgba(15,23,42,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.15)",
+              }}
               aria-label="Settings"
               aria-pressed={showSettings}>
-              <Settings className={`w-4 h-4 ${showSettings ? "text-white" : "text-slate-800"}`} />
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                style={{
+                  background: showSettings
+                    ? "linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)"
+                    : "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "9999px 9999px 50% 50%",
+                }} />
+              <Settings className={`w-4 h-4 relative ${showSettings ? "text-white" : "text-slate-800"}`} />
             </button>
           </div>
         </div>
@@ -2719,16 +2752,41 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         <section className="relative mx-4 mb-6 p-5 rounded-2xl bg-white shadow-md border border-slate-100">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[16px] font-semibold text-slate-900">Settings</h2>
-            <button onClick={() => setShowSettings(false)} className="text-slate-800 hover:text-slate-900">
-              <X className="w-4 h-4" />
+            <button onClick={() => setShowSettings(false)}
+              className="relative w-9 h-9 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 overflow-hidden"
+              style={{
+                background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                border: "1.5px solid #64748B",
+                boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.18), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.15)",
+              }}>
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "9999px 9999px 50% 50%",
+                }} />
+              <X className="w-4 h-4 text-slate-800 relative" strokeWidth={2.5} />
             </button>
           </div>
 
           {/* Reset all data — moved to TOP so it's easy to find */}
           <button onClick={resetAll}
-            className="w-full mb-5 py-2.5 rounded-xl text-[14px] text-rose-700 hover:bg-rose-50 border border-rose-300 font-semibold flex items-center justify-center gap-1.5">
-            <X className="w-3.5 h-3.5" />
-            Reset all data
+            className="relative w-full mb-5 py-2.5 rounded-2xl text-[14px] font-semibold flex items-center justify-center gap-1.5 overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
+            style={{
+              background: "linear-gradient(180deg, #FEE2E2 0%, #FECACA 50%, #FCA5A5 100%)",
+              border: "1.5px solid #DC2626",
+              color: "#7F1D1D",
+              boxShadow: "0 3px 0 #991B1B, 0 5px 10px rgba(220,38,38,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -1.5px 3px rgba(127,29,29,0.20)",
+              textShadow: "0 1px 1px rgba(255,255,255,0.55)",
+            }}>
+            <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1rem 1rem 50% 50%",
+              }} />
+            <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[15%] pointer-events-none"
+              style={{ background: "linear-gradient(to top, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+            <X className="w-3.5 h-3.5 relative" />
+            <span className="relative">Reset all data</span>
           </button>
 
           <div className="mb-4">
@@ -2770,11 +2828,21 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         </div>
                         <button
                           onClick={() => deleteAccount(acct.id)}
-                          className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-rose-600 hover:bg-rose-50 active:bg-rose-100 transition"
+                          className="relative flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-white transition active:scale-[0.92] active:translate-y-0.5 overflow-hidden"
+                          style={{
+                            background: "linear-gradient(180deg, #FCA5A5 0%, #DC2626 50%, #991B1B 100%)",
+                            border: "1.5px solid #7F1D1D",
+                            boxShadow: "0 2px 0 #7F1D1D, 0 3px 6px rgba(220,38,38,0.30), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 2px rgba(0,0,0,0.20)",
+                          }}
                           aria-label={`Delete ${acct.name}`}
                           title="Delete this account"
                         >
-                          <Trash2 className="w-4 h-4" strokeWidth={2.2} />
+                          <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                            style={{
+                              background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 100%)",
+                              borderRadius: "0.35rem 0.35rem 50% 50%",
+                            }} />
+                          <Trash2 className="w-4 h-4 relative" strokeWidth={2.4} />
                         </button>
                       </div>
                     );
@@ -2797,9 +2865,20 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       setHoldings([]);
                       setHoldingsRefreshedAt(null);
                     }}
-                    className="flex-shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-semibold bg-white border border-amber-300 text-amber-900 hover:bg-amber-100"
+                    className="relative flex-shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-semibold overflow-hidden transition active:scale-[0.96] active:translate-y-0.5"
+                    style={{
+                      background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
+                      border: "1.5px solid #D97706",
+                      color: "#78350F",
+                      boxShadow: "0 2px 0 #92400E, 0 3px 6px rgba(217,119,6,0.25), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(146,64,14,0.15)",
+                    }}
                   >
-                    Clear
+                    <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
+                      style={{
+                        background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                        borderRadius: "0.35rem 0.35rem 50% 50%",
+                      }} />
+                    <span className="relative">Clear</span>
                   </button>
                 </div>
               )}
@@ -2808,10 +2887,24 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
           <button
             onClick={() => { setShowSettings(false); setShowBrokerageGuide(true); }}
-            className="w-full py-2.5 rounded-xl text-[14px] text-amber-800 hover:bg-amber-50 border border-amber-300 font-semibold flex items-center justify-center gap-1.5"
+            className="relative w-full py-2.5 rounded-2xl text-[14px] font-semibold flex items-center justify-center gap-1.5 overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
+            style={{
+              background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
+              border: "1.5px solid #D97706",
+              color: "#78350F",
+              boxShadow: "0 3px 0 #92400E, 0 5px 10px rgba(217,119,6,0.30), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(146,64,14,0.20)",
+              textShadow: "0 1px 1px rgba(255,255,255,0.55)",
+            }}
           >
-            <Briefcase className="w-3.5 h-3.5" />
-            Brokerage Help — Where to find your CSV
+            <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1rem 1rem 50% 50%",
+              }} />
+            <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[15%] pointer-events-none"
+              style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+            <Briefcase className="w-3.5 h-3.5 relative" />
+            <span className="relative">Brokerage Help — Where to find your CSV</span>
           </button>
         </section>
       )}
