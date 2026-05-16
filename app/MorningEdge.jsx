@@ -7357,7 +7357,7 @@ function InteractiveBreathGuide({ name, pattern, description, rounds }) {
       {/* Animated circle — tap to start/pause */}
       <button
         onClick={handleToggle}
-        className="relative w-full flex flex-col items-center justify-center py-5 select-none"
+        className="relative w-full flex flex-col items-center justify-center py-5 select-none transition active:scale-[0.98]"
         style={{ minHeight: 220 }}
         aria-label={running ? "Pause breath practice" : "Start breath practice"}
       >
@@ -7369,28 +7369,42 @@ function InteractiveBreathGuide({ name, pattern, description, rounds }) {
             width: 200,
             height: 200,
             borderRadius: "50%",
-            border: "1.5px dashed rgba(139, 92, 246, 0.25)",
+            border: "1.5px dashed rgba(139, 92, 246, 0.30)",
           }}
         />
-        {/* Main breathing circle */}
+        {/* Main breathing circle — Candy Crush glossy */}
         <div
+          className="relative overflow-hidden"
           style={{
             width: 200,
             height: 200,
             borderRadius: "50%",
             background:
-              "radial-gradient(circle at 30% 30%, #c4b5fd 0%, #8b5cf6 55%, #6d28d9 100%)",
+              "linear-gradient(180deg, #C4B5FD 0%, #8B5CF6 50%, #5B21B6 100%)",
+            border: "3px solid #4C1D95",
             transform: `scale(${scale})`,
             transition: `transform ${transitionDur}s ease-in-out`,
             boxShadow:
-              "0 10px 30px -5px rgba(139, 92, 246, 0.5), inset 0 2px 0 rgba(255,255,255,0.4)",
+              "0 6px 0 #4C1D95, 0 12px 30px -5px rgba(139, 92, 246, 0.65), 0 0 30px rgba(167, 139, 250, 0.45), inset 0 4px 6px rgba(255,255,255,0.55), inset 0 -6px 12px rgba(0,0,0,0.30)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <div className="text-center" style={{ color: "white" }}>
-            <p className="text-[11px] uppercase tracking-[0.22em] font-bold opacity-90">
+          {/* Big top specular highlight — candy shine */}
+          <span className="absolute top-2 left-6 right-6 h-[40%] pointer-events-none"
+            style={{
+              background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%)",
+              borderRadius: "50% 50% 50% 50%",
+            }} />
+          {/* Bottom small shine */}
+          <span className="absolute bottom-3 left-[30%] right-[30%] h-[15%] pointer-events-none"
+            style={{
+              background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)",
+              borderRadius: "9999px",
+            }} />
+          <div className="text-center relative" style={{ color: "white", textShadow: "0 2px 4px rgba(0,0,0,0.40)" }}>
+            <p className="text-[11px] uppercase tracking-[0.22em] font-bold opacity-95">
               {phaseLabel}
             </p>
             {running && !done && (
@@ -7399,13 +7413,13 @@ function InteractiveBreathGuide({ name, pattern, description, rounds }) {
               </p>
             )}
             {!running && !done && (roundIdx > 0 || phaseIdx > 0) && (
-              <p className="text-[11px] mt-2 opacity-80">Paused</p>
+              <p className="text-[11px] mt-2 opacity-90">Paused</p>
             )}
             {done && (
-              <p className="text-[11px] mt-2 opacity-90">Tap to restart</p>
+              <p className="text-[11px] mt-2 opacity-95">Tap to restart</p>
             )}
             {!running && roundIdx === 0 && phaseIdx === 0 && !done && (
-              <p className="text-[11px] mt-2 opacity-90">Tap the circle</p>
+              <p className="text-[11px] mt-2 opacity-95">Tap the circle</p>
             )}
           </div>
         </div>
