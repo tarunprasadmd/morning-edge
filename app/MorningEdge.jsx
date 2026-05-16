@@ -3022,14 +3022,50 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         <main
           className="relative px-4 pb-16 space-y-4"
           style={{
-            // Subtle dimming + slight pulse on the cached brief while fresh
-            // data loads in the background, so the user senses the brief is
-            // being refreshed but can still read it. When loading ends, this
-            // smoothly fades back to full brightness as the new brief lands.
             opacity: loading ? 0.85 : 1,
             transition: "opacity 0.6s ease",
           }}
         >
+          {/* NAMASTE — small black/gold greeting card at the top, addresses the
+              user by name with today's wisdom. Sets the calm tone before any
+              financial info appears. */}
+          {brief.affirmation && (
+            <div className="relative rounded-2xl px-4 py-3 overflow-hidden"
+              style={{
+                background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
+                border: "1.5px solid #D4A574",
+                boxShadow: "0 4px 14px -2px rgba(2,6,23,0.45), 0 0 18px rgba(212,165,116,0.20), inset 0 1.5px 2px rgba(255,255,255,0.20)",
+              }}>
+              {/* Top gold accent line */}
+              <div className="absolute top-0 left-0 right-0 h-[1.5px]"
+                style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+              {/* Subtle radial glow */}
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full opacity-25"
+                style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
+              <div className="relative z-10 flex items-start gap-3">
+                <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center relative overflow-hidden"
+                  style={{
+                    background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
+                    boxShadow: "0 1.5px 0 #92400E, inset 0 1.5px 2px rgba(255,255,255,0.85)",
+                  }}>
+                  <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                    style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
+                  <span className="relative text-[18px] leading-none" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>🙏</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] tracking-[0.25em] uppercase font-bold leading-none mb-1"
+                    style={{ color: "#D4A574", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
+                    Namaste{name ? `, ${name}` : ""}
+                  </p>
+                  <p className="text-[14px] leading-snug italic"
+                    style={{ fontFamily: SERIF, color: "#F8FAFC", textShadow: "0 1px 2px rgba(0,0,0,0.45)" }}>
+                    "{brief.affirmation}"
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Sync Portfolio block is now rendered persistently via the twin
               buttons section near the top — no need to render it here too. */}
 
@@ -4345,29 +4381,16 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           })()}
 
 
-          {(visible.mindset || visible.clarity_card) && (brief.mindset || brief.clarity) && (
+          {/* ── HEALTH — body care: workout + Power Plate only ── */}
+          {visible.mindset && brief.mindset && (
             <Card theme={themes.mindset} pillar="health">
-              <CardHeader icon={<Heart className="w-4 h-4" />} label="Mindset & Body" theme={themes.mindset} pillar="health" />
+              <CardHeader icon={<Heart className="w-4 h-4" />} label="Health" theme={themes.mindset} pillar="health" />
               <div className="px-5 py-5 space-y-3">
                 <MindsetRowExpandable
-                  emoji="🙏"
-                  kicker="Gratitude"
-                  color="rose"
-                  body={brief.mindset.gratitude}
-                  expanded={expandedMindset === "gratitude"}
-                  onToggle={() => setExpandedMindset(expandedMindset === "gratitude" ? null : "gratitude")}
-                  detail={{
-                    intent: "Today's voice — your inner anchor before the market opens.",
-                    action: "Carry this line into your first decision today. Say it once, then act.",
-                  }}
-                />
-                <MindsetRowExpandable
-                  emoji="🥗"
-                  kicker="Fuel"
+                  emoji="💪"
+                  kicker="Workout"
                   color="amber"
                   body={(() => {
-                    // Backwards-compatible: fuel might be a plain string
-                    // (older briefs) or a structured object (newer briefs).
                     const f = brief.mindset.fuel;
                     if (typeof f === "string") return f;
                     if (f && typeof f === "object") return f.headline || "10-min activation: mobility, breath, strength, cooldown";
@@ -4377,17 +4400,15 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   onToggle={() => setExpandedMindset(expandedMindset === "fuel" ? null : "fuel")}
                   detail={(() => {
                     const f = brief.mindset.fuel;
-                    // Structured fuel — pass through the rich blocks
                     if (f && typeof f === "object" && Array.isArray(f.blocks)) {
                       return {
                         intent: `Today's routine: ${f.headline || "10-min activation"}. ${f.total_min || 10} minutes total.`,
-                        fuelBlocks: f.blocks, // new field consumed by MindsetRowExpandable
+                        fuelBlocks: f.blocks,
                         tip: f.tip,
                         showStartButton: true,
                         onStart: () => setRoutineFlowOpen(true),
                       };
                     }
-                    // Legacy string fuel — fall back to the old segment list
                     return {
                       intent: `Today's routine: ${todayRoutine().name}. Four segments, ten minutes total.`,
                       segments: todayRoutine().segments,
@@ -4395,19 +4416,6 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       onStart: () => setRoutineFlowOpen(true),
                     };
                   })()}
-                />
-                <MindsetRowExpandable
-                  emoji="🎯"
-                  kicker="Focus"
-                  color="teal"
-                  body={brief.mindset.focus}
-                  expanded={expandedMindset === "focus"}
-                  onToggle={() => setExpandedMindset(expandedMindset === "focus" ? null : "focus")}
-                  detail={{
-                    intent: "A breath cue that activates your parasympathetic system — the body's calm signal.",
-                    why: "Slower exhales tell your nervous system you're safe. Three rounds is enough to settle the heart rate before the open.",
-                    action: "Do this before you check premarket prices, not after.",
-                  }}
                 />
 
                 {/* Routine completion + streak */}
@@ -4443,12 +4451,12 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   )}
                 </div>
 
-                {/* Daily Power Plate — high-protein dinner with grocery list & quick prep */}
+                {/* Daily Power Plate */}
                 {brief.power_plate && (
                   <div className="pt-5 border-t border-slate-100">
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-[12px] uppercase tracking-[0.2em] text-amber-700 font-semibold flex items-center gap-1.5">
-                        <Utensils className="w-3 h-3" /> Daily Power Plate
+                        🥗 Daily Power Plate
                       </p>
                       {brief.power_plate.style && (
                         <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border-2 border-amber-200 font-semibold">
@@ -4459,69 +4467,99 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <PowerPlateCard plate={brief.power_plate} />
                   </div>
                 )}
+              </div>
+            </Card>
+          )}
 
-                {/* ─── CLARITY MERGED IN: breath + contemplation + wisdom ─── */}
-                {brief.clarity && (
-                  <div className="pt-4 mt-3 border-t border-emerald-200/50">
-                    {/* Interactive breath practice — moved here so breathing has ONE home */}
-                    {brief.clarity.breath_practice && (
-                      <div className="mb-5">
-                        <p className="text-[12px] uppercase tracking-[0.2em] font-semibold mb-3 flex items-center gap-1.5" style={{ color: "#047857" }}>
-                          🫁 Breath Practice
-                        </p>
-                        <InteractiveBreathGuide
-                          name={brief.clarity.breath_practice.name || "Breath Practice"}
-                          pattern={brief.clarity.breath_practice.pattern || brief.clarity.breath_practice}
-                          description={brief.clarity.breath_practice.description}
-                          rounds={brief.clarity.breath_practice.rounds}
-                        />
-                      </div>
-                    )}
+          {/* ── CLARITY — mind care: gratitude + focus + breath + contemplation + wisdom ── */}
+          {visible.clarity_card && (brief.mindset || brief.clarity) && (
+            <Card theme={themes.clarity} pillar="clarity">
+              <CardHeader icon={<Flower2 className="w-4 h-4" />} label="Clarity" theme={themes.clarity} pillar="clarity" />
+              <div className="px-5 py-5 space-y-3">
+                {brief.mindset && brief.mindset.gratitude && (
+                  <MindsetRowExpandable
+                    emoji="🙏"
+                    kicker="Gratitude"
+                    color="rose"
+                    body={brief.mindset.gratitude}
+                    expanded={expandedMindset === "gratitude"}
+                    onToggle={() => setExpandedMindset(expandedMindset === "gratitude" ? null : "gratitude")}
+                    detail={{
+                      intent: "Today's voice — your inner anchor before the market opens.",
+                      action: "Carry this line into your first decision today. Say it once, then act.",
+                    }}
+                  />
+                )}
+                {brief.mindset && brief.mindset.focus && (
+                  <MindsetRowExpandable
+                    emoji="🎯"
+                    kicker="Focus"
+                    color="teal"
+                    body={brief.mindset.focus}
+                    expanded={expandedMindset === "focus"}
+                    onToggle={() => setExpandedMindset(expandedMindset === "focus" ? null : "focus")}
+                    detail={{
+                      intent: "A breath cue that activates your parasympathetic system — the body's calm signal.",
+                      why: "Slower exhales tell your nervous system you're safe. Three rounds is enough to settle the heart rate before the open.",
+                      action: "Do this before you check premarket prices, not after.",
+                    }}
+                  />
+                )}
 
-                    {/* Contemplation */}
-                    {brief.clarity.contemplation && (
-                      <div className="mb-5 rounded-2xl p-5"
-                        style={{
-                          background: "linear-gradient(135deg, #fdf4ff 0%, #fae8ff 60%, #f5d0fe 100%)",
-                          border: "1px solid #f5d0fe",
-                          boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
-                        }}>
-                        <p className="text-[12px] uppercase tracking-[0.2em] text-fuchsia-700 font-semibold mb-3 flex items-center gap-2">
-                          ✨ Today's Contemplation
-                        </p>
-                        <p className="text-[18px] text-slate-900 leading-relaxed italic" style={{ fontFamily: SERIF }}>
-                          {brief.clarity.contemplation}
-                        </p>
-                        <p className="text-[13px] text-fuchsia-800 mt-3 leading-relaxed font-medium">
-                          Sit with this for 60 seconds before market open. No phone.
-                        </p>
-                      </div>
-                    )}
+                {brief.clarity && brief.clarity.breath_practice && (
+                  <div className="pt-2">
+                    <p className="text-[12px] uppercase tracking-[0.2em] font-semibold mb-3 flex items-center gap-1.5" style={{ color: "#4338CA" }}>
+                      🫁 Breath Practice
+                    </p>
+                    <InteractiveBreathGuide
+                      name={brief.clarity.breath_practice.name || "Breath Practice"}
+                      pattern={brief.clarity.breath_practice.pattern || brief.clarity.breath_practice}
+                      description={brief.clarity.breath_practice.description}
+                      rounds={brief.clarity.breath_practice.rounds}
+                    />
+                  </div>
+                )}
 
-                    {/* Eastern wisdom quote */}
-                    {brief.clarity.eastern_wisdom && (
-                      <div className="rounded-2xl p-5 relative overflow-hidden"
-                        style={{
-                          background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
-                          border: "1px solid #fcd34d",
-                          boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
-                        }}>
-                        <span aria-hidden style={{
-                          position: "absolute", top: -8, left: 14, fontSize: 80, lineHeight: 1,
-                          color: "rgba(180, 83, 9, 0.18)", fontFamily: SERIF, userSelect: "none",
-                        }}>"</span>
-                        <p className="text-[12px] uppercase tracking-[0.2em] text-amber-800 font-semibold mb-3 relative flex items-center gap-1.5">
-                          📜 Eastern Wisdom
-                        </p>
-                        <p className="text-[17px] text-slate-900 leading-relaxed relative" style={{ fontFamily: SERIF }}>
-                          {brief.clarity.eastern_wisdom.quote || brief.clarity.eastern_wisdom}
-                        </p>
-                        {brief.clarity.eastern_wisdom.source && (
-                          <p className="text-[13px] text-amber-900 mt-3 font-semibold tracking-wide relative">
-                            — {brief.clarity.eastern_wisdom.source}
-                          </p>
-                        )}
-                      </div>
+                {brief.clarity && brief.clarity.contemplation && (
+                  <div className="rounded-2xl p-5"
+                    style={{
+                      background: "linear-gradient(135deg, #fdf4ff 0%, #fae8ff 60%, #f5d0fe 100%)",
+                      border: "1px solid #f5d0fe",
+                      boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
+                    }}>
+                    <p className="text-[12px] uppercase tracking-[0.2em] text-fuchsia-700 font-semibold mb-3 flex items-center gap-2">
+                      ✨ Today's Contemplation
+                    </p>
+                    <p className="text-[18px] text-slate-900 leading-relaxed italic" style={{ fontFamily: SERIF }}>
+                      {brief.clarity.contemplation}
+                    </p>
+                    <p className="text-[13px] text-fuchsia-800 mt-3 leading-relaxed font-medium">
+                      Sit with this for 60 seconds before market open. No phone.
+                    </p>
+                  </div>
+                )}
+
+                {brief.clarity && brief.clarity.eastern_wisdom && (
+                  <div className="rounded-2xl p-5 relative overflow-hidden"
+                    style={{
+                      background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                      border: "1px solid #fcd34d",
+                      boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
+                    }}>
+                    <span aria-hidden style={{
+                      position: "absolute", top: -8, left: 14, fontSize: 80, lineHeight: 1,
+                      color: "rgba(180, 83, 9, 0.18)", fontFamily: SERIF, userSelect: "none",
+                    }}>"</span>
+                    <p className="text-[12px] uppercase tracking-[0.2em] text-amber-800 font-semibold mb-3 relative flex items-center gap-1.5">
+                      📜 Eastern Wisdom
+                    </p>
+                    <p className="text-[17px] text-slate-900 leading-relaxed relative" style={{ fontFamily: SERIF }}>
+                      {brief.clarity.eastern_wisdom.quote || brief.clarity.eastern_wisdom}
+                    </p>
+                    {brief.clarity.eastern_wisdom.source && (
+                      <p className="text-[13px] text-amber-900 mt-3 font-semibold tracking-wide relative">
+                        — {brief.clarity.eastern_wisdom.source}
+                      </p>
                     )}
                   </div>
                 )}
@@ -4530,35 +4568,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           )}
 
 
-          {/* Today's Wisdom — black & gold hero, at bottom */}
-          {visible.affirmation && brief.affirmation && (
-            <div className="relative rounded-2xl p-8 text-center shadow-xl overflow-hidden"
-              style={{
-                background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
-              }}>
-              {/* Top gold accent line */}
-              <div className="absolute top-0 left-0 right-0 h-[2px]"
-                style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-              {/* Subtle radial glow */}
-              <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full opacity-20"
-                style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
-
-              <div className="relative z-10">
-                <div className="w-12 h-12 rounded-full mx-auto mb-5 flex items-center justify-center"
-                  style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
-                  <Sparkles className="w-5 h-5" style={{ color: "#1E293B" }} />
-                </div>
-                <p className="text-[12px] tracking-[0.35em] uppercase font-semibold mb-4"
-                  style={{ color: "#D4A574" }}>
-                  Today's Wisdom
-                </p>
-                <p className="text-2xl leading-relaxed italic px-2"
-                  style={{ fontFamily: SERIF, fontWeight: 400, color: "#F8FAFC" }}>
-                  "{brief.affirmation}"
-                </p>
-              </div>
-            </div>
-          )}
+          {/* Today's Wisdom (affirmation) — moved to the top of the brief as
+              a small Namaste greeting. No longer rendered here at the bottom. */}
 
           <SignatureFooter verified={sigVerified} hash={sigHash} />
         </main>
