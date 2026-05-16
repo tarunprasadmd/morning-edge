@@ -3578,14 +3578,26 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               <button
                                 key={`earn-${i}`}
                                 onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${e.ticker.toUpperCase()}`)}
-                                className="w-full flex items-center gap-2 rounded-lg bg-rose-100/80 border border-rose-300 px-2.5 py-1.5 hover:bg-rose-200 active:bg-rose-300 transition text-left"
+                                className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-1.5 overflow-hidden text-left transition active:scale-[0.98] active:translate-y-0.5"
+                                style={{
+                                  background: "linear-gradient(180deg, #FEE2E2 0%, #FECACA 50%, #FCA5A5 100%)",
+                                  border: "1.5px solid #DC2626",
+                                  boxShadow: "0 2px 0 #991B1B, 0 3px 7px rgba(220,38,38,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -1.5px 3px rgba(127,29,29,0.20)",
+                                }}
                               >
-                                <span className="text-[9px] uppercase tracking-wider font-bold text-rose-800 flex-shrink-0">Earnings</span>
-                                <span className="text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{e.ticker}</span>
-                                <span className="text-[14px] text-rose-900 flex-1 leading-tight truncate">
+                                <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
+                                  style={{
+                                    background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                                    borderRadius: "0.6rem 0.6rem 50% 50%",
+                                  }} />
+                                <span className="absolute bottom-0.5 left-[28%] right-[28%] h-[15%] pointer-events-none"
+                                  style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                                <span className="relative text-[9px] uppercase tracking-wider font-bold text-rose-900 flex-shrink-0">Earnings</span>
+                                <span className="relative text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{e.ticker}</span>
+                                <span className="relative text-[14px] text-rose-900 flex-1 leading-tight truncate">
                                   {e.when}{e.your_shares ? ` · ${e.your_shares} sh` : ""}
                                 </span>
-                                <ExternalLink className="w-3 h-3 text-rose-700 flex-shrink-0" />
+                                <ExternalLink className="relative w-3 h-3 text-rose-800 flex-shrink-0" />
                               </button>
                             ))}
                             {/* Binary catalysts — AMBER */}
@@ -3593,15 +3605,27 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               <button
                                 key={`cat-${i}`}
                                 onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${c.ticker.toUpperCase()}`)}
-                                className="w-full flex items-center gap-2 rounded-lg bg-amber-100/80 border border-amber-300 px-2.5 py-1.5 hover:bg-amber-200 active:bg-amber-300 transition text-left"
+                                className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-1.5 overflow-hidden text-left transition active:scale-[0.98] active:translate-y-0.5"
+                                style={{
+                                  background: "linear-gradient(180deg, #FEF3C7 0%, #FDE68A 50%, #FCD34D 100%)",
+                                  border: "1.5px solid #D97706",
+                                  boxShadow: "0 2px 0 #92400E, 0 3px 7px rgba(217,119,6,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -1.5px 3px rgba(146,64,14,0.20)",
+                                }}
                               >
-                                <span className="text-[9px] uppercase tracking-wider font-bold text-amber-800 flex-shrink-0">Catalyst</span>
-                                <span className="text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{c.ticker}</span>
-                                <div className="flex-1 min-w-0">
+                                <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
+                                  style={{
+                                    background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                                    borderRadius: "0.6rem 0.6rem 50% 50%",
+                                  }} />
+                                <span className="absolute bottom-0.5 left-[28%] right-[28%] h-[15%] pointer-events-none"
+                                  style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                                <span className="relative text-[9px] uppercase tracking-wider font-bold text-amber-900 flex-shrink-0">Catalyst</span>
+                                <span className="relative text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{c.ticker}</span>
+                                <div className="relative flex-1 min-w-0">
                                   <p className="text-[14px] text-amber-900 leading-tight font-semibold truncate">{c.event}</p>
                                   {c.context && <p className="text-[12px] text-amber-800/80 leading-tight truncate">{c.context}</p>}
                                 </div>
-                                <ExternalLink className="w-3 h-3 text-amber-700 flex-shrink-0" />
+                                <ExternalLink className="relative w-3 h-3 text-amber-800 flex-shrink-0" />
                               </button>
                             ))}
                             {/* Risk flags — ORANGE */}
@@ -3609,15 +3633,27 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               <button
                                 key={`risk-${i}`}
                                 onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${r.ticker.toUpperCase()}`)}
-                                className="w-full flex items-center gap-2 rounded-lg bg-orange-100/80 border border-orange-300 px-2.5 py-1.5 hover:bg-orange-200 active:bg-orange-300 transition text-left"
+                                className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-1.5 overflow-hidden text-left transition active:scale-[0.98] active:translate-y-0.5"
+                                style={{
+                                  background: "linear-gradient(180deg, #FFEDD5 0%, #FED7AA 50%, #FDBA74 100%)",
+                                  border: "1.5px solid #EA580C",
+                                  boxShadow: "0 2px 0 #9A3412, 0 3px 7px rgba(234,88,12,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -1.5px 3px rgba(124,45,18,0.20)",
+                                }}
                               >
-                                <span className="text-[9px] uppercase tracking-wider font-bold text-orange-800 flex-shrink-0">Risk</span>
-                                <span className="text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{r.ticker}</span>
-                                <div className="flex-1 min-w-0">
+                                <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
+                                  style={{
+                                    background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                                    borderRadius: "0.6rem 0.6rem 50% 50%",
+                                  }} />
+                                <span className="absolute bottom-0.5 left-[28%] right-[28%] h-[15%] pointer-events-none"
+                                  style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                                <span className="relative text-[9px] uppercase tracking-wider font-bold text-orange-900 flex-shrink-0">Risk</span>
+                                <span className="relative text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{r.ticker}</span>
+                                <div className="relative flex-1 min-w-0">
                                   <p className="text-[14px] text-orange-900 leading-tight font-semibold truncate">{r.flag}</p>
                                   {r.suggested_action && <p className="text-[12px] text-orange-800/80 leading-tight truncate">→ {r.suggested_action}</p>}
                                 </div>
-                                <ExternalLink className="w-3 h-3 text-orange-700 flex-shrink-0" />
+                                <ExternalLink className="relative w-3 h-3 text-orange-800 flex-shrink-0" />
                               </button>
                             ))}
                           </div>
@@ -3650,13 +3686,25 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           <button
                             key={i}
                             onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${tkr.toUpperCase()}`)}
-                            className="w-full flex items-center gap-2 rounded-lg bg-white border border-emerald-200 px-2.5 py-1.5 hover:bg-emerald-50 active:bg-emerald-100 transition text-left min-w-0 overflow-hidden"
+                            className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-1.5 overflow-hidden text-left transition active:scale-[0.97] active:translate-y-0.5 min-w-0"
+                            style={{
+                              background: "linear-gradient(180deg, #D1FAE5 0%, #A7F3D0 50%, #6EE7B7 100%)",
+                              border: "1.5px solid #059669",
+                              boxShadow: "0 2px 0 #047857, 0 3px 7px rgba(5,150,105,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -1.5px 3px rgba(6,95,70,0.20)",
+                            }}
                           >
-                            <span className="text-[12px] text-emerald-700 font-semibold flex-shrink-0">#{i + 1}</span>
-                            <span className="text-[16px] font-bold text-slate-900 flex-1 truncate" style={{ fontFamily: SERIF }}>
+                            <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
+                              style={{
+                                background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                                borderRadius: "0.6rem 0.6rem 50% 50%",
+                              }} />
+                            <span className="absolute bottom-0.5 left-[28%] right-[28%] h-[15%] pointer-events-none"
+                              style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                            <span className="relative text-[12px] text-emerald-800 font-bold flex-shrink-0">#{i + 1}</span>
+                            <span className="relative text-[16px] font-bold text-slate-900 flex-1 truncate" style={{ fontFamily: SERIF }}>
                               {tkr}
                             </span>
-                            <ExternalLink className="w-3 h-3 text-emerald-600 flex-shrink-0" />
+                            <ExternalLink className="relative w-3 h-3 text-emerald-700 flex-shrink-0" />
                           </button>
                         ))}
                       </div>
@@ -3674,13 +3722,25 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           <button
                             key={i}
                             onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${tkr.toUpperCase()}`)}
-                            className="w-full flex items-center gap-2 rounded-lg bg-white border border-rose-200 px-2.5 py-1.5 hover:bg-rose-50 active:bg-rose-100 transition text-left min-w-0 overflow-hidden"
+                            className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-1.5 overflow-hidden text-left transition active:scale-[0.97] active:translate-y-0.5 min-w-0"
+                            style={{
+                              background: "linear-gradient(180deg, #FEE2E2 0%, #FECACA 50%, #FCA5A5 100%)",
+                              border: "1.5px solid #DC2626",
+                              boxShadow: "0 2px 0 #991B1B, 0 3px 7px rgba(220,38,38,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -1.5px 3px rgba(127,29,29,0.20)",
+                            }}
                           >
-                            <span className="text-[12px] text-rose-700 font-semibold flex-shrink-0">#{i + 1}</span>
-                            <span className="text-[16px] font-bold text-slate-900 flex-1 truncate" style={{ fontFamily: SERIF }}>
+                            <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
+                              style={{
+                                background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                                borderRadius: "0.6rem 0.6rem 50% 50%",
+                              }} />
+                            <span className="absolute bottom-0.5 left-[28%] right-[28%] h-[15%] pointer-events-none"
+                              style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                            <span className="relative text-[12px] text-rose-800 font-bold flex-shrink-0">#{i + 1}</span>
+                            <span className="relative text-[16px] font-bold text-slate-900 flex-1 truncate" style={{ fontFamily: SERIF }}>
                               {tkr}
                             </span>
-                            <ExternalLink className="w-3 h-3 text-rose-600 flex-shrink-0" />
+                            <ExternalLink className="relative w-3 h-3 text-rose-700 flex-shrink-0" />
                           </button>
                         ))}
                       </div>
