@@ -7070,11 +7070,20 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
             </div>
             <button
               onClick={onClose}
-              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition active:scale-90"
-              style={{ background: "rgba(255,255,255,0.7)" }}
+              className="relative flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 overflow-hidden"
+              style={{
+                background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                border: "1.5px solid #64748B",
+                boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.20)",
+              }}
               aria-label="Close"
             >
-              <X className="w-4 h-4 text-slate-800" strokeWidth={2.5} />
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "9999px 9999px 50% 50%",
+                }} />
+              <X className="w-4 h-4 text-slate-800 relative" strokeWidth={2.5} />
             </button>
           </div>
           <p className="text-[18px] font-bold m-0 leading-snug" style={{ color: "#0f172a", fontFamily: SERIF }}>
@@ -7113,17 +7122,27 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
                 onClick={() => {
                   if (onOpenLink) onOpenLink(src.url);
                 }}
-                className={`w-full text-left rounded-xl px-3.5 py-3 transition active:scale-[0.98] ${
-                  src.primary
-                    ? "border-2"
-                    : "border bg-white hover:bg-slate-50"
-                }`}
+                className="relative w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
                 style={src.primary ? {
                   background: theme.gradient,
-                  borderColor: theme.accent,
-                } : { borderColor: "#e2e8f0" }}
+                  border: `2px solid ${theme.accent}`,
+                  boxShadow: `0 3px 0 ${theme.accentDark}, 0 5px 10px ${theme.accent}40, inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -1.5px 3px ${theme.accentDark}25`,
+                } : {
+                  background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                  border: "1.5px solid #94A3B8",
+                  boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                }}
               >
-                <div className="flex items-start gap-2">
+                <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                  style={{
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "1rem 1rem 50% 50%",
+                  }} />
+                {src.primary && (
+                  <span className="absolute bottom-1 left-[30%] right-[30%] h-[15%] pointer-events-none"
+                    style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                )}
+                <div className="relative flex items-start gap-2">
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] font-bold leading-snug" style={{ color: src.primary ? theme.accentDark : "#0f172a" }}>
                       {src.primary && "★ "}{src.name}
