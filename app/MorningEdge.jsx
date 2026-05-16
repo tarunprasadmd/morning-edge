@@ -7290,11 +7290,20 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
             </div>
             <button
               onClick={onClose}
-              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition active:scale-90"
-              style={{ background: "rgba(255,255,255,0.7)" }}
+              className="relative flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 overflow-hidden"
+              style={{
+                background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                border: "1.5px solid #64748B",
+                boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.20)",
+              }}
               aria-label="Close"
             >
-              <X className="w-4 h-4 text-slate-800" strokeWidth={2.5} />
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "9999px 9999px 50% 50%",
+                }} />
+              <X className="w-4 h-4 text-slate-800 relative" strokeWidth={2.5} />
             </button>
           </div>
 
@@ -7353,13 +7362,22 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                   href={`https://www.investing.com/search/?q=${parsed.ticker}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
-                  style={{ borderColor: "#e2e8f0" }}
+                  className="relative block w-full text-left rounded-xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
                 >
-                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "0.6rem 0.6rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
                     Investing.com — {parsed.ticker}
                   </p>
-                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
+                  <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
                     Full quote, charts, news, technical analysis, and earnings — clean dashboard.
                   </p>
                 </a>
@@ -7367,13 +7385,22 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                   href={`https://seekingalpha.com/symbol/${parsed.ticker}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
-                  style={{ borderColor: "#e2e8f0" }}
+                  className="relative block w-full text-left rounded-xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
                 >
-                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "0.6rem 0.6rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
                     Seeking Alpha — {parsed.ticker}
                   </p>
-                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
+                  <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
                     Analyst articles, earnings analysis, bull/bear takes (some content paywalled).
                   </p>
                 </a>
@@ -7381,13 +7408,22 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                   href={`https://finance.yahoo.com/quote/${parsed.ticker}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
-                  style={{ borderColor: "#e2e8f0" }}
+                  className="relative block w-full text-left rounded-xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
                 >
-                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "0.6rem 0.6rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
                     Yahoo Finance — {parsed.ticker}
                   </p>
-                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
+                  <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
                     Quick price, news headlines, and basic chart. Always works as a fallback.
                   </p>
                 </a>
@@ -7395,13 +7431,22 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                   href={`https://fintel.io/so/us/${parsed.ticker.toLowerCase()}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full text-left rounded-xl px-3.5 py-3 border bg-white hover:bg-slate-50 transition active:scale-[0.98]"
-                  style={{ borderColor: "#e2e8f0" }}
+                  className="relative block w-full text-left rounded-xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
                 >
-                  <p className="text-[14px] font-bold text-slate-900 leading-snug">
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "0.6rem 0.6rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
                     Fintel — {parsed.ticker} institutional ownership
                   </p>
-                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
+                  <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
                     See which hedge funds and institutions hold this stock. Clean ownership data.
                   </p>
                 </a>
@@ -7434,61 +7479,98 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
           {onAskAboutThis && (
             <button
               onClick={() => onAskAboutThis(decision, idx)}
-              className="w-full py-3 rounded-xl font-bold text-[15px] tracking-wide transition active:scale-[0.98] flex items-center justify-center gap-2 text-white"
+              className="relative w-full py-3 rounded-2xl font-bold text-[15px] tracking-wide transition active:scale-[0.97] active:translate-y-0.5 flex items-center justify-center gap-2 text-white overflow-hidden"
               style={{
-                background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
-                boxShadow: "0 6px 18px -3px rgba(67,56,202,0.55), inset 0 1px 0 rgba(255,255,255,0.25)", border: "2px solid #4338CA",
+                background: "linear-gradient(180deg, #818CF8 0%, #6366F1 50%, #4338CA 100%)",
+                border: "2px solid #312E81",
+                boxShadow: "0 4px 0 #312E81, 0 6px 14px rgba(99,102,241,0.45), 0 0 18px rgba(129,140,248,0.30), inset 0 2px 3px rgba(255,255,255,0.50), inset 0 -3px 6px rgba(0,0,0,0.30)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.40)",
               }}
             >
-              <Sparkles className="w-4 h-4" strokeWidth={2.5} />
-              Ask about this
+              <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "1rem 1rem 50% 50%",
+                }} />
+              <span className="absolute bottom-1 left-[30%] right-[30%] h-[18%] pointer-events-none"
+                style={{ background: "linear-gradient(to top, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+              <Sparkles className="w-4 h-4 relative" strokeWidth={2.5} />
+              <span className="relative">Ask about this</span>
             </button>
           )}
           <button
             onClick={() => { onMarkDone(idx); onClose(); }}
-            className="w-full py-3 rounded-xl font-bold text-[16px] tracking-wide transition active:scale-[0.98] flex items-center justify-center gap-2"
-            style={{
-              background: done ? "white" : "#0f172a",
-              color: done ? "#475569" : "white",
-              border: done ? "1px solid #e2e8f0" : "none",
+            className="relative w-full py-3 rounded-2xl font-bold text-[16px] tracking-wide transition active:scale-[0.97] active:translate-y-0.5 flex items-center justify-center gap-2 overflow-hidden"
+            style={done ? {
+              background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+              border: "1.5px solid #64748B",
+              color: "#475569",
+              boxShadow: "0 3px 0 #475569, 0 4px 8px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+            } : {
+              background: "linear-gradient(180deg, #6EE7B7 0%, #10B981 50%, #047857 100%)",
+              border: "2px solid #064E3B",
+              color: "white",
+              boxShadow: "0 4px 0 #064E3B, 0 6px 14px rgba(16,185,129,0.45), 0 0 16px rgba(110,231,183,0.30), inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -3px 6px rgba(0,0,0,0.30)",
+              textShadow: "0 1px 2px rgba(0,0,0,0.40)",
             }}
           >
+            <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+              style={{
+                background: done
+                  ? "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)"
+                  : "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1rem 1rem 50% 50%",
+              }} />
+            <span className="absolute bottom-1 left-[30%] right-[30%] h-[18%] pointer-events-none"
+              style={{ background: "linear-gradient(to top, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
             {done ? (
               <>
-                <X className="w-4 h-4" strokeWidth={2.5} />
-                Mark not done
+                <X className="w-4 h-4 relative" strokeWidth={2.5} />
+                <span className="relative">Mark not done</span>
               </>
             ) : (
               <>
-                <Check className="w-4 h-4" strokeWidth={3} />
-                Mark done
+                <Check className="w-4 h-4 relative" strokeWidth={3} />
+                <span className="relative">Mark done</span>
               </>
             )}
           </button>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => { onDismiss(idx); onClose(); }}
-              className="py-2.5 rounded-xl font-semibold text-[15px] transition active:scale-[0.98] flex items-center justify-center gap-1.5"
+              className="relative py-2.5 rounded-2xl font-semibold text-[15px] transition active:scale-[0.97] active:translate-y-0.5 flex items-center justify-center gap-1.5 overflow-hidden"
               style={{
-                background: "white",
+                background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                border: "1.5px solid #64748B",
                 color: dismissed ? "#0f172a" : "#475569",
-                border: "1px solid #e2e8f0",
+                boxShadow: "0 2.5px 0 #475569, 0 3px 6px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
               }}
             >
-              <X className="w-3.5 h-3.5" strokeWidth={2.5} />
-              {dismissed ? "Undismiss" : "Dismiss"}
+              <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "1rem 1rem 50% 50%",
+                }} />
+              <X className="w-3.5 h-3.5 relative" strokeWidth={2.5} />
+              <span className="relative">{dismissed ? "Undismiss" : "Dismiss"}</span>
             </button>
             <button
               onClick={() => { onAddToCalendar(decision, idx); }}
-              className="py-2.5 rounded-xl font-semibold text-[15px] transition active:scale-[0.98] flex items-center justify-center gap-1.5"
+              className="relative py-2.5 rounded-2xl font-semibold text-[15px] transition active:scale-[0.97] active:translate-y-0.5 flex items-center justify-center gap-1.5 overflow-hidden"
               style={{
-                background: "white",
+                background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                border: "1.5px solid #64748B",
                 color: "#475569",
-                border: "1px solid #e2e8f0",
+                boxShadow: "0 2.5px 0 #475569, 0 3px 6px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
               }}
             >
-              <CalendarPlus className="w-3.5 h-3.5" />
-              Calendar
+              <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "1rem 1rem 50% 50%",
+                }} />
+              <CalendarPlus className="w-3.5 h-3.5 relative" />
+              <span className="relative">Calendar</span>
             </button>
           </div>
         </div>
