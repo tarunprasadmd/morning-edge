@@ -4345,9 +4345,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           })()}
 
 
-          {visible.mindset && brief.mindset && (
+          {(visible.mindset || visible.clarity_card) && (brief.mindset || brief.clarity) && (
             <Card theme={themes.mindset} pillar="health">
-              <CardHeader icon={<Heart className="w-4 h-4" />} label="Mindset & Fuel" theme={themes.mindset} pillar="health" />
+              <CardHeader icon={<Heart className="w-4 h-4" />} label="Mindset & Body" theme={themes.mindset} pillar="health" />
               <div className="px-5 py-5 space-y-3">
                 <MindsetRowExpandable
                   icon={<Heart className="w-4 h-4" />}
@@ -4459,85 +4459,71 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <PowerPlateCard plate={brief.power_plate} />
                   </div>
                 )}
-              </div>
-            </Card>
-          )}
 
-          {/* CLARITY — spiritual practices: contemplation, eastern wisdom, breath */}
-          {visible.clarity_card && brief.clarity && (
-            <Card theme={themes.clarity} pillar="clarity">
-              <CardHeader icon={<Flower2 className="w-4 h-4" />} label="Clarity" theme={themes.clarity} pillar="clarity" />
-              <div className="px-5 pt-1 pb-5">
-                <p className="text-[14px] uppercase tracking-[0.2em] text-violet-700/80 font-medium mb-5">
-                  Contemplation · Wisdom · Breath
-                </p>
+                {/* ─── CLARITY MERGED IN: breath + contemplation + wisdom ─── */}
+                {brief.clarity && (
+                  <div className="pt-4 mt-3 border-t border-emerald-200/50">
+                    {/* Interactive breath practice — moved here so breathing has ONE home */}
+                    {brief.clarity.breath_practice && (
+                      <div className="mb-5">
+                        <p className="text-[12px] uppercase tracking-[0.2em] font-semibold mb-3 flex items-center gap-1.5" style={{ color: "#047857" }}>
+                          🫁 Breath Practice
+                        </p>
+                        <InteractiveBreathGuide
+                          name={brief.clarity.breath_practice.name || "Breath Practice"}
+                          pattern={brief.clarity.breath_practice.pattern || brief.clarity.breath_practice}
+                          description={brief.clarity.breath_practice.description}
+                          rounds={brief.clarity.breath_practice.rounds}
+                        />
+                      </div>
+                    )}
 
-                {/* Contemplation */}
-                {brief.clarity.contemplation && (
-                  <div className="mb-5 rounded-2xl p-5"
-                    style={{
-                      background: "linear-gradient(135deg, #fdf4ff 0%, #fae8ff 60%, #f5d0fe 100%)",
-                      border: "1px solid #f5d0fe",
-                      boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
-                    }}>
-                    <p className="text-[12px] uppercase tracking-[0.2em] text-fuchsia-700 font-semibold mb-3 flex items-center gap-2">
-                      <Sparkles className="w-3.5 h-3.5" /> Today's Contemplation
-                    </p>
-                    <p className="text-[18px] text-slate-900 leading-relaxed italic" style={{ fontFamily: SERIF }}>
-                      {brief.clarity.contemplation}
-                    </p>
-                    <p className="text-[13px] text-fuchsia-800 mt-3 leading-relaxed font-medium">
-                      Sit with this for 60 seconds before market open. No phone.
-                    </p>
-                  </div>
-                )}
+                    {/* Contemplation */}
+                    {brief.clarity.contemplation && (
+                      <div className="mb-5 rounded-2xl p-5"
+                        style={{
+                          background: "linear-gradient(135deg, #fdf4ff 0%, #fae8ff 60%, #f5d0fe 100%)",
+                          border: "1px solid #f5d0fe",
+                          boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
+                        }}>
+                        <p className="text-[12px] uppercase tracking-[0.2em] text-fuchsia-700 font-semibold mb-3 flex items-center gap-2">
+                          ✨ Today's Contemplation
+                        </p>
+                        <p className="text-[18px] text-slate-900 leading-relaxed italic" style={{ fontFamily: SERIF }}>
+                          {brief.clarity.contemplation}
+                        </p>
+                        <p className="text-[13px] text-fuchsia-800 mt-3 leading-relaxed font-medium">
+                          Sit with this for 60 seconds before market open. No phone.
+                        </p>
+                      </div>
+                    )}
 
-                {/* Eastern wisdom quote */}
-                {brief.clarity.eastern_wisdom && (
-                  <div className="mb-5 rounded-2xl p-5 relative overflow-hidden"
-                    style={{
-                      background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
-                      border: "1px solid #fcd34d",
-                      boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
-                    }}>
-                    {/* Decorative quote mark */}
-                    <span
-                      aria-hidden
-                      style={{
-                        position: "absolute",
-                        top: -8,
-                        left: 14,
-                        fontSize: 80,
-                        lineHeight: 1,
-                        color: "rgba(180, 83, 9, 0.18)",
-                        fontFamily: SERIF,
-                        userSelect: "none",
-                      }}
-                    >
-                      "
-                    </span>
-                    <p className="text-[12px] uppercase tracking-[0.2em] text-amber-800 font-semibold mb-3 relative">
-                      Eastern Wisdom
-                    </p>
-                    <p className="text-[17px] text-slate-900 leading-relaxed relative" style={{ fontFamily: SERIF }}>
-                      {brief.clarity.eastern_wisdom.quote || brief.clarity.eastern_wisdom}
-                    </p>
-                    {brief.clarity.eastern_wisdom.source && (
-                      <p className="text-[13px] text-amber-900 mt-3 font-semibold tracking-wide relative">
-                        — {brief.clarity.eastern_wisdom.source}
-                      </p>
+                    {/* Eastern wisdom quote */}
+                    {brief.clarity.eastern_wisdom && (
+                      <div className="rounded-2xl p-5 relative overflow-hidden"
+                        style={{
+                          background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                          border: "1px solid #fcd34d",
+                          boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
+                        }}>
+                        <span aria-hidden style={{
+                          position: "absolute", top: -8, left: 14, fontSize: 80, lineHeight: 1,
+                          color: "rgba(180, 83, 9, 0.18)", fontFamily: SERIF, userSelect: "none",
+                        }}>"</span>
+                        <p className="text-[12px] uppercase tracking-[0.2em] text-amber-800 font-semibold mb-3 relative flex items-center gap-1.5">
+                          📜 Eastern Wisdom
+                        </p>
+                        <p className="text-[17px] text-slate-900 leading-relaxed relative" style={{ fontFamily: SERIF }}>
+                          {brief.clarity.eastern_wisdom.quote || brief.clarity.eastern_wisdom}
+                        </p>
+                        {brief.clarity.eastern_wisdom.source && (
+                          <p className="text-[13px] text-amber-900 mt-3 font-semibold tracking-wide relative">
+                            — {brief.clarity.eastern_wisdom.source}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-
-                {/* Interactive breath practice — animated guide with start/pause */}
-                {brief.clarity.breath_practice && (
-                  <InteractiveBreathGuide
-                    name={brief.clarity.breath_practice.name || "Breath Practice"}
-                    pattern={brief.clarity.breath_practice.pattern || brief.clarity.breath_practice}
-                    description={brief.clarity.breath_practice.description}
-                    rounds={brief.clarity.breath_practice.rounds}
-                  />
                 )}
               </div>
             </Card>
@@ -8474,3 +8460,4 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
