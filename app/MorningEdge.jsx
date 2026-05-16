@@ -2119,24 +2119,50 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         window.open(b.url, "_blank", "noopener,noreferrer");
                       }
                     }}
-                    className="w-full flex items-center gap-2 bg-white border-2 border-amber-200 rounded-lg px-2.5 py-2 hover:border-amber-300 hover:bg-amber-50/60 active:bg-amber-100 transition text-left"
+                    className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-2 overflow-hidden text-left transition active:scale-[0.98] active:translate-y-0.5"
+                    style={{
+                      background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
+                      border: "1.5px solid #D97706",
+                      boxShadow: "0 2px 0 #92400E, 0 3px 8px rgba(217,119,6,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(146,64,14,0.15)",
+                    }}
                   >
-                    <span className="text-[15px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate" style={{ fontFamily: SERIF }}>
+                    <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
+                      style={{
+                        background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                        borderRadius: "0.6rem 0.6rem 50% 50%",
+                      }} />
+                    <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[15%] pointer-events-none"
+                      style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                    <span className="relative text-[15px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate" style={{ fontFamily: SERIF }}>
                       {b.name}
                     </span>
-                    <span className="text-[12px] text-slate-800 flex-1 truncate">
+                    <span className="relative text-[12px] text-slate-800 flex-1 truncate">
                       {b.path}
                     </span>
-                    <ExternalLink className="w-3 h-3 text-amber-600 flex-shrink-0" />
+                    <ExternalLink className="relative w-3 h-3 text-amber-700 flex-shrink-0" />
                   </button>
                 ))}
               </div>
               <button
                 onClick={() => setShowBrokerageGuide(true)}
-                className="w-full mt-2 px-2.5 py-2 rounded-lg border border-amber-300 bg-white text-[14px] font-semibold text-amber-800 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-center gap-1.5"
+                className="relative w-full mt-2 px-2.5 py-2 rounded-xl text-[14px] font-semibold flex items-center justify-center gap-1.5 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                style={{
+                  background: "linear-gradient(180deg, #FFFBEB 0%, #FCD34D 50%, #D97706 100%)",
+                  border: "1.5px solid #92400E",
+                  boxShadow: "0 2px 0 #78350F, 0 3px 8px rgba(217,119,6,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 4px rgba(146,64,14,0.30)",
+                  color: "#451A03",
+                  textShadow: "0 1px 1px rgba(255,255,255,0.55)",
+                }}
               >
-                See all {BROKERAGES.length} brokerages
-                <ChevronRight className="w-3 h-3" />
+                <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
+                  style={{
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "0.6rem 0.6rem 50% 50%",
+                  }} />
+                <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[15%] pointer-events-none"
+                  style={{ background: "linear-gradient(to top, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                <span className="relative">See all {BROKERAGES.length} brokerages</span>
+                <ChevronRight className="relative w-3 h-3" />
               </button>
               <p className="text-[12px] text-slate-800 italic mt-2 leading-snug">
                 We never see your password. We only read the CSV you upload. Holdings are sent to our server only when generating a brief, then cached briefly under a non-identifying hash. See <a href="/privacy" className="underline">Privacy Policy</a> for details.
@@ -2171,10 +2197,25 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     csvFileInputRef.current.click();
                   }
                 }}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-[15px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition cursor-pointer select-none"
+                className="relative inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-[15px] font-semibold overflow-hidden transition active:scale-[0.97] active:translate-y-0.5 cursor-pointer select-none"
+                style={{
+                  background: "linear-gradient(180deg, #334155 0%, #1E293B 50%, #020617 100%)",
+                  border: "2px solid #D4A574",
+                  boxShadow: "0 3px 0 #020617, 0 5px 12px rgba(2,6,23,0.45), 0 0 16px rgba(212,165,116,0.25), inset 0 2px 3px rgba(255,255,255,0.35), inset 0 -3px 7px rgba(0,0,0,0.50)",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.45)",
+                }}
               >
-                <Plus className="w-3.5 h-3.5" />
-                Choose CSV file
+                <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                  style={{
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "0.75rem 0.75rem 50% 50%",
+                  }} />
+                <span className="absolute bottom-1 left-[30%] right-[30%] h-[18%] pointer-events-none"
+                  style={{ background: "linear-gradient(to top, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                <div className="absolute top-0 left-0 right-0 h-[1.5px]"
+                  style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+                <Plus className="w-3.5 h-3.5 relative" />
+                <span className="relative">Choose CSV file</span>
               </button>
               {csvImportMessage && (
                 <div className={`mt-2 px-3 py-2 rounded-md text-[14px] ${
@@ -2202,9 +2243,20 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             setHoldings((prev) => prev.filter((h) => h.accountId !== a.id));
                           }
                         }}
-                        className="px-3 py-1.5 rounded-md text-rose-600 hover:bg-rose-50 text-[12px] font-semibold flex-shrink-0"
+                        className="relative px-3 py-1.5 rounded-lg text-white text-[12px] font-bold uppercase tracking-wider flex-shrink-0 overflow-hidden transition active:scale-[0.96] active:translate-y-0.5"
+                        style={{
+                          background: "linear-gradient(180deg, #FCA5A5 0%, #DC2626 50%, #991B1B 100%)",
+                          border: "1.5px solid #7F1D1D",
+                          boxShadow: "0 2px 0 #7F1D1D, 0 3px 6px rgba(220,38,38,0.30), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(0,0,0,0.20)",
+                          textShadow: "0 1px 1px rgba(0,0,0,0.30)",
+                        }}
                       >
-                        Remove
+                        <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
+                          style={{
+                            background: "linear-gradient(to bottom, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                            borderRadius: "0.4rem 0.4rem 50% 50%",
+                          }} />
+                        <span className="relative">Remove</span>
                       </button>
                     </div>
                   ))}
