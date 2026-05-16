@@ -8025,27 +8025,96 @@ function PowerPlateCard({ plate }) {
     pairing,
   } = plate;
   return (
-    <div className="rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50/70 to-orange-50/40 overflow-hidden">
+    <div className="relative rounded-2xl overflow-hidden"
+      style={{
+        background: "linear-gradient(165deg, #FFF8E7 0%, #FFE4B8 25%, #FFCE8C 50%, #FFAA66 75%, #E8763D 100%)",
+        border: "2px solid #C2410C",
+        boxShadow: "0 6px 20px -3px rgba(194,65,12,0.40), 0 0 30px rgba(251,146,60,0.30), inset 0 2px 3px rgba(255,255,255,0.85), inset 0 -4px 10px rgba(154,52,18,0.25)",
+      }}>
+      {/* Gold accent line top (premium menu feel) */}
+      <div className="absolute top-0 left-0 right-0 h-[2.5px] z-10"
+        style={{ background: "linear-gradient(90deg, transparent 0%, #FCD34D 25%, #FBBF24 50%, #FCD34D 75%, transparent 100%)" }} />
+      {/* Warm radial spotlight — like overhead restaurant light hitting a plate */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[140%] h-[80%] pointer-events-none opacity-70"
+        style={{
+          background: "radial-gradient(ellipse at center top, rgba(255,255,255,0.85) 0%, rgba(255,237,213,0.30) 35%, transparent 65%)",
+        }} />
+      {/* Subtle steam wisps SVG — animated upward drift */}
+      <svg className="absolute top-2 left-6 pointer-events-none opacity-30" width="60" height="40" viewBox="0 0 60 40" fill="none">
+        <path d="M 10 35 Q 8 25, 12 20 Q 16 14, 11 8 Q 7 4, 12 0" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.7">
+          <animate attributeName="opacity" values="0.2;0.7;0.2" dur="3s" repeatCount="indefinite" />
+        </path>
+        <path d="M 25 38 Q 27 28, 23 22 Q 19 16, 24 10 Q 28 5, 23 2" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.5">
+          <animate attributeName="opacity" values="0.1;0.5;0.1" dur="4s" repeatCount="indefinite" />
+        </path>
+        <path d="M 40 36 Q 38 26, 42 21 Q 46 15, 41 9 Q 37 4, 42 1" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6">
+          <animate attributeName="opacity" values="0.15;0.6;0.15" dur="3.5s" repeatCount="indefinite" />
+        </path>
+      </svg>
       {/* Header — always visible */}
-      <div className="px-4 pt-4 pb-3">
-        <p className="text-[16px] font-bold text-slate-900 leading-snug mb-1.5" style={{ fontFamily: SERIF }}>
+      <div className="relative px-4 pt-4 pb-3 z-10">
+        {/* Premium kicker */}
+        <div className="flex items-center gap-1.5 mb-1.5">
+          <span className="inline-block w-1.5 h-1.5 rounded-full"
+            style={{ background: "#DC2626", boxShadow: "0 0 6px rgba(220,38,38,0.65)" }} />
+          <p className="text-[9px] uppercase tracking-[0.25em] font-bold m-0"
+            style={{ color: "#9A3412", textShadow: "0 1px 0 rgba(255,255,255,0.55)" }}>
+            ✦ Hot · Fresh today
+          </p>
+        </div>
+        {/* Name — bold italic serif like a menu */}
+        <p className="text-[20px] font-bold leading-tight mb-1.5"
+          style={{
+            fontFamily: SERIF,
+            fontStyle: "italic",
+            color: "#451A03",
+            textShadow: "0 1px 0 rgba(255,255,255,0.45), 0 2px 4px rgba(154,52,18,0.20)",
+          }}>
           {name}
         </p>
         {description && (
-          <p className="text-[15px] text-slate-800 leading-relaxed mb-3">{description}</p>
+          <p className="text-[14.5px] leading-relaxed mb-3 italic"
+            style={{
+              color: "#7C2D12",
+              fontFamily: SERIF,
+              textShadow: "0 1px 0 rgba(255,255,255,0.35)",
+            }}>
+            {description}
+          </p>
         )}
-        {/* Stats row */}
+        {/* Stats row — embossed glossy badges */}
         <div className="flex items-center gap-2 mb-3">
           {protein_g != null && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
-              <Flame className="w-3 h-3" />
-              <span className="text-[14px] font-bold">{protein_g}g protein</span>
+            <div className="relative inline-flex items-center gap-1 px-2.5 py-1 rounded-lg overflow-hidden"
+              style={{
+                background: "linear-gradient(180deg, #DC2626 0%, #991B1B 50%, #7F1D1D 100%)",
+                border: "1.5px solid #7F1D1D",
+                boxShadow: "0 2px 0 #7F1D1D, 0 3px 6px rgba(220,38,38,0.35), inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -1.5px 3px rgba(0,0,0,0.30)",
+                textShadow: "0 1px 1px rgba(0,0,0,0.40)",
+              }}>
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "0.4rem 0.4rem 50% 50%",
+                }} />
+              <Flame className="w-3 h-3 text-white relative" strokeWidth={2.6} />
+              <span className="text-[13px] font-bold text-white relative">{protein_g}g protein</span>
             </div>
           )}
           {prep_min != null && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
-              <Timer className="w-3 h-3" />
-              <span className="text-[14px] font-bold">{prep_min} min</span>
+            <div className="relative inline-flex items-center gap-1 px-2.5 py-1 rounded-lg overflow-hidden"
+              style={{
+                background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
+                border: "1.5px solid #92400E",
+                boxShadow: "0 2px 0 #78350F, 0 3px 6px rgba(217,119,6,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -1.5px 3px rgba(120,53,15,0.25)",
+              }}>
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "0.4rem 0.4rem 50% 50%",
+                }} />
+              <Timer className="w-3 h-3 relative" style={{ color: "#451A03" }} strokeWidth={2.6} />
+              <span className="text-[13px] font-bold relative" style={{ color: "#451A03" }}>{prep_min} min</span>
             </div>
           )}
         </div>
@@ -8053,9 +8122,9 @@ function PowerPlateCard({ plate }) {
           onClick={() => setExpanded(!expanded)}
           className="relative w-full text-left px-3 py-2 rounded-2xl overflow-hidden flex items-center justify-between transition active:scale-[0.98] active:translate-y-0.5"
           style={{
-            background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
-            border: "1.5px solid #D97706",
-            boxShadow: "0 2.5px 0 #92400E, 0 4px 8px rgba(217,119,6,0.25), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(146,64,14,0.15)",
+            background: "linear-gradient(180deg, #FFFFFF 0%, #FEF3C7 50%, #FCD34D 100%)",
+            border: "1.5px solid #92400E",
+            boxShadow: "0 2.5px 0 #78350F, 0 4px 8px rgba(146,64,14,0.30), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(120,53,15,0.20)",
           }}
         >
           <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
@@ -8065,11 +8134,11 @@ function PowerPlateCard({ plate }) {
             }} />
           <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[15%] pointer-events-none"
             style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
-          <span className="relative text-[15px] font-bold text-amber-900 flex items-center gap-1.5">
+          <span className="relative text-[15px] font-bold flex items-center gap-1.5" style={{ color: "#451A03" }}>
             <ShoppingBasket className="w-3.5 h-3.5" />
             {expanded ? "Hide grocery list & recipe" : "Show grocery list & recipe"}
           </span>
-          <span className="relative text-amber-800 text-lg font-bold leading-none">{expanded ? "−" : "+"}</span>
+          <span className="relative text-lg font-bold leading-none" style={{ color: "#451A03" }}>{expanded ? "−" : "+"}</span>
         </button>
       </div>
 
