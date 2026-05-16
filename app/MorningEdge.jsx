@@ -2378,55 +2378,62 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           without going back. Step 2 of the flow after picking a pillar. */}
       <div className="relative px-4 pb-4">
         <div className="grid grid-cols-2 gap-3">
-          {/* GENERATE BRIEF — glass-pill: deep navy/indigo with white specular highlight */}
+          {/* GENERATE BRIEF — CANDY CRUSH glossy */}
           <button
             onClick={generateBrief}
             disabled={loading}
-            className="relative rounded-[1.75rem] overflow-hidden text-left active:scale-[0.98] active:translate-y-px transition disabled:opacity-60"
+            className="relative rounded-3xl overflow-hidden text-left active:scale-[0.97] active:translate-y-0.5 transition disabled:opacity-60"
             style={{
-              background: "linear-gradient(160deg, #1E293B 0%, #312E81 60%, #1E1B4B 100%)",
-              border: "1px solid rgba(212, 165, 116, 0.55)",
+              background: "linear-gradient(180deg, #4338CA 0%, #312E81 50%, #1E1B4B 100%)",
+              border: "2px solid #D4A574",
               boxShadow:
-                "0 14px 36px -6px rgba(99, 102, 241, 0.6), 0 4px 16px rgba(30, 27, 75, 0.45), 0 0 40px rgba(129, 140, 248, 0.25), inset 0 2px 4px rgba(255, 255, 255, 0.35), inset 0 -6px 14px rgba(0, 0, 0, 0.45)",
+                "0 5px 0 #1E1B4B, 0 10px 22px rgba(99, 102, 241, 0.55), 0 0 36px rgba(129, 140, 248, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.40), inset 0 -6px 14px rgba(0, 0, 0, 0.55)",
             }}
           >
-            {/* Top specular highlight — the glass reflection */}
-            <div
-              className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
+            {/* Top specular — big bright reflection */}
+            <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
               style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 45%, rgba(255,255,255,0) 100%)",
-                borderTopLeftRadius: "1.5rem",
-                borderTopRightRadius: "1.5rem",
-                borderBottomLeftRadius: "1rem",
-                borderBottomRightRadius: "1rem",
-              }}
-            />
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 50%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1.5rem 1.5rem 50% 50%",
+              }} />
+            {/* Bottom small shine */}
+            <span className="absolute bottom-2 left-[30%] right-[30%] h-[15%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to top, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 100%)",
+                borderRadius: "9999px",
+              }} />
+            {/* Gold accent line on top */}
             <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-30 pointer-events-none"
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-40 pointer-events-none"
               style={{ background: "radial-gradient(circle, #818CF8 0%, transparent 60%)" }} />
             <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
-              <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow"
-                style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
-                <Sparkles className="w-4 h-4" style={{ color: "#1E293B" }} />
+              <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center relative overflow-hidden"
+                style={{
+                  background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
+                  boxShadow: "0 2px 0 #92400E, inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -2px 3px rgba(146,64,14,0.30)",
+                }}>
+                <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
+                <Sparkles className="w-4 h-4 relative" style={{ color: "#451A03" }} />
               </div>
               <div className="flex-1">
                 <p className="text-[9px] tracking-[0.25em] uppercase font-bold leading-none mb-1"
-                  style={{ color: "#D4A574" }}>
+                  style={{ color: "#FCD34D", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
                   ✦ {brief ? "Refresh" : "Begin"}
                 </p>
                 <p className="text-[16px] leading-tight"
-                  style={{ fontFamily: SERIF, fontWeight: 500, color: "#F8FAFC" }}>
+                  style={{ fontFamily: SERIF, fontWeight: 500, color: "#FFFFFF", textShadow: "0 1px 2px rgba(0,0,0,0.55)" }}>
                   {brief ? "Regenerate" : "Generate Brief"}
                 </p>
-                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.7)" }}>
+                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.85)", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
                   {loading ? "Reading the tape…" : brief ? "Pull fresh data" : "See today's tape"}
                 </p>
               </div>
             </div>
           </button>
 
-          {/* SYNC PORTFOLIO — glass-pill: deep black with gold specular highlight */}
+          {/* SYNC PORTFOLIO — CANDY CRUSH glossy */}
           <button
             onClick={() => {
               setShowCsvImport(true);
@@ -2437,43 +2444,48 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 }
               }, 50);
             }}
-            className="relative rounded-[1.75rem] overflow-hidden text-left active:scale-[0.98] active:translate-y-px transition"
+            className="relative rounded-3xl overflow-hidden text-left active:scale-[0.97] active:translate-y-0.5 transition"
             style={{
-              background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
-              border: "1px solid rgba(212, 165, 116, 0.55)",
+              background: "linear-gradient(180deg, #334155 0%, #1E293B 50%, #020617 100%)",
+              border: "2px solid #D4A574",
               boxShadow:
-                "0 14px 36px -6px rgba(2, 6, 23, 0.55), 0 4px 16px rgba(212, 165, 116, 0.18), 0 0 40px rgba(212, 165, 116, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.28), inset 0 -6px 14px rgba(0, 0, 0, 0.5)",
+                "0 5px 0 #020617, 0 10px 22px rgba(2, 6, 23, 0.55), 0 0 36px rgba(212, 165, 116, 0.25), inset 0 2px 4px rgba(255, 255, 255, 0.30), inset 0 -6px 14px rgba(0, 0, 0, 0.55)",
             }}
           >
-            <div
-              className="absolute top-1 left-2 right-2 h-[42%] pointer-events-none"
+            <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
               style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.18) 45%, rgba(255,255,255,0) 100%)",
-                borderTopLeftRadius: "1.5rem",
-                borderTopRightRadius: "1.5rem",
-                borderBottomLeftRadius: "1rem",
-                borderBottomRightRadius: "1rem",
-              }}
-            />
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1.5rem 1.5rem 50% 50%",
+              }} />
+            <span className="absolute bottom-2 left-[30%] right-[30%] h-[15%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to top, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%)",
+                borderRadius: "9999px",
+              }} />
             <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-30 pointer-events-none"
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-40 pointer-events-none"
               style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
             <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
-              <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow"
-                style={{ background: "linear-gradient(135deg, #D4A574 0%, #F5D08C 100%)" }}>
-                <Briefcase className="w-4 h-4" style={{ color: "#1E293B" }} />
+              <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center relative overflow-hidden"
+                style={{
+                  background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
+                  boxShadow: "0 2px 0 #92400E, inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -2px 3px rgba(146,64,14,0.30)",
+                }}>
+                <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
+                <Briefcase className="w-4 h-4 relative" style={{ color: "#451A03" }} />
               </div>
               <div className="flex-1">
                 <p className="text-[9px] tracking-[0.25em] uppercase font-bold leading-none mb-1"
-                  style={{ color: "#D4A574" }}>
+                  style={{ color: "#FCD34D", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
                   ✦ {holdings.length > 0 ? "Manage" : "Personalize"}
                 </p>
                 <p className="text-[16px] leading-tight"
-                  style={{ fontFamily: SERIF, fontWeight: 500, color: "#F8FAFC" }}>
+                  style={{ fontFamily: SERIF, fontWeight: 500, color: "#FFFFFF", textShadow: "0 1px 2px rgba(0,0,0,0.55)" }}>
                   Sync Portfolio
                 </p>
-                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.7)" }}>
+                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.85)", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
                   {holdings.length > 0 ? `${holdings.length} positions` : "Connect holdings"}
                 </p>
               </div>
@@ -3187,7 +3199,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     return dirMult * (av - bv);
                   });
 
-                  // Helper for sort button styling — extra shiny + glossy
+                  // Helper for sort button styling — CANDY CRUSH glossy
                   const SortBtn = ({ id, label }) => {
                     const active = playbookSortBy === id;
                     return (
@@ -3200,23 +3212,31 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             setPlaybookSortDir("desc");
                           }
                         }}
-                        className={`relative flex-1 text-[10px] font-bold uppercase tracking-wider px-2 py-2 rounded-lg transition-all active:scale-[0.97] active:translate-y-px overflow-hidden ${active ? "text-white" : "text-amber-900"}`}
+                        className={`relative flex-1 text-[10px] font-bold uppercase tracking-wider px-2 py-2 rounded-full transition-all active:scale-[0.96] active:translate-y-0.5 overflow-hidden ${active ? "text-white" : "text-amber-900"}`}
                         style={{
                           background: active
-                            ? "linear-gradient(160deg, #F59E0B 0%, #D97706 60%, #92400E 100%)"
-                            : "linear-gradient(160deg, #FFFBEB 0%, #FEF3C7 100%)",
-                          border: active ? "1px solid rgba(146,64,14,0.55)" : "1px solid rgba(217,119,6,0.40)",
+                            ? "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #B45309 100%)"
+                            : "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
+                          border: active ? "1.5px solid #92400E" : "1.5px solid rgba(217,119,6,0.55)",
                           boxShadow: active
-                            ? "0 4px 12px -2px rgba(217,119,6,0.55), 0 0 18px rgba(217,119,6,0.25), inset 0 2px 3px rgba(255,255,255,0.50), inset 0 -2px 4px rgba(0,0,0,0.25)"
-                            : "0 2px 5px rgba(146,64,14,0.15), inset 0 2px 3px rgba(255,255,255,0.95), inset 0 -1.5px 3px rgba(146,64,14,0.08)",
+                            ? "0 3px 0 #78350F, 0 5px 12px rgba(217,119,6,0.55), 0 0 16px rgba(252,211,77,0.45), inset 0 2px 3px rgba(255,255,255,0.65), inset 0 -3px 6px rgba(120,53,15,0.35)"
+                            : "0 2px 0 rgba(146,64,14,0.35), 0 3px 6px rgba(146,64,14,0.18), inset 0 2px 3px rgba(255,255,255,1), inset 0 -2px 4px rgba(146,64,14,0.12)",
+                          textShadow: active ? "0 1px 1px rgba(120,53,15,0.45)" : "none",
                         }}
                       >
-                        {/* Strong glass reflection on top */}
-                        <span className="absolute top-0.5 left-1 right-1 h-[45%] pointer-events-none rounded-t-md"
+                        {/* Big top specular */}
+                        <span className="absolute top-0.5 left-1.5 right-1.5 h-[55%] pointer-events-none"
                           style={{
                             background: active
-                              ? "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 50%, rgba(255,255,255,0) 100%)"
-                              : "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.40) 55%, rgba(255,255,255,0) 100%)",
+                              ? "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)"
+                              : "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.45) 55%, rgba(255,255,255,0) 100%)",
+                            borderRadius: "9999px 9999px 50% 50%",
+                          }} />
+                        {/* Bottom shine */}
+                        <span className="absolute bottom-1 left-[25%] right-[25%] h-[18%] pointer-events-none"
+                          style={{
+                            background: "linear-gradient(to top, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)",
+                            borderRadius: "9999px",
                           }} />
                         <span className="relative">{label}{active ? (playbookSortDir === "desc" ? " ▼" : " ▲") : ""}</span>
                       </button>
@@ -4692,37 +4712,42 @@ function FilterPill({ active, onClick, emoji, icon, label, accent }) {
   return (
     <button
       onClick={onClick}
-      className={`relative py-3.5 px-2 rounded-2xl flex flex-col items-center gap-1.5 overflow-hidden transition-all duration-150 active:scale-[0.97] active:translate-y-px ${
+      className={`relative py-3.5 px-2 rounded-2xl flex flex-col items-center gap-1.5 overflow-hidden transition-all duration-150 active:scale-[0.96] active:translate-y-0.5 ${
         active ? a.text : "text-slate-900"
       }`}
       style={
         active
           ? {
-              background: `linear-gradient(160deg, ${g.from} 0%, ${g.via} 55%, ${g.to} 100%)`,
-              border: "1px solid rgba(255,255,255,0.25)",
-              boxShadow: `0 10px 26px -4px ${g.glow}, 0 4px 12px ${g.glow}, inset 0 2px 4px rgba(255,255,255,0.40), inset 0 -4px 10px rgba(0,0,0,0.30)`,
+              background: `linear-gradient(180deg, ${g.from} 0%, ${g.via} 50%, ${g.to} 100%)`,
+              border: `2px solid ${g.to}`,
+              boxShadow: `0 4px 0 ${g.to}, 0 6px 14px ${g.glow}, 0 0 20px ${g.glow}, inset 0 2px 4px rgba(255,255,255,0.55), inset 0 -4px 10px rgba(0,0,0,0.30)`,
             }
           : {
               background: g.inactiveTint,
-              border: `1px solid ${g.inactiveBorder}`,
+              border: `1.5px solid ${g.inactiveBorder}`,
               boxShadow:
-                "0 6px 16px -3px rgba(15, 23, 42, 0.14), 0 2px 6px rgba(15, 23, 42, 0.08), inset 0 2px 3px rgba(255,255,255,1), inset 0 -2px 6px rgba(15,23,42,0.10)",
+                "0 3px 0 rgba(15, 23, 42, 0.12), 0 4px 10px rgba(15, 23, 42, 0.10), inset 0 2px 4px rgba(255,255,255,1), inset 0 -2px 5px rgba(15,23,42,0.08)",
             }
       }
     >
-      {/* Top specular highlight — the glass reflection */}
+      {/* Big top specular highlight — candy shine */}
       <span
-        className="absolute top-1 left-2 right-2 h-[40%] pointer-events-none"
+        className="absolute top-1 left-2 right-2 h-[50%] pointer-events-none"
         style={{
           background: active
-            ? "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%)"
-            : "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
-          borderTopLeftRadius: "1rem",
-          borderTopRightRadius: "1rem",
-          borderBottomLeftRadius: "0.6rem",
-          borderBottomRightRadius: "0.6rem",
+            ? "linear-gradient(to bottom, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0) 100%)"
+            : "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.40) 55%, rgba(255,255,255,0) 100%)",
+          borderRadius: "1rem 1rem 50% 50%",
         }}
       />
+      {/* Small bottom shine */}
+      <span className="absolute bottom-1 left-[28%] right-[28%] h-[18%] pointer-events-none"
+        style={{
+          background: active
+            ? "linear-gradient(to top, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)"
+            : "linear-gradient(to top, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%)",
+          borderRadius: "9999px",
+        }} />
       {/* Color dot indicator when not active — tells the user this filter has a color identity */}
       {!active && accent && (
         <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${a.dot} ring-1 ring-white z-10`} />
@@ -5792,17 +5817,28 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
                 <span className="relative">{r.label}</span>
               </span>
             )}
-            {/* Extra-shiny action chip */}
-            <div className="relative inline-flex items-center rounded-md overflow-hidden font-bold tracking-wider uppercase text-white flex-shrink-0"
+            {/* Candy Crush style action chip */}
+            <div className="relative inline-flex items-center rounded-full overflow-hidden font-bold tracking-wider uppercase text-white flex-shrink-0"
               style={{
                 background: a.bg,
-                border: `1px solid ${a.border}`,
-                boxShadow: `0 2px 5px ${a.glow}, 0 0 10px ${a.glow}, inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(0,0,0,0.30)`,
+                border: `1.5px solid ${a.border}`,
+                boxShadow: `0 3px 0 ${a.border}, 0 5px 10px ${a.glow}, 0 0 12px ${a.glow}, inset 0 2px 3px rgba(255,255,255,0.65), inset 0 -3px 5px rgba(0,0,0,0.30)`,
                 fontSize: 9,
-                padding: "2.5px 6px",
+                padding: "3px 8px",
+                textShadow: "0 1px 1px rgba(0,0,0,0.30)",
               }}>
-              <span className="absolute top-0 left-0.5 right-0.5 h-[50%] pointer-events-none rounded-t-md"
-                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)" }} />
+              {/* Big top specular highlight */}
+              <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.30) 50%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "9999px 9999px 50% 50%",
+                }} />
+              {/* Small bottom shine — second specular for bubble feel */}
+              <span className="absolute bottom-0.5 left-[25%] right-[25%] h-[20%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "9999px",
+                }} />
               <span className="relative">{entry.action}</span>
             </div>
           </div>
