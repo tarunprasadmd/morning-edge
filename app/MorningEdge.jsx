@@ -8001,10 +8001,20 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
       <div className="flex items-center gap-2 bg-white border-b border-slate-200 px-3 py-3 shadow-sm flex-shrink-0">
         <button
           onClick={onClose}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition text-slate-800"
+          className="relative w-9 h-9 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 overflow-hidden text-slate-800"
+          style={{
+            background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+            border: "1.5px solid #64748B",
+            boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.18), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.15)",
+          }}
           aria-label="Close brokerage guide"
         >
-          <ChevronLeft className="w-5 h-5" />
+          <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+            style={{
+              background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+              borderRadius: "9999px 9999px 50% 50%",
+            }} />
+          <ChevronLeft className="w-5 h-5 relative" />
         </button>
         <div className="flex-1 min-w-0 px-1">
           <p className="text-[12px] uppercase tracking-wider text-slate-800 font-semibold leading-tight">Brokerage Help</p>
@@ -8012,10 +8022,20 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition text-slate-800"
+          className="relative w-9 h-9 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 overflow-hidden text-slate-800"
+          style={{
+            background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+            border: "1.5px solid #64748B",
+            boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.18), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.15)",
+          }}
           aria-label="Close"
         >
-          <X className="w-5 h-5" />
+          <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+            style={{
+              background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+              borderRadius: "9999px 9999px 50% 50%",
+            }} />
+          <X className="w-5 h-5 relative" />
         </button>
       </div>
 
@@ -8049,21 +8069,33 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
               <button
                 key={b.name}
                 onClick={() => handleBrokerClick(b)}
-                className="w-full text-left bg-white border border-slate-200 rounded-xl px-3.5 py-3 hover:border-amber-300 hover:bg-amber-50/40 active:bg-amber-50 transition"
+                className="relative w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                style={{
+                  background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
+                  border: "1.5px solid #D97706",
+                  boxShadow: "0 3px 0 #92400E, 0 4px 10px rgba(217,119,6,0.25), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(146,64,14,0.15)",
+                }}
               >
-                <div className="flex items-start gap-2.5">
+                <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                  style={{
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "1rem 1rem 50% 50%",
+                  }} />
+                <span className="absolute bottom-1 left-[30%] right-[30%] h-[15%] pointer-events-none"
+                  style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                <div className="relative flex items-start gap-2.5">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <h3 className="text-[16px] font-bold text-slate-900 truncate" style={{ fontFamily: SERIF }}>
                         {b.name}
                       </h3>
-                      <ExternalLink className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                      <ExternalLink className="w-3.5 h-3.5 text-amber-800 flex-shrink-0" />
                     </div>
                     <p className="text-[14px] text-slate-800 leading-snug font-medium">
                       {b.path}
                     </p>
                     {b.notes && (
-                      <p className="text-[12px] text-slate-800 leading-snug mt-1 italic">
+                      <p className="text-[12px] text-amber-900 leading-snug mt-1 italic">
                         {b.notes}
                       </p>
                     )}
