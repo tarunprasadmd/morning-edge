@@ -6171,20 +6171,36 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
   const todayColor = entry.todayDollar == null ? "#64748B" : todayDollarPositive ? "#059669" : "#DC2626";
 
   return (
-    <div className="relative rounded-lg overflow-hidden"
+    <div className="relative rounded-xl overflow-hidden"
       style={{
         background: directionTint,
-        border: `1px solid ${isUp ? "rgba(16,185,129,0.40)" : isDown ? "rgba(220,38,38,0.40)" : "rgba(148,163,184,0.40)"}`,
-        boxShadow: "0 1.5px 4px -1px rgba(15,23,42,0.10), inset 0 1px 1.5px rgba(255,255,255,0.85)",
+        border: `1.5px solid ${isUp ? "#10B981" : isDown ? "#DC2626" : "#94A3B8"}`,
+        boxShadow: isUp
+          ? "0 2.5px 0 #047857, 0 4px 10px rgba(16,185,129,0.25), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(6,95,70,0.12)"
+          : isDown
+          ? "0 2.5px 0 #991B1B, 0 4px 10px rgba(220,38,38,0.25), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(127,29,29,0.12)"
+          : "0 2.5px 0 #64748B, 0 4px 10px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
       }}>
+      {/* Top specular highlight — candy shine across the whole card */}
+      <span className="absolute top-0.5 left-2 right-2 h-[45%] pointer-events-none z-[1]"
+        style={{
+          background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
+          borderRadius: "0.75rem 0.75rem 50% 50%",
+        }} />
+      {/* Bottom shine */}
+      <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[12%] pointer-events-none z-[1]"
+        style={{
+          background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)",
+          borderRadius: "9999px",
+        }} />
       {/* Left direction stripe */}
-      <div className="absolute top-0 left-0 bottom-0 w-[3px]"
+      <div className="absolute top-0 left-0 bottom-0 w-[3px] z-[2]"
         style={{ background: stripeColor }} />
       {/* Tappable row */}
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="relative w-full text-left transition-all active:translate-y-px"
+        className="relative w-full text-left transition-all active:scale-[0.99] active:translate-y-0.5 z-[2]"
       >
         <div className="pl-2 pr-1.5 py-1.5">
           {/* TOP LINE: ticker + action chip */}
