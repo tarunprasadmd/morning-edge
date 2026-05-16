@@ -5979,6 +5979,29 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
   const hasOpportunity = Array.isArray(opportunity) && opportunity.length > 0;
   const hasRadar = Array.isArray(radar) && radar.length > 0;
 
+  // Live prices for Discovery tickers — gives the user real "is this moving NOW" signal
+  // rather than just a static AI thesis. Polls /api/prices every 60s while mounted.
+  const [livePrices, setLivePrices] = React.useState({});
+  React.useEffect(() => {
+    const symbols = [
+      ...(hasOpportunity ? opportunity.map((o) => o && o.ticker).filter(Boolean) : []),
+      ...(hasRadar ? radar.map((r) => r && r.ticker).filter(Boolean) : []),
+    ];
+    if (symbols.length === 0) return;
+    let cancelled = false;
+    const fetchPrices = async () => {
+      try {
+        const res = await fetch(`/api/prices?symbols=${symbols.join(",")}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && data && data.prices) setLivePrices(data.prices);
+      } catch {}
+    };
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 60_000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [hasOpportunity, hasRadar, opportunity, radar]);
+
   // Compact row card used in both columns
   const renderRow = (item, i, palettes, type) => {
     const p = palettes[i % palettes.length];
@@ -6003,6 +6026,20 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
           deep_reasoning: item.deep_reasoning,
           chatDescription: `${item.ticker}${item.theme ? ` (${item.theme})` : ""}: ${item.headline}${item.why_now ? `. ${item.why_now}` : ""}${item.deep_reasoning ? ` Full reasoning: ${item.deep_reasoning}` : ""}`,
         };
+    // Heuristic risk inference based on theme keywords (until AI gives us real risk)
+    const themeStr = (item.theme || "").toLowerCase();
+    const tickerStr = (item.ticker || "").toUpperCase();
+    let risk = null;
+    if (themeStr.match(/ai|small.?cap|biotech|crypto|emerging|nuclear|quantum/i)) risk = { label: "H", color: "#DC2626" };
+    else if (themeStr.match(/dividend|income|utility|staple|defensive|treasur/i)) risk = { label: "L", color: "#10B981" };
+    else if (item.ticker) risk = { label: "M", color: "#F59E0B" };
+
+    // Live price lookup
+    const live = livePrices[item.ticker];
+    const currentPrice = live && typeof live.currentPrice === "number" ? live.currentPrice : null;
+    const changePct = live && typeof live.gainPct === "number" ? live.gainPct : null;
+    const isUp = changePct != null && changePct >= 0;
+
     return (
       <button
         key={i}
@@ -6028,16 +6065,46 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
             <Sparkles className="w-4 h-4 text-white relative" strokeWidth={2.5} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className={`text-[15px] font-bold leading-tight ${p.ticker}`} style={{ fontFamily: SERIF }}>
-              {item.ticker}
-            </p>
+            {/* LINE 1: ticker + risk dot + price + change% */}
+            <div className="flex items-center gap-1.5">
+              <p className={`text-[15px] font-bold leading-tight ${p.ticker}`} style={{ fontFamily: SERIF }}>
+                {item.ticker}
+              </p>
+              {risk && (
+                <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold text-white flex-shrink-0 relative overflow-hidden"
+                  style={{
+                    background: risk.color,
+                    boxShadow: "inset 0 1px 1px rgba(255,255,255,0.45), 0 1px 2px rgba(0,0,0,0.20)",
+                  }}
+                  title={`${risk.label === "H" ? "Higher" : risk.label === "L" ? "Lower" : "Medium"} risk`}>
+                  <span className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none"
+                    style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0) 100%)", borderRadius: "50% 50% 0 0" }} />
+                  <span className="relative">{risk.label}</span>
+                </span>
+              )}
+              {currentPrice != null && (
+                <span className="text-[11.5px] font-semibold text-slate-900">
+                  ${currentPrice.toFixed(2)}
+                </span>
+              )}
+              {changePct != null && !Number.isNaN(changePct) && (
+                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[10px] font-extrabold flex-shrink-0"
+                  style={{
+                    background: isUp ? "rgba(16,185,129,0.15)" : "rgba(220,38,38,0.15)",
+                    color: isUp ? "#059669" : "#DC2626",
+                  }}>
+                  <span style={{ fontSize: 11, lineHeight: 1, fontWeight: 900 }}>{isUp ? "▲" : "▼"}</span>
+                  {Math.abs(changePct).toFixed(1)}%
+                </span>
+              )}
+            </div>
             {item.theme && (
-              <p className={`text-[11px] font-semibold tracking-wide leading-tight truncate ${p.theme}`}>
+              <p className={`text-[11px] font-semibold tracking-wide leading-tight truncate ${p.theme} mt-0.5`}>
                 {item.theme}
               </p>
             )}
-            <p className="text-[13px] text-slate-900 mt-0.5 leading-snug truncate">
-              {item.fits_gap || item.headline || item.why_now || "Tap for reasoning"}
+            <p className="text-[12.5px] text-slate-800 mt-0.5 leading-snug truncate italic">
+              ⚡ {item.fits_gap || item.headline || item.why_now || "Tap for reasoning"}
             </p>
           </div>
         </div>
