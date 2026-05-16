@@ -3047,21 +3047,34 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 description: "General question about today's brief or your portfolio. The user has the full brief in front of them and may reference any section.",
               });
             }}
-            className="w-full rounded-2xl px-4 py-3.5 transition active:scale-[0.99] hover:shadow-md flex items-center gap-3 text-left border"
+            className="relative w-full rounded-2xl px-4 py-3.5 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5 flex items-center gap-3 text-left"
             style={{
-              background: "linear-gradient(135deg, #f5f3ff 0%, #faf5ff 60%, #fdf4ff 100%)",
-              borderColor: "#ddd6fe",
-              boxShadow: "0 2px 8px -2px rgba(139, 92, 246, 0.12)",
+              background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 50%, #C4B5FD 100%)",
+              border: "1.5px solid #8B5CF6",
+              boxShadow: "0 3px 0 #6D28D9, 0 5px 12px rgba(139,92,246,0.35), 0 0 18px rgba(196,181,253,0.30), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -2px 4px rgba(91,33,182,0.15)",
             }}
           >
+            <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1rem 1rem 50% 50%",
+              }} />
+            <span className="absolute bottom-1 left-[30%] right-[30%] h-[15%] pointer-events-none"
+              style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
             <div
-              className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%)" }}
+              className="relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+              style={{
+                background: "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
+                border: "1.5px solid #4C1D95",
+                boxShadow: "0 1.5px 0 #4C1D95, inset 0 1.5px 2px rgba(255,255,255,0.55)",
+              }}
             >
-              <Sparkles className="w-5 h-5 text-white" strokeWidth={2.5} />
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
+              <Sparkles className="w-5 h-5 text-white relative" strokeWidth={2.5} />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-violet-700 leading-none mb-1">
+            <div className="relative flex-1 min-w-0">
+              <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-violet-800 leading-none mb-1">
                 Ask Morning Edge
               </p>
               <p className="text-[15px] text-slate-800 leading-snug truncate">
@@ -4648,11 +4661,11 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
             onOpenSourceDetail({ category, text, ticker, why_matters });
           }
         }}
-        className={`w-full text-left flex items-center gap-2.5 px-2 py-2 -mx-2 rounded-lg transition cursor-pointer ${theme.rowHover} ${theme.rowActive}`}
+        className={`w-full text-left flex items-center gap-2.5 px-2 py-2 -mx-2 rounded-lg transition active:scale-[0.98] active:translate-y-0.5 cursor-pointer ${theme.rowHover} ${theme.rowActive}`}
       >
         {ticker && (
           <span
-            className="px-2.5 py-1 rounded-md font-bold flex-shrink-0 text-center"
+            className="relative px-2.5 py-1 rounded-lg font-bold flex-shrink-0 text-center overflow-hidden"
             style={{
               fontFamily: SERIF,
               fontSize: 14,
@@ -4660,11 +4673,16 @@ function SmartMoneyRow({ item, onOpenSourceDetail, category }) {
               minWidth: 60,
               background: theme.chipBg,
               color: theme.chipText,
-              border: `1px solid ${theme.chipBorder}`,
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.7)",
+              border: `1.5px solid ${theme.chipBorder}`,
+              boxShadow: `0 1.5px 0 ${theme.chipBorder}, inset 0 1.5px 2px rgba(255,255,255,0.95)`,
             }}
           >
-            {ticker}
+            <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "0.4rem 0.4rem 50% 50%",
+              }} />
+            <span className="relative">{ticker}</span>
           </span>
         )}
         <span className="flex-1 text-[15px] leading-snug" style={{ color: theme.bodyText, fontWeight: 500 }}>
@@ -5357,9 +5375,20 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
           {detail.showStartButton && (
             <button
               onClick={detail.onStart}
-              className="mt-3 w-full px-4 py-2.5 rounded-lg bg-slate-900 text-white text-[16px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition flex items-center justify-center gap-2"
+              className="relative mt-3 w-full px-4 py-2.5 rounded-2xl text-white text-[16px] font-bold overflow-hidden transition active:scale-[0.97] active:translate-y-0.5 flex items-center justify-center gap-2"
+              style={{
+                background: "linear-gradient(180deg, #334155 0%, #1E293B 50%, #020617 100%)",
+                border: "2px solid #D4A574",
+                boxShadow: "0 4px 0 #020617, 0 6px 14px rgba(2,6,23,0.45), inset 0 2px 3px rgba(255,255,255,0.35), inset 0 -3px 6px rgba(0,0,0,0.50)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.45)",
+              }}
             >
-              <Play className="w-4 h-4" /> Start guided routine
+              <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "1rem 1rem 50% 50%",
+                }} />
+              <Play className="w-4 h-4 relative" /> <span className="relative">Start guided routine</span>
             </button>
           )}
         </div>
@@ -5441,8 +5470,20 @@ function RoutineFlow({ routine, onClose, onComplete }) {
             </p>
             <p className="text-base font-bold text-slate-900 mt-0.5">{segment.kicker}</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100" aria-label="Close">
-            <X className="w-5 h-5 text-slate-800" />
+          <button onClick={onClose}
+            className="relative w-9 h-9 rounded-full flex items-center justify-center overflow-hidden transition active:scale-[0.92] active:translate-y-0.5"
+            style={{
+              background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+              border: "1.5px solid #64748B",
+              boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.18), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.15)",
+            }}
+            aria-label="Close">
+            <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "9999px 9999px 50% 50%",
+              }} />
+            <X className="w-5 h-5 text-slate-800 relative" />
           </button>
         </div>
 
@@ -5494,13 +5535,27 @@ function RoutineFlow({ routine, onClose, onComplete }) {
             </p>
             <button
               onClick={() => setRunning(!running)}
-              className="mt-4 px-5 py-2.5 rounded-full text-[16px] font-semibold transition shadow-md"
+              className="relative mt-4 px-5 py-2.5 rounded-full text-[16px] font-bold uppercase tracking-wider transition active:scale-[0.96] active:translate-y-0.5 overflow-hidden"
               style={{
-                backgroundColor: running ? "#F1F5F9" : segColor,
+                background: running
+                  ? "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)"
+                  : `linear-gradient(180deg, ${segColor}DD 0%, ${segColor} 50%, ${segColor}99 100%)`,
+                border: running ? "1.5px solid #64748B" : `2px solid ${segColor}`,
                 color: running ? "#0F172A" : "#fff",
+                boxShadow: running
+                  ? "0 3px 0 #475569, 0 5px 10px rgba(15,23,42,0.20), inset 0 1.5px 2px rgba(255,255,255,1)"
+                  : `0 3px 0 ${segColor}99, 0 5px 12px ${segColor}55, inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.25)`,
+                textShadow: running ? "none" : "0 1px 1px rgba(0,0,0,0.30)",
               }}
             >
-              {running ? "Pause" : secondsLeft === segment.durationSec ? "Start" : "Resume"}
+              <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                style={{
+                  background: running
+                    ? "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)"
+                    : "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "9999px 9999px 50% 50%",
+                }} />
+              <span className="relative">{running ? "Pause" : secondsLeft === segment.durationSec ? "Start" : "Resume"}</span>
             </button>
           </div>
 
@@ -5526,18 +5581,37 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           <button
             onClick={back}
             disabled={segIdx === 0}
-            className={`px-4 py-2.5 rounded-xl text-[16px] font-semibold transition ${
-              segIdx === 0 ? "text-slate-300" : "text-slate-800 hover:bg-slate-100 active:bg-slate-200"
-            }`}
+            className="relative px-4 py-2.5 rounded-2xl text-[16px] font-bold overflow-hidden transition active:scale-[0.97] active:translate-y-0.5 disabled:opacity-40"
+            style={{
+              background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+              border: "1.5px solid #64748B",
+              color: "#0F172A",
+              boxShadow: "0 2.5px 0 #475569, 0 4px 8px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1)",
+            }}
           >
-            Back
+            <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1rem 1rem 50% 50%",
+              }} />
+            <span className="relative">Back</span>
           </button>
           <button
             onClick={next}
-            className="flex-1 px-4 py-2.5 rounded-xl text-[16px] font-semibold text-white transition shadow-md"
-            style={{ backgroundColor: segColor }}
+            className="relative flex-1 px-4 py-2.5 rounded-2xl text-[16px] font-bold text-white overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
+            style={{
+              background: `linear-gradient(180deg, ${segColor}DD 0%, ${segColor} 50%, ${segColor}99 100%)`,
+              border: `2px solid ${segColor}`,
+              boxShadow: `0 3px 0 ${segColor}99, 0 5px 12px ${segColor}55, inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.25)`,
+              textShadow: "0 1px 1px rgba(0,0,0,0.30)",
+            }}
           >
-            {isLast ? "Complete routine" : "Next segment →"}
+            <span className="absolute top-0.5 left-3 right-3 h-[50%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1rem 1rem 50% 50%",
+              }} />
+            <span className="relative">{isLast ? "Complete routine" : "Next segment →"}</span>
           </button>
         </div>
       </div>
@@ -5943,12 +6017,25 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
       <button
         key={i}
         onClick={() => onOpenReading(reading)}
-        className={`text-left rounded-lg ${p.rowBg} border ${p.border} hover:shadow-md active:scale-[0.98] transition-all overflow-hidden flex items-stretch`}
+        className={`relative text-left rounded-xl ${p.rowBg} active:scale-[0.97] active:translate-y-0.5 transition-all overflow-hidden flex items-stretch`}
+        style={{
+          border: `1.5px solid ${type === "opportunity" ? "#A78BFA" : "#22D3EE"}`,
+          boxShadow: type === "opportunity"
+            ? "0 2.5px 0 #6D28D9, 0 4px 10px rgba(139,92,246,0.25), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(91,33,182,0.10)"
+            : "0 2.5px 0 #0E7490, 0 4px 10px rgba(34,211,238,0.25), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(14,116,144,0.10)",
+        }}
       >
-        <div className={`w-1 ${p.stripe}`} />
-        <div className="flex items-center gap-2 px-2 py-2 flex-1 min-w-0">
-          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${p.iconBg} flex items-center justify-center shadow-sm flex-shrink-0`}>
-            <Sparkles className="w-4 h-4 text-white" strokeWidth={2.5} />
+        <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+          style={{
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+            borderRadius: "0.6rem 0.6rem 50% 50%",
+          }} />
+        <div className={`w-1 ${p.stripe} relative`} />
+        <div className="flex items-center gap-2 px-2 py-2 flex-1 min-w-0 relative">
+          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${p.iconBg} flex items-center justify-center shadow-sm flex-shrink-0 relative overflow-hidden`}>
+            <span className="absolute top-0.5 left-0.5 right-0.5 h-[50%] pointer-events-none rounded-t-lg"
+              style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)" }} />
+            <Sparkles className="w-4 h-4 text-white relative" strokeWidth={2.5} />
           </div>
           <div className="min-w-0 flex-1">
             <p className={`text-[15px] font-bold leading-tight ${p.ticker}`} style={{ fontFamily: SERIF }}>
@@ -6198,9 +6285,19 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
           {entry._decisionIdx != null && entry._decisionIdx >= 0 && (
             <button
               onClick={(e) => { e.stopPropagation(); onOpen && onOpen(entry); }}
-              className="mt-2 px-2 py-1 rounded text-[9.5px] font-bold text-white"
-              style={{ background: "linear-gradient(160deg, #1E293B 0%, #312E81 100%)" }}>
-              Full reasoning →
+              className="relative mt-2 px-2.5 py-1 rounded-lg text-[9.5px] font-bold text-white overflow-hidden transition active:scale-[0.96] active:translate-y-0.5"
+              style={{
+                background: "linear-gradient(180deg, #818CF8 0%, #4338CA 50%, #1E1B4B 100%)",
+                border: "1.5px solid #312E81",
+                boxShadow: "0 2px 0 #312E81, 0 3px 6px rgba(99,102,241,0.35), inset 0 1px 1.5px rgba(255,255,255,0.45)",
+                textShadow: "0 1px 1px rgba(0,0,0,0.40)",
+              }}>
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "0.4rem 0.4rem 50% 50%",
+                }} />
+              <span className="relative">Full reasoning →</span>
             </button>
           )}
         </div>
@@ -6396,16 +6493,26 @@ function ChatSheet({
           {!showCashInput ? (
             <button
               onClick={() => { setShowCashInput(true); setCashDraft(cashBalance != null ? String(cashBalance) : ""); }}
-              className="w-full flex items-center justify-between text-[14px] text-slate-800 hover:text-slate-900 transition"
+              className="relative w-full flex items-center justify-between text-[14px] text-slate-800 rounded-xl px-3 py-2 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+              style={{
+                background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                border: "1.5px solid #94A3B8",
+                boxShadow: "0 2px 0 #64748B, 0 3px 6px rgba(15,23,42,0.10), inset 0 1.5px 2px rgba(255,255,255,1)",
+              }}
             >
-              <span className="flex items-center gap-1.5">
+              <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "0.6rem 0.6rem 50% 50%",
+                }} />
+              <span className="relative flex items-center gap-1.5">
                 <Briefcase className="w-3.5 h-3.5" />
                 {cashBalance != null
                   ? <>Cash to deploy: <span className="font-semibold text-slate-900">${cashBalance.toLocaleString()}</span></>
                   : "Set cash to deploy (optional, helps with sizing math)"
                 }
               </span>
-              <Pencil className="w-3.5 h-3.5" />
+              <Pencil className="w-3.5 h-3.5 relative" />
             </button>
           ) : (
             <div className="flex items-center gap-2">
@@ -8129,9 +8236,20 @@ function InAppBrowser({ url, onClose }) {
           </p>
           <button
             onClick={onClose}
-            className="w-full py-3 rounded-xl bg-slate-900 text-white text-[15px] font-semibold hover:bg-slate-800 active:bg-slate-700 transition flex items-center justify-center gap-2"
+            className="relative w-full py-3 rounded-2xl text-white text-[15px] font-bold overflow-hidden transition active:scale-[0.97] active:translate-y-0.5 flex items-center justify-center gap-2"
+            style={{
+              background: "linear-gradient(180deg, #334155 0%, #1E293B 50%, #020617 100%)",
+              border: "2px solid #D4A574",
+              boxShadow: "0 4px 0 #020617, 0 6px 14px rgba(2,6,23,0.45), inset 0 2px 3px rgba(255,255,255,0.35), inset 0 -3px 6px rgba(0,0,0,0.50)",
+              textShadow: "0 1px 2px rgba(0,0,0,0.45)",
+            }}
           >
-            <ChevronLeft className="w-4 h-4" /> Back to Morning Edge
+            <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1rem 1rem 50% 50%",
+              }} />
+            <ChevronLeft className="w-4 h-4 relative" /> <span className="relative">Back to Morning Edge</span>
           </button>
         </div>
       </div>
