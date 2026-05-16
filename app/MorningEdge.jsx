@@ -5168,21 +5168,38 @@ function MindsetRow({ icon, kicker, body, color }) {
 
 function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, detail }) {
   const colorMap = {
-    rose: { dot: "bg-rose-100 text-rose-600", panel: "bg-rose-50 border-rose-100" },
-    amber: { dot: "bg-amber-100 text-amber-700", panel: "bg-amber-50 border-amber-100" },
-    teal: { dot: "bg-teal-100 text-teal-700", panel: "bg-teal-50 border-teal-100" },
+    rose:  { dot: "linear-gradient(180deg, #FECDD3 0%, #FB7185 50%, #BE123C 100%)", border: "#BE123C", shadow: "#9F1239", glow: "rgba(244,63,94,0.30)", panel: "linear-gradient(180deg, #FFF1F2 0%, #FFE4E6 100%)", panelBorder: "rgba(244,63,94,0.30)" },
+    amber: { dot: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #B45309 100%)", border: "#B45309", shadow: "#78350F", glow: "rgba(245,158,11,0.30)", panel: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 100%)", panelBorder: "rgba(217,119,6,0.30)" },
+    teal:  { dot: "linear-gradient(180deg, #5EEAD4 0%, #14B8A6 50%, #0F766E 100%)", border: "#0F766E", shadow: "#115E59", glow: "rgba(20,184,166,0.30)", panel: "linear-gradient(180deg, #F0FDFA 0%, #CCFBF1 100%)", panelBorder: "rgba(20,184,166,0.30)" },
   };
   const c = colorMap[color] || colorMap.rose;
   return (
     <div>
       <button
         onClick={onToggle}
-        className="w-full flex gap-3 items-start text-left p-2 -mx-2 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition"
+        className="relative w-full flex gap-3 items-start text-left p-2 -mx-2 rounded-2xl overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+        style={{
+          background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+          border: "1.5px solid #94A3B8",
+          boxShadow: "0 2.5px 0 #64748B, 0 4px 8px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+        }}
       >
-        <div className={`flex-shrink-0 w-9 h-9 rounded-full ${c.dot} flex items-center justify-center`}>
-          {icon}
+        <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+          style={{
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+            borderRadius: "1rem 1rem 50% 50%",
+          }} />
+        <div className="relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white overflow-hidden"
+          style={{
+            background: c.dot,
+            border: `1.5px solid ${c.border}`,
+            boxShadow: `0 1.5px 0 ${c.shadow}, 0 2px 5px ${c.glow}, inset 0 1px 1.5px rgba(255,255,255,0.55)`,
+          }}>
+          <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
+          <span className="relative">{icon}</span>
         </div>
-        <div className="flex-1 pt-0.5 min-w-0">
+        <div className="relative flex-1 pt-0.5 min-w-0">
           <p className="text-[12px] uppercase tracking-[0.2em] text-slate-800 font-semibold mb-1 flex items-center gap-2">
             {kicker}
             <span className="text-slate-300 text-base leading-none">{expanded ? "−" : "+"}</span>
@@ -5192,7 +5209,12 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
       </button>
 
       {expanded && (
-        <div className={`mt-2 ml-12 mr-2 p-4 rounded-xl border ${c.panel}`}>
+        <div className="mt-2 ml-12 mr-2 p-4 rounded-2xl border-2"
+          style={{
+            background: c.panel,
+            borderColor: c.panelBorder,
+            boxShadow: `inset 0 1.5px 2px rgba(255,255,255,0.65)`,
+          }}>
           {detail.intent && (
             <p className="text-[15px] text-slate-800 leading-relaxed mb-3 italic" style={{ fontFamily: SERIF }}>
               {detail.intent}
@@ -7802,13 +7824,25 @@ function PowerPlateCard({ plate }) {
         </div>
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full text-left px-3 py-2 rounded-lg bg-white border-2 border-amber-200 hover:bg-amber-50 active:bg-amber-100 transition flex items-center justify-between"
+          className="relative w-full text-left px-3 py-2 rounded-2xl overflow-hidden flex items-center justify-between transition active:scale-[0.98] active:translate-y-0.5"
+          style={{
+            background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
+            border: "1.5px solid #D97706",
+            boxShadow: "0 2.5px 0 #92400E, 0 4px 8px rgba(217,119,6,0.25), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(146,64,14,0.15)",
+          }}
         >
-          <span className="text-[15px] font-semibold text-slate-800 flex items-center gap-1.5">
-            <ShoppingBasket className="w-3.5 h-3.5 text-amber-700" />
+          <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+            style={{
+              background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+              borderRadius: "1rem 1rem 50% 50%",
+            }} />
+          <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[15%] pointer-events-none"
+            style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+          <span className="relative text-[15px] font-bold text-amber-900 flex items-center gap-1.5">
+            <ShoppingBasket className="w-3.5 h-3.5" />
             {expanded ? "Hide grocery list & recipe" : "Show grocery list & recipe"}
           </span>
-          <span className="text-slate-500 text-base leading-none">{expanded ? "−" : "+"}</span>
+          <span className="relative text-amber-800 text-lg font-bold leading-none">{expanded ? "−" : "+"}</span>
         </button>
       </div>
 
@@ -8133,3 +8167,4 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
