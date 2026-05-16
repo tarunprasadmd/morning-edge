@@ -4350,7 +4350,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               <CardHeader icon={<Heart className="w-4 h-4" />} label="Mindset & Body" theme={themes.mindset} pillar="health" />
               <div className="px-5 py-5 space-y-3">
                 <MindsetRowExpandable
-                  icon={<Heart className="w-4 h-4" />}
+                  emoji="🙏"
                   kicker="Gratitude"
                   color="rose"
                   body={brief.mindset.gratitude}
@@ -4362,7 +4362,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   }}
                 />
                 <MindsetRowExpandable
-                  icon={<Coffee className="w-4 h-4" />}
+                  emoji="🥗"
                   kicker="Fuel"
                   color="amber"
                   body={(() => {
@@ -4397,7 +4397,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   })()}
                 />
                 <MindsetRowExpandable
-                  icon={<Wind className="w-4 h-4" />}
+                  emoji="🎯"
                   kicker="Focus"
                   color="teal"
                   body={brief.mindset.focus}
@@ -5206,7 +5206,7 @@ function MindsetRow({ icon, kicker, body, color }) {
   );
 }
 
-function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, detail }) {
+function MindsetRowExpandable({ icon, emoji, kicker, body, color, expanded, onToggle, detail }) {
   const colorMap = {
     rose:  { dot: "linear-gradient(180deg, #FECDD3 0%, #FB7185 50%, #BE123C 100%)", border: "#BE123C", shadow: "#9F1239", glow: "rgba(244,63,94,0.30)", panel: "linear-gradient(180deg, #FFF1F2 0%, #FFE4E6 100%)", panelBorder: "rgba(244,63,94,0.30)" },
     amber: { dot: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #B45309 100%)", border: "#B45309", shadow: "#78350F", glow: "rgba(245,158,11,0.30)", panel: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 100%)", panelBorder: "rgba(217,119,6,0.30)" },
@@ -5229,20 +5229,24 @@ function MindsetRowExpandable({ icon, kicker, body, color, expanded, onToggle, d
             background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
             borderRadius: "1rem 1rem 50% 50%",
           }} />
-        <div className="relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white overflow-hidden"
+        <div className="relative flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center overflow-hidden"
           style={{
             background: c.dot,
             border: `1.5px solid ${c.border}`,
-            boxShadow: `0 1.5px 0 ${c.shadow}, 0 2px 5px ${c.glow}, inset 0 1px 1.5px rgba(255,255,255,0.55)`,
+            boxShadow: `0 1.5px 0 ${c.shadow}, 0 2px 5px ${c.glow}, inset 0 1.5px 2px rgba(255,255,255,0.55)`,
           }}>
           <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
             style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
-          <span className="relative">{icon}</span>
+          {emoji ? (
+            <span className="relative text-[22px] leading-none" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>{emoji}</span>
+          ) : (
+            <span className="relative text-white">{icon}</span>
+          )}
         </div>
-        <div className="relative flex-1 pt-0.5 min-w-0">
-          <p className="text-[12px] uppercase tracking-[0.2em] text-slate-800 font-semibold mb-1 flex items-center gap-2">
+        <div className="relative flex-1 pt-1 min-w-0">
+          <p className="text-[13px] uppercase tracking-[0.18em] font-bold mb-1 flex items-center gap-2" style={{ color: "#0F172A" }}>
             {kicker}
-            <span className="text-slate-300 text-base leading-none">{expanded ? "−" : "+"}</span>
+            <span className="text-slate-400 text-base leading-none">{expanded ? "−" : "+"}</span>
           </p>
           <p className="text-[16px] leading-relaxed text-slate-800" style={{ fontFamily: SERIF }}>{body}</p>
         </div>
@@ -6122,12 +6126,13 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 function UnifiedPlaybookCard({ entry, onOpen }) {
   const [expanded, setExpanded] = React.useState(false);
 
-  // Action chip styling
+  // Action chip styling — bright solid candy colors like risk tier dots.
+  // No colored haze, just clean pop colors with 3D candy gloss.
   const actionStyle = {
-    TRIM:  { bg: "linear-gradient(160deg, #FCA5A5 0%, #DC2626 60%, #991B1B 100%)", glow: "rgba(220,38,38,0.45)",  border: "rgba(153,27,27,0.55)" },
-    ADD:   { bg: "linear-gradient(160deg, #6EE7B7 0%, #059669 60%, #064E3B 100%)", glow: "rgba(5,150,105,0.45)",  border: "rgba(6,78,59,0.55)" },
-    HOLD:  { bg: "linear-gradient(160deg, #FDBA74 0%, #C2410C 60%, #7C2D12 100%)", glow: "rgba(194,65,12,0.35)",  border: "rgba(124,45,18,0.55)" },
-    WATCH: { bg: "linear-gradient(160deg, #FCD34D 0%, #D97706 60%, #92400E 100%)", glow: "rgba(217,119,6,0.35)",  border: "rgba(146,64,14,0.55)" },
+    TRIM:  { bg: "linear-gradient(180deg, #FCA5A5 0%, #EF4444 50%, #B91C1C 100%)", border: "#991B1B" },  // bright red
+    ADD:   { bg: "linear-gradient(180deg, #4ADE80 0%, #16A34A 50%, #14532D 100%)", border: "#14532D" },  // hunter green
+    HOLD:  { bg: "linear-gradient(180deg, #FDE68A 0%, #EAB308 50%, #854D0E 100%)", border: "#854D0E" },  // bright yellow
+    WATCH: { bg: "linear-gradient(180deg, #FDE68A 0%, #EAB308 50%, #854D0E 100%)", border: "#854D0E" },  // bright yellow
   };
   const a = actionStyle[entry.action] || actionStyle.HOLD;
 
@@ -6216,10 +6221,10 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
               style={{
                 background: a.bg,
                 border: `1.5px solid ${a.border}`,
-                boxShadow: `0 3px 0 ${a.border}, 0 5px 10px ${a.glow}, 0 0 12px ${a.glow}, inset 0 2px 3px rgba(255,255,255,0.65), inset 0 -3px 5px rgba(0,0,0,0.30)`,
+                boxShadow: `0 2.5px 0 ${a.border}, 0 4px 8px rgba(15,23,42,0.20), inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -2.5px 5px rgba(0,0,0,0.25)`,
                 fontSize: 9,
                 padding: "3px 8px",
-                textShadow: "0 1px 1px rgba(0,0,0,0.30)",
+                textShadow: "0 1px 1px rgba(0,0,0,0.40)",
               }}>
               {/* Big top specular highlight */}
               <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
@@ -8460,4 +8465,3 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
-
