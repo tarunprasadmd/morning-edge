@@ -1961,11 +1961,31 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               <button
                 onClick={() => tempName.trim() && setPhase("onboard-2")}
                 disabled={!tempName.trim()}
-                className={`w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition ${
-                  tempName.trim() ? "bg-slate-900 text-white hover:bg-slate-800" : "bg-slate-200 text-slate-500"
-                }`}
+                className={`relative w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition overflow-hidden active:scale-[0.97] active:translate-y-0.5 ${tempName.trim() ? "text-white" : "text-slate-500"}`}
+                style={tempName.trim() ? {
+                  background: "linear-gradient(180deg, #334155 0%, #1E293B 50%, #020617 100%)",
+                  border: "2px solid #D4A574",
+                  boxShadow: "0 4px 0 #020617, 0 6px 14px rgba(2,6,23,0.45), inset 0 2px 4px rgba(255,255,255,0.35), inset 0 -4px 10px rgba(0,0,0,0.45)",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.45)",
+                } : {
+                  background: "linear-gradient(180deg, #F1F5F9 0%, #E2E8F0 100%)",
+                  border: "1.5px solid #CBD5E1",
+                }}
               >
-                Continue <ArrowRight className="w-4 h-4" />
+                {tempName.trim() && (
+                  <>
+                    <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+                      style={{
+                        background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%)",
+                        borderRadius: "1rem 1rem 50% 50%",
+                      }} />
+                    <span className="absolute bottom-1 left-[30%] right-[30%] h-[18%] pointer-events-none"
+                      style={{ background: "linear-gradient(to top, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                    <div className="absolute top-0 left-0 right-0 h-[1.5px]"
+                      style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+                  </>
+                )}
+                <span className="relative">Continue</span> <ArrowRight className="w-4 h-4 relative" />
               </button>
             </div>
           )}
@@ -1990,8 +2010,23 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 <p className="text-[12px] text-slate-600 italic mt-2">Don't have a CSV ready? You can still explore — sync anytime.</p>
               </div>
               <button onClick={completeOnboarding}
-                className="w-full py-3.5 rounded-xl font-semibold text-white bg-slate-900 hover:bg-slate-800 flex items-center justify-center gap-2">
-                <Sparkles className="w-4 h-4" /> Begin
+                className="relative w-full py-3.5 rounded-2xl font-semibold text-white flex items-center justify-center gap-2 overflow-hidden active:scale-[0.97] active:translate-y-0.5 transition"
+                style={{
+                  background: "linear-gradient(180deg, #4338CA 0%, #312E81 50%, #1E1B4B 100%)",
+                  border: "2px solid #D4A574",
+                  boxShadow: "0 4px 0 #1E1B4B, 0 6px 14px rgba(99,102,241,0.45), 0 0 20px rgba(129,140,248,0.30), inset 0 2px 4px rgba(255,255,255,0.40), inset 0 -4px 10px rgba(0,0,0,0.45)",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.45)",
+                }}>
+                <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+                  style={{
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "1rem 1rem 50% 50%",
+                  }} />
+                <span className="absolute bottom-1 left-[30%] right-[30%] h-[18%] pointer-events-none"
+                  style={{ background: "linear-gradient(to top, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                <div className="absolute top-0 left-0 right-0 h-[1.5px]"
+                  style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+                <Sparkles className="w-4 h-4 relative" /> <span className="relative">Begin</span>
               </button>
               <button onClick={() => setPhase("onboard-1")}
                 className="w-full py-2 mt-2 text-[16px] text-slate-800 hover:text-slate-900">← Back</button>
@@ -3029,16 +3064,23 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
                         }, 100);
                       }}
-                      className="w-full mb-4 px-3 py-2.5 rounded-xl text-left transition-all active:scale-[0.99] flex items-start gap-2.5"
+                      className="relative w-full mb-4 px-3 py-2.5 rounded-2xl text-left transition-all active:scale-[0.98] active:translate-y-0.5 flex items-start gap-2.5 overflow-hidden"
                       style={{
-                        background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
-                        border: "1px solid rgba(217, 119, 6, 0.35)",
-                        boxShadow: "0 2px 6px rgba(146,64,14,0.10), inset 0 1.5px 2px rgba(255,255,255,0.85)",
+                        background: "linear-gradient(180deg, #FEF3C7 0%, #FDE68A 50%, #FCD34D 100%)",
+                        border: "2px solid #D97706",
+                        boxShadow: "0 3px 0 #92400E, 0 5px 12px rgba(217,119,6,0.30), inset 0 2px 3px rgba(255,255,255,0.85), inset 0 -3px 6px rgba(146,64,14,0.20)",
                       }}
                     >
-                      <RefreshCw className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#92400E" }} strokeWidth={2.4} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-bold leading-tight" style={{ color: "#78350F" }}>
+                      <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+                        style={{
+                          background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.30) 50%, rgba(255,255,255,0) 100%)",
+                          borderRadius: "1rem 1rem 50% 50%",
+                        }} />
+                      <span className="absolute bottom-1 left-[30%] right-[30%] h-[15%] pointer-events-none"
+                        style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                      <RefreshCw className="w-4 h-4 mt-0.5 flex-shrink-0 relative" style={{ color: "#78350F" }} strokeWidth={2.4} />
+                      <div className="flex-1 min-w-0 relative">
+                        <p className="text-[12px] font-bold leading-tight" style={{ color: "#78350F", textShadow: "0 1px 1px rgba(255,255,255,0.45)" }}>
                           Positions changed? Re-sync your CSV.
                         </p>
                         <p className="text-[11px] leading-snug mt-0.5" style={{ color: "#92400E" }}>
