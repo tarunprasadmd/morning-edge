@@ -1185,6 +1185,8 @@ export default function MorningEdge() {
   // sortDir: "desc" (biggest first) | "asc" (smallest first)
   const [playbookSortBy, setPlaybookSortBy] = useState("todayPct");
   const [playbookSortDir, setPlaybookSortDir] = useState("desc");
+  // For Action column 3-way sort: which action group shows first (TRIM/ADD/HOLD)
+  const [actionLeadType, setActionLeadType] = useState("TRIM");
   // Asset-class filter for Playbook + Discovery: "all" | "stocks" | "crypto"
   const [playbookAssetType, setPlaybookAssetType] = useState("all");
   // User overrides for AI action recommendations — tap chip to cycle TRIM/ADD/HOLD.
@@ -4031,10 +4033,73 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       action = "HOLD";
                       reasoning = reasoning || "Monitored. No flagged action today.";
                     }
+
+                    // Build SPECIFIC, ACTIONABLE guidance based on actual position data.
+                    // Used when AI brief didn't provide rich text for this ticker — so
+                    // every position has clear "what to do" guidance, not just bland defaults.
+                    const buildGuidance = () => {
+                      if (h.qty == null || currentPrice == null) return null;
+                      const px = currentPrice.toFixed(2);
+                      const pctNum = pnlPct;
+                      const profitAbs = pnl != null ? Math.abs(pnl).toFixed(0) : null;
+
+                      if (action === "TRIM") {
+                        if (pctNum != null && pctNum > 50) {
+                          const halfQty = Math.max(1, Math.round(h.qty / 2));
+                          return `${sym} is up $${profitAbs} (+${pctNum.toFixed(1)}%) on ${h.qty} shares — sell ${halfQty} shares at market open (9:30 AM ET) to take half your profit off the table. The remaining ${h.qty - halfQty} shares are pure profit from here.`;
+                        }
+                        if (pctNum != null && pctNum > 20) {
+                          const trimQty = Math.max(1, Math.round(h.qty * 0.30));
+                          return `${sym} up +${pctNum.toFixed(1)}% — sell ${trimQty} shares to lock in gains while keeping ${h.qty - trimQty} shares riding the trend.`;
+                        }
+                        const trimQty = Math.max(1, Math.round(h.qty * 0.20));
+                        return `${sym} showing strength — sell ${trimQty} shares to take some profit. Hold the remaining ${h.qty - trimQty}.`;
+                      }
+
+                      if (action === "ADD") {
+                        const addQty = Math.max(1, Math.round(h.qty * 0.15));
+                        const addCost = (addQty * currentPrice).toFixed(0);
+                        return `${sym} at $${px} — consider adding ${addQty} shares (~$${addCost}) to lower your cost basis and increase exposure. Spread over 2-3 buys if volatile.`;
+                      }
+
+                      if (action === "HOLD") {
+                        if (pctNum != null && pctNum > 30) {
+                          const stopPx = (currentPrice * 0.92).toFixed(2);
+                          return `${sym} up +${pctNum.toFixed(1)}% — hold position. Set a trailing stop at $${stopPx} to protect 8% of gains. Re-evaluate at next earnings or catalyst.`;
+                        }
+                        if (pctNum != null && pctNum < -10) {
+                          const basis = (avgCostPerShare || currentPrice).toFixed(2);
+                          return `${sym} down ${pctNum.toFixed(1)}% — hold and reassess at $${basis} (your cost basis). Avoid averaging down without strong conviction. Watch volume on next move.`;
+                        }
+                        const resistance = (currentPrice * 1.08).toFixed(2);
+                        const support = (currentPrice * 0.92).toFixed(2);
+                        return `${sym} steady at $${px}. Hold position. Watch for break above $${resistance} (resistance) or below $${support} (support). No urgent action today.`;
+                      }
+
+                      if (action === "WATCH") {
+                        const entryLow = (currentPrice * 0.95).toFixed(2);
+                        const entryHigh = (currentPrice * 0.98).toFixed(2);
+                        return `Watch ${sym} for entry. Target zone $${entryLow}–$${entryHigh} (2-5% below current $${px}). Wait for confirmation pattern before initiating.`;
+                      }
+                      return null;
+                    };
+
+                    // If reasoning is bland default OR missing, replace with computed actionable guidance
+                    const isBlandReasoning = !reasoning
+                      || /^monitored\.|^conviction watch/i.test(reasoning);
+                    if (isBlandReasoning) {
+                      const guidance = buildGuidance();
+                      if (guidance) reasoning = guidance;
+                    }
+
                     // User override (manually set via tap on chip) takes precedence
                     const aiAction = action;
                     if (actionOverrides[sym]) {
                       action = actionOverrides[sym];
+                      // Recompute guidance for the overridden action so the user sees
+                      // appropriate directions for their manually-chosen action
+                      const overrideGuidance = buildGuidance();
+                      if (overrideGuidance) reasoning = overrideGuidance;
                     }
 
                     return {
@@ -4073,8 +4138,15 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
                   // Sort by user-selected criterion
                   const dirMult = playbookSortDir === "asc" ? 1 : -1;
-                  // Action priority order — TRIM (most urgent) → ADD → HOLD → WATCH
-                  const ACTION_ORDER = { TRIM: 0, ADD: 1, HOLD: 2, WATCH: 3 };
+                  // Action priority — rotates based on user's chosen lead.
+                  // Tapping the Action column header cycles TRIM → ADD → HOLD as the lead.
+                  const buildActionOrder = (lead) => {
+                    if (lead === "ADD") return { ADD: 0, HOLD: 1, WATCH: 2, TRIM: 3 };
+                    if (lead === "HOLD") return { HOLD: 0, WATCH: 1, TRIM: 2, ADD: 3 };
+                    // Default / TRIM lead
+                    return { TRIM: 0, ADD: 1, HOLD: 2, WATCH: 3 };
+                  };
+                  const ACTION_ORDER = buildActionOrder(actionLeadType);
                   entries.sort((a, b) => {
                     // Ticker sort uses symbol (string compare). Handle before null checks.
                     if (playbookSortBy === "ticker") {
@@ -4257,19 +4329,22 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               <ColHead id="todayPct"    label="Today %" width={70} />
                               <ColHead id="totalDollar" label="Total $" width={94} />
                               <ColHead id="totalPct"    label="Total %" width={74} />
-                              {/* Sticky-right: Action header (sortable) */}
+                              {/* Sticky-right: Action header — 3-way sort cycles TRIM → ADD → HOLD priority */}
                               {(() => {
                                 const active = playbookSortBy === "action";
                                 return (
                                   <button
                                     type="button"
                                     onClick={() => {
+                                      // Cycle lead: TRIM → ADD → HOLD → TRIM
+                                      const nextLead = { TRIM: "ADD", ADD: "HOLD", HOLD: "TRIM" };
                                       if (active) {
-                                        setPlaybookSortDir(playbookSortDir === "desc" ? "asc" : "desc");
+                                        setActionLeadType(nextLead[actionLeadType] || "TRIM");
                                       } else {
                                         setPlaybookSortBy("action");
-                                        setPlaybookSortDir("asc");
+                                        setActionLeadType("TRIM");
                                       }
+                                      setPlaybookSortDir("asc");
                                     }}
                                     className="px-2 py-3 flex items-center justify-center gap-0.5 sticky right-0 z-[2] flex-shrink-0 transition active:scale-[0.96] cursor-pointer overflow-hidden relative"
                                     style={{
@@ -4286,7 +4361,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                         style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)", borderRadius: "0.4rem 0.4rem 50% 50%" }} />
                                     )}
                                     <span className="relative">Action</span>
-                                    {active && <span className="relative text-[10px]">{playbookSortDir === "desc" ? "▼" : "▲"}</span>}
+                                    {active && (
+                                      <span className="relative text-[9px] font-extrabold tracking-tight">
+                                        {actionLeadType[0]}
+                                      </span>
+                                    )}
                                   </button>
                                 );
                               })()}
