@@ -1187,8 +1187,30 @@ export default function MorningEdge() {
   const [playbookSortDir, setPlaybookSortDir] = useState("desc");
   // Asset-class filter for Playbook + Discovery: "all" | "stocks" | "crypto"
   const [playbookAssetType, setPlaybookAssetType] = useState("all");
-  // User overrides for AI action recommendations — tap chip to cycle TRIM/ADD/HOLD
+  // User overrides for AI action recommendations — tap chip to cycle TRIM/ADD/HOLD.
+  // Persisted to localStorage so overrides survive refreshes.
   const [actionOverrides, setActionOverrides] = useState({});
+
+  // Load overrides on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const stored = await Store.get("me-action-overrides");
+        if (!cancelled && stored && typeof stored === "object") {
+          setActionOverrides(stored);
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Persist whenever they change (during normal app use, not during onboarding)
+  useEffect(() => {
+    if (phase === "app") {
+      Store.set("me-action-overrides", actionOverrides);
+    }
+  }, [actionOverrides, phase]);
   const [showSettings, setShowSettings] = useState(false);
   const [showBrokerageGuide, setShowBrokerageGuide] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
@@ -5253,16 +5275,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             aspectRatio: "1 / 1",
                             background: "#FFFFFF",
                             border: "1.5px solid #C4B5FD",
-                            boxShadow: "0 1.5px 0 #8B5CF6, 0 2px 4px rgba(139,92,246,0.20), inset 0 1px 1.5px rgba(255,255,255,0.95)",
+                            boxShadow: "0 1.5px 0 #8B5CF6, 0 2px 4px rgba(139,92,246,0.20)",
                           }}>
-                          {/* The actual yoga pose image */}
-                          <YogaPoseImage pose={pose} style={{ objectFit: "contain", objectPosition: "center center" }} />
-                          {/* Top specular gloss on the card */}
-                          <span className="absolute top-0.5 left-1.5 right-1.5 h-[25%] pointer-events-none z-[2]"
-                            style={{
-                              background: "linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%)",
-                              borderRadius: "0.6rem 0.6rem 50% 50%",
-                            }} />
+                          {/* The actual yoga pose image — fills the tile edge-to-edge so no inner frame is visible */}
+                          <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center center" }} />
                           {/* Pose name labels are baked into the image — no overlay needed */}
                         </button>
                       ))}
@@ -6637,14 +6653,12 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           </div>
         </div>
 
-        {/* Pose image — clean square (492×492). Container is 1:1, image is CENTERED. */}
-        <div className="relative mx-auto" style={{
+        {/* Pose image — fills modal edge-to-edge (no inner frame). objectFit:cover ensures no empty space. */}
+        <div className="relative" style={{
           aspectRatio: "1 / 1",
           width: "100%",
-          maxWidth: 360,
-          background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 100%)",
         }}>
-          <YogaPoseImage pose={currentPose} style={{ objectFit: "contain", objectPosition: "center center" }} />
+          <YogaPoseImage pose={currentPose} style={{ objectFit: "cover", objectPosition: "center center" }} />
         </div>
 
         {/* Pose name */}
@@ -6777,13 +6791,12 @@ function YogaPoseModal({ pose, onClose }) {
           <X className="w-5 h-5 text-slate-800 relative" />
         </button>
 
-        {/* ── SCHEMATIC FIRST — full-width hero image of the pose ── */}
+        {/* ── SCHEMATIC FIRST — full-width hero image of the pose, edge-to-edge ── */}
         <div className="relative w-full overflow-hidden"
           style={{
             aspectRatio: "1 / 1",
-            background: "linear-gradient(135deg, #DDD6FE 0%, #C4B5FD 100%)",
           }}>
-          <YogaPoseImage pose={pose} style={{ objectFit: "contain", objectPosition: "center center" }} />
+          <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center center" }} />
         </div>
 
         {/* ── HEADER — Sanskrit + English name ── */}
