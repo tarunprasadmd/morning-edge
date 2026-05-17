@@ -4054,6 +4054,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   // Action priority order — TRIM (most urgent) → ADD → HOLD → WATCH
                   const ACTION_ORDER = { TRIM: 0, ADD: 1, HOLD: 2, WATCH: 3 };
                   entries.sort((a, b) => {
+                    // Ticker sort uses symbol (string compare). Handle before null checks.
+                    if (playbookSortBy === "ticker") {
+                      return dirMult * (a.symbol || "").localeCompare(b.symbol || "");
+                    }
                     // Special: 'value' is computed (qty × currentPrice)
                     let av, bv;
                     if (playbookSortBy === "value") {
@@ -4069,7 +4073,6 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     if (av == null && bv == null) return 0;
                     if (av == null) return 1;
                     if (bv == null) return -1;
-                    if (playbookSortBy === "ticker") return dirMult * a.symbol.localeCompare(b.symbol);
                     return dirMult * (av - bv);
                   });
 
