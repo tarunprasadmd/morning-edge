@@ -4074,39 +4074,95 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     );
                   };
 
+                  // Header cell helper — tappable column header that sorts
+                  // by that field. Shows ▼/▲ when active; subtle hover otherwise.
+                  const ColHead = ({ id, label, align = "right", width, sticky }) => {
+                    const active = playbookSortBy === id;
+                    const onSort = () => {
+                      if (active) {
+                        setPlaybookSortDir(playbookSortDir === "desc" ? "asc" : "desc");
+                      } else {
+                        setPlaybookSortBy(id);
+                        setPlaybookSortDir("desc");
+                      }
+                    };
+                    return (
+                      <button
+                        type="button"
+                        onClick={onSort}
+                        className="relative px-2 py-2.5 flex items-center justify-end gap-0.5 transition active:scale-[0.96] cursor-pointer overflow-hidden"
+                        style={{
+                          width,
+                          textAlign: align,
+                          justifyContent: align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start",
+                          background: active
+                            ? "linear-gradient(180deg, #DBEAFE 0%, #BFDBFE 50%, #93C5FD 100%)"
+                            : "transparent",
+                          color: active ? "#1E3A8A" : "#475569",
+                          fontWeight: active ? 900 : 800,
+                          borderRight: sticky === "right" ? undefined : "1px solid rgba(203,213,225,0.6)",
+                          ...(sticky === "left" ? { position: "sticky", left: 0, zIndex: 2, borderRight: "1px solid #CBD5E1" } : {}),
+                          ...(sticky === "right" ? { position: "sticky", right: 0, zIndex: 2, borderLeft: "1px solid #CBD5E1" } : {}),
+                        }}
+                      >
+                        {/* Glossy top specular on active */}
+                        {active && (
+                          <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
+                            style={{
+                              background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                              borderRadius: "0.4rem 0.4rem 50% 50%",
+                            }} />
+                        )}
+                        <span className="relative">{label}</span>
+                        {active && <span className="relative text-[9px]">{playbookSortDir === "desc" ? "▼" : "▲"}</span>}
+                      </button>
+                    );
+                  };
+
                   return (
                     <div>
-                      {/* Sort buttons row — brokerage-style reorganize controls */}
-                      <div className="flex gap-1.5 mb-2 px-0.5">
-                        <SortBtn id="todayDollar" label="Today $" />
-                        <SortBtn id="todayPct" label="Today %" />
-                        <SortBtn id="totalDollar" label="Total $" />
-                        <SortBtn id="totalPct" label="Total %" />
-                      </div>
-                      {/* Column table — ticker sticky-left, action chip sticky-right, numbers scroll between */}
+                      {/* Column table — ticker sticky-left, action chip sticky-right, sortable headers */}
                       {entries.length > 0 ? (
                         <div className="rounded-2xl overflow-hidden border border-slate-200"
                           style={{
-                            background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)",
-                            boxShadow: "0 2px 6px rgba(15,23,42,0.08)",
+                            background: "#FFFFFF",
+                            boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
                           }}>
-                          {/* Header row */}
                           <div className="overflow-x-auto" style={{ scrollbarWidth: "thin" }}>
-                            <div className="flex items-center text-[9px] uppercase tracking-[0.15em] font-extrabold text-slate-500 border-b border-slate-200"
-                              style={{ minWidth: "max-content", background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)" }}>
-                              <div className="px-2 py-2 sticky left-0 z-[2]"
-                                style={{ width: 78, background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)", borderRight: "1px solid #CBD5E1" }}>
+                            {/* HEADER ROW — sortable column headers */}
+                            <div className="flex items-stretch text-[9px] uppercase tracking-[0.12em] border-b-2 border-slate-300 relative"
+                              style={{
+                                minWidth: "max-content",
+                                background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)",
+                              }}>
+                              {/* Sticky-left: Ticker (not sortable - just a label) */}
+                              <div className="px-2 py-2.5 flex items-center sticky left-0 z-[2] flex-shrink-0"
+                                style={{
+                                  width: 72,
+                                  background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)",
+                                  borderRight: "1px solid #CBD5E1",
+                                  color: "#475569",
+                                  fontWeight: 800,
+                                }}>
                                 Ticker
                               </div>
-                              <div className="px-2 py-2 text-right" style={{ width: 75 }}>Value</div>
-                              <div className="px-2 py-2 text-right" style={{ width: 100 }}>Today</div>
-                              <div className="px-2 py-2 text-right" style={{ width: 110 }}>All-time</div>
-                              <div className="px-2 py-2 text-center sticky right-0 z-[2]"
-                                style={{ width: 78, background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)", borderLeft: "1px solid #CBD5E1" }}>
+                              <ColHead id="todayDollar" label="Today $" width={80} />
+                              <ColHead id="todayPct"    label="Today %" width={68} />
+                              <ColHead id="totalDollar" label="Total $" width={90} />
+                              <ColHead id="totalPct"    label="Total %" width={72} />
+                              {/* Sticky-right: Action header (not sortable) */}
+                              <div className="px-2 py-2.5 flex items-center justify-center sticky right-0 z-[2] flex-shrink-0"
+                                style={{
+                                  width: 78,
+                                  background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)",
+                                  borderLeft: "1px solid #CBD5E1",
+                                  color: "#475569",
+                                  fontWeight: 800,
+                                }}>
                                 Action
                               </div>
                             </div>
-                            {/* Data rows */}
+                            {/* DATA ROWS */}
                             {entries.map((entry, i) => (
                               <PlaybookColumnRow
                                 key={`pb-${entry.symbol}-${i}`}
@@ -7236,12 +7292,12 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 // not just the brief's decisions. Color-coded by action type with a separate
 // risk-tier dot indicator.
 // ─── PlaybookColumnRow ──────────────────────────────────────────────
-// Column-style row for the new spreadsheet-like Playbook table.
-// Each variable gets its own column. Ticker sticky-left, action chip
-// sticky-right. Middle columns (Value, Today, All-time) scroll
-// horizontally when screen is narrow. Tap row → opens detail page.
+// Glossy longitudinal strip — each row tinted green (up) or red (down) with
+// candy gloss highlights. Ticker cell is the darker color anchor; whole row
+// is the lighter tint. Columns: Today $ | Today % | Total $ | Total %.
+// Ticker sticky-left, action chip sticky-right.
 function PlaybookColumnRow({ entry, onOpen }) {
-  // Action chip styling — PRIMARY pure red/green/yellow gems
+  // Action chip
   const actionStyle = {
     TRIM:  { bg: "linear-gradient(180deg, #FF8080 0%, #FF0000 45%, #B30000 100%)", border: "#800000" },
     ADD:   { bg: "linear-gradient(180deg, #66DD7E 0%, #00C800 45%, #007F00 100%)", border: "#005000" },
@@ -7249,114 +7305,137 @@ function PlaybookColumnRow({ entry, onOpen }) {
     WATCH: { bg: "linear-gradient(180deg, #FFF59D 0%, #FFEB3B 45%, #C9A800 100%)", border: "#806B00" },
   };
   const a = actionStyle[entry.action] || actionStyle.HOLD;
-  // Risk dot
-  const riskStyle = {
-    LOWER:  { color: "#10B981", label: "L" },
-    MEDIUM: { color: "#F59E0B", label: "M" },
-    HIGHER: { color: "#EA580C", label: "H" },
-    HIGH:   { color: "#DC2626", label: "X" },
-  };
-  const r = entry.risk ? riskStyle[entry.risk] : null;
-  // Direction
+
+  // Direction-based row tinting + ticker color
   const isUp = entry.changePct != null && entry.changePct >= 0;
   const isDown = entry.changePct != null && entry.changePct < 0;
-  const stripeColor = isUp ? "#16A34A" : isDown ? "#DC2626" : "#94A3B8";
+
+  // Light row tint (whole longitudinal strip)
+  const rowBg = isUp
+    ? "linear-gradient(180deg, #F0FDF4 0%, #DCFCE7 50%, #BBF7D0 100%)"
+    : isDown
+    ? "linear-gradient(180deg, #FEF2F2 0%, #FEE2E2 50%, #FECACA 100%)"
+    : "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)";
+
+  // Ticker cell color (darker, prominent)
+  const tickerBg = isUp
+    ? "linear-gradient(180deg, #4ADE80 0%, #16A34A 50%, #15803D 100%)"
+    : isDown
+    ? "linear-gradient(180deg, #F87171 0%, #DC2626 50%, #991B1B 100%)"
+    : "linear-gradient(180deg, #E2E8F0 0%, #CBD5E1 50%, #94A3B8 100%)";
+  const tickerTextColor = (isUp || isDown) ? "#FFFFFF" : "#0F172A";
+  const tickerBorder = isUp ? "#15803D" : isDown ? "#991B1B" : "#64748B";
+  const tickerShadow = isUp ? "rgba(22,163,74,0.45)" : isDown ? "rgba(220,38,38,0.45)" : "rgba(100,116,139,0.30)";
+
   // P&L coloring
   const pnlPositive = entry.totalDollar != null && entry.totalDollar > 0;
-  const pnlColor = entry.totalDollar == null ? "#64748B" : pnlPositive ? "#059669" : "#DC2626";
+  const pnlColor = entry.totalDollar == null ? "#64748B" : pnlPositive ? "#047857" : "#B91C1C";
+  const totalPctPositive = entry.totalPct != null && entry.totalPct > 0;
+  const totalPctColor = entry.totalPct == null ? "#64748B" : totalPctPositive ? "#047857" : "#B91C1C";
   const todayDollarPositive = entry.todayDollar != null && entry.todayDollar > 0;
-  const todayColor = entry.todayDollar == null ? "#64748B" : todayDollarPositive ? "#059669" : "#DC2626";
+  const todayColor = entry.todayDollar == null ? "#64748B" : todayDollarPositive ? "#047857" : "#B91C1C";
+  const todayPctColor = entry.changePct == null ? "#64748B" : isUp ? "#047857" : "#B91C1C";
 
   return (
     <button
       type="button"
       onClick={() => onOpen && onOpen(entry)}
-      className="relative w-full flex items-stretch border-b border-slate-100 text-left transition active:bg-slate-50 hover:bg-slate-50"
-      style={{ minWidth: "max-content", background: "#FFFFFF" }}
+      className="relative w-full flex items-stretch border-b border-slate-200 text-left transition active:translate-y-0.5 overflow-hidden"
+      style={{
+        minWidth: "max-content",
+        background: rowBg,
+      }}
     >
-      {/* Direction stripe on far left */}
-      <span className="absolute top-0 left-0 bottom-0 w-[3px] z-[3]"
-        style={{ background: stripeColor, boxShadow: `0 0 4px ${stripeColor}66` }} />
+      {/* Glossy top specular across the whole strip */}
+      <span className="absolute top-0 left-0 right-0 h-[45%] pointer-events-none z-[1]"
+        style={{
+          background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.15) 60%, rgba(255,255,255,0) 100%)",
+        }} />
+      {/* Subtle bottom darkening */}
+      <span className="absolute bottom-0 left-0 right-0 h-[18%] pointer-events-none z-[1]"
+        style={{
+          background: isUp
+            ? "linear-gradient(to top, rgba(21,128,61,0.12) 0%, rgba(21,128,61,0) 100%)"
+            : isDown
+            ? "linear-gradient(to top, rgba(153,27,27,0.12) 0%, rgba(153,27,27,0) 100%)"
+            : "linear-gradient(to top, rgba(71,85,105,0.08) 0%, rgba(71,85,105,0) 100%)",
+        }} />
 
-      {/* COLUMN 1: Ticker + risk (sticky-left, always visible) */}
-      <div className="flex items-center gap-1.5 px-2 py-2 sticky left-0 z-[2] flex-shrink-0"
-        style={{ width: 78, background: "#FFFFFF", borderRight: "1px solid #E2E8F0" }}>
-        <span className="text-[13px] font-bold tracking-tight leading-none flex-shrink-0"
+      {/* COLUMN 1: Ticker (sticky-left, COLORED) */}
+      <div className="px-2 py-2 sticky left-0 z-[3] flex-shrink-0 flex items-center justify-center relative overflow-hidden"
+        style={{
+          width: 72,
+          background: tickerBg,
+          borderRight: `1.5px solid ${tickerBorder}`,
+          boxShadow: `inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -2px 3px ${tickerShadow}`,
+        }}>
+        {/* Top specular on the ticker cell itself */}
+        <span className="absolute top-0 left-1 right-1 h-[50%] pointer-events-none"
+          style={{
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.10) 55%, rgba(255,255,255,0) 100%)",
+          }} />
+        <span className="relative text-[13.5px] font-extrabold tracking-tight leading-none"
           style={{
             fontFamily: SERIF,
-            background: "linear-gradient(180deg, #0F172A 0%, #334155 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
+            color: tickerTextColor,
+            textShadow: (isUp || isDown) ? "0 1px 1.5px rgba(0,0,0,0.30)" : "none",
           }}>
           {entry.symbol}
         </span>
-        {r && (
-          <span className="w-3 h-3 rounded-full flex items-center justify-center text-[7px] font-bold flex-shrink-0 relative overflow-hidden"
-            style={{ background: r.color, color: "#fff", boxShadow: "inset 0 1px 1px rgba(255,255,255,0.40), 0 1px 2px rgba(0,0,0,0.20)" }}
-            title={`${entry.risk} risk`}>
-            <span className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none"
-              style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0) 100%)", borderRadius: "50% 50% 0 0" }} />
-            <span className="relative">{r.label}</span>
-          </span>
-        )}
       </div>
 
-      {/* COLUMN 2: Position value */}
-      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 75 }}>
-        {entry.currentPrice != null && entry.qty != null ? (
-          <span className="text-[12px] font-extrabold leading-tight" style={{ color: "#020617" }}>
-            ${(entry.currentPrice * entry.qty).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-          </span>
-        ) : entry.currentPrice != null ? (
-          <span className="text-[12px] font-extrabold leading-tight" style={{ color: "#020617" }}>
-            ${entry.currentPrice.toFixed(2)}
-          </span>
-        ) : (
-          <span className="text-[11px] text-slate-400">—</span>
-        )}
-      </div>
-
-      {/* COLUMN 3: Today change ($ + %) */}
-      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 100 }}>
+      {/* COLUMN 2: Today $ */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 80 }}>
         {entry.todayDollar != null ? (
-          <div className="flex flex-col items-end leading-tight">
-            <span className="text-[12px] font-extrabold inline-flex items-center gap-0.5" style={{ color: todayColor }}>
-              <span style={{ fontSize: 10, lineHeight: 1, fontWeight: 900 }}>{todayDollarPositive ? "▲" : "▼"}</span>
-              {todayDollarPositive ? "+" : "-"}${Math.abs(entry.todayDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-            </span>
-            {entry.changePct != null && !Number.isNaN(entry.changePct) && (
-              <span className="text-[9.5px] font-bold" style={{ color: isUp ? "#047857" : "#B91C1C" }}>
-                {isUp ? "+" : ""}{entry.changePct.toFixed(1)}%
-              </span>
-            )}
-          </div>
+          <span className="text-[12px] font-extrabold inline-flex items-center gap-0.5" style={{ color: todayColor }}>
+            <span style={{ fontSize: 10, lineHeight: 1, fontWeight: 900 }}>{todayDollarPositive ? "▲" : "▼"}</span>
+            {todayDollarPositive ? "+" : "-"}${Math.abs(entry.todayDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </span>
         ) : (
           <span className="text-[11px] text-slate-400">—</span>
         )}
       </div>
 
-      {/* COLUMN 4: All-time change ($ + %) */}
-      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 110 }}>
+      {/* COLUMN 3: Today % */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 68 }}>
+        {entry.changePct != null && !Number.isNaN(entry.changePct) ? (
+          <span className="text-[12px] font-extrabold" style={{ color: todayPctColor }}>
+            {isUp ? "+" : ""}{entry.changePct.toFixed(1)}%
+          </span>
+        ) : (
+          <span className="text-[11px] text-slate-400">—</span>
+        )}
+      </div>
+
+      {/* COLUMN 4: Total $ (all-time) */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 90 }}>
         {entry.totalDollar != null ? (
-          <div className="flex flex-col items-end leading-tight">
-            <span className="text-[12px] font-extrabold" style={{ color: pnlColor }}>
-              {pnlPositive ? "+" : "-"}${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-            </span>
-            {entry.totalPct != null && (
-              <span className="text-[9.5px] font-bold" style={{ color: pnlColor }}>
-                {pnlPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%
-              </span>
-            )}
-          </div>
+          <span className="text-[12px] font-extrabold" style={{ color: pnlColor }}>
+            {pnlPositive ? "+" : "-"}${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </span>
         ) : (
           <span className="text-[11px] text-slate-400">—</span>
         )}
       </div>
 
-      {/* COLUMN 5: Action chip (sticky-right, always visible) */}
-      <div className="px-2 py-2 flex items-center justify-center sticky right-0 z-[2] flex-shrink-0"
-        style={{ width: 78, background: "#FFFFFF", borderLeft: "1px solid #E2E8F0" }}>
+      {/* COLUMN 5: Total % */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 72 }}>
+        {entry.totalPct != null ? (
+          <span className="text-[12px] font-extrabold" style={{ color: totalPctColor }}>
+            {totalPctPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%
+          </span>
+        ) : (
+          <span className="text-[11px] text-slate-400">—</span>
+        )}
+      </div>
+
+      {/* COLUMN 6: Action chip (sticky-right) */}
+      <div className="px-2 py-2 flex items-center justify-center sticky right-0 z-[3] flex-shrink-0 relative"
+        style={{
+          width: 78,
+          background: rowBg,
+          borderLeft: `1px solid ${isUp ? "rgba(21,128,61,0.25)" : isDown ? "rgba(153,27,27,0.25)" : "#E2E8F0"}`,
+        }}>
         <div className="relative inline-flex items-center rounded-full overflow-hidden font-extrabold tracking-wider uppercase text-white"
           style={{
             background: a.bg,
