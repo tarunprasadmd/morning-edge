@@ -6497,9 +6497,9 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
         className="relative w-full text-left transition-all active:scale-[0.99] active:translate-y-0.5 z-[2]"
       >
         <div className="pl-2 pr-1.5 py-1.5">
-          {/* TOP LINE: ticker + action chip */}
-          <div className="flex items-center gap-1 mb-0.5">
-            <span className="text-[14px] font-bold tracking-tight leading-none flex-1 truncate"
+          {/* LINE 1: ticker · price · change% · L:% · action chip */}
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="text-[14px] font-bold tracking-tight leading-none flex-shrink-0"
               style={{
                 fontFamily: SERIF,
                 background: "linear-gradient(180deg, #0F172A 0%, #334155 100%)",
@@ -6510,6 +6510,24 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
               }}>
               {entry.symbol}
             </span>
+            {entry.currentPrice != null && (
+              <span className="text-[11px] font-semibold flex-shrink-0" style={{ color: "#0F172A" }}>
+                ${entry.currentPrice.toFixed(2)}
+              </span>
+            )}
+            {entry.changePct != null && !Number.isNaN(entry.changePct) && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold flex-shrink-0"
+                style={{ color: isUp ? "#059669" : "#DC2626" }}>
+                <span style={{ fontSize: 11, lineHeight: 1, fontWeight: 900 }}>{isUp ? "▲" : "▼"}</span>
+                {Math.abs(entry.changePct).toFixed(1)}%
+              </span>
+            )}
+            {entry.totalPct != null && (
+              <span className="text-[9.5px] font-bold flex-shrink-0" style={{ color: pnlColor }}>
+                L:{pnlPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%
+              </span>
+            )}
+            <span className="flex-1" />
             {r && (
               <span className="w-3 h-3 rounded-full flex items-center justify-center text-[7px] font-bold flex-shrink-0 relative overflow-hidden"
                 style={{ background: r.color, color: "#fff", boxShadow: "inset 0 1px 1px rgba(255,255,255,0.40), 0 1px 2px rgba(0,0,0,0.20)" }}
@@ -6519,7 +6537,6 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
                 <span className="relative">{r.label}</span>
               </span>
             )}
-            {/* Candy Crush style action chip */}
             <div className="relative inline-flex items-center rounded-full overflow-hidden font-bold tracking-wider uppercase text-white flex-shrink-0"
               style={{
                 background: a.bg,
@@ -6529,13 +6546,11 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
                 padding: "3px 8px",
                 textShadow: "0 1px 1px rgba(0,0,0,0.40)",
               }}>
-              {/* Big top specular highlight */}
               <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
                 style={{
                   background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.30) 50%, rgba(255,255,255,0) 100%)",
                   borderRadius: "9999px 9999px 50% 50%",
                 }} />
-              {/* Small bottom shine — second specular for bubble feel */}
               <span className="absolute bottom-0.5 left-[25%] right-[25%] h-[20%] pointer-events-none"
                 style={{
                   background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)",
@@ -6543,44 +6558,39 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
                 }} />
               <span className="relative">{entry.action}</span>
             </div>
-          </div>
-          {/* PRICE + CHANGE LINE */}
-          <div className="flex items-center gap-1 mb-0.5">
-            {entry.currentPrice != null && (
-              <span className="text-[11px] font-semibold" style={{ color: "#0F172A" }}>
-                ${entry.currentPrice.toFixed(2)}
-              </span>
-            )}
-            {entry.changePct != null && !Number.isNaN(entry.changePct) && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold"
-                style={{ color: isUp ? "#059669" : "#DC2626" }}>
-                <span style={{ fontSize: 11, lineHeight: 1, fontWeight: 900 }}>{isUp ? "▲" : "▼"}</span>
-                {Math.abs(entry.changePct).toFixed(1)}%
-              </span>
-            )}
-            <ChevronRight className="w-3 h-3 ml-auto text-slate-400 transition-transform"
+            <ChevronRight className="w-3 h-3 text-slate-400 transition-transform flex-shrink-0"
               style={{ transform: expanded ? "rotate(90deg)" : "none" }} />
           </div>
-          {/* GAINS LINE — T:today L:lifetime */}
-          {(entry.todayDollar != null || entry.totalDollar != null) && (
-            <div className="flex items-center gap-1.5 text-[9.5px] leading-tight">
-              {entry.todayDollar != null && (
-                <span className="font-semibold" style={{ color: todayColor }}>
-                  T:{todayDollarPositive ? "+" : ""}${Math.abs(entry.todayDollar).toFixed(0)}
-                </span>
-              )}
-              {entry.totalDollar != null && (
-                <span className="font-bold" style={{ color: pnlColor }}>
-                  L:{pnlPositive ? "+" : ""}${Math.abs(entry.totalDollar).toFixed(0)}
-                </span>
-              )}
-              {entry.totalPct != null && (
-                <span className="font-bold" style={{ color: pnlColor }}>
-                  ({pnlPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%)
-                </span>
-              )}
-            </div>
-          )}
+          {/* LINE 2: action instruction — what to actually DO */}
+          {(() => {
+            // Build a short actionable instruction. Prefer entry.instruction if
+            // the AI brief provides it (future field), otherwise derive from
+            // action + reasoning. Truncate to fit on one line.
+            const explicit = entry.instruction || entry.action_instruction;
+            let text = explicit;
+            if (!text && entry.reasoning) {
+              // Use first sentence (or first 80 chars) of reasoning as the cue
+              const firstSentence = String(entry.reasoning).split(/(?<=[.!?])\s/)[0];
+              text = firstSentence;
+            }
+            if (!text) {
+              const fallback = {
+                TRIM: "Reduce position size into strength",
+                ADD:  "Increase position on next dip",
+                HOLD: "Maintain position. Watch for catalysts",
+                WATCH: "Track closely. No action yet",
+              };
+              text = fallback[entry.action] || "See reasoning";
+            }
+            // Truncate if needed (we'll let CSS truncate too)
+            return (
+              <p className="text-[10.5px] leading-snug text-slate-700 truncate"
+                style={{ fontFamily: SERIF }}>
+                <span className="font-bold mr-1" style={{ color: a.border }}>→</span>
+                {text}
+              </p>
+            );
+          })()}
         </div>
       </button>
       {/* Expanded view — inline chart + actions */}
