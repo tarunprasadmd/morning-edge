@@ -6427,6 +6427,107 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
     };
   }, []);
 
+  // ───────────────────────────────────────────────────────────────────
+  // AMBIENT MEDITATION DRONE — Web Audio API
+  // A soft 3-note chord (A minor) plays in the background during the session.
+  // Drone uses sine oscillators with slow LFO modulation for organic feel.
+  // Volume is very quiet so voice instructions remain clear.
+  // ───────────────────────────────────────────────────────────────────
+  const audioCtxRef = React.useRef(null);
+  const masterGainRef = React.useRef(null);
+  const oscillatorsRef = React.useRef([]);
+
+  const startAmbient = React.useCallback(() => {
+    try {
+      if (typeof window === "undefined") return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      if (audioCtxRef.current) return; // already running
+
+      const ctx = new AudioCtx();
+      audioCtxRef.current = ctx;
+
+      // Master gain — very quiet so voice stays foreground
+      const master = ctx.createGain();
+      master.gain.value = 0.0001;
+      // Fade in slowly
+      master.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 3);
+      master.connect(ctx.destination);
+      masterGainRef.current = master;
+
+      // Three sine waves — A minor chord (A2, E3, A3)
+      const notes = [
+        { freq: 110, gain: 1.0 },   // A2 root
+        { freq: 164.81, gain: 0.7 }, // E3 fifth
+        { freq: 220, gain: 0.5 },   // A3 octave
+      ];
+
+      oscillatorsRef.current = notes.map((n, i) => {
+        const osc = ctx.createOscillator();
+        osc.type = "sine";
+        osc.frequency.value = n.freq;
+
+        const oscGain = ctx.createGain();
+        oscGain.gain.value = n.gain;
+
+        // Slow LFO for organic detune (~0.1 Hz variation)
+        const lfo = ctx.createOscillator();
+        lfo.frequency.value = 0.08 + i * 0.04;
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.value = 0.6;
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+
+        osc.connect(oscGain);
+        oscGain.connect(master);
+        osc.start();
+        lfo.start();
+
+        return { osc, lfo };
+      });
+    } catch (e) {
+      // Audio context may fail on some platforms; silently skip
+    }
+  }, []);
+
+  const stopAmbient = React.useCallback(() => {
+    try {
+      if (masterGainRef.current && audioCtxRef.current) {
+        // Fade out before stopping
+        const ctx = audioCtxRef.current;
+        masterGainRef.current.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.8);
+        setTimeout(() => {
+          try {
+            oscillatorsRef.current.forEach(({ osc, lfo }) => {
+              try { osc.stop(); } catch (e) {}
+              try { lfo.stop(); } catch (e) {}
+            });
+            oscillatorsRef.current = [];
+            if (audioCtxRef.current) {
+              try { audioCtxRef.current.close(); } catch (e) {}
+              audioCtxRef.current = null;
+              masterGainRef.current = null;
+            }
+          } catch (e) {}
+        }, 900);
+      }
+    } catch (e) {}
+  }, []);
+
+  // Start ambient when session opens; stop when it closes
+  React.useEffect(() => {
+    startAmbient();
+    return () => { stopAmbient(); };
+  }, [startAmbient, stopAmbient]);
+
+  // Mute ambient when paused, restore when resumed
+  React.useEffect(() => {
+    if (!masterGainRef.current || !audioCtxRef.current) return;
+    const ctx = audioCtxRef.current;
+    const target = session.isPaused ? 0.0001 : 0.06;
+    masterGainRef.current.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.5);
+  }, [session.isPaused]);
+
   // Speak helper — uses Web Speech API. iOS requires user gesture (Start button).
   // Voice + slower rate + slightly lower pitch = more soothing for yoga.
   const speak = React.useCallback((text) => {
@@ -6536,9 +6637,9 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           </div>
         </div>
 
-        {/* Pose image — match source 482x543 ratio (0.888) to show FULL pose with no crop */}
-        <div className="relative bg-violet-50" style={{ aspectRatio: "482 / 543", maxHeight: 320 }}>
-          <YogaPoseImage pose={currentPose} style={{ objectFit: "contain" }} />
+        {/* Pose image — match new cropped source 458x353 ratio (clean scene, no card/title) */}
+        <div className="relative" style={{ aspectRatio: "458 / 353", maxHeight: 340, background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 100%)" }}>
+          <YogaPoseImage pose={currentPose} style={{ objectFit: "cover", objectPosition: "center" }} />
         </div>
 
         {/* Pose name */}
