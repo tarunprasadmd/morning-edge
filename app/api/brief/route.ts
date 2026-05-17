@@ -554,7 +554,7 @@ Return ONLY this JSON:
   "opportunity_watch": [
     {
       "ticker": "TICKER (must NOT be in user's holdings)",
-      "theme": "short tag matching user's themes",
+      "theme": "short sector or theme tag - does NOT need to match user themes",
       "fits_gap": "1-line tagline, max 14 words",
       "headline": "1-line catalyst, max 14 words",
       "deep_reasoning": "180-220 word personalized buy thesis. Cover (1) WHY THIS FITS YOUR PORTFOLIO; (2) THE THESIS; (3) SIZING THINKING; (4) WHAT COULD GO WRONG. Define any technical term in the same sentence. Use 'you'."
@@ -564,7 +564,7 @@ Return ONLY this JSON:
 
 CRITICAL: No web_search. Reason from the context. Omit rather than fabricate.
 conviction_watch: 8-10 entries. Mix add/hold/trim. EVERY entry MUST include deep_reasoning.
-opportunity_watch: 6-8 ideas. MUST be tickers NOT in user's holdings - verify each symbol against holdings before including. Surface high-potential setups across DIVERSE sectors (do NOT limit to user's existing themes). Include opportunistic plays from sectors user does not currently own when catalysts are strong.
+opportunity_watch: 6-8 ideas. ABSOLUTELY EXCLUDE all tickers in user's holdings - cross-check every symbol against the holdings list before including. Pick from a MIX of sectors including ones user does NOT own - consider financials, healthcare/biotech, consumer staples, energy, industrials, REITs, materials, communications, not just AI/semis/nuclear. AT MOST 2 of 6-8 picks may be in user's existing themes; the rest MUST be in sectors user does not currently hold.
 NEVER use placeholders like "DATA_UNAVAILABLE", "N/A", "NONE". Empty arrays are fine.`;
 
   return callJsonChunk(prompt, { search: false, maxTokens: 7000, model: "claude-haiku-4-5", label: "conviction" });
