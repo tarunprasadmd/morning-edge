@@ -205,9 +205,9 @@ const YOGA_POSES = [
     english: "Mountain Pose",
     benefit: "Improves posture, balance, and groundedness. The foundation of all standing poses.",
     imageUrls: [
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Tadasana_Yoga-Asana_Nina-Mel.jpg?width=800",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Tadasana_yoga_pose.jpg?width=800",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Tadasana.jpg?width=800",
+      "/yoga/tadasana.svg",
+      "/yoga/tadasana.png",
+      "/yoga/tadasana.jpg",
     ],
     steps: [
       "Stand with feet together, big toes touching, heels slightly apart.",
@@ -226,9 +226,9 @@ const YOGA_POSES = [
     english: "Downward-Facing Dog",
     benefit: "Stretches the entire back body. Strengthens arms and shoulders. Calms the mind.",
     imageUrls: [
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Adho_Mukha_Svanasana_Yoga-Asana_Nina-Mel.jpg?width=800",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Adho_mukha_svanasana.jpg?width=800",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Downward_Dog_Pose.jpg?width=800",
+      "/yoga/downward-dog.svg",
+      "/yoga/downward-dog.png",
+      "/yoga/downward-dog.jpg",
     ],
     steps: [
       "Begin on hands and knees. Wrists under shoulders, knees under hips.",
@@ -247,9 +247,9 @@ const YOGA_POSES = [
     english: "Cobra Pose",
     benefit: "Opens the chest and lungs. Strengthens the spine. Counteracts hours of sitting.",
     imageUrls: [
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Bhujangasana_Yoga-Asana_Nina-Mel.jpg?width=800",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Bhujangasana.jpg?width=800",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Cobra_Pose.jpg?width=800",
+      "/yoga/cobra.svg",
+      "/yoga/cobra.png",
+      "/yoga/cobra.jpg",
     ],
     steps: [
       "Lie face down. Legs extended, tops of feet on the floor.",
@@ -268,9 +268,9 @@ const YOGA_POSES = [
     english: "Tree Pose",
     benefit: "Builds focus, balance, and concentration. Strengthens legs and core.",
     imageUrls: [
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Vrikshasana_Yoga-Asana_Nina-Mel.jpg?width=800",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Vriksasana.jpg?width=800",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Tree_Pose.jpg?width=800",
+      "/yoga/tree.svg",
+      "/yoga/tree.png",
+      "/yoga/tree.jpg",
     ],
     steps: [
       "Start in Mountain Pose. Shift weight onto the left foot.",
@@ -289,9 +289,9 @@ const YOGA_POSES = [
     english: "Child's Pose",
     benefit: "Resting pose. Calms the nervous system. Gently stretches the back and hips.",
     imageUrls: [
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Balasana_Yoga-Asana_Nina-Mel.jpg?width=800",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Balasana.jpg?width=800",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Child_Pose.jpg?width=800",
+      "/yoga/child.svg",
+      "/yoga/child.png",
+      "/yoga/child.jpg",
     ],
     steps: [
       "Kneel on the floor. Big toes touching, knees apart.",
@@ -310,9 +310,9 @@ const YOGA_POSES = [
     english: "Lotus Pose",
     benefit: "Classic meditation seat. Opens the hips. Encourages stillness and deep breath.",
     imageUrls: [
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Padmasana_Yoga-Asana_Nina-Mel.jpg?width=800",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Padmasana.jpg?width=800",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Lotus_position.jpg?width=800",
+      "/yoga/lotus.svg",
+      "/yoga/lotus.png",
+      "/yoga/lotus.jpg",
     ],
     steps: [
       "Sit on the floor with legs extended.",
@@ -2571,6 +2571,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   .slice(0, 6)
                   .map((b) => {
                     const isCrypto = b.type === "crypto";
+                    const accentColor = isCrypto ? "#7C3AED" : "#1D4ED8";
                     return (
                   <button
                     key={b.name}
@@ -2580,30 +2581,22 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       }
                     }}
                     className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-2 overflow-hidden text-left transition active:scale-[0.98] active:translate-y-0.5"
-                    style={isCrypto ? {
-                      background: "linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 50%, #DDD6FE 100%)",
-                      border: "1.5px solid #8B5CF6",
-                      boxShadow: "0 2px 0 #6D28D9, 0 3px 8px rgba(139,92,246,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(91,33,182,0.10)",
-                    } : {
-                      background: "linear-gradient(180deg, #EFF6FF 0%, #DBEAFE 50%, #BFDBFE 100%)",
-                      border: "1.5px solid #3B82F6",
-                      boxShadow: "0 2px 0 #1D4ED8, 0 3px 8px rgba(59,130,246,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(30,64,175,0.10)",
+                    style={{
+                      background: "linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%)",
+                      border: "1px solid #E2E8F0",
+                      boxShadow: "0 1.5px 0 #CBD5E1, 0 2px 4px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,1)",
                     }}
                   >
-                    <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
-                      style={{
-                        background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
-                        borderRadius: "0.6rem 0.6rem 50% 50%",
-                      }} />
-                    <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[15%] pointer-events-none"
-                      style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
-                    <span className="relative text-[15px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate" style={{ fontFamily: SERIF }}>
+                    {/* Left accent stripe — only color hint */}
+                    <span className="absolute top-0 left-0 bottom-0 w-[3px]"
+                      style={{ background: accentColor }} />
+                    <span className="relative text-[15px] font-bold text-slate-900 flex-shrink-0 w-[88px] truncate pl-2" style={{ fontFamily: SERIF }}>
                       {b.name}
                     </span>
-                    <span className="relative text-[12px] text-slate-800 flex-1 truncate">
+                    <span className="relative text-[12px] text-slate-700 flex-1 truncate">
                       {b.path}
                     </span>
-                    <ExternalLink className="relative w-3 h-3 flex-shrink-0" style={{ color: isCrypto ? "#7C3AED" : "#1D4ED8" }} />
+                    <ExternalLink className="relative w-3 h-3 flex-shrink-0" style={{ color: accentColor }} />
                   </button>
                     );
                   })}
@@ -3735,11 +3728,80 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 <p className="text-[13px] text-slate-700 italic mb-3 px-1 leading-snug">
                   Every position with live P&amp;L and a suggested action. Tap any card for full reasoning.
                 </p>
-                {/* The Stocks/Crypto choice now lives inside the Sync Portfolio
-                    modal. The Playbook simply shows everything the user has
-                    synced. No redundant banner or toggle here. */}
-
-                {/* Crypto empty state was here — now lives in Sync Portfolio modal */}
+                {/* Big Stocks/Crypto buttons — only show when user has both types */}
+                {holdings.length > 0 && (() => {
+                  const hasCrypto = holdings.some((h) => h && h.type === "crypto");
+                  const hasStocks = holdings.some((h) => h && h.type !== "crypto");
+                  if (!hasCrypto || !hasStocks) return null;
+                  return (
+                    <div className="grid grid-cols-2 gap-2.5 mb-3">
+                      <button
+                        onClick={() => setPlaybookAssetType(playbookAssetType === "stocks" ? "all" : "stocks")}
+                        className="relative flex flex-col items-center text-center p-2.5 rounded-2xl overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
+                        style={playbookAssetType === "stocks" ? {
+                          background: "linear-gradient(180deg, #3B82F6 0%, #1D4ED8 50%, #1E3A8A 100%)",
+                          border: "2px solid #1E3A8A",
+                          boxShadow: "0 3px 0 #1E3A8A, 0 5px 12px rgba(59,130,246,0.35), inset 0 2px 3px rgba(255,255,255,0.45), inset 0 -3px 5px rgba(0,0,0,0.20)",
+                        } : {
+                          background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #E2E8F0 100%)",
+                          border: "1.5px solid #94A3B8",
+                          boxShadow: "0 2px 0 #64748B, inset 0 1.5px 2px rgba(255,255,255,1)",
+                        }}>
+                        <span className="absolute top-0.5 left-2 right-2 h-[45%] pointer-events-none"
+                          style={{
+                            background: playbookAssetType === "stocks"
+                              ? "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)"
+                              : "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
+                            borderRadius: "1rem 1rem 50% 50%",
+                          }} />
+                        <span className="relative text-[24px] leading-none mb-1" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>📈</span>
+                        <p className="relative text-[13px] font-extrabold uppercase tracking-[0.18em] leading-none"
+                          style={{
+                            color: playbookAssetType === "stocks" ? "#fff" : "#1E293B",
+                            textShadow: playbookAssetType === "stocks" ? "0 1px 1.5px rgba(0,0,0,0.30)" : "none",
+                          }}>
+                          Stocks
+                        </p>
+                        <p className="relative text-[10px] mt-0.5 font-semibold"
+                          style={{ color: playbookAssetType === "stocks" ? "rgba(255,255,255,0.85)" : "#64748B" }}>
+                          {holdings.filter((h) => h && h.type !== "crypto").length} positions
+                        </p>
+                      </button>
+                      <button
+                        onClick={() => setPlaybookAssetType(playbookAssetType === "crypto" ? "all" : "crypto")}
+                        className="relative flex flex-col items-center text-center p-2.5 rounded-2xl overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
+                        style={playbookAssetType === "crypto" ? {
+                          background: "linear-gradient(180deg, #A78BFA 0%, #7C3AED 50%, #4C1D95 100%)",
+                          border: "2px solid #4C1D95",
+                          boxShadow: "0 3px 0 #4C1D95, 0 5px 12px rgba(139,92,246,0.35), inset 0 2px 3px rgba(255,255,255,0.45), inset 0 -3px 5px rgba(0,0,0,0.20)",
+                        } : {
+                          background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #E2E8F0 100%)",
+                          border: "1.5px solid #94A3B8",
+                          boxShadow: "0 2px 0 #64748B, inset 0 1.5px 2px rgba(255,255,255,1)",
+                        }}>
+                        <span className="absolute top-0.5 left-2 right-2 h-[45%] pointer-events-none"
+                          style={{
+                            background: playbookAssetType === "crypto"
+                              ? "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)"
+                              : "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
+                            borderRadius: "1rem 1rem 50% 50%",
+                          }} />
+                        <span className="relative text-[24px] leading-none mb-1" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>🪙</span>
+                        <p className="relative text-[13px] font-extrabold uppercase tracking-[0.18em] leading-none"
+                          style={{
+                            color: playbookAssetType === "crypto" ? "#fff" : "#1E293B",
+                            textShadow: playbookAssetType === "crypto" ? "0 1px 1.5px rgba(0,0,0,0.30)" : "none",
+                          }}>
+                          Crypto
+                        </p>
+                        <p className="relative text-[10px] mt-0.5 font-semibold"
+                          style={{ color: playbookAssetType === "crypto" ? "rgba(255,255,255,0.85)" : "#64748B" }}>
+                          {holdings.filter((h) => h && h.type === "crypto").length} positions
+                        </p>
+                      </button>
+                    </div>
+                  );
+                })()}
 
                 {/* Personalization indicator */}
                 {holdings.length > 0 ? (
@@ -3858,8 +3920,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     return null;
                   };
 
-                  // Map every holding to a playbook entry
-                  const entries = holdings.map((h) => {
+                  // Map every holding to a playbook entry — filter by Stocks/Crypto toggle
+                  const entries = holdings
+                    .filter((h) => {
+                      if (playbookAssetType === "stocks") return h.type !== "crypto";
+                      if (playbookAssetType === "crypto") return h.type === "crypto";
+                      return true;
+                    })
+                    .map((h) => {
                     const sym = h.symbol;
                     // Live price data is already merged into the holding object by
                     // the parent /api/prices polling effect — read directly.
@@ -4460,10 +4528,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     className="rounded-2xl border-2 p-4 relative overflow-hidden"
                     style={{
                       background:
-                        "linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 50%, #6EE7B7 100%)",
-                      borderColor: "rgba(212, 165, 116, 0.50)",
+                        "linear-gradient(180deg, rgba(254,243,199,0.75) 0%, rgba(252,211,77,0.55) 50%, rgba(217,119,6,0.40) 100%)",
+                      borderColor: "rgba(146,64,14,0.65)",
                       boxShadow:
-                        "0 6px 18px -3px rgba(16, 185, 129, 0.30), 0 0 18px rgba(212, 165, 116, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.65), inset 0 -2px 6px rgba(6, 95, 70, 0.12)",
+                        "0 3px 0 rgba(146,64,14,0.45), 0 5px 12px rgba(245,158,11,0.30), 0 0 18px rgba(252,211,77,0.30), inset 0 2px 4px rgba(255,255,255,0.85), inset 0 -3px 8px rgba(146,64,14,0.18)",
                     }}
                   >
                     {/* Top gold accent line — premium identity */}
@@ -4512,6 +4580,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       </g>
                     </svg>
 
+                    <span className="absolute top-1 left-3 right-3 h-[45%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)", borderRadius: "1rem 1rem 50% 50%", zIndex: 1 }} />
+                    <span className="absolute bottom-1 left-[30%] right-[30%] h-[10%] pointer-events-none" style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px", zIndex: 1 }} />
                     <div className="flex items-center justify-between mb-3 relative" style={{ zIndex: 1 }}>
                       <h3 className="text-[14px] uppercase tracking-[0.2em] font-bold flex items-center gap-2"
                         style={{
@@ -4561,10 +4631,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     className="rounded-2xl border-2 p-4 relative overflow-hidden"
                     style={{
                       background:
-                        "linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 50%, #A5B4FC 100%)",
-                      borderColor: "rgba(212, 165, 116, 0.50)",
+                        "linear-gradient(180deg, rgba(254,243,199,0.75) 0%, rgba(252,211,77,0.55) 50%, rgba(217,119,6,0.40) 100%)",
+                      borderColor: "rgba(146,64,14,0.65)",
                       boxShadow:
-                        "0 6px 18px -3px rgba(99, 102, 241, 0.30), 0 0 18px rgba(212, 165, 116, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.65), inset 0 -2px 6px rgba(49, 46, 129, 0.12)",
+                        "0 3px 0 rgba(146,64,14,0.45), 0 5px 12px rgba(245,158,11,0.30), 0 0 18px rgba(252,211,77,0.30), inset 0 2px 4px rgba(255,255,255,0.85), inset 0 -3px 8px rgba(146,64,14,0.18)",
                     }}
                   >
                     {/* Gold-leaf top edge */}
@@ -4640,6 +4710,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     {/* Top gold accent line — premium identity */}
                     <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
                       style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+                    <span className="absolute top-1 left-3 right-3 h-[45%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)", borderRadius: "1rem 1rem 50% 50%", zIndex: 1 }} />
+                    <span className="absolute bottom-1 left-[30%] right-[30%] h-[10%] pointer-events-none" style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px", zIndex: 1 }} />
                     <div className="flex items-center justify-between mb-3 relative" style={{ zIndex: 1 }}>
                       <h3 className="text-[14px] uppercase tracking-[0.22em] font-bold flex items-center gap-2"
                         style={{
@@ -4684,15 +4756,15 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     })()}
                   </div>
 
-                  {/* Hedge Funds — toned down: light rose pastel with metallic gold */}
+                  {/* Hedge Funds — wealth-gold glossy with transparency */}
                   <div
                     className="rounded-2xl border-2 p-4 relative overflow-hidden"
                     style={{
                       background:
-                        "linear-gradient(135deg, #FEE2E2 0%, #FECACA 50%, #FCA5A5 100%)",
-                      borderColor: "rgba(212, 165, 116, 0.50)",
+                        "linear-gradient(180deg, rgba(254,243,199,0.75) 0%, rgba(252,211,77,0.55) 50%, rgba(217,119,6,0.40) 100%)",
+                      borderColor: "rgba(146,64,14,0.65)",
                       boxShadow:
-                        "0 6px 18px -3px rgba(220, 38, 38, 0.30), 0 0 18px rgba(212, 165, 116, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.65), inset 0 -2px 6px rgba(127, 29, 29, 0.12)",
+                        "0 3px 0 rgba(146,64,14,0.45), 0 5px 12px rgba(245,158,11,0.30), 0 0 18px rgba(252,211,77,0.30), inset 0 2px 4px rgba(255,255,255,0.85), inset 0 -3px 8px rgba(146,64,14,0.18)",
                     }}
                   >
                     {/* Metallic accent diagonal — subtle skyscraper-glass shimmer */}
@@ -4779,6 +4851,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     {/* Top gold accent line — premium identity */}
                     <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
                       style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
+                    <span className="absolute top-1 left-3 right-3 h-[45%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)", borderRadius: "1rem 1rem 50% 50%", zIndex: 1 }} />
+                    <span className="absolute bottom-1 left-[30%] right-[30%] h-[10%] pointer-events-none" style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px", zIndex: 1 }} />
                     <div className="flex items-center justify-between mb-3 relative" style={{ zIndex: 1 }}>
                       <h3 className="text-[14px] uppercase tracking-[0.22em] font-bold flex items-center gap-2"
                         style={{
@@ -5826,78 +5900,99 @@ function Card({ children, theme, pillar }) {
 function CardHeader({ icon, label, theme, pillar }) {
   // Map pillar → deep saturated gradient + glow for the heading.
   // wealth = amber/gold, health = emerald, clarity = violet/indigo.
+  // GLOSS FORMULA matches the active FilterPill exactly: 3-stop gradient,
+  // dark 3D edge, brand-colored glow halo, big inner top specular + inner
+  // bottom darkening for that "candy gem" depth.
   const pillarPalette = {
     wealth: {
-      bg: "linear-gradient(160deg, #F59E0B 0%, #D97706 60%, #92400E 100%)",
-      borderColor: "rgba(146, 64, 14, 0.35)",
+      bg: "linear-gradient(180deg, #F59E0B 0%, #D97706 50%, #92400E 100%)",
+      darkEdge: "#78350F",
+      glow: "rgba(245,158,11,0.55)",
+      borderColor: "#92400E",
       accentLine: "linear-gradient(90deg, transparent 0%, #FCD34D 30%, #FEF3C7 50%, #FCD34D 70%, transparent 100%)",
-      iconBg: "linear-gradient(135deg, #FEF3C7 0%, #FCD34D 100%)",
-      iconShadow: "0 2px 6px rgba(217,119,6,0.45), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(146,64,14,0.20)",
+      iconBg: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
+      iconBorder: "#92400E",
+      iconShadow: "0 1.5px 0 #78350F, inset 0 1.5px 2px rgba(255,255,255,0.95)",
       iconColor: "#78350F",
       textColor: "#FFFFFF",
-      textShadow: "0 1px 2px rgba(120,53,15,0.55), 0 0 8px rgba(252,211,77,0.35)",
+      textShadow: "0 1.5px 2.5px rgba(120,53,15,0.65), 0 0 10px rgba(252,211,77,0.40)",
     },
     health: {
-      bg: "linear-gradient(160deg, #34D399 0%, #059669 60%, #065F46 100%)",
-      borderColor: "rgba(6, 95, 70, 0.35)",
+      bg: "linear-gradient(180deg, #34D399 0%, #059669 50%, #065F46 100%)",
+      darkEdge: "#064E3B",
+      glow: "rgba(16,185,129,0.55)",
+      borderColor: "#065F46",
       accentLine: "linear-gradient(90deg, transparent 0%, #A7F3D0 30%, #D1FAE5 50%, #A7F3D0 70%, transparent 100%)",
-      iconBg: "linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)",
-      iconShadow: "0 2px 6px rgba(5,150,105,0.45), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(6,95,70,0.20)",
+      iconBg: "linear-gradient(180deg, #D1FAE5 0%, #A7F3D0 50%, #6EE7B7 100%)",
+      iconBorder: "#065F46",
+      iconShadow: "0 1.5px 0 #064E3B, inset 0 1.5px 2px rgba(255,255,255,0.95)",
       iconColor: "#064E3B",
       textColor: "#FFFFFF",
-      textShadow: "0 1px 2px rgba(6,95,70,0.55), 0 0 8px rgba(167,243,208,0.35)",
+      textShadow: "0 1.5px 2.5px rgba(6,95,70,0.65), 0 0 10px rgba(167,243,208,0.40)",
     },
     clarity: {
-      bg: "linear-gradient(160deg, #818CF8 0%, #4F46E5 60%, #312E81 100%)",
-      borderColor: "rgba(49, 46, 129, 0.35)",
+      bg: "linear-gradient(180deg, #818CF8 0%, #4F46E5 50%, #312E81 100%)",
+      darkEdge: "#312E81",
+      glow: "rgba(99,102,241,0.55)",
+      borderColor: "#312E81",
       accentLine: "linear-gradient(90deg, transparent 0%, #C7D2FE 30%, #E0E7FF 50%, #C7D2FE 70%, transparent 100%)",
-      iconBg: "linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)",
-      iconShadow: "0 2px 6px rgba(79,70,229,0.45), inset 0 1.5px 2px rgba(255,255,255,0.55), inset 0 -1.5px 3px rgba(49,46,129,0.20)",
+      iconBg: "linear-gradient(180deg, #E0E7FF 0%, #C7D2FE 50%, #A5B4FC 100%)",
+      iconBorder: "#312E81",
+      iconShadow: "0 1.5px 0 #312E81, inset 0 1.5px 2px rgba(255,255,255,0.95)",
       iconColor: "#312E81",
       textColor: "#FFFFFF",
-      textShadow: "0 1px 2px rgba(49,46,129,0.55), 0 0 8px rgba(199,210,254,0.35)",
+      textShadow: "0 1.5px 2.5px rgba(49,46,129,0.65), 0 0 10px rgba(199,210,254,0.40)",
     },
   };
-  // If a pillar is specified, render the glossy pillar-colored heading.
-  // Otherwise fall back to the original tint-based styling.
   const p = pillar ? pillarPalette[pillar] : null;
   if (p) {
     return (
-      <div className="relative flex items-center gap-3 px-5 py-4 border-b overflow-hidden"
-        style={{ background: p.bg, borderColor: p.borderColor }}>
-        {/* Accent line on top */}
+      <div className="relative flex items-center gap-3 px-5 py-4 overflow-hidden"
+        style={{
+          background: p.bg,
+          borderBottom: `2px solid ${p.darkEdge}`,
+          boxShadow: `inset 0 2px 4px rgba(255,255,255,0.55), inset 0 -4px 10px rgba(0,0,0,0.25), 0 4px 14px ${p.glow}, 0 0 20px ${p.glow}`,
+        }}>
+        {/* Big top specular highlight — candy shine across the heading */}
+        <span className="absolute top-1 left-3 right-3 h-[55%] pointer-events-none"
+          style={{
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0) 100%)",
+            borderRadius: "1.5rem 1.5rem 50% 50%",
+          }} />
+        {/* Bottom shine for plump bubble feel */}
+        <span className="absolute bottom-1 left-[35%] right-[35%] h-[12%] pointer-events-none"
+          style={{
+            background: "linear-gradient(to top, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)",
+            borderRadius: "9999px",
+          }} />
+        {/* Gold/colored accent line on top edge */}
         <div className="absolute top-0 left-0 right-0 h-[2px]"
           style={{ background: p.accentLine }} />
-        {/* Top specular highlight */}
-        <span className="absolute top-1 left-3 right-3 h-[40%] pointer-events-none"
+        {/* Glossy icon coin */}
+        <div className="relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
           style={{
-            background: "linear-gradient(to bottom, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0) 100%)",
-            borderTopLeftRadius: "0.5rem",
-            borderTopRightRadius: "0.5rem",
-          }} />
-        {/* Glossy icon badge */}
-        <div className="relative w-9 h-9 rounded-full flex items-center justify-center overflow-hidden"
-          style={{ background: p.iconBg, boxShadow: p.iconShadow }}>
-          <span className="absolute top-0.5 left-1 right-1 h-[45%] pointer-events-none rounded-t-full"
-            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)" }} />
+            background: p.iconBg,
+            border: `1.5px solid ${p.iconBorder}`,
+            boxShadow: p.iconShadow,
+          }}>
+          <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
           <span className="relative" style={{ color: p.iconColor }}>{icon}</span>
         </div>
-        {/* Heading text — bright white with glow */}
-        <h2 className="relative text-[14px] uppercase tracking-[0.22em] font-bold"
-          style={{
-            color: p.textColor,
-            textShadow: p.textShadow,
-          }}>{label}</h2>
+        <p className="relative text-[15px] uppercase tracking-[0.25em] font-bold m-0"
+          style={{ color: p.textColor, textShadow: p.textShadow }}>
+          {label}
+        </p>
       </div>
     );
   }
-  // Fallback (no pillar specified): original style
+  // Fallback to original tint-based styling when no pillar specified.
   return (
     <div className={`flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-gradient-to-r ${theme.tint}`}>
-      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${theme.gradient} flex items-center justify-center text-white shadow-sm`}>
+      <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white bg-gradient-to-br ${theme.gradient}`}>
         {icon}
       </div>
-      <h2 className="text-[14px] uppercase tracking-[0.22em] text-slate-800 font-bold">{label}</h2>
+      <p className="text-[15px] uppercase tracking-wider text-slate-800 font-bold m-0">{label}</p>
     </div>
   );
 }
@@ -7314,33 +7409,28 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
             </div>
             <ChevronRight className="w-3 h-3 text-slate-400 flex-shrink-0" />
           </div>
-          {/* LINE 2: action instruction — what to actually DO */}
+          {/* LINE 2: concrete P&L numbers — answers "how much have I gained?" */}
           {(() => {
-            // Build a short actionable instruction. Prefer entry.instruction if
-            // the AI brief provides it (future field), otherwise derive from
-            // action + reasoning. Truncate to fit on one line.
-            const explicit = entry.instruction || entry.action_instruction;
-            let text = explicit;
-            if (!text && entry.reasoning) {
-              // Use first sentence (or first 80 chars) of reasoning as the cue
-              const firstSentence = String(entry.reasoning).split(/(?<=[.!?])\s/)[0];
-              text = firstSentence;
+            const parts = [];
+            if (entry.qty != null) parts.push(`${entry.qty}sh`);
+            if (entry.todayDollar != null) {
+              const todayStr = `${entry.todayDollar >= 0 ? "+" : "-"}$${Math.abs(entry.todayDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+              parts.push(<span key="today" style={{ color: todayColor, fontWeight: 800 }}>T:{todayStr}</span>);
             }
-            if (!text) {
-              const fallback = {
-                TRIM: "Reduce position size into strength",
-                ADD:  "Increase position on next dip",
-                HOLD: "Maintain position. Watch for catalysts",
-                WATCH: "Track closely. No action yet",
-              };
-              text = fallback[entry.action] || "See reasoning";
+            if (entry.totalDollar != null) {
+              const totalStr = `${entry.totalDollar >= 0 ? "+" : "-"}$${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+              parts.push(<span key="lifetime" style={{ color: pnlColor, fontWeight: 800 }}>L:{totalStr}</span>);
             }
-            // Truncate if needed (we'll let CSS truncate too)
+            if (parts.length === 0) return null;
             return (
-              <p className="text-[11.5px] leading-snug truncate font-medium"
-                style={{ fontFamily: SERIF, color: "#0F172A" }}>
-                <span className="font-extrabold mr-1 text-[13px]" style={{ color: a.border }}>→</span>
-                {text}
+              <p className="text-[11px] leading-snug truncate text-slate-700"
+                style={{ fontFamily: SERIF }}>
+                {parts.map((p, i) => (
+                  <React.Fragment key={i}>
+                    {i > 0 && <span className="text-slate-400 mx-1">·</span>}
+                    {p}
+                  </React.Fragment>
+                ))}
               </p>
             );
           })()}
@@ -9509,3 +9599,4 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
