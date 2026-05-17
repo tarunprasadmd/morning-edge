@@ -5256,7 +5256,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             boxShadow: "0 1.5px 0 #8B5CF6, 0 2px 4px rgba(139,92,246,0.20), inset 0 1px 1.5px rgba(255,255,255,0.95)",
                           }}>
                           {/* The actual yoga pose image */}
-                          <YogaPoseImage pose={pose} />
+                          <YogaPoseImage pose={pose} style={{ objectFit: "contain", objectPosition: "center center" }} />
                           {/* Top specular gloss on the card */}
                           <span className="absolute top-0.5 left-1.5 right-1.5 h-[25%] pointer-events-none z-[2]"
                             style={{
@@ -6637,9 +6637,14 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           </div>
         </div>
 
-        {/* Pose image — new square source (492×492). Square aspect, no cropping. */}
-        <div className="relative" style={{ aspectRatio: "1 / 1", maxHeight: 360, background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 100%)" }}>
-          <YogaPoseImage pose={currentPose} style={{ objectFit: "contain", objectPosition: "center" }} />
+        {/* Pose image — clean square (492×492). Container is 1:1, image is CENTERED. */}
+        <div className="relative mx-auto" style={{
+          aspectRatio: "1 / 1",
+          width: "100%",
+          maxWidth: 360,
+          background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 100%)",
+        }}>
+          <YogaPoseImage pose={currentPose} style={{ objectFit: "contain", objectPosition: "center center" }} />
         </div>
 
         {/* Pose name */}
@@ -6778,7 +6783,7 @@ function YogaPoseModal({ pose, onClose }) {
             aspectRatio: "1 / 1",
             background: "linear-gradient(135deg, #DDD6FE 0%, #C4B5FD 100%)",
           }}>
-          <YogaPoseImage pose={pose} />
+          <YogaPoseImage pose={pose} style={{ objectFit: "contain", objectPosition: "center center" }} />
         </div>
 
         {/* ── HEADER — Sanskrit + English name ── */}
@@ -10350,4 +10355,3 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
-
