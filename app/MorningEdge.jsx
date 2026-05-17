@@ -3001,7 +3001,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               background: "linear-gradient(180deg, #4338CA 0%, #312E81 50%, #1E1B4B 100%)",
               border: "2px solid #D4A574",
               boxShadow:
-                "0 5px 0 #1E1B4B, 0 10px 22px rgba(99, 102, 241, 0.55), 0 0 36px rgba(129, 140, 248, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.40), inset 0 -6px 14px rgba(0, 0, 0, 0.55)",
+                "0 6px 18px rgba(67, 56, 202, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.40), inset 0 -6px 14px rgba(0, 0, 0, 0.45)",
             }}
           >
             {/* Top specular — big bright reflection */}
@@ -3063,7 +3063,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               background: "linear-gradient(180deg, #334155 0%, #1E293B 50%, #020617 100%)",
               border: "2px solid #D4A574",
               boxShadow:
-                "0 5px 0 #020617, 0 10px 22px rgba(2, 6, 23, 0.55), 0 0 36px rgba(212, 165, 116, 0.25), inset 0 2px 4px rgba(255, 255, 255, 0.30), inset 0 -6px 14px rgba(0, 0, 0, 0.55)",
+                "0 6px 18px rgba(2, 6, 23, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.30), inset 0 -6px 14px rgba(0, 0, 0, 0.45)",
             }}
           >
             <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
@@ -5455,33 +5455,39 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   />
                 )}
 
-                {/* BREATH CUE — tap-to-reveal trigger button (under Focus). Tapping shows/hides the breath circle below. */}
+                {/* BREATH CUE — styled to MATCH Gratitude/Focus rows for visual consistency.
+                    Tapping shows/hides the breath circle widget below. */}
                 {brief.clarity && brief.clarity.breath_practice && (
                   <button
                     onClick={() => setExpandedMindset(expandedMindset === "breath" ? null : "breath")}
-                    className="relative w-full flex items-center justify-between rounded-2xl px-4 py-3 transition active:scale-[0.98] active:translate-y-0.5 overflow-hidden"
+                    className="relative w-full flex gap-3 items-start text-left p-2 -mx-2 rounded-2xl overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
                     style={{
-                      background: "linear-gradient(180deg, #EDE9FE 0%, #DDD6FE 50%, #C4B5FD 100%)",
-                      border: "1.5px solid #7C3AED",
-                      boxShadow: "0 2px 0 #7C3AED, 0 3px 8px rgba(124,58,237,0.20), inset 0 1.5px 2px rgba(255,255,255,0.85)",
+                      background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                      border: "1.5px solid #94A3B8",
+                      boxShadow: "0 2.5px 0 #64748B, 0 4px 8px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
                     }}>
-                    <span className="absolute top-0.5 left-3 right-3 h-[45%] pointer-events-none"
+                    <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
                       style={{
-                        background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)",
+                        background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
                         borderRadius: "1rem 1rem 50% 50%",
                       }} />
-                    <span className="relative flex items-center gap-2">
-                      <span style={{ fontSize: 18 }}>🫁</span>
-                      <span className="text-[13px] uppercase tracking-[0.18em] font-extrabold" style={{ color: "#4C1D95" }}>
+                    <div className="relative flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center overflow-hidden"
+                      style={{
+                        background: "linear-gradient(180deg, #DDD6FE 0%, #8B5CF6 50%, #5B21B6 100%)",
+                        border: "1.5px solid #6D28D9",
+                        boxShadow: "0 1.5px 0 #4C1D95, 0 2px 5px rgba(139,92,246,0.30), inset 0 1.5px 2px rgba(255,255,255,0.55)",
+                      }}>
+                      <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
+                      <span className="relative text-[22px] leading-none" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>🫁</span>
+                    </div>
+                    <div className="relative flex-1 pt-1 min-w-0">
+                      <p className="text-[13px] uppercase tracking-[0.18em] font-bold mb-1 flex items-center gap-2" style={{ color: "#0F172A" }}>
                         Breath Cue
-                      </span>
-                      <span className="text-[11px] italic font-medium" style={{ color: "#5B21B6" }}>
-                        — tap to open
-                      </span>
-                    </span>
-                    <span className="relative text-[20px] font-bold" style={{ color: "#4C1D95" }}>
-                      {expandedMindset === "breath" ? "−" : "+"}
-                    </span>
+                        <span className="text-slate-400 text-base leading-none">{expandedMindset === "breath" ? "−" : "+"}</span>
+                      </p>
+                      <p className="text-[16px] leading-relaxed text-slate-800" style={{ fontFamily: SERIF }}>Tap to begin guided breathing exercise.</p>
+                    </div>
                   </button>
                 )}
 
@@ -6704,7 +6710,7 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
       style={{ background: "rgba(46,16,101,0.85)", backdropFilter: "blur(10px)" }}>
       <div className="relative w-full max-w-md rounded-3xl overflow-hidden flex flex-col"
         style={{
-          background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 50%, #DDD6FE 100%)",
+          background: "linear-gradient(180deg, #F8F4ED 0%, #F2EBDB 60%, #EDE9FE 100%)",
           border: "3px solid #7C3AED",
           boxShadow: "0 12px 40px rgba(76,29,149,0.50), inset 0 2px 4px rgba(255,255,255,0.85)",
           maxHeight: "92vh",
@@ -6732,10 +6738,10 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           </div>
         </div>
 
-        {/* Pose image — capped height so Pause/Skip stay visible. Cream bg matches image. */}
+        {/* Pose image — cream container matches modal top so there's NO visible frame */}
         <div className="relative w-full" style={{
           height: "min(42vh, 360px)",
-          background: "#F5EFE4",
+          background: "#F8F4ED",
         }}>
           <YogaPoseImage pose={currentPose} style={{ objectFit: "contain", objectPosition: "center center" }} />
         </div>
@@ -9722,12 +9728,24 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
               regardless of which kind of card they tapped. */}
           {parsed.ticker && <StockChart ticker={parsed.ticker} />}
 
-          <p
-            className="text-[16px] leading-relaxed m-0 font-semibold"
-            style={{ color: "#1e293b", fontFamily: SERIF }}
-          >
-            {parsed.body}
-          </p>
+          {/* WHAT TO DO — yellow action box (consistent with position detail modal) */}
+          <div className="mt-4 rounded-2xl p-4 relative overflow-hidden"
+            style={{
+              background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 100%)",
+              border: "1.5px solid #FCD34D",
+              boxShadow: "inset 0 1.5px 2px rgba(255,255,255,0.85)",
+            }}>
+            <p className="text-[10px] uppercase tracking-[0.25em] font-bold mb-2" style={{ color: "#92400E" }}>
+              📋 What to do
+            </p>
+            <p
+              className="text-[15px] leading-snug font-medium m-0"
+              style={{ color: "#451A03", fontFamily: SERIF }}
+            >
+              <span className="font-extrabold mr-1.5" style={{ color: theme.bar?.includes("red") || theme.bar?.includes("rose") ? "#B91C1C" : theme.bar?.includes("green") || theme.bar?.includes("emerald") ? "#047857" : "#92400E" }}>→</span>
+              {parsed.body}
+            </p>
+          </div>
           {/* Deep reasoning paragraph — 130-180 word plain-English explanation */}
           {deepReasoning && (
             <div className="mt-4 pt-4 border-t border-slate-200">
