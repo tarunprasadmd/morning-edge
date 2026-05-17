@@ -5414,6 +5414,55 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     )}
                   </div>
                 )}
+
+                {/* DEFAULT FALLBACK CONTENT — always shows when AI brief has no clarity data.
+                    This keeps the Clarity card useful even before brief loads/regenerates. */}
+                {!(brief.mindset && (brief.mindset.gratitude || brief.mindset.focus)) &&
+                 !(brief.clarity && (brief.clarity.breath_practice || brief.clarity.contemplation || brief.clarity.eastern_wisdom)) && (
+                  <>
+                    {/* Default breath practice — 4-7-8 technique */}
+                    <div className="rounded-2xl p-5 relative overflow-hidden"
+                      style={{
+                        background: "linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)",
+                        border: "1px solid #818CF8",
+                        boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.85)",
+                      }}>
+                      <p className="text-[12px] uppercase tracking-[0.2em] font-semibold mb-2 relative flex items-center gap-1.5" style={{ color: "#3730A3" }}>
+                        🫁 Breath Practice
+                      </p>
+                      <p className="text-[16px] font-bold text-indigo-900 mb-2">4-7-8 Calm Breath</p>
+                      <p className="text-[13px] text-indigo-800 leading-snug">
+                        Inhale 4 seconds → hold 7 seconds → exhale 8 seconds. Repeat 4 rounds before checking premarket. Calms the nervous system before decisions.
+                      </p>
+                    </div>
+
+                    {/* Default contemplation quote */}
+                    <div className="rounded-2xl p-5 relative overflow-hidden"
+                      style={{
+                        background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                        border: "1px solid #fcd34d",
+                        boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9)",
+                      }}>
+                      <span aria-hidden style={{
+                        position: "absolute", top: -8, left: 14, fontSize: 80, lineHeight: 1,
+                        color: "rgba(180, 83, 9, 0.18)", fontFamily: SERIF, userSelect: "none",
+                      }}>"</span>
+                      <p className="text-[12px] uppercase tracking-[0.2em] text-amber-800 font-semibold mb-3 relative flex items-center gap-1.5">
+                        📜 Eastern Wisdom
+                      </p>
+                      <p className="text-[17px] text-slate-900 leading-relaxed relative" style={{ fontFamily: SERIF }}>
+                        The mind is everything. What you think, you become.
+                      </p>
+                      <p className="text-[13px] text-amber-900 mt-3 font-semibold tracking-wide relative">
+                        — Buddha
+                      </p>
+                    </div>
+
+                    <p className="text-[11px] italic text-center text-indigo-600/80 mt-2">
+                      Tap <span className="font-semibold">Regenerate</span> at the top for personalized clarity content.
+                    </p>
+                  </>
+                )}
               </div>
             </Card>
           )}
