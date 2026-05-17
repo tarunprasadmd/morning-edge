@@ -7338,10 +7338,10 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
         onClick={() => onOpen && onOpen(entry)}
         className="relative w-full text-left transition-all active:scale-[0.99] active:translate-y-0.5 z-[2]"
       >
-        <div className="pl-2 pr-1.5 py-1.5">
-          {/* LINE 1: ticker · price · change% · L:% · action chip */}
+        <div className="pl-2 pr-1.5 py-2">
+          {/* LINE 1: TICKER + position value + action chip — what & how much */}
           <div className="flex items-center gap-1.5 mb-1">
-            <span className="text-[14px] font-bold tracking-tight leading-none flex-shrink-0"
+            <span className="text-[15px] font-bold tracking-tight leading-none flex-shrink-0"
               style={{
                 fontFamily: SERIF,
                 background: "linear-gradient(180deg, #0F172A 0%, #334155 100%)",
@@ -7353,30 +7353,18 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
               {entry.symbol}
             </span>
             {entry.currentPrice != null && entry.qty != null && (
-              <span className="text-[12px] font-extrabold flex-shrink-0" style={{ color: "#020617" }}>
+              <span className="text-[12.5px] font-extrabold flex-shrink-0" style={{ color: "#020617" }}>
                 ${(entry.currentPrice * entry.qty).toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </span>
             )}
             {entry.currentPrice != null && entry.qty == null && (
-              <span className="text-[12px] font-extrabold flex-shrink-0" style={{ color: "#020617" }}>
+              <span className="text-[12.5px] font-extrabold flex-shrink-0" style={{ color: "#020617" }}>
                 ${entry.currentPrice.toFixed(2)}
-              </span>
-            )}
-            {entry.changePct != null && !Number.isNaN(entry.changePct) && (
-              <span className="inline-flex items-center gap-0.5 text-[11px] font-black flex-shrink-0"
-                style={{ color: isUp ? "#047857" : "#B91C1C" }}>
-                <span style={{ fontSize: 12, lineHeight: 1, fontWeight: 900 }}>{isUp ? "▲" : "▼"}</span>
-                {Math.abs(entry.changePct).toFixed(1)}%
-              </span>
-            )}
-            {entry.totalPct != null && (
-              <span className="text-[10.5px] font-black flex-shrink-0" style={{ color: pnlColor }}>
-                L:{pnlPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%
               </span>
             )}
             <span className="flex-1" />
             {r && (
-              <span className="w-3 h-3 rounded-full flex items-center justify-center text-[7px] font-bold flex-shrink-0 relative overflow-hidden"
+              <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[7.5px] font-bold flex-shrink-0 relative overflow-hidden"
                 style={{ background: r.color, color: "#fff", boxShadow: "inset 0 1px 1px rgba(255,255,255,0.40), 0 1px 2px rgba(0,0,0,0.20)" }}
                 title={`${entry.risk} risk`}>
                 <span className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none"
@@ -7393,13 +7381,11 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
                 padding: "4px 10px",
                 textShadow: "0 1px 1.5px rgba(0,0,0,0.45)",
               }}>
-              {/* Big top specular highlight — extra bright for brilliance */}
               <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
                 style={{
                   background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.40) 50%, rgba(255,255,255,0) 100%)",
                   borderRadius: "9999px 9999px 50% 50%",
                 }} />
-              {/* Bottom shine for plump bubble feel */}
               <span className="absolute bottom-0.5 left-[20%] right-[20%] h-[22%] pointer-events-none"
                 style={{
                   background: "linear-gradient(to top, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)",
@@ -7409,31 +7395,35 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
             </div>
             <ChevronRight className="w-3 h-3 text-slate-400 flex-shrink-0" />
           </div>
-          {/* LINE 2: concrete P&L numbers — answers "how much have I gained?" */}
-          {(() => {
-            const parts = [];
-            if (entry.qty != null) parts.push(`${entry.qty}sh`);
-            if (entry.todayDollar != null) {
-              const todayStr = `${entry.todayDollar >= 0 ? "+" : "-"}$${Math.abs(entry.todayDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-              parts.push(<span key="today" style={{ color: todayColor, fontWeight: 800 }}>T:{todayStr}</span>);
-            }
-            if (entry.totalDollar != null) {
-              const totalStr = `${entry.totalDollar >= 0 ? "+" : "-"}$${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-              parts.push(<span key="lifetime" style={{ color: pnlColor, fontWeight: 800 }}>L:{totalStr}</span>);
-            }
-            if (parts.length === 0) return null;
-            return (
-              <p className="text-[11px] leading-snug truncate text-slate-700"
-                style={{ fontFamily: SERIF }}>
-                {parts.map((p, i) => (
-                  <React.Fragment key={i}>
-                    {i > 0 && <span className="text-slate-400 mx-1">·</span>}
-                    {p}
-                  </React.Fragment>
-                ))}
-              </p>
-            );
-          })()}
+          {/* LINE 2: Today's $ change + arrow with CLEAR LABELS */}
+          {(entry.todayDollar != null || entry.changePct != null) && (
+            <div className="flex items-center gap-2 text-[11.5px] leading-tight mb-0.5">
+              <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Today</span>
+              {entry.todayDollar != null && (
+                <span className="font-extrabold inline-flex items-center gap-0.5" style={{ color: todayColor }}>
+                  <span style={{ fontSize: 11, lineHeight: 1, fontWeight: 900 }}>{todayDollarPositive ? "▲" : "▼"}</span>
+                  {todayDollarPositive ? "+" : "-"}${Math.abs(entry.todayDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
+              )}
+              {entry.changePct != null && !Number.isNaN(entry.changePct) && (
+                <span className="font-bold" style={{ color: isUp ? "#047857" : "#B91C1C" }}>
+                  ({isUp ? "+" : ""}{entry.changePct.toFixed(1)}%)
+                </span>
+              )}
+            </div>
+          )}
+          {/* LINE 3: Total gain/loss since you bought */}
+          {entry.totalDollar != null && (
+            <div className="flex items-center gap-2 text-[11.5px] leading-tight">
+              <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">All-time</span>
+              <span className="font-extrabold" style={{ color: pnlColor }}>
+                {pnlPositive ? "+" : "-"}${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                {entry.totalPct != null && (
+                  <span className="ml-1 font-bold">({pnlPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%)</span>
+                )}
+              </span>
+            </div>
+          )}
         </div>
       </button>
     </div>
@@ -9599,4 +9589,3 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
-
