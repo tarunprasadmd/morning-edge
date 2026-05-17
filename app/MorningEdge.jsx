@@ -1192,6 +1192,9 @@ export default function MorningEdge() {
   // User overrides for AI action recommendations — tap chip to cycle TRIM/ADD/HOLD.
   // Persisted to localStorage so overrides survive refreshes.
   const [actionOverrides, setActionOverrides] = useState({});
+  // Flag to prevent the save-effect from clobbering localStorage with the
+  // initial empty {} before the async load completes.
+  const [actionOverridesLoaded, setActionOverridesLoaded] = useState(false);
 
   // Load overrides on mount
   useEffect(() => {
@@ -1199,20 +1202,25 @@ export default function MorningEdge() {
     (async () => {
       try {
         const stored = await Store.get("me-action-overrides");
-        if (!cancelled && stored && typeof stored === "object") {
-          setActionOverrides(stored);
+        if (!cancelled) {
+          if (stored && typeof stored === "object") {
+            setActionOverrides(stored);
+          }
+          setActionOverridesLoaded(true);
         }
-      } catch {}
+      } catch {
+        if (!cancelled) setActionOverridesLoaded(true);
+      }
     })();
     return () => { cancelled = true; };
   }, []);
 
-  // Persist whenever they change (during normal app use, not during onboarding)
+  // Persist whenever they change — but only AFTER initial load finished
   useEffect(() => {
-    if (phase === "app") {
+    if (phase === "app" && actionOverridesLoaded) {
       Store.set("me-action-overrides", actionOverrides);
     }
-  }, [actionOverrides, phase]);
+  }, [actionOverrides, phase, actionOverridesLoaded]);
   const [showSettings, setShowSettings] = useState(false);
   const [showBrokerageGuide, setShowBrokerageGuide] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
@@ -5455,50 +5463,54 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   />
                 )}
 
-                {/* BREATH CUE — styled to MATCH Gratitude/Focus rows for visual consistency.
-                    Tapping shows/hides the breath circle widget below. */}
-                {brief.clarity && brief.clarity.breath_practice && (
-                  <button
-                    onClick={() => setExpandedMindset(expandedMindset === "breath" ? null : "breath")}
-                    className="relative w-full flex gap-3 items-start text-left p-2 -mx-2 rounded-2xl overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
-                    style={{
-                      background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
-                      border: "1.5px solid #94A3B8",
-                      boxShadow: "0 2.5px 0 #64748B, 0 4px 8px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
-                    }}>
-                    <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                {/* BREATH CUE — always available. Uses brief.clarity.breath_practice if present,
+                    otherwise falls back to the universally-calming 4-7-8 pattern. */}
+                {(() => {
+                  const bp = brief && brief.clarity && brief.clarity.breath_practice;
+                  return (
+                    <button
+                      onClick={() => setExpandedMindset(expandedMindset === "breath" ? null : "breath")}
+                      className="relative w-full flex gap-3 items-start text-left p-2 -mx-2 rounded-2xl overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
                       style={{
-                        background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
-                        borderRadius: "1rem 1rem 50% 50%",
-                      }} />
-                    <div className="relative flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center overflow-hidden"
-                      style={{
-                        background: "linear-gradient(180deg, #DDD6FE 0%, #8B5CF6 50%, #5B21B6 100%)",
-                        border: "1.5px solid #6D28D9",
-                        boxShadow: "0 1.5px 0 #4C1D95, 0 2px 5px rgba(139,92,246,0.30), inset 0 1.5px 2px rgba(255,255,255,0.55)",
+                        background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                        border: "1.5px solid #94A3B8",
+                        boxShadow: "0 2.5px 0 #64748B, 0 4px 8px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
                       }}>
-                      <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
-                        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
-                      <span className="relative text-[22px] leading-none" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>🫁</span>
-                    </div>
-                    <div className="relative flex-1 pt-1 min-w-0">
-                      <p className="text-[13px] uppercase tracking-[0.18em] font-bold mb-1 flex items-center gap-2" style={{ color: "#0F172A" }}>
-                        Breath Cue
-                        <span className="text-slate-400 text-base leading-none">{expandedMindset === "breath" ? "−" : "+"}</span>
-                      </p>
-                      <p className="text-[16px] leading-relaxed text-slate-800" style={{ fontFamily: SERIF }}>Tap to begin guided breathing exercise.</p>
-                    </div>
-                  </button>
-                )}
+                      <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                        style={{
+                          background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                          borderRadius: "1rem 1rem 50% 50%",
+                        }} />
+                      <div className="relative flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center overflow-hidden"
+                        style={{
+                          background: "linear-gradient(180deg, #DDD6FE 0%, #8B5CF6 50%, #5B21B6 100%)",
+                          border: "1.5px solid #6D28D9",
+                          boxShadow: "0 1.5px 0 #4C1D95, 0 2px 5px rgba(139,92,246,0.30), inset 0 1.5px 2px rgba(255,255,255,0.55)",
+                        }}>
+                        <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                          style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
+                        <span className="relative text-[22px] leading-none" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>🫁</span>
+                      </div>
+                      <div className="relative flex-1 pt-1 min-w-0">
+                        <p className="text-[13px] uppercase tracking-[0.18em] font-bold mb-1 flex items-center gap-2" style={{ color: "#0F172A" }}>
+                          Breath Cue
+                          <span className="text-slate-400 text-base leading-none">{expandedMindset === "breath" ? "−" : "+"}</span>
+                        </p>
+                        <p className="text-[16px] leading-relaxed text-slate-800" style={{ fontFamily: SERIF }}>Tap to begin guided breathing exercise.</p>
+                      </div>
+                    </button>
+                  );
+                })()}
 
-                {/* Breath Practice circle — REVEALED only when Breath Cue is tapped */}
-                {expandedMindset === "breath" && brief.clarity && brief.clarity.breath_practice && (
+                {/* Breath Practice circle — REVEALED only when Breath Cue is tapped.
+                    Uses brief data if available, else a calming default. */}
+                {expandedMindset === "breath" && (
                   <div className="pt-1">
                     <InteractiveBreathGuide
-                      name={brief.clarity.breath_practice.name || "Breath Practice"}
-                      pattern={brief.clarity.breath_practice.pattern || brief.clarity.breath_practice}
-                      description={brief.clarity.breath_practice.description}
-                      rounds={brief.clarity.breath_practice.rounds}
+                      name={(brief && brief.clarity && brief.clarity.breath_practice && brief.clarity.breath_practice.name) || "4-7-8 Calming Breath"}
+                      pattern={(brief && brief.clarity && brief.clarity.breath_practice && (brief.clarity.breath_practice.pattern || brief.clarity.breath_practice)) || "4-7-8"}
+                      description={(brief && brief.clarity && brief.clarity.breath_practice && brief.clarity.breath_practice.description) || "Inhale 4s, hold 7s, exhale 8s. Repeat for 4 rounds."}
+                      rounds={(brief && brief.clarity && brief.clarity.breath_practice && brief.clarity.breath_practice.rounds) || 4}
                     />
                   </div>
                 )}
