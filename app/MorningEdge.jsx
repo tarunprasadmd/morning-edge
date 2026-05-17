@@ -213,7 +213,7 @@ const YOGA_POSES = [
     english: "Mountain Pose",
     benefit: "Improves posture, balance, and groundedness. The foundation of all standing poses.",
     imageUrls: [
-      "/yoga/tadasana.png",
+      "/tadasana.png",
     ],
     steps: [
       "Stand with feet together, big toes touching, heels slightly apart.",
@@ -232,7 +232,7 @@ const YOGA_POSES = [
     english: "Downward-Facing Dog",
     benefit: "Stretches the entire back body. Strengthens arms and shoulders. Calms the mind.",
     imageUrls: [
-      "/yoga/adho-mukha-svanasana.png",
+      "/adho-mukha-svanasana.png",
     ],
     steps: [
       "Begin on hands and knees. Wrists under shoulders, knees under hips.",
@@ -251,7 +251,7 @@ const YOGA_POSES = [
     english: "Cobra Pose",
     benefit: "Opens the chest and lungs. Strengthens the spine. Counteracts hours of sitting.",
     imageUrls: [
-      "/yoga/bhujangasana.png",
+      "/bhujangasana.png",
     ],
     steps: [
       "Lie face down. Legs extended, tops of feet on the floor.",
@@ -270,7 +270,7 @@ const YOGA_POSES = [
     english: "Tree Pose",
     benefit: "Builds focus, balance, and concentration. Strengthens legs and core.",
     imageUrls: [
-      "/yoga/vrikshasana.png",
+      "/vrikshasana.png",
     ],
     steps: [
       "Start in Mountain Pose. Shift weight onto the left foot.",
@@ -289,7 +289,7 @@ const YOGA_POSES = [
     english: "Child's Pose",
     benefit: "Resting pose. Calms the nervous system. Gently stretches the back and hips.",
     imageUrls: [
-      "/yoga/balasana.png",
+      "/balasana.png",
     ],
     steps: [
       "Kneel on the floor. Big toes touching, knees apart.",
@@ -308,7 +308,7 @@ const YOGA_POSES = [
     english: "Lotus Pose",
     benefit: "Classic meditation seat. Opens the hips. Encourages stillness and deep breath.",
     imageUrls: [
-      "/yoga/padmasana.png",
+      "/padmasana.png",
     ],
     steps: [
       "Sit on the floor with legs extended.",
