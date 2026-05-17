@@ -6653,12 +6653,12 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           </div>
         </div>
 
-        {/* Pose image — fills modal edge-to-edge (no inner frame). objectFit:cover ensures no empty space. */}
-        <div className="relative" style={{
-          aspectRatio: "1 / 1",
-          width: "100%",
+        {/* Pose image — capped height so Pause/Skip stay visible. Cream bg matches image. */}
+        <div className="relative w-full" style={{
+          height: "min(42vh, 360px)",
+          background: "#F5EFE4",
         }}>
-          <YogaPoseImage pose={currentPose} style={{ objectFit: "cover", objectPosition: "center center" }} />
+          <YogaPoseImage pose={currentPose} style={{ objectFit: "contain", objectPosition: "center center" }} />
         </div>
 
         {/* Pose name */}
