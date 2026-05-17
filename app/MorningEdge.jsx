@@ -3942,14 +3942,24 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     // 100x larger than the market value, h.cost was almost certainly
                     // the TOTAL already (no 99%+ loss can produce a 100x ratio), so
                     // use h.cost directly.
+                    // Cost basis detection — brokerages export "Cost Basis"
+                    // inconsistently. Some give PER-SHARE avg cost, others give
+                    // the TOTAL dollar amount already-multiplied. We compute
+                    // both interpretations and pick the one that makes sense:
+                    //   - If naive (cost×qty) is >5x current value, h.cost was
+                    //     almost certainly the total (real losses don't exceed
+                    //     -80%; >5x ratio is the smoking gun).
+                    //   - Otherwise treat h.cost as per-share avg cost.
                     const naiveCostBasis = (h.cost || 0) * (h.qty || 0);
                     const currentValue = currentPrice != null ? currentPrice * (h.qty || 0) : null;
                     const reportedValue = typeof h.value === "number" ? h.value : null;
                     const sanityValue = reportedValue || currentValue;
                     let costBasis = naiveCostBasis;
-                    if (sanityValue && sanityValue > 0 && naiveCostBasis / sanityValue > 100) {
-                      // h.cost looks like a total dollar amount, not per-share
+                    let avgCostPerShare = h.cost || 0;
+                    if (sanityValue && sanityValue > 0 && naiveCostBasis / sanityValue > 5) {
+                      // h.cost was already the total dollar amount, not per-share
                       costBasis = h.cost || 0;
+                      avgCostPerShare = (h.qty || 0) > 0 ? (h.cost || 0) / h.qty : 0;
                     }
                     const pnl = currentValue != null && costBasis > 0 ? currentValue - costBasis : null;
                     const pnlPct = pnl != null && costBasis > 0 ? (pnl / costBasis) * 100 : null;
@@ -3983,6 +3993,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       symbol: sym,
                       qty: h.qty,
                       cost: h.cost,
+                      avgCost: avgCostPerShare,
+                      totalCost: costBasis,
                       account: h.account,
                       currentPrice,
                       changePct,
@@ -4089,7 +4101,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       <button
                         type="button"
                         onClick={onSort}
-                        className="relative px-2 py-2.5 flex items-center justify-end gap-0.5 transition active:scale-[0.96] cursor-pointer overflow-hidden"
+                        className="relative px-2 py-3 flex items-center justify-end gap-0.5 transition active:scale-[0.96] cursor-pointer overflow-hidden"
                         style={{
                           width,
                           textAlign: align,
@@ -4097,8 +4109,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           background: active
                             ? "linear-gradient(180deg, #DBEAFE 0%, #BFDBFE 50%, #93C5FD 100%)"
                             : "transparent",
-                          color: active ? "#1E3A8A" : "#475569",
-                          fontWeight: active ? 900 : 800,
+                          color: active ? "#1E3A8A" : "#334155",
+                          fontWeight: 900,
+                          fontFamily: "inherit",
                           borderRight: sticky === "right" ? undefined : "1px solid rgba(203,213,225,0.6)",
                           ...(sticky === "left" ? { position: "sticky", left: 0, zIndex: 2, borderRight: "1px solid #CBD5E1" } : {}),
                           ...(sticky === "right" ? { position: "sticky", right: 0, zIndex: 2, borderLeft: "1px solid #CBD5E1" } : {}),
@@ -4113,7 +4126,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             }} />
                         )}
                         <span className="relative">{label}</span>
-                        {active && <span className="relative text-[9px]">{playbookSortDir === "desc" ? "▼" : "▲"}</span>}
+                        {active && <span className="relative text-[10px]">{playbookSortDir === "desc" ? "▼" : "▲"}</span>}
                       </button>
                     );
                   };
@@ -4129,22 +4142,47 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           }}>
                           <div className="overflow-x-auto" style={{ scrollbarWidth: "thin" }}>
                             {/* HEADER ROW — sortable column headers */}
-                            <div className="flex items-stretch text-[9.5px] uppercase tracking-[0.12em] border-b-2 border-slate-300 relative"
+                            <div className="flex items-stretch text-[11.5px] uppercase tracking-[0.10em] border-b-2 border-slate-300 relative"
                               style={{
                                 minWidth: "max-content",
                                 background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)",
+                                fontFamily: SERIF,
+                                fontWeight: 900,
                               }}>
-                              {/* Sticky-left: Ticker */}
-                              <div className="px-2 py-3 flex items-center sticky left-0 z-[2] flex-shrink-0"
-                                style={{
-                                  width: 78,
-                                  background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)",
-                                  borderRight: "1px solid #CBD5E1",
-                                  color: "#475569",
-                                  fontWeight: 800,
-                                }}>
-                                Ticker
-                              </div>
+                              {/* Sticky-left: Ticker (sortable alphabetically) */}
+                              {(() => {
+                                const active = playbookSortBy === "ticker";
+                                return (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (active) {
+                                        setPlaybookSortDir(playbookSortDir === "desc" ? "asc" : "desc");
+                                      } else {
+                                        setPlaybookSortBy("ticker");
+                                        setPlaybookSortDir("asc");
+                                      }
+                                    }}
+                                    className="px-2 py-3 flex items-center justify-start gap-0.5 sticky left-0 z-[2] flex-shrink-0 transition active:scale-[0.96] cursor-pointer overflow-hidden relative"
+                                    style={{
+                                      width: 78,
+                                      background: active
+                                        ? "linear-gradient(180deg, #DBEAFE 0%, #BFDBFE 50%, #93C5FD 100%)"
+                                        : "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)",
+                                      borderRight: "1px solid #CBD5E1",
+                                      color: active ? "#1E3A8A" : "#334155",
+                                      fontWeight: 900,
+                                    }}>
+                                    {active && (
+                                      <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
+                                        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)", borderRadius: "0.4rem 0.4rem 50% 50%" }} />
+                                    )}
+                                    <span className="relative">Ticker</span>
+                                    {active && <span className="relative text-[10px]">{playbookSortDir === "desc" ? "▼" : "▲"}</span>}
+                                  </button>
+                                );
+                              })()}
+                              <ColHead id="avgCost"     label="Cost"    width={76} />
                               <ColHead id="value"       label="Value"   width={80} />
                               <ColHead id="todayDollar" label="Today $" width={84} />
                               <ColHead id="todayPct"    label="Today %" width={70} />
@@ -4156,8 +4194,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                   width: 82,
                                   background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)",
                                   borderLeft: "1px solid #CBD5E1",
-                                  color: "#475569",
-                                  fontWeight: 800,
+                                  color: "#334155",
+                                  fontWeight: 900,
                                 }}>
                                 Action
                               </div>
@@ -7352,11 +7390,11 @@ function PlaybookColumnRow({ entry, onOpen }) {
   const isUp = entry.changePct != null && entry.changePct >= 0;
   const isDown = entry.changePct != null && entry.changePct < 0;
 
-  // VIBRANT row tint — saturated emerald or coral with strong gradient
+  // VIBRANT-but-lighter row tint
   const rowBg = isUp
-    ? "linear-gradient(180deg, #D1FAE5 0%, #86EFAC 45%, #4ADE80 100%)"
+    ? "linear-gradient(180deg, #ECFDF5 0%, #D1FAE5 50%, #A7F3D0 100%)"
     : isDown
-    ? "linear-gradient(180deg, #FECDD3 0%, #FCA5A5 45%, #F87171 100%)"
+    ? "linear-gradient(180deg, #FEF2F2 0%, #FECDD3 50%, #FCA5A5 100%)"
     : "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 100%)";
 
   // BOLD ticker cell — deep saturated green/red anchor
@@ -7413,7 +7451,18 @@ function PlaybookColumnRow({ entry, onOpen }) {
         </span>
       </div>
 
-      {/* COLUMN 2: Value */}
+      {/* COLUMN 2: Avg Cost per share */}
+      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 76 }}>
+        {entry.avgCost != null && entry.avgCost > 0 ? (
+          <span className="text-[13px] font-extrabold" style={{ color: "#334155" }}>
+            ${entry.avgCost < 10 ? entry.avgCost.toFixed(2) : entry.avgCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </span>
+        ) : (
+          <span className="text-[11px] text-slate-400">—</span>
+        )}
+      </div>
+
+      {/* COLUMN 3: Value */}
       <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 80 }}>
         {entry.currentPrice != null && entry.qty != null ? (
           <span className="text-[13px] font-extrabold" style={{ color: "#020617" }}>
@@ -7428,7 +7477,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
         )}
       </div>
 
-      {/* COLUMN 3: Today $ */}
+      {/* COLUMN 4: Today $ */}
       <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 84 }}>
         {entry.todayDollar != null ? (
           <span className="text-[13px] font-extrabold inline-flex items-center gap-0.5" style={{ color: todayColor }}>
@@ -7440,7 +7489,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
         )}
       </div>
 
-      {/* COLUMN 4: Today % */}
+      {/* COLUMN 5: Today % */}
       <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 70 }}>
         {entry.changePct != null && !Number.isNaN(entry.changePct) ? (
           <span className="text-[13px] font-extrabold" style={{ color: todayPctColor }}>
@@ -7451,7 +7500,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
         )}
       </div>
 
-      {/* COLUMN 5: Total $ */}
+      {/* COLUMN 6: Total $ */}
       <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 94 }}>
         {entry.totalDollar != null ? (
           <span className="text-[13px] font-extrabold" style={{ color: pnlColor }}>
@@ -7462,7 +7511,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
         )}
       </div>
 
-      {/* COLUMN 6: Total % */}
+      {/* COLUMN 7: Total % */}
       <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 74 }}>
         {entry.totalPct != null ? (
           <span className="text-[13px] font-extrabold" style={{ color: totalPctColor }}>
@@ -7473,7 +7522,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
         )}
       </div>
 
-      {/* COLUMN 7: Action chip — sticky-right */}
+      {/* COLUMN 8: Action chip — sticky-right */}
       <div className="px-2 py-3 flex items-center justify-center sticky right-0 z-[3] flex-shrink-0 relative"
         style={{
           width: 82,
