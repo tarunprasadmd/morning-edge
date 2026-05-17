@@ -156,15 +156,59 @@ const Store = {
 
 const SUGGESTED = ["SPY", "QQQ", "AAPL", "NVDA", "MSFT", "GOOGL", "AMZN", "META", "TSLA"];
 
-// Yoga pose library — 6 foundational asanas with full instructions.
-// Images live at /public/yoga/[slug].jpg (downloaded from Wikimedia Commons).
-// If an image is missing, the UI gracefully falls back to a text-only card.
+// Yoga pose library — 6 foundational asanas with full instructions and real
+// Wikimedia Commons photos. The `imageUrls` array gives multiple fallback URLs
+// per pose so we always render something real; if all fail, a text card shows.
+// Yoga pose image component — tries each URL in the imageUrls array in order.
+// If all fail (network issue, image removed), shows the pose name as a fallback.
+function YogaPoseImage({ pose, className = "", style = {} }) {
+  const urls = pose.imageUrls || [];
+  const [urlIdx, setUrlIdx] = React.useState(0);
+  const [allFailed, setAllFailed] = React.useState(false);
+  if (allFailed || urls.length === 0) {
+    return (
+      <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-2 ${className}`}
+        style={{
+          background: "linear-gradient(135deg, #DDD6FE 0%, #C4B5FD 100%)",
+          ...style,
+        }}>
+        <p className="text-[13px] font-bold italic" style={{ fontFamily: "Georgia, serif", color: "#5B21B6" }}>
+          {pose.sanskrit}
+        </p>
+        <p className="text-[10px] text-violet-700 mt-0.5 uppercase tracking-wider">
+          {pose.english}
+        </p>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={urls[urlIdx]}
+      alt={pose.english}
+      className={`absolute inset-0 w-full h-full object-cover ${className}`}
+      style={style}
+      onError={() => {
+        if (urlIdx < urls.length - 1) {
+          setUrlIdx(urlIdx + 1);
+        } else {
+          setAllFailed(true);
+        }
+      }}
+    />
+  );
+}
+
 const YOGA_POSES = [
   {
     slug: "tadasana",
     sanskrit: "Tāḍāsana",
     english: "Mountain Pose",
     benefit: "Improves posture, balance, and groundedness. The foundation of all standing poses.",
+    imageUrls: [
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Tadasana_Yoga-Asana_Nina-Mel.jpg?width=800",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Tadasana_yoga_pose.jpg?width=800",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Tadasana.jpg?width=800",
+    ],
     steps: [
       "Stand with feet together, big toes touching, heels slightly apart.",
       "Distribute weight evenly across both feet. Lift the arches.",
@@ -181,6 +225,11 @@ const YOGA_POSES = [
     sanskrit: "Adho Mukha Svānāsana",
     english: "Downward-Facing Dog",
     benefit: "Stretches the entire back body. Strengthens arms and shoulders. Calms the mind.",
+    imageUrls: [
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Adho_Mukha_Svanasana_Yoga-Asana_Nina-Mel.jpg?width=800",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Adho_mukha_svanasana.jpg?width=800",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Downward_Dog_Pose.jpg?width=800",
+    ],
     steps: [
       "Begin on hands and knees. Wrists under shoulders, knees under hips.",
       "Tuck toes under. Lift knees off the floor.",
@@ -197,6 +246,11 @@ const YOGA_POSES = [
     sanskrit: "Bhujaṅgāsana",
     english: "Cobra Pose",
     benefit: "Opens the chest and lungs. Strengthens the spine. Counteracts hours of sitting.",
+    imageUrls: [
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Bhujangasana_Yoga-Asana_Nina-Mel.jpg?width=800",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Bhujangasana.jpg?width=800",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Cobra_Pose.jpg?width=800",
+    ],
     steps: [
       "Lie face down. Legs extended, tops of feet on the floor.",
       "Place palms flat on the floor under the shoulders. Elbows hugged close to ribs.",
@@ -213,6 +267,11 @@ const YOGA_POSES = [
     sanskrit: "Vṛkṣāsana",
     english: "Tree Pose",
     benefit: "Builds focus, balance, and concentration. Strengthens legs and core.",
+    imageUrls: [
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Vrikshasana_Yoga-Asana_Nina-Mel.jpg?width=800",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Vriksasana.jpg?width=800",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Tree_Pose.jpg?width=800",
+    ],
     steps: [
       "Start in Mountain Pose. Shift weight onto the left foot.",
       "Bend the right knee. Place the right foot on the inner left thigh (or calf — never on the knee).",
@@ -229,6 +288,11 @@ const YOGA_POSES = [
     sanskrit: "Bālāsana",
     english: "Child's Pose",
     benefit: "Resting pose. Calms the nervous system. Gently stretches the back and hips.",
+    imageUrls: [
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Balasana_Yoga-Asana_Nina-Mel.jpg?width=800",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Balasana.jpg?width=800",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Child_Pose.jpg?width=800",
+    ],
     steps: [
       "Kneel on the floor. Big toes touching, knees apart.",
       "Sit back on your heels. Fold forward, bringing the torso between the thighs.",
@@ -245,6 +309,11 @@ const YOGA_POSES = [
     sanskrit: "Padmāsana",
     english: "Lotus Pose",
     benefit: "Classic meditation seat. Opens the hips. Encourages stillness and deep breath.",
+    imageUrls: [
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Padmasana_Yoga-Asana_Nina-Mel.jpg?width=800",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Padmasana.jpg?width=800",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Lotus_position.jpg?width=800",
+    ],
     steps: [
       "Sit on the floor with legs extended.",
       "Bend the right knee. Place the right foot on the left thigh, sole facing up.",
@@ -1113,6 +1182,8 @@ export default function MorningEdge() {
   const [loadingStatusIdx, setLoadingStatusIdx] = useState(0); // rotates through personalized status messages while brief loads
   const [error, setError] = useState(null);
   const [openDecisionIdx, setOpenDecisionIdx] = useState(null); // null when closed; otherwise the index of the decision being viewed in the detail modal
+  // Currently-tapped position card → opens PositionDetailModal (second page)
+  const [selectedPosition, setSelectedPosition] = useState(null);
   // Playbook sort state — lets the user reorganize like a brokerage account.
   // sortBy: "todayPct" | "todayDollar" | "totalPct" | "totalDollar" | "ticker"
   // sortDir: "desc" (biggest first) | "asc" (smallest first)
@@ -2963,6 +3034,23 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         <YogaPoseModal pose={selectedYogaPose} onClose={() => setSelectedYogaPose(null)} />
       )}
 
+      {/* Position detail modal — opens when user taps any stock card (briefed or not) */}
+      {selectedPosition && (
+        <PositionDetailModal
+          entry={selectedPosition}
+          onClose={() => setSelectedPosition(null)}
+          onAsk={(entry) => {
+            openChat({
+              id: `position-${entry.symbol}-${todayKey}`,
+              type: "playbook",
+              ticker: entry.symbol,
+              description: `Position: ${entry.symbol}. Action: ${entry.action || "HOLD"}. ${entry.reasoning || ""}`,
+            });
+            setSelectedPosition(null);
+          }}
+        />
+      )}
+
       {/* In-app browser sheet for source links */}
       {inAppBrowserUrl && (
         <InAppBrowser url={inAppBrowserUrl} onClose={() => setInAppBrowserUrl(null)} />
@@ -3573,13 +3661,57 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 {holdings.length > 0 && (() => {
                   const cryptoCount = holdings.filter((h) => h && h.type === "crypto").length;
                   const stockCount = holdings.filter((h) => h && h.type !== "crypto").length;
+                  const hasNoCryptoYet = cryptoCount === 0;
                   const options = [
                     { id: "all", label: "All", count: holdings.length },
                     { id: "stocks", label: "📈 Stocks", count: stockCount },
                     { id: "crypto", label: "🪙 Crypto", count: cryptoCount },
                   ];
                   return (
-                    <div className="mb-3 flex items-center gap-1.5 px-1">
+                    <>
+                      {/* Discovery banner when user has stocks but no crypto yet */}
+                      {hasNoCryptoYet && stockCount > 0 && (
+                        <div className="mb-3 rounded-2xl p-3 relative overflow-hidden flex items-center gap-3"
+                          style={{
+                            background: "linear-gradient(135deg, #FEF3C7 0%, #FCD34D 50%, #F59E0B 100%)",
+                            border: "1.5px solid #B45309",
+                            boxShadow: "0 3px 0 #92400E, 0 5px 12px rgba(180,83,9,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85)",
+                          }}>
+                          <span className="absolute top-0.5 left-3 right-3 h-[40%] pointer-events-none"
+                            style={{
+                              background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)",
+                              borderRadius: "1rem 1rem 50% 50%",
+                            }} />
+                          <span className="relative text-[28px] leading-none flex-shrink-0" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.25))" }}>
+                            🪙
+                          </span>
+                          <div className="relative flex-1 min-w-0">
+                            <p className="text-[11px] uppercase tracking-[0.18em] font-extrabold leading-none mb-0.5" style={{ color: "#451A03" }}>
+                              NEW · Crypto support
+                            </p>
+                            <p className="text-[12.5px] leading-snug font-semibold" style={{ color: "#78350F" }}>
+                              Sync Coinbase, Kraken, or Gemini for crypto playbook.
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setShowCsvImport(true)}
+                            className="relative px-3 py-1.5 rounded-xl text-white text-[11px] font-extrabold uppercase tracking-wider overflow-hidden transition active:scale-[0.95] active:translate-y-0.5 flex-shrink-0"
+                            style={{
+                              background: "linear-gradient(180deg, #B45309 0%, #78350F 100%)",
+                              border: "1.5px solid #451A03",
+                              boxShadow: "0 2px 0 #451A03, inset 0 1.5px 2px rgba(255,255,255,0.45)",
+                              textShadow: "0 1px 1px rgba(0,0,0,0.40)",
+                            }}>
+                            <span className="absolute top-0 left-1 right-1 h-[50%] pointer-events-none"
+                              style={{
+                                background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)",
+                                borderRadius: "0.7rem 0.7rem 50% 50%",
+                              }} />
+                            <span className="relative">Add</span>
+                          </button>
+                        </div>
+                      )}
+                      <div className="mb-3 flex items-center gap-1.5 px-1">
                       {options.map((opt) => {
                         const active = playbookAssetType === opt.id;
                         return (
@@ -3610,7 +3742,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           </button>
                         );
                       })}
-                    </div>
+                      </div>
+                    </>
                   );
                 })()}
 
@@ -3966,6 +4099,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                       onOpen={(e) => {
                                         if (e._decisionIdx != null && e._decisionIdx >= 0) {
                                           setOpenDecisionIdx(e._decisionIdx);
+                                        } else {
+                                          setSelectedPosition(e);
                                         }
                                       }}
                                     />
@@ -3999,6 +4134,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                       onOpen={(e) => {
                                         if (e._decisionIdx != null && e._decisionIdx >= 0) {
                                           setOpenDecisionIdx(e._decisionIdx);
+                                        } else {
+                                          setSelectedPosition(e);
                                         }
                                       }}
                                     />
@@ -4905,11 +5042,69 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       const f = brief.mindset.fuel;
                       const headline = (typeof f === "string") ? f : (f && f.headline) || "10-min activation: mobility, breath, strength, cooldown";
                       const totalMin = (f && typeof f === "object" && f.total_min) || 10;
+                      // Block breakdown: prefer brief's structured blocks, fall back to today's routine segments
+                      let blocks = [];
+                      if (f && typeof f === "object" && Array.isArray(f.blocks) && f.blocks.length > 0) {
+                        blocks = f.blocks;
+                      } else {
+                        const r = todayRoutine();
+                        blocks = (r.segments || []).map((s) => ({
+                          name: s.name,
+                          minutes: Math.round((s.durationSec || 0) / 60) || (s.durationSec ? +(s.durationSec / 60).toFixed(1) : 0),
+                          cue: s.cue,
+                        }));
+                      }
+                      const tip = f && typeof f === "object" ? f.tip : null;
                       return (
                         <>
-                          <p className="text-[12px] text-amber-800 italic leading-snug mb-3">
-                            Today's routine: {headline}. {totalMin} minutes total.
+                          <p className="text-[13px] text-amber-900 italic leading-snug mb-3 font-medium">
+                            {headline} · {totalMin} min total
                           </p>
+                          {/* Block list — what's in today's routine */}
+                          {blocks.length > 0 && (
+                            <div className="space-y-1.5 mb-3">
+                              {blocks.map((b, i) => (
+                                <div key={i} className="flex items-start gap-2 rounded-xl px-2.5 py-2"
+                                  style={{
+                                    background: "linear-gradient(180deg, #FFFFFF 0%, #FEFCE8 100%)",
+                                    border: "1px solid rgba(217,119,6,0.20)",
+                                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.85)",
+                                  }}>
+                                  <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+                                    style={{
+                                      background: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #92400E 100%)",
+                                      boxShadow: "0 1px 0 #78350F, inset 0 1px 1px rgba(255,255,255,0.55)",
+                                    }}>
+                                    {i + 1}
+                                  </span>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-baseline gap-1.5">
+                                      <p className="text-[13.5px] font-bold leading-tight" style={{ color: "#451A03" }}>
+                                        {b.name}
+                                      </p>
+                                      {b.minutes != null && (
+                                        <p className="text-[10.5px] text-amber-700 font-semibold">
+                                          {b.minutes} min
+                                        </p>
+                                      )}
+                                    </div>
+                                    {b.cue && (
+                                      <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                                        {b.cue}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {/* Tip */}
+                          {tip && (
+                            <p className="text-[12px] text-amber-800 italic mb-3 px-1 leading-snug">
+                              💡 {tip}
+                            </p>
+                          )}
+                          {/* Start button */}
                           <button
                             onClick={() => setRoutineFlowOpen(true)}
                             className="relative w-full px-4 py-2.5 rounded-2xl text-white text-[15px] font-extrabold overflow-hidden transition active:scale-[0.97] active:translate-y-0.5 flex items-center justify-center gap-2"
@@ -4942,50 +5137,40 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       boxShadow: "inset 0 1.5px 2px rgba(255,255,255,0.85)",
                     }}>
                     <p className="text-[12px] text-violet-800 italic leading-snug mb-3">
-                      Tap any pose for instructions. Hold each for 5 deep breaths. Move slowly between poses.
+                      Tap any pose to see the schematic and how to do it. Hold each for 5 deep breaths.
                     </p>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 gap-2.5">
                       {YOGA_POSES.map((pose, i) => (
                         <button
                           key={i}
                           onClick={() => setSelectedYogaPose(pose)}
-                          className="relative rounded-xl overflow-hidden aspect-square transition active:scale-[0.95] active:translate-y-0.5"
+                          className="relative rounded-xl overflow-hidden transition active:scale-[0.96] active:translate-y-0.5"
                           style={{
-                            background: "linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%)",
+                            aspectRatio: "1 / 1",
+                            background: "#FFFFFF",
                             border: "1.5px solid #C4B5FD",
                             boxShadow: "0 1.5px 0 #8B5CF6, 0 2px 4px rgba(139,92,246,0.20), inset 0 1px 1.5px rgba(255,255,255,0.95)",
                           }}>
-                          <span className="absolute top-0.5 left-1.5 right-1.5 h-[35%] pointer-events-none z-[2]"
+                          {/* The actual yoga pose image */}
+                          <YogaPoseImage pose={pose} />
+                          {/* Top specular gloss on the card */}
+                          <span className="absolute top-0.5 left-1.5 right-1.5 h-[25%] pointer-events-none z-[2]"
                             style={{
-                              background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)",
+                              background: "linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%)",
                               borderRadius: "0.6rem 0.6rem 50% 50%",
                             }} />
-                          {/* Pose image — loads from /yoga/[slug].jpg in /public.
-                              If missing, the broken-image alt text shows the pose name */}
-                          <img
-                            src={`/yoga/${pose.slug}.jpg`}
-                            alt={pose.english}
-                            className="absolute inset-0 w-full h-full object-cover"
-                            onError={(e) => {
-                              // Graceful fallback when image isn't uploaded yet
-                              e.currentTarget.style.display = "none";
-                              const parent = e.currentTarget.parentElement;
-                              if (parent && !parent.querySelector(".yoga-placeholder")) {
-                                const ph = document.createElement("div");
-                                ph.className = "yoga-placeholder absolute inset-0 flex flex-col items-center justify-center text-center px-1";
-                                ph.innerHTML = `<div style="font-size:11px;font-weight:700;color:#5B21B6;font-family:Georgia,serif;font-style:italic">${pose.sanskrit}</div><div style="font-size:8px;color:#7C3AED;margin-top:2px;text-transform:uppercase;letter-spacing:0.05em">${pose.english}</div>`;
-                                parent.appendChild(ph);
-                              }
-                            }}
-                          />
-                          {/* Pose name overlay at bottom */}
-                          <div className="absolute bottom-0 left-0 right-0 px-1.5 py-1 z-[3]"
+                          {/* Pose name overlay at bottom with dark gradient */}
+                          <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 z-[3]"
                             style={{
-                              background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.30) 70%, transparent 100%)",
+                              background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.15) 85%, transparent 100%)",
                             }}>
-                            <p className="text-[8.5px] uppercase tracking-wider font-bold text-white text-center leading-tight"
-                              style={{ textShadow: "0 1px 1px rgba(0,0,0,0.50)" }}>
+                            <p className="text-[11px] uppercase tracking-wider font-extrabold text-white text-center leading-tight"
+                              style={{ textShadow: "0 1px 2px rgba(0,0,0,0.70)" }}>
                               {pose.english}
+                            </p>
+                            <p className="text-[8.5px] italic text-white/85 text-center leading-tight mt-0.5"
+                              style={{ fontFamily: "Georgia, serif", textShadow: "0 1px 1px rgba(0,0,0,0.50)" }}>
+                              {pose.sanskrit}
                             </p>
                           </div>
                         </button>
@@ -5979,8 +6164,6 @@ function MindsetRowExpandable({ icon, emoji, kicker, body, color, expanded, onTo
 // instructions. Tap-to-dismiss on the backdrop. Image loads from /public/yoga/
 function YogaPoseModal({ pose, onClose }) {
   if (!pose) return null;
-  const [imgLoaded, setImgLoaded] = React.useState(false);
-  const [imgError, setImgError] = React.useState(false);
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
       style={{ background: "rgba(15,23,42,0.75)", backdropFilter: "blur(6px)" }}
@@ -6009,57 +6192,44 @@ function YogaPoseModal({ pose, onClose }) {
           <X className="w-5 h-5 text-slate-800 relative" />
         </button>
 
-        {/* Pose image — large hero at the top */}
-        <div className="relative w-full aspect-[4/3] overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #DDD6FE 0%, #C4B5FD 100%)" }}>
-          {!imgError && (
-            <img
-              src={`/yoga/${pose.slug}.jpg`}
-              alt={pose.english}
-              className="w-full h-full object-cover"
-              onLoad={() => setImgLoaded(true)}
-              onError={() => setImgError(true)}
-              style={{ opacity: imgLoaded ? 1 : 0, transition: "opacity 0.3s" }}
-            />
-          )}
-          {imgError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-              <span className="text-[72px] leading-none mb-3" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.20))" }}>🧘</span>
-              <p className="text-[14px] text-violet-900 italic" style={{ fontFamily: SERIF }}>
-                Image not yet uploaded — add <span className="font-bold">/yoga/{pose.slug}.jpg</span> to your repo.
-              </p>
-            </div>
-          )}
+        {/* ── SCHEMATIC FIRST — full-width hero image of the pose ── */}
+        <div className="relative w-full overflow-hidden"
+          style={{
+            aspectRatio: "1 / 1",
+            background: "linear-gradient(135deg, #DDD6FE 0%, #C4B5FD 100%)",
+          }}>
+          <YogaPoseImage pose={pose} />
         </div>
 
-        {/* Content */}
-        <div className="px-5 py-5">
-          {/* Sanskrit name (big, italic, decorative) */}
+        {/* ── HEADER — Sanskrit + English name ── */}
+        <div className="px-5 pt-5 pb-3">
           <p className="text-[11px] uppercase tracking-[0.3em] font-bold mb-1" style={{ color: "#7C3AED" }}>
             Asana
           </p>
           <h2 className="text-[26px] font-bold italic mb-1" style={{ fontFamily: SERIF, color: "#2E1065" }}>
             {pose.sanskrit}
           </h2>
-          <p className="text-[15px] uppercase tracking-wider text-violet-700 font-bold mb-4">
+          <p className="text-[15px] uppercase tracking-wider text-violet-700 font-bold">
             {pose.english}
           </p>
+        </div>
 
-          {/* Benefit */}
-          <div className="rounded-2xl p-4 mb-4"
-            style={{
-              background: "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)",
-              border: "1.5px solid #FCD34D",
-            }}>
-            <p className="text-[11px] uppercase tracking-wider text-amber-800 font-bold mb-1.5 flex items-center gap-1.5">
-              ✨ Benefit
-            </p>
-            <p className="text-[14px] text-slate-900 leading-snug italic" style={{ fontFamily: SERIF }}>
-              {pose.benefit}
-            </p>
-          </div>
+        {/* ── BENEFIT ── */}
+        <div className="mx-5 mb-4 rounded-2xl p-4"
+          style={{
+            background: "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)",
+            border: "1.5px solid #FCD34D",
+          }}>
+          <p className="text-[11px] uppercase tracking-wider text-amber-800 font-bold mb-1.5 flex items-center gap-1.5">
+            ✨ Benefit
+          </p>
+          <p className="text-[14px] text-slate-900 leading-snug italic" style={{ fontFamily: SERIF }}>
+            {pose.benefit}
+          </p>
+        </div>
 
-          {/* Step-by-step instructions */}
+        {/* ── HOW TO DO IT ── */}
+        <div className="px-5 pb-5">
           <p className="text-[12px] uppercase tracking-[0.2em] text-violet-700 font-bold mb-3 flex items-center gap-1.5">
             📋 How to do it
           </p>
@@ -6082,7 +6252,7 @@ function YogaPoseModal({ pose, onClose }) {
             ))}
           </ol>
 
-          {/* Hold timer hint */}
+          {/* Hold time hint */}
           <div className="mt-5 pt-4 border-t border-violet-200 flex items-center justify-between">
             <p className="text-[11px] uppercase tracking-wider text-violet-700 font-semibold">
               ⏱️ Hold for {pose.holdSec} seconds
@@ -6091,6 +6261,171 @@ function YogaPoseModal({ pose, onClose }) {
               Breathe deeply throughout
             </p>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Position Detail Modal ────────────────────────────────────────
+// Opens when user taps any stock card. Shows price, action, mini brief, chart.
+// Works for both briefed and unbriefed positions.
+function PositionDetailModal({ entry, onClose, onAsk }) {
+  if (!entry) return null;
+  const isUp = entry.changePct != null && entry.changePct >= 0;
+  const actionColors = {
+    TRIM:  { bg: "linear-gradient(180deg, #FCA5A5 0%, #EF4444 45%, #B91C1C 100%)", border: "#7F1D1D", text: "Reduce position size into strength. Take some profit off the table." },
+    ADD:   { bg: "linear-gradient(180deg, #6EE7B7 0%, #10B981 45%, #047857 100%)", border: "#064E3B", text: "Increase position on next dip. Conviction signals support adding here." },
+    HOLD:  { bg: "linear-gradient(180deg, #FEF9C3 0%, #FDE047 45%, #CA8A04 100%)", border: "#A16207", text: "Maintain position. No urgent action — keep watching for catalysts." },
+    WATCH: { bg: "linear-gradient(180deg, #FEF9C3 0%, #FDE047 45%, #CA8A04 100%)", border: "#A16207", text: "Track closely. No buy or sell yet — waiting for confirmation." },
+  };
+  const a = actionColors[entry.action] || actionColors.HOLD;
+  const reasoning = entry.reasoning || a.text;
+  return (
+    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
+      style={{ background: "rgba(15,23,42,0.75)", backdropFilter: "blur(6px)" }}
+      onClick={onClose}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl"
+        style={{
+          background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)",
+          boxShadow: "0 -10px 40px rgba(0,0,0,0.45)",
+        }}>
+        {/* Close button */}
+        <button onClick={onClose}
+          className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition active:scale-[0.92] active:translate-y-0.5"
+          style={{
+            background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+            border: "1.5px solid #64748B",
+            boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.18), inset 0 1.5px 2px rgba(255,255,255,1)",
+          }}
+          aria-label="Close">
+          <X className="w-5 h-5 text-slate-800 relative" />
+        </button>
+
+        {/* Header: ticker + action chip */}
+        <div className="px-5 pt-6 pb-3">
+          <div className="flex items-center gap-3 mb-3">
+            <h2 className="text-[32px] font-bold leading-none flex-shrink-0"
+              style={{
+                fontFamily: SERIF,
+                background: "linear-gradient(180deg, #0F172A 0%, #334155 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}>
+              {entry.symbol}
+            </h2>
+            <div className="relative inline-flex items-center rounded-full overflow-hidden font-extrabold tracking-wider uppercase text-white flex-shrink-0"
+              style={{
+                background: a.bg,
+                border: `1.5px solid ${a.border}`,
+                boxShadow: `0 3px 0 ${a.border}, 0 5px 10px rgba(15,23,42,0.25), inset 0 2.5px 3.5px rgba(255,255,255,0.85), inset 0 -3px 5px rgba(0,0,0,0.20)`,
+                fontSize: 13,
+                padding: "5px 14px",
+                textShadow: "0 1px 1.5px rgba(0,0,0,0.45)",
+              }}>
+              <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.40) 50%, rgba(255,255,255,0) 100%)",
+                  borderRadius: "9999px 9999px 50% 50%",
+                }} />
+              <span className="relative">{entry.action || "HOLD"}</span>
+            </div>
+          </div>
+
+          {/* Price + change */}
+          {entry.currentPrice != null && (
+            <div className="flex items-baseline gap-3">
+              <span className="text-[28px] font-extrabold" style={{ color: "#020617" }}>
+                ${entry.currentPrice.toFixed(2)}
+              </span>
+              {entry.changePct != null && !Number.isNaN(entry.changePct) && (
+                <span className="inline-flex items-center gap-1 text-[16px] font-black"
+                  style={{ color: isUp ? "#047857" : "#B91C1C" }}>
+                  <span style={{ fontSize: 18, lineHeight: 1, fontWeight: 900 }}>{isUp ? "▲" : "▼"}</span>
+                  {Math.abs(entry.changePct).toFixed(2)}% today
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* P&L row */}
+          <div className="flex items-center gap-3 mt-2 text-[13px] font-semibold">
+            {entry.qty != null && (
+              <span style={{ color: "#475569" }}>
+                {entry.qty} shares
+              </span>
+            )}
+            {entry.totalDollar != null && (
+              <span className="font-extrabold" style={{ color: entry.totalDollar >= 0 ? "#059669" : "#DC2626" }}>
+                L: {entry.totalDollar >= 0 ? "+" : ""}${Math.abs(entry.totalDollar).toFixed(0)}
+                {entry.totalPct != null && ` (${entry.totalPct >= 0 ? "+" : ""}${entry.totalPct.toFixed(1)}%)`}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Mini brief card — what to do */}
+        <div className="mx-5 mb-4 rounded-2xl p-4 relative overflow-hidden"
+          style={{
+            background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 100%)",
+            border: "1.5px solid #FCD34D",
+            boxShadow: "inset 0 1.5px 2px rgba(255,255,255,0.85)",
+          }}>
+          <p className="text-[10px] uppercase tracking-[0.25em] font-bold mb-2" style={{ color: "#92400E" }}>
+            📋 What to do
+          </p>
+          <p className="text-[15px] leading-snug font-medium" style={{ color: "#451A03", fontFamily: SERIF }}>
+            <span className="font-extrabold mr-1.5" style={{ color: a.border }}>→</span>
+            {reasoning}
+          </p>
+        </div>
+
+        {/* Why this suggestion */}
+        {entry.reasoning && entry.reasoning !== reasoning && (
+          <div className="mx-5 mb-4 rounded-2xl p-4 relative overflow-hidden"
+            style={{
+              background: "linear-gradient(180deg, #EFF6FF 0%, #DBEAFE 100%)",
+              border: "1.5px solid #93C5FD",
+            }}>
+            <p className="text-[10px] uppercase tracking-[0.25em] font-bold mb-2" style={{ color: "#1E40AF" }}>
+              💡 Why this suggestion
+            </p>
+            <p className="text-[14px] leading-snug" style={{ color: "#0F172A" }}>
+              {entry.reasoning}
+            </p>
+          </div>
+        )}
+
+        {/* Chart */}
+        <div className="mx-5 mb-4 rounded-2xl overflow-hidden"
+          style={{
+            border: "1.5px solid #CBD5E1",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,1)",
+          }}>
+          <StockChart ticker={entry.symbol} />
+        </div>
+
+        {/* Ask about this */}
+        <div className="px-5 pb-5">
+          <button
+            onClick={() => onAsk && onAsk(entry)}
+            className="relative w-full py-3 rounded-2xl text-white text-[15px] font-extrabold overflow-hidden transition active:scale-[0.97] active:translate-y-0.5 flex items-center justify-center gap-2"
+            style={{
+              background: "linear-gradient(180deg, #818CF8 0%, #4338CA 50%, #1E1B4B 100%)",
+              border: "1.5px solid #312E81",
+              boxShadow: "0 3px 0 #312E81, 0 5px 12px rgba(99,102,241,0.45), inset 0 2px 3px rgba(255,255,255,0.45)",
+              textShadow: "0 1px 1.5px rgba(0,0,0,0.40)",
+            }}>
+            <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1rem 1rem 50% 50%",
+              }} />
+            <Sparkles className="w-4 h-4 relative" /> <span className="relative">Ask about {entry.symbol}</span>
+          </button>
         </div>
       </div>
     </div>
@@ -6902,16 +7237,13 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 // not just the brief's decisions. Color-coded by action type with a separate
 // risk-tier dot indicator.
 function UnifiedPlaybookCard({ entry, onOpen }) {
-  const [expanded, setExpanded] = React.useState(false);
-
-  // Action chip styling — bright candy gem colors with brilliant pop.
-  // High saturation, lighter tops, brighter mids, bigger 3D edge for that
-  // "Candy Crush gem you want to tap" feel.
+  // Action chip styling — TRUE saturated red/green/yellow Candy Crush gems.
+  // Bottom tone is medium-dark (not muddy brown) to keep the color pure.
   const actionStyle = {
-    TRIM:  { bg: "linear-gradient(180deg, #FECACA 0%, #F87171 50%, #DC2626 100%)", border: "#B91C1C" },  // brilliant cherry red
-    ADD:   { bg: "linear-gradient(180deg, #86EFAC 0%, #22C55E 50%, #15803D 100%)", border: "#166534" },  // brilliant emerald
-    HOLD:  { bg: "linear-gradient(180deg, #FEF08A 0%, #FACC15 50%, #CA8A04 100%)", border: "#A16207" },  // brilliant gold
-    WATCH: { bg: "linear-gradient(180deg, #FEF08A 0%, #FACC15 50%, #CA8A04 100%)", border: "#A16207" },  // brilliant gold
+    TRIM:  { bg: "linear-gradient(180deg, #FCA5A5 0%, #EF4444 45%, #B91C1C 100%)", border: "#7F1D1D" },  // proper red
+    ADD:   { bg: "linear-gradient(180deg, #6EE7B7 0%, #10B981 45%, #047857 100%)", border: "#064E3B" },  // proper green
+    HOLD:  { bg: "linear-gradient(180deg, #FEF9C3 0%, #FDE047 45%, #CA8A04 100%)", border: "#A16207" },  // proper yellow
+    WATCH: { bg: "linear-gradient(180deg, #FEF9C3 0%, #FDE047 45%, #CA8A04 100%)", border: "#A16207" },  // proper yellow
   };
   const a = actionStyle[entry.action] || actionStyle.HOLD;
 
@@ -6927,7 +7259,7 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
   // Direction-based color coding (today's move) — slightly stronger tint for visibility
   const isUp = entry.changePct != null && entry.changePct >= 0;
   const isDown = entry.changePct != null && entry.changePct < 0;
-  const stripeColor = isUp ? "#10B981" : isDown ? "#DC2626" : "#94A3B8";
+  const stripeColor = isUp ? "#16A34A" : isDown ? "#DC2626" : "#94A3B8";
 
   // P&L coloring
   const pnlPositive = entry.totalDollar != null && entry.totalDollar > 0;
@@ -6938,18 +7270,33 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
   return (
     <div className="relative rounded-xl overflow-hidden"
       style={{
-        // Clean white card — no colored haze. Pure shadow for contrast.
-        background: "linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%)",
-        border: "1px solid #E2E8F0",
-        boxShadow: "0 1.5px 4px -1px rgba(15,23,42,0.10), 0 2px 6px -2px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,1)",
+        // Glossy white button — pure white face, neutral 3D edge, no colored haze.
+        background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+        border: "1px solid #CBD5E1",
+        boxShadow: "0 2px 0 #94A3B8, 0 3px 6px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(148,163,184,0.15)",
       }}>
-      {/* Left direction stripe — only color accent on the card */}
-      <div className="absolute top-0 left-0 bottom-0 w-[3px] z-[2]"
-        style={{ background: stripeColor }} />
-      {/* Tappable row */}
+      {/* Glossy top specular highlight — white shine, NO color */}
+      <span className="absolute top-0.5 left-2 right-2 h-[40%] pointer-events-none z-[1]"
+        style={{
+          background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.20) 60%, rgba(255,255,255,0) 100%)",
+          borderRadius: "0.75rem 0.75rem 50% 50%",
+        }} />
+      {/* Bottom shine for plump bubble feel */}
+      <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[10%] pointer-events-none z-[1]"
+        style={{
+          background: "linear-gradient(to top, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)",
+          borderRadius: "9999px",
+        }} />
+      {/* Left direction stripe — brighter, more saturated */}
+      <div className="absolute top-0 left-0 bottom-0 w-[4px] z-[2]"
+        style={{
+          background: stripeColor,
+          boxShadow: `inset -1px 0 1px rgba(255,255,255,0.40), 0 0 6px ${stripeColor}66`,
+        }} />
+      {/* Tappable row — tap opens a full detail page (not inline expand) */}
       <button
         type="button"
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => onOpen && onOpen(entry)}
         className="relative w-full text-left transition-all active:scale-[0.99] active:translate-y-0.5 z-[2]"
       >
         <div className="pl-2 pr-1.5 py-1.5">
@@ -7016,8 +7363,7 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
                 }} />
               <span className="relative">{entry.action}</span>
             </div>
-            <ChevronRight className="w-3 h-3 text-slate-400 transition-transform flex-shrink-0"
-              style={{ transform: expanded ? "rotate(90deg)" : "none" }} />
+            <ChevronRight className="w-3 h-3 text-slate-400 flex-shrink-0" />
           </div>
           {/* LINE 2: action instruction — what to actually DO */}
           {(() => {
@@ -7051,35 +7397,6 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
           })()}
         </div>
       </button>
-      {/* Expanded view — inline chart + actions */}
-      {expanded && (
-        <div className="pl-2 pr-1.5 pb-2 pt-1 border-t" style={{ borderColor: "rgba(148,163,184,0.25)" }}>
-          <StockChart ticker={entry.symbol} />
-          {entry.reasoning && (
-            <p className="text-[10.5px] text-slate-700 leading-snug mt-1.5 italic">
-              {entry.reasoning}
-            </p>
-          )}
-          {entry._decisionIdx != null && entry._decisionIdx >= 0 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onOpen && onOpen(entry); }}
-              className="relative mt-2 px-2.5 py-1 rounded-lg text-[9.5px] font-bold text-white overflow-hidden transition active:scale-[0.96] active:translate-y-0.5"
-              style={{
-                background: "linear-gradient(180deg, #818CF8 0%, #4338CA 50%, #1E1B4B 100%)",
-                border: "1.5px solid #312E81",
-                boxShadow: "0 2px 0 #312E81, 0 3px 6px rgba(99,102,241,0.35), inset 0 1px 1.5px rgba(255,255,255,0.45)",
-                textShadow: "0 1px 1px rgba(0,0,0,0.40)",
-              }}>
-              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
-                style={{
-                  background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
-                  borderRadius: "0.4rem 0.4rem 50% 50%",
-                }} />
-              <span className="relative">Full reasoning →</span>
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 }
