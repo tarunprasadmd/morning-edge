@@ -2271,7 +2271,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
     return (
       <div className="min-h-screen relative" style={{
         fontFamily: SANS,
-        background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 14%, #DDD6FE 30%, #C7D2FE 45%, #A5B4FC 60%, #818CF8 75%, #4338CA 100%)",
+        background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 14%, #DDD6FE 30%, #C7D2FE 45%, #A5B4FC 60%, #818CF8 75%, #4338CA 100%)",
       }}>
         <div className="relative z-10 px-6 pt-16 pb-12 flex flex-col items-center max-w-md mx-auto">
           {/* Branded mark — Morning Edge crown + arrow logo */}
@@ -2298,7 +2298,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
     return (
       <div className="min-h-screen relative overflow-hidden" style={{
         fontFamily: SANS,
-        background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 14%, #DDD6FE 30%, #C7D2FE 45%, #A5B4FC 60%, #818CF8 75%, #4338CA 100%)",
+        background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 14%, #DDD6FE 30%, #C7D2FE 45%, #A5B4FC 60%, #818CF8 75%, #4338CA 100%)",
       }}>
         <MountainScene />
         <div className="relative z-10 px-6 pt-16 pb-12 flex flex-col items-center max-w-md mx-auto">
@@ -2779,7 +2779,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
   return (
     <div className="min-h-screen relative overflow-hidden" style={{
       fontFamily: SANS,
-      background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 14%, #DDD6FE 30%, #C7D2FE 45%, #A5B4FC 60%, #818CF8 75%, #4338CA 100%)",
+      background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 14%, #DDD6FE 30%, #C7D2FE 45%, #A5B4FC 60%, #818CF8 75%, #4338CA 100%)",
     }}>
       <MountainScene />
 
@@ -3967,19 +3967,19 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             setPlaybookSortDir("desc");
                           }
                         }}
-                        className={`relative flex-1 text-[10px] font-bold uppercase tracking-wider px-2 py-2 rounded-full transition-all active:scale-[0.96] active:translate-y-0.5 overflow-hidden ${active ? "text-white" : "text-amber-900"}`}
+                        className={`relative flex-1 text-[10px] font-bold uppercase tracking-wider px-2 py-2 rounded-full transition-all active:scale-[0.96] active:translate-y-0.5 overflow-hidden ${active ? "text-white" : ""}`}
                         style={{
                           background: active
-                            ? "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #B45309 100%)"
-                            : "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
-                          border: active ? "1.5px solid #92400E" : "1.5px solid rgba(217,119,6,0.55)",
+                            ? "linear-gradient(180deg, #60A5FA 0%, #2563EB 50%, #1E3A8A 100%)"
+                            : "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                          border: active ? "1.5px solid #1E3A8A" : "1.5px solid rgba(100,116,139,0.55)",
+                          color: active ? "#FFFFFF" : "#0F172A",
                           boxShadow: active
-                            ? "0 3px 0 #78350F, 0 5px 12px rgba(217,119,6,0.55), 0 0 16px rgba(252,211,77,0.45), inset 0 2px 3px rgba(255,255,255,0.65), inset 0 -3px 6px rgba(120,53,15,0.35)"
-                            : "0 2px 0 rgba(146,64,14,0.35), 0 3px 6px rgba(146,64,14,0.18), inset 0 2px 3px rgba(255,255,255,1), inset 0 -2px 4px rgba(146,64,14,0.12)",
-                          textShadow: active ? "0 1px 1px rgba(120,53,15,0.45)" : "none",
+                            ? "0 3px 0 #1E3A8A, 0 5px 12px rgba(37,99,235,0.45), inset 0 2px 3px rgba(255,255,255,0.45), inset 0 -3px 6px rgba(30,58,138,0.30)"
+                            : "0 2px 0 rgba(100,116,139,0.45), 0 3px 6px rgba(15,23,42,0.10), inset 0 2px 3px rgba(255,255,255,1), inset 0 -2px 4px rgba(100,116,139,0.12)",
+                          textShadow: active ? "0 1px 1px rgba(30,58,138,0.40)" : "none",
                         }}
                       >
-                        {/* Big top specular */}
                         <span className="absolute top-0.5 left-1.5 right-1.5 h-[55%] pointer-events-none"
                           style={{
                             background: active
@@ -3987,7 +3987,6 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               : "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.45) 55%, rgba(255,255,255,0) 100%)",
                             borderRadius: "9999px 9999px 50% 50%",
                           }} />
-                        {/* Bottom shine */}
                         <span className="absolute bottom-1 left-[25%] right-[25%] h-[18%] pointer-events-none"
                           style={{
                             background: "linear-gradient(to top, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)",
@@ -4201,10 +4200,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             <Card theme={themes.money} pillar="wealth">
               <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} pillar="wealth" />
               <div className="px-5 pt-1 pb-5"
-                style={{ background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)" }}>
+                style={{ background: "linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 50%, #E2E8F0 100%)" }}>
                 <p className="text-[14px] uppercase tracking-[0.2em] font-medium mb-4 pt-3"
                   style={{
-                    background: "linear-gradient(180deg, #92400E 0%, #78350F 100%)",
+                    background: "linear-gradient(180deg, #475569 0%, #334155 100%)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
@@ -4214,10 +4213,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
                 {/* Compact summary banner — Today's Edge alerts + Most Bought/Sold tiles */}
                 {brief.smart_money.summary && (
-                  <div className="mb-5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 px-3.5 py-3">
+                  <div className="mb-5 rounded-xl px-3.5 py-3"
+                    style={{
+                      background: "linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)",
+                      border: "2px solid #93C5FD",
+                    }}>
                     <div className="flex items-center gap-2 mb-1">
-                      <Sparkles className="w-3 h-3 text-amber-700" />
-                      <p className="text-[12px] uppercase tracking-[0.2em] text-amber-800 font-bold">
+                      <Sparkles className="w-3 h-3" style={{ color: "#1D4ED8" }} />
+                      <p className="text-[12px] uppercase tracking-[0.2em] font-bold" style={{ color: "#1E40AF" }}>
                         Today's Smart Money Read
                       </p>
                     </div>
@@ -4265,16 +4268,16 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                 <ExternalLink className="relative w-3 h-3 text-rose-800 flex-shrink-0" />
                               </button>
                             ))}
-                            {/* Binary catalysts — AMBER */}
+                            {/* Binary catalysts — VIOLET (was yellow) */}
                             {(brief.todays_edge.binary_catalysts || []).map((c, i) => (
                               <button
                                 key={`cat-${i}`}
                                 onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${c.ticker.toUpperCase()}`)}
                                 className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-1.5 overflow-hidden text-left transition active:scale-[0.98] active:translate-y-0.5"
                                 style={{
-                                  background: "linear-gradient(180deg, #FEF3C7 0%, #FDE68A 50%, #FCD34D 100%)",
-                                  border: "1.5px solid #D97706",
-                                  boxShadow: "0 2px 0 #92400E, 0 3px 7px rgba(217,119,6,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -1.5px 3px rgba(146,64,14,0.20)",
+                                  background: "linear-gradient(180deg, #EDE9FE 0%, #DDD6FE 50%, #C4B5FD 100%)",
+                                  border: "1.5px solid #7C3AED",
+                                  boxShadow: "0 2px 0 #5B21B6, 0 3px 7px rgba(124,58,237,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -1.5px 3px rgba(76,29,149,0.20)",
                                 }}
                               >
                                 <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
@@ -4284,13 +4287,13 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                   }} />
                                 <span className="absolute bottom-0.5 left-[28%] right-[28%] h-[15%] pointer-events-none"
                                   style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
-                                <span className="relative text-[9px] uppercase tracking-wider font-bold text-amber-900 flex-shrink-0">Catalyst</span>
+                                <span className="relative text-[9px] uppercase tracking-wider font-bold flex-shrink-0" style={{ color: "#5B21B6" }}>Catalyst</span>
                                 <span className="relative text-[16px] font-bold text-slate-900 flex-shrink-0" style={{ fontFamily: SERIF }}>{c.ticker}</span>
                                 <div className="relative flex-1 min-w-0">
-                                  <p className="text-[14px] text-amber-900 leading-tight font-semibold truncate">{c.event}</p>
-                                  {c.context && <p className="text-[12px] text-amber-800/80 leading-tight truncate">{c.context}</p>}
+                                  <p className="text-[14px] leading-tight font-semibold truncate" style={{ color: "#4C1D95" }}>{c.event}</p>
+                                  {c.context && <p className="text-[12px] leading-tight truncate" style={{ color: "rgba(76,29,149,0.80)" }}>{c.context}</p>}
                                 </div>
-                                <ExternalLink className="relative w-3 h-3 text-amber-800 flex-shrink-0" />
+                                <ExternalLink className="relative w-3 h-3 flex-shrink-0" style={{ color: "#5B21B6" }} />
                               </button>
                             ))}
                             {/* Risk flags — ORANGE */}
@@ -4323,13 +4326,13 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             ))}
                           </div>
                           {/* Divider between Today's Edge and Most Bought/Sold */}
-                          <div className="mt-3 border-t border-amber-300/60" />
+                          <div className="mt-3 border-t border-slate-300/60" />
                         </div>
                       ) : null
                     )}
 
                     {/* ─── SECTION 2: Most Bought / Most Sold ─── */}
-                    <p className="text-[9px] uppercase tracking-wider text-amber-800 font-bold mb-2">
+                    <p className="text-[9px] uppercase tracking-wider font-bold mb-2" style={{ color: "#475569" }}>
                       Top Flow · Smart Money
                     </p>
                     <p className="text-[14px] text-slate-800 leading-snug mb-2.5">
@@ -4833,11 +4836,15 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               <Card theme={themes.money} pillar="wealth">
                 <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} pillar="wealth" />
                 <div className="px-5 pt-1 pb-5">
-                  <p className="text-[14px] uppercase tracking-[0.2em] text-amber-700/80 font-medium mb-3">
+                  <p className="text-[14px] uppercase tracking-[0.2em] font-medium mb-3" style={{ color: "#64748B" }}>
                     Whales · Congress · Hedge Funds
                   </p>
-                  <div className="rounded-xl bg-amber-50/60 border-2 border-amber-200 p-4">
-                    <p className="text-[14px] text-amber-900 leading-relaxed m-0">
+                  <div className="rounded-xl p-4"
+                    style={{
+                      background: "linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)",
+                      border: "2px solid #CBD5E1",
+                    }}>
+                    <p className="text-[14px] leading-relaxed m-0" style={{ color: "#334155" }}>
                      Couldn't load institutional flow data right now. Pull to refresh, or check back in a few minutes.
                     </p>
                   </div>
@@ -9438,7 +9445,7 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
                 back here and upload it in Conviction Watch.
               </p>
             )}
-            <p className="mt-2 font-semibold text-amber-900">
+            <p className="mt-2 font-semibold" style={{ color: "#1E40AF" }}>
               We never see your password. We only read the CSV you upload. Holdings
               are sent to our server only when generating a brief, then cached briefly
               under a non-identifying hash. See <a href="/privacy" className="underline">Privacy Policy</a> for details.
@@ -9446,15 +9453,21 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
           </div>
 
           <div className="space-y-2">
-            {BROKERAGES.map((b) => (
+            {BROKERAGES.map((b) => {
+              const isCrypto = b.type === "crypto";
+              return (
               <button
                 key={b.name}
                 onClick={() => handleBrokerClick(b)}
                 className="relative w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
-                style={{
-                  background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
-                  border: "1.5px solid #D97706",
-                  boxShadow: "0 3px 0 #92400E, 0 4px 10px rgba(217,119,6,0.25), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(146,64,14,0.15)",
+                style={isCrypto ? {
+                  background: "linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 50%, #DDD6FE 100%)",
+                  border: "1.5px solid #8B5CF6",
+                  boxShadow: "0 3px 0 #6D28D9, 0 4px 10px rgba(139,92,246,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(91,33,182,0.10)",
+                } : {
+                  background: "linear-gradient(180deg, #EFF6FF 0%, #DBEAFE 50%, #BFDBFE 100%)",
+                  border: "1.5px solid #3B82F6",
+                  boxShadow: "0 3px 0 #1D4ED8, 0 4px 10px rgba(59,130,246,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(30,64,175,0.10)",
                 }}
               >
                 <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
@@ -9470,20 +9483,21 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
                       <h3 className="text-[16px] font-bold text-slate-900 truncate" style={{ fontFamily: SERIF }}>
                         {b.name}
                       </h3>
-                      <ExternalLink className="w-3.5 h-3.5 text-amber-800 flex-shrink-0" />
+                      <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" style={{ color: isCrypto ? "#7C3AED" : "#1D4ED8" }} />
                     </div>
                     <p className="text-[14px] text-slate-800 leading-snug font-medium">
                       {b.path}
                     </p>
                     {b.notes && (
-                      <p className="text-[12px] text-amber-900 leading-snug mt-1 italic">
+                      <p className="text-[12px] leading-snug mt-1 italic" style={{ color: isCrypto ? "#5B21B6" : "#1E40AF" }}>
                         {b.notes}
                       </p>
                     )}
                   </div>
                 </div>
               </button>
-            ))}
+              );
+            })}
           </div>
 
           <p className="text-[12px] text-slate-800 leading-relaxed italic text-center mt-4">
