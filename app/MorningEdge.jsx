@@ -6417,9 +6417,9 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           </div>
         </div>
 
-        {/* Pose image */}
-        <div className="relative" style={{ aspectRatio: "1 / 1", maxHeight: 280 }}>
-          <YogaPoseImage pose={currentPose} />
+        {/* Pose image — match source 482x543 ratio (0.888) to show FULL pose with no crop */}
+        <div className="relative bg-violet-50" style={{ aspectRatio: "482 / 543", maxHeight: 320 }}>
+          <YogaPoseImage pose={currentPose} style={{ objectFit: "contain" }} />
         </div>
 
         {/* Pose name */}
