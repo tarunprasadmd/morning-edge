@@ -2104,7 +2104,15 @@ export default function MorningEdge() {
         const symCol = findCol(/^symbol$/, /^ticker$/, /^asset$/, /^currency$/, /^coin$/, /symbol|ticker|asset|currency|coin/, /^stock$|security/);
         // Quantity — crypto exchanges may use "Amount", "Balance", "Quantity"
         const qtyCol = findCol(/^quantity$/, /^shares$/, /^qty$/, /^amount$/, /^balance$/, /quantity|shares|qty|amount|balance/);
-        const costCol = findCol(/avg.*cost|average.*cost|cost.*basis|cost.*per.*share|cost.*per.*coin/, /^cost$/, /purchase.*price/);
+        // EXPLICIT columns — when broker provides both, we know which is which (no heuristic needed)
+        // Total cost = already-multiplied dollar amount paid (Fidelity "Total Cost" or "Cost Basis")
+        const totalCostCol = findCol(/total.*cost|cost.*total|cost.*basis/);
+        // Per-share avg cost (Fidelity "Avg. Cost", Schwab "Average Cost", etc.)
+        const avgCostCol = findCol(/avg.*cost|average.*cost|cost.*per.*share|cost.*per.*coin/);
+        // Ambiguous fallback — generic "Cost" column when only one cost column exists
+        const ambiguousCostCol = totalCostCol === -1 && avgCostCol === -1
+          ? findCol(/^cost$/, /purchase.*price/)
+          : -1;
         const valCol = findCol(/current.*value|market.*value|^value$|^total.*value|usd.*value/);
 const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct)|gain.*(%|percent|pct)|return.*(%|percent|pct)/);
         if (symCol === -1) {
@@ -2161,7 +2169,15 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             type: isCrypto ? "crypto" : "stock",
             isStablecoin: isStablecoin || undefined,
             qty: qtyCol !== -1 ? parseNum(cells[qtyCol]) : null,
-            cost: costCol !== -1 ? parseNum(cells[costCol]) : null,
+            // Cost data — when broker provides explicit columns, store both so
+            // we can use the right one without heuristics.
+            totalCost: totalCostCol !== -1 ? parseNum(cells[totalCostCol]) : null,
+            avgCost: avgCostCol !== -1 ? parseNum(cells[avgCostCol]) : null,
+            // Legacy single-column fallback (used by older imports / unknown broker formats)
+            cost: ambiguousCostCol !== -1 ? parseNum(cells[ambiguousCostCol])
+                : avgCostCol !== -1 ? parseNum(cells[avgCostCol])
+                : totalCostCol !== -1 ? parseNum(cells[totalCostCol])
+                : null,
             value: valCol !== -1 ? parseNum(cells[valCol]) : null,
             gainPct: gainCol !== -1 ? parseNum(cells[gainCol]) : null,
           });
@@ -3987,32 +4003,41 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     // the parent /api/prices polling effect — read directly.
                     const currentPrice = typeof h.currentPrice === "number" ? h.currentPrice : null;
                     const changePct = typeof h.gainPct === "number" ? h.gainPct : null;
-                    // Cost basis detection. Different brokerages export "Cost Basis"
-                    // differently — some as PER-SHARE avg cost, some as the TOTAL
-                    // already-multiplied dollar amount. We compute the naive
-                    // assumption first (treat as per-share), then sanity check
-                    // against current market value. If naive calc yields a result
-                    // 100x larger than the market value, h.cost was almost certainly
-                    // the TOTAL already (no 99%+ loss can produce a 100x ratio), so
-                    // use h.cost directly.
-                    // Cost basis detection — brokerages export "Cost Basis"
-                    // inconsistently. Some give PER-SHARE avg cost, others give
-                    // the TOTAL dollar amount already-multiplied. We compute
-                    // both interpretations and pick the one that makes sense:
-                    //   - If naive (cost×qty) is >5x current value, h.cost was
-                    //     almost certainly the total (real losses don't exceed
-                    //     -80%; >5x ratio is the smoking gun).
-                    //   - Otherwise treat h.cost as per-share avg cost.
-                    const naiveCostBasis = (h.cost || 0) * (h.qty || 0);
+                    // Cost basis resolution — prefer explicit columns when broker
+                    // provided them (set during CSV import), avoid the lossy heuristic.
+                    let costBasis = 0;
+                    let avgCostPerShare = 0;
                     const currentValue = currentPrice != null ? currentPrice * (h.qty || 0) : null;
                     const reportedValue = typeof h.value === "number" ? h.value : null;
                     const sanityValue = reportedValue || currentValue;
-                    let costBasis = naiveCostBasis;
-                    let avgCostPerShare = h.cost || 0;
-                    if (sanityValue && sanityValue > 0 && naiveCostBasis / sanityValue > 5) {
-                      // h.cost was already the total dollar amount, not per-share
-                      costBasis = h.cost || 0;
-                      avgCostPerShare = (h.qty || 0) > 0 ? (h.cost || 0) / h.qty : 0;
+
+                    if (typeof h.totalCost === "number" && h.totalCost > 0) {
+                      // BEST CASE — broker gave us the total dollar amount directly
+                      costBasis = h.totalCost;
+                      avgCostPerShare = (h.qty || 0) > 0 ? h.totalCost / h.qty : 0;
+                    } else if (typeof h.avgCost === "number" && h.avgCost > 0 && (h.qty || 0) > 0) {
+                      // SECOND BEST — broker gave per-share, multiply for total
+                      avgCostPerShare = h.avgCost;
+                      costBasis = h.avgCost * h.qty;
+                    } else if (typeof h.cost === "number" && h.cost > 0) {
+                      // LEGACY FALLBACK — ambiguous "cost" column. Use heuristic:
+                      // 1. Cross-check with gainPct if available (strongest signal)
+                      // 2. Otherwise use 5x ratio rule
+                      const naiveCostBasis = h.cost * (h.qty || 0);
+                      const gainPctReported = typeof h.gainPct === "number" ? h.gainPct : null;
+                      if (sanityValue && sanityValue > 0 && gainPctReported != null && gainPctReported > 5 && naiveCostBasis > sanityValue) {
+                        // Broker says GAIN but naive interpretation shows LOSS → h.cost is the total
+                        costBasis = h.cost;
+                        avgCostPerShare = (h.qty || 0) > 0 ? h.cost / h.qty : 0;
+                      } else if (sanityValue && sanityValue > 0 && naiveCostBasis / sanityValue > 5) {
+                        // Naive cost is >5x market value → h.cost was already the total
+                        costBasis = h.cost;
+                        avgCostPerShare = (h.qty || 0) > 0 ? h.cost / h.qty : 0;
+                      } else {
+                        // Treat h.cost as per-share average
+                        costBasis = naiveCostBasis;
+                        avgCostPerShare = h.cost;
+                      }
                     }
                     const pnl = currentValue != null && costBasis > 0 ? currentValue - costBasis : null;
                     const pnlPct = pnl != null && costBasis > 0 ? (pnl / costBasis) * 100 : null;
