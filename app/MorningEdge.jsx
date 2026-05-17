@@ -4743,14 +4743,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <span className="absolute top-1 left-3 right-3 h-[45%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)", borderRadius: "1rem 1rem 50% 50%", zIndex: 1 }} />
                     <span className="absolute bottom-1 left-[30%] right-[30%] h-[10%] pointer-events-none" style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px", zIndex: 1 }} />
                     <div className="flex items-center justify-between mb-3 relative" style={{ zIndex: 1 }}>
-                      <h3 className="text-[14px] uppercase tracking-[0.2em] font-bold flex items-center gap-2"
+                      <h3 className="text-[16px] uppercase tracking-[0.18em] font-extrabold flex items-center gap-2"
                         style={{
                           fontFamily: SERIF,
                           background: "linear-gradient(180deg, #047857 0%, #065F46 100%)",
                           WebkitBackgroundClip: "text",
                           WebkitTextFillColor: "transparent",
                           backgroundClip: "text",
-                          filter: "drop-shadow(0 1px 1px rgba(6,95,70,0.30))",
+                          filter: "drop-shadow(0 1px 0 rgba(255,255,255,0.95)) drop-shadow(0 0 4px rgba(255,255,255,0.85)) drop-shadow(0 2px 4px rgba(0,0,0,0.40))",
                         }}>
                         <span
                           className="inline-flex items-center justify-center relative overflow-hidden"
@@ -4837,14 +4837,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <span className="absolute top-1 left-3 right-3 h-[45%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)", borderRadius: "1rem 1rem 50% 50%", zIndex: 1 }} />
                     <span className="absolute bottom-1 left-[30%] right-[30%] h-[10%] pointer-events-none" style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px", zIndex: 1 }} />
                     <div className="flex items-center justify-between mb-3 relative" style={{ zIndex: 1 }}>
-                      <h3 className="text-[14px] uppercase tracking-[0.22em] font-bold flex items-center gap-2"
+                      <h3 className="text-[16px] uppercase tracking-[0.18em] font-extrabold flex items-center gap-2"
                         style={{
                           fontFamily: SERIF,
                           background: "linear-gradient(180deg, #4F46E5 0%, #312E81 100%)",
                           WebkitBackgroundClip: "text",
                           WebkitTextFillColor: "transparent",
                           backgroundClip: "text",
-                          filter: "drop-shadow(0 1px 1px rgba(49,46,129,0.30))",
+                          filter: "drop-shadow(0 1px 0 rgba(255,255,255,0.95)) drop-shadow(0 0 4px rgba(255,255,255,0.85)) drop-shadow(0 2px 4px rgba(0,0,0,0.40))",
                         }}>
                         <span
                           className="inline-flex items-center justify-center relative overflow-hidden"
@@ -4918,14 +4918,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <span className="absolute top-1 left-3 right-3 h-[45%] pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)", borderRadius: "1rem 1rem 50% 50%", zIndex: 1 }} />
                     <span className="absolute bottom-1 left-[30%] right-[30%] h-[10%] pointer-events-none" style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px", zIndex: 1 }} />
                     <div className="flex items-center justify-between mb-3 relative" style={{ zIndex: 1 }}>
-                      <h3 className="text-[14px] uppercase tracking-[0.22em] font-bold flex items-center gap-2"
+                      <h3 className="text-[16px] uppercase tracking-[0.18em] font-extrabold flex items-center gap-2"
                         style={{
                           fontFamily: SERIF,
                           background: "linear-gradient(180deg, #BE123C 0%, #7F1D1D 100%)",
                           WebkitBackgroundClip: "text",
                           WebkitTextFillColor: "transparent",
                           backgroundClip: "text",
-                          filter: "drop-shadow(0 1px 1px rgba(127,29,29,0.30))",
+                          filter: "drop-shadow(0 1px 0 rgba(255,255,255,0.95)) drop-shadow(0 0 4px rgba(255,255,255,0.85)) drop-shadow(0 2px 4px rgba(0,0,0,0.40))",
                         }}>
                         <span
                           className="inline-flex items-center justify-center relative overflow-hidden"
@@ -5038,7 +5038,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
 
           {/* ── HEALTH — body care: workout + yoga + Power Plate ── */}
-          {visible.mindset && brief.mindset && (
+          {/* Always render when visible — yoga + workout buttons are useful
+              even without AI brief content. Brief data fills the section. */}
+          {visible.mindset && (
             <Card theme={themes.mindset} pillar="health">
               <CardHeader icon={<Heart className="w-4 h-4" />} label="Health" theme={themes.mindset} pillar="health" />
               <div className="px-5 py-5 space-y-3">
@@ -5319,7 +5321,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           )}
 
           {/* ── CLARITY — mind care: gratitude + focus + breath + contemplation + wisdom ── */}
-          {visible.clarity_card && (brief.mindset || brief.clarity) && (
+          {/* Always render when visible. Inner sections (gratitude, contemplation,
+              etc.) are conditionally rendered based on brief content below. */}
+          {visible.clarity_card && (
             <Card theme={themes.clarity} pillar="clarity">
               <CardHeader icon={<Flower2 className="w-4 h-4" />} label="Clarity" theme={themes.clarity} pillar="clarity" />
               <div className="px-5 py-5 space-y-3">
@@ -7859,7 +7863,7 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
-                filter: "drop-shadow(0 1px 1px rgba(15,23,42,0.10))",
+                filter: "drop-shadow(0 1px 0 rgba(255,255,255,0.95)) drop-shadow(0 0 4px rgba(255,255,255,0.85)) drop-shadow(0 2px 4px rgba(0,0,0,0.40))",
               }}>
               {entry.symbol}
             </span>
