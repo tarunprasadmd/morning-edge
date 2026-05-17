@@ -156,6 +156,108 @@ const Store = {
 
 const SUGGESTED = ["SPY", "QQQ", "AAPL", "NVDA", "MSFT", "GOOGL", "AMZN", "META", "TSLA"];
 
+// Yoga pose library — 6 foundational asanas with full instructions.
+// Images live at /public/yoga/[slug].jpg (downloaded from Wikimedia Commons).
+// If an image is missing, the UI gracefully falls back to a text-only card.
+const YOGA_POSES = [
+  {
+    slug: "tadasana",
+    sanskrit: "Tāḍāsana",
+    english: "Mountain Pose",
+    benefit: "Improves posture, balance, and groundedness. The foundation of all standing poses.",
+    steps: [
+      "Stand with feet together, big toes touching, heels slightly apart.",
+      "Distribute weight evenly across both feet. Lift the arches.",
+      "Engage thighs gently. Lengthen the spine upward.",
+      "Roll shoulders back and down. Open the chest.",
+      "Arms relaxed at sides, palms facing forward.",
+      "Crown of head reaches toward the ceiling. Eyes soft, gaze forward.",
+      "Breathe deeply for 5 breaths. Feel rooted and tall.",
+    ],
+    holdSec: 30,
+  },
+  {
+    slug: "adho-mukha-svanasana",
+    sanskrit: "Adho Mukha Svānāsana",
+    english: "Downward-Facing Dog",
+    benefit: "Stretches the entire back body. Strengthens arms and shoulders. Calms the mind.",
+    steps: [
+      "Begin on hands and knees. Wrists under shoulders, knees under hips.",
+      "Tuck toes under. Lift knees off the floor.",
+      "Press hips up and back to form an inverted V shape.",
+      "Press palms firmly into the floor. Spread fingers wide.",
+      "Straighten legs as much as comfortable. Bend knees if hamstrings are tight.",
+      "Let head hang heavy. Look between the legs or at the navel.",
+      "Hold for 5 deep breaths.",
+    ],
+    holdSec: 30,
+  },
+  {
+    slug: "bhujangasana",
+    sanskrit: "Bhujaṅgāsana",
+    english: "Cobra Pose",
+    benefit: "Opens the chest and lungs. Strengthens the spine. Counteracts hours of sitting.",
+    steps: [
+      "Lie face down. Legs extended, tops of feet on the floor.",
+      "Place palms flat on the floor under the shoulders. Elbows hugged close to ribs.",
+      "Press the pubic bone into the floor.",
+      "Inhale and gently lift the chest, using back muscles more than arms.",
+      "Keep shoulders rolled back and down — no shrugging.",
+      "Gaze slightly forward and up, but don't strain the neck.",
+      "Hold for 5 breaths. Lower slowly on an exhale.",
+    ],
+    holdSec: 20,
+  },
+  {
+    slug: "vrikshasana",
+    sanskrit: "Vṛkṣāsana",
+    english: "Tree Pose",
+    benefit: "Builds focus, balance, and concentration. Strengthens legs and core.",
+    steps: [
+      "Start in Mountain Pose. Shift weight onto the left foot.",
+      "Bend the right knee. Place the right foot on the inner left thigh (or calf — never on the knee).",
+      "Bring palms together in prayer at the heart.",
+      "Find a fixed gaze point ahead to help balance.",
+      "Press the foot and inner thigh into each other firmly.",
+      "Optional: raise arms overhead like tree branches.",
+      "Hold for 5 breaths. Switch sides.",
+    ],
+    holdSec: 30,
+  },
+  {
+    slug: "balasana",
+    sanskrit: "Bālāsana",
+    english: "Child's Pose",
+    benefit: "Resting pose. Calms the nervous system. Gently stretches the back and hips.",
+    steps: [
+      "Kneel on the floor. Big toes touching, knees apart.",
+      "Sit back on your heels. Fold forward, bringing the torso between the thighs.",
+      "Extend the arms forward, palms down on the floor.",
+      "Rest the forehead on the floor. Let the shoulders melt down.",
+      "Breathe slowly into the back of the ribs.",
+      "Stay as long as you like — this is a true rest pose.",
+      "To exit, walk hands back and lift up slowly.",
+    ],
+    holdSec: 60,
+  },
+  {
+    slug: "padmasana",
+    sanskrit: "Padmāsana",
+    english: "Lotus Pose",
+    benefit: "Classic meditation seat. Opens the hips. Encourages stillness and deep breath.",
+    steps: [
+      "Sit on the floor with legs extended.",
+      "Bend the right knee. Place the right foot on the left thigh, sole facing up.",
+      "Bend the left knee. Place the left foot on the right thigh.",
+      "If full lotus is too intense, try Half Lotus (one foot on thigh, other tucked under).",
+      "Rest the hands on the knees, palms up or down.",
+      "Lengthen the spine. Soften the shoulders. Close eyes.",
+      "Breathe slowly for 1 minute or longer.",
+    ],
+    holdSec: 60,
+  },
+];
+
 const SERIF = `'Cormorant Garamond', 'Playfair Display', ui-serif, Georgia, serif`;
 const SANS = `'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`;
 
@@ -236,6 +338,42 @@ const BROKERAGES = [
     url: "https://tastytrade.com/",
     path: "My Profile → Account History → Export CSV",
     notes: "Filter by Position type",
+  },
+  // ── Crypto exchanges ─────────────────────────────────────────
+  {
+    name: "Coinbase",
+    url: "https://www.coinbase.com/",
+    path: "Profile → Statements → Generate Report → CSV",
+    notes: "🪙 Crypto · Pick 'Portfolio'",
+    type: "crypto",
+  },
+  {
+    name: "Kraken",
+    url: "https://www.kraken.com/",
+    path: "History → Export → Ledgers → CSV",
+    notes: "🪙 Crypto · All time, all assets",
+    type: "crypto",
+  },
+  {
+    name: "Binance.US",
+    url: "https://www.binance.us/",
+    path: "Wallet → Reports → Download Statement",
+    notes: "🪙 Crypto · Asset history",
+    type: "crypto",
+  },
+  {
+    name: "Gemini",
+    url: "https://www.gemini.com/",
+    path: "Account → Statements & History → Download CSV",
+    notes: "🪙 Crypto · Use Transaction History",
+    type: "crypto",
+  },
+  {
+    name: "Crypto.com",
+    url: "https://crypto.com/",
+    path: "Settings → Transaction History → Export",
+    notes: "🪙 Crypto · App: Accounts → Export",
+    type: "crypto",
   },
 ];
 
@@ -980,6 +1118,8 @@ export default function MorningEdge() {
   // sortDir: "desc" (biggest first) | "asc" (smallest first)
   const [playbookSortBy, setPlaybookSortBy] = useState("todayPct");
   const [playbookSortDir, setPlaybookSortDir] = useState("desc");
+  // Asset-class filter for Playbook + Discovery: "all" | "stocks" | "crypto"
+  const [playbookAssetType, setPlaybookAssetType] = useState("all");
   const [showSettings, setShowSettings] = useState(false);
   const [showBrokerageGuide, setShowBrokerageGuide] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
@@ -1000,6 +1140,8 @@ export default function MorningEdge() {
   const [routineDays, setRoutineDays] = useState({}); // { "2026-04-29": true }
   const [routineFlowOpen, setRoutineFlowOpen] = useState(false);
   const [expandedMindset, setExpandedMindset] = useState(null); // 'gratitude' | 'fuel' | 'focus' | null
+  // Currently-open yoga pose detail modal (null = closed)
+  const [selectedYogaPose, setSelectedYogaPose] = useState(null);
   const [inAppBrowserUrl, setInAppBrowserUrl] = useState(null); // URL shown in the confirmation modal
   // Open a URL in the user's native browser, then show a small confirmation
   // modal. CRITICAL: window.open() must run synchronously inside the user's
@@ -1236,10 +1378,23 @@ export default function MorningEdge() {
     let cancelled = false;
     const fetchPrices = async () => {
       try {
-        // Build a unique list of symbols to query
+        // Build a unique list of symbols to query. Crypto needs -USD suffix
+        // for yahoo-finance2 (e.g., "BTC" → "BTC-USD"). Track mapping back so
+        // we can store the price under the original symbol.
+        const cryptoSet = new Set(
+          holdings.filter((h) => h && h.type === "crypto").map((h) => h.symbol)
+        );
+        const reverseMap = {}; // yahoo symbol → app symbol
         const symbols = Array.from(
           new Set(holdings.map((h) => h.symbol).filter(Boolean))
-        );
+        ).map((s) => {
+          if (cryptoSet.has(s) && !s.includes("-")) {
+            const yahooSym = `${s}-USD`;
+            reverseMap[yahooSym] = s;
+            return yahooSym;
+          }
+          return s;
+        });
         if (symbols.length === 0) return;
 
         const res = await fetch("/api/prices", {
@@ -1249,11 +1404,16 @@ export default function MorningEdge() {
         });
         if (!res.ok) return;
         const data = await res.json();
-        const prices = data?.prices || {};
+        const rawPrices = data?.prices || {};
         if (cancelled) return;
 
-        // Merge price data into holdings — only updates gainPct, leaves
-        // other fields (qty, cost, accountId) untouched.
+        // Normalize prices back to app symbols (BTC-USD → BTC)
+        const prices = {};
+        Object.keys(rawPrices).forEach((k) => {
+          const appSym = reverseMap[k] || k;
+          prices[appSym] = rawPrices[k];
+        });
+
         setHoldings((prev) =>
           prev.map((h) => {
             const p = prices[h.symbol];
@@ -1261,14 +1421,12 @@ export default function MorningEdge() {
             return {
               ...h,
               currentPrice: p.price,
-              gainPct: p.changePct, // today's % change, not lifetime
-              dayChange: p.change,  // today's $ change per share
+              gainPct: p.changePct,
+              dayChange: p.change,
             };
           })
         );
       } catch (e) {
-        // Silent failure — better to show no percentages than fake ones.
-        // The console warning helps debugging if a key is misconfigured.
         console.warn("Price fetch failed:", e);
       }
     };
@@ -1801,8 +1959,16 @@ export default function MorningEdge() {
       if (lower.includes("vanguard")) return "Vanguard";
       if (lower.includes("webull")) return "Webull";
       if (lower.includes("etrade") || lower.includes("e_trade")) return "E*TRADE";
+      // Crypto exchanges
+      if (lower.includes("coinbase")) return "Coinbase";
+      if (lower.includes("kraken")) return "Kraken";
+      if (lower.includes("binance")) return "Binance.US";
+      if (lower.includes("gemini")) return "Gemini";
+      if (lower.includes("crypto.com") || lower.includes("cryptodotcom")) return "Crypto.com";
       return "";
     })();
+    // Detect whether this is a crypto exchange (affects symbol filter + asset type)
+    const isCryptoUpload = ["Coinbase", "Kraken", "Binance.US", "Gemini", "Crypto.com"].includes(guess);
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
@@ -1816,7 +1982,7 @@ export default function MorningEdge() {
         let headerIdx = 0;
         for (let i = 0; i < Math.min(10, lines.length); i++) {
           const lower = lines[i].toLowerCase();
-          if (/symbol|ticker|stock|security/.test(lower)) { headerIdx = i; break; }
+          if (/symbol|ticker|stock|security|asset|currency|coin/.test(lower)) { headerIdx = i; break; }
         }
         const splitRow = (s) => { const out = []; let cur = "", inQ = false; for (let i = 0; i < s.length; i++) { const c = s[i]; if (c === '"') { inQ = !inQ; continue; } if (c === "," && !inQ) { out.push(cur.trim()); cur = ""; continue; } cur += c; } out.push(cur.trim()); return out; };
         const header = splitRow(lines[headerIdx]).map((h) => h.toLowerCase());
@@ -1829,10 +1995,12 @@ export default function MorningEdge() {
           }
           return -1;
         };
-        const symCol = findCol(/^symbol$/, /^ticker$/, /symbol|ticker/, /^stock$|security/);
-        const qtyCol = findCol(/^quantity$/, /^shares$/, /^qty$/, /quantity|shares|qty/);
-        const costCol = findCol(/avg.*cost|average.*cost|cost.*basis|cost.*per.*share/, /^cost$/);
-        const valCol = findCol(/current.*value|market.*value|^value$|^total.*value/);
+        // Symbol column — also accepts crypto "Asset", "Currency", "Coin" headers
+        const symCol = findCol(/^symbol$/, /^ticker$/, /^asset$/, /^currency$/, /^coin$/, /symbol|ticker|asset|currency|coin/, /^stock$|security/);
+        // Quantity — crypto exchanges may use "Amount", "Balance", "Quantity"
+        const qtyCol = findCol(/^quantity$/, /^shares$/, /^qty$/, /^amount$/, /^balance$/, /quantity|shares|qty|amount|balance/);
+        const costCol = findCol(/avg.*cost|average.*cost|cost.*basis|cost.*per.*share|cost.*per.*coin/, /^cost$/, /purchase.*price/);
+        const valCol = findCol(/current.*value|market.*value|^value$|^total.*value|usd.*value/);
 const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct)|gain.*(%|percent|pct)|return.*(%|percent|pct)/);
         if (symCol === -1) {
           setCsvImportMessage({ type: "error", text: "Couldn't find a Symbol or Ticker column." });
@@ -1847,16 +2015,46 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           return isNaN(n) ? null : n;
         };
 
+        // Known top crypto symbols — auto-tags as crypto even on mixed CSVs
+        const KNOWN_CRYPTO = new Set([
+          "BTC","ETH","SOL","ADA","DOT","MATIC","AVAX","LINK","UNI","ATOM",
+          "DOGE","SHIB","PEPE","WIF","BONK","FLOKI","XRP","LTC","BCH","TRX",
+          "USDC","USDT","DAI","BUSD","TUSD","FRAX",
+          "NEAR","ALGO","APT","SUI","ARB","OP","INJ","TIA","SEI","RNDR",
+          "FET","AGIX","OCEAN","TAO","WLD","FIL","HBAR","ETC","XLM","VET",
+          "AAVE","MKR","CRV","SNX","COMP","SUSHI","1INCH","LDO","RPL",
+          "IMX","SAND","MANA","AXS","GALA","ENJ","CHZ","ICP","KAS","TON",
+        ]);
         const newHoldings = [];
         const tickers = new Set();
         for (let i = headerIdx + 1; i < lines.length; i++) {
           const cells = splitRow(lines[i]);
-          const raw = (cells[symCol] || "").toUpperCase();
-          // Filter: 1-5 letters, no digits/special chars (avoids "Cash", "Total", option contracts)
-          if (!/^[A-Z]{1,5}$/.test(raw)) continue;
+          const raw = (cells[symCol] || "").toUpperCase().trim();
+          // Stock symbols: 1-5 letters, no digits. Crypto: 2-10 chars, may have digits.
+          let isValid = false;
+          let isCrypto = false;
+          if (/^[A-Z]{1,5}$/.test(raw)) {
+            // Standard stock format, but check if it's a known crypto (BTC, ETH, etc.)
+            isValid = true;
+            isCrypto = KNOWN_CRYPTO.has(raw) || isCryptoUpload;
+          } else if (isCryptoUpload && /^[A-Z0-9]{2,10}$/.test(raw)) {
+            // Crypto upload — accept longer symbols with digits (e.g. 1INCH, USDC)
+            isValid = true;
+            isCrypto = true;
+          } else if (KNOWN_CRYPTO.has(raw)) {
+            // Known crypto symbol in mixed CSV
+            isValid = true;
+            isCrypto = true;
+          }
+          if (!isValid) continue;
+          // Skip stablecoins from "playbook" eligibility — they're cash equivalents
+          // (still imported, but won't generate trading recommendations)
+          const isStablecoin = ["USDC","USDT","DAI","BUSD","TUSD","FRAX"].includes(raw);
           tickers.add(raw);
           newHoldings.push({
             symbol: raw,
+            type: isCrypto ? "crypto" : "stock",
+            isStablecoin: isStablecoin || undefined,
             qty: qtyCol !== -1 ? parseNum(cells[qtyCol]) : null,
             cost: costCol !== -1 ? parseNum(cells[costCol]) : null,
             value: valCol !== -1 ? parseNum(cells[valCol]) : null,
@@ -2754,11 +2952,15 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           routine={todayRoutine()}
           onClose={() => setRoutineFlowOpen(false)}
           onComplete={() => {
-            // Mark the routine done for today
             setRoutineDays((prev) => ({ ...prev, [todayKey]: true }));
             setRoutineFlowOpen(false);
           }}
         />
+      )}
+
+      {/* Yoga pose detail modal — full image + step-by-step instructions */}
+      {selectedYogaPose && (
+        <YogaPoseModal pose={selectedYogaPose} onClose={() => setSelectedYogaPose(null)} />
       )}
 
       {/* In-app browser sheet for source links */}
@@ -3366,6 +3568,104 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 <p className="text-[13px] text-slate-700 italic mb-3 px-1 leading-snug">
                   Every position with live P&amp;L and a suggested action. Tap any card for full reasoning.
                 </p>
+                {/* Asset type toggle — always show when holdings present so user
+                    can discover the crypto feature */}
+                {holdings.length > 0 && (() => {
+                  const cryptoCount = holdings.filter((h) => h && h.type === "crypto").length;
+                  const stockCount = holdings.filter((h) => h && h.type !== "crypto").length;
+                  const options = [
+                    { id: "all", label: "All", count: holdings.length },
+                    { id: "stocks", label: "📈 Stocks", count: stockCount },
+                    { id: "crypto", label: "🪙 Crypto", count: cryptoCount },
+                  ];
+                  return (
+                    <div className="mb-3 flex items-center gap-1.5 px-1">
+                      {options.map((opt) => {
+                        const active = playbookAssetType === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            onClick={() => setPlaybookAssetType(opt.id)}
+                            className="relative flex-1 px-2 py-1.5 rounded-xl text-[11px] font-extrabold uppercase tracking-wider overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
+                            style={active ? {
+                              background: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #B45309 100%)",
+                              border: "1.5px solid #92400E",
+                              color: "#fff",
+                              boxShadow: "0 2.5px 0 #78350F, 0 4px 8px rgba(245,158,11,0.35), inset 0 1.5px 2px rgba(255,255,255,0.55)",
+                              textShadow: "0 1px 1px rgba(0,0,0,0.30)",
+                            } : {
+                              background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 100%)",
+                              border: "1.5px solid #FCD34D",
+                              color: "#78350F",
+                              boxShadow: "0 1.5px 0 #D97706, inset 0 1px 1.5px rgba(255,255,255,0.85)",
+                            }}>
+                            <span className="absolute top-0.5 left-1.5 right-1.5 h-[45%] pointer-events-none"
+                              style={{
+                                background: active
+                                  ? "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)"
+                                  : "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
+                                borderRadius: "0.7rem 0.7rem 50% 50%",
+                              }} />
+                            <span className="relative">{opt.label} <span className="font-bold opacity-80">{opt.count}</span></span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+
+                {/* Crypto empty state — when user picks Crypto tab but hasn't synced any yet */}
+                {playbookAssetType === "crypto" && holdings.filter((h) => h && h.type === "crypto").length === 0 && (
+                  <div className="mb-3 rounded-2xl p-4 relative overflow-hidden"
+                    style={{
+                      background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
+                      border: "1.5px solid #F59E0B",
+                      boxShadow: "0 3px 0 #B45309, 0 5px 12px rgba(245,158,11,0.25), inset 0 1.5px 2px rgba(255,255,255,0.85)",
+                    }}>
+                    <span className="absolute top-0.5 left-3 right-3 h-[40%] pointer-events-none"
+                      style={{
+                        background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 100%)",
+                        borderRadius: "1rem 1rem 50% 50%",
+                      }} />
+                    <div className="relative flex items-center gap-3">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center relative overflow-hidden"
+                        style={{
+                          background: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #92400E 100%)",
+                          border: "2px solid #78350F",
+                          boxShadow: "0 2px 0 #78350F, inset 0 2px 3px rgba(255,255,255,0.55)",
+                        }}>
+                        <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                          style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
+                        <span className="relative text-[28px] leading-none" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>🪙</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[14px] font-extrabold leading-tight" style={{ color: "#451A03", fontFamily: SERIF }}>
+                          No crypto holdings yet
+                        </p>
+                        <p className="text-[12px] mt-0.5 leading-snug" style={{ color: "#78350F" }}>
+                          Sync Coinbase, Kraken, Gemini, or Crypto.com — same way you uploaded your stock CSV.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowCsvImport(true)}
+                      className="relative w-full mt-3 py-2 rounded-xl text-white text-[13px] font-extrabold overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                      style={{
+                        background: "linear-gradient(180deg, #F59E0B 0%, #B45309 50%, #78350F 100%)",
+                        border: "1.5px solid #78350F",
+                        boxShadow: "0 2.5px 0 #451A03, 0 4px 8px rgba(146,64,14,0.35), inset 0 1.5px 2px rgba(255,255,255,0.45)",
+                        textShadow: "0 1px 1px rgba(0,0,0,0.30)",
+                      }}>
+                      <span className="absolute top-0.5 left-3 right-3 h-[50%] pointer-events-none"
+                        style={{
+                          background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)",
+                          borderRadius: "0.7rem 0.7rem 50% 50%",
+                        }} />
+                      <span className="relative">+ Sync a crypto exchange</span>
+                    </button>
+                  </div>
+                )}
+
                 {/* Personalization indicator */}
                 {holdings.length > 0 ? (
                   <>
@@ -3483,8 +3783,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     return null;
                   };
 
-                  // Map every holding to a playbook entry
-                  const entries = holdings.map((h) => {
+                  // Map every holding to a playbook entry — filter by asset type toggle
+                  const entries = holdings
+                    .filter((h) => {
+                      if (playbookAssetType === "stocks") return h.type !== "crypto";
+                      if (playbookAssetType === "crypto") return h.type === "crypto";
+                      return true; // "all"
+                    })
+                    .map((h) => {
                     const sym = h.symbol;
                     // Live price data is already merged into the holding object by
                     // the parent /api/prices polling effect — read directly.
@@ -4518,129 +4824,175 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             <Card theme={themes.mindset} pillar="health">
               <CardHeader icon={<Heart className="w-4 h-4" />} label="Health" theme={themes.mindset} pillar="health" />
               <div className="px-5 py-5 space-y-3">
-                <MindsetRowExpandable
-                  emoji="💪"
-                  kicker="Workout"
-                  color="amber"
-                  body={(() => {
-                    const f = brief.mindset.fuel;
-                    if (typeof f === "string") return f;
-                    if (f && typeof f === "object") return f.headline || "10-min activation: mobility, breath, strength, cooldown";
-                    return "10-min vitality routine";
-                  })()}
-                  expanded={expandedMindset === "fuel"}
-                  onToggle={() => setExpandedMindset(expandedMindset === "fuel" ? null : "fuel")}
-                  detail={(() => {
-                    const f = brief.mindset.fuel;
-                    if (f && typeof f === "object" && Array.isArray(f.blocks)) {
-                      return {
-                        intent: `Today's routine: ${f.headline || "10-min activation"}. ${f.total_min || 10} minutes total.`,
-                        fuelBlocks: f.blocks,
-                        tip: f.tip,
-                        showStartButton: true,
-                        onStart: () => setRoutineFlowOpen(true),
-                      };
-                    }
-                    return {
-                      intent: `Today's routine: ${todayRoutine().name}. Four segments, ten minutes total.`,
-                      segments: todayRoutine().segments,
-                      showStartButton: true,
-                      onStart: () => setRoutineFlowOpen(true),
-                    };
-                  })()}
-                />
-
-                {/* ── YOGA — separate sub-section with classical asanas ── */}
-                <div>
+                {/* ── Side-by-side Workout + Yoga buttons ── */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  {/* WORKOUT */}
                   <button
-                    onClick={() => setExpandedMindset(expandedMindset === "yoga" ? null : "yoga")}
-                    className="relative w-full flex gap-3 items-start text-left p-2 -mx-2 rounded-2xl overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                    onClick={() => setExpandedMindset(expandedMindset === "fuel" ? null : "fuel")}
+                    className="relative flex flex-col items-center text-center p-3 rounded-2xl overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
                     style={{
-                      background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
-                      border: "1.5px solid #94A3B8",
-                      boxShadow: "0 2.5px 0 #64748B, 0 4px 8px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                      background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
+                      border: "1.5px solid #F59E0B",
+                      boxShadow: "0 2.5px 0 #B45309, 0 4px 8px rgba(245,158,11,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(180,83,9,0.15)",
                     }}
                   >
-                    <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    <span className="absolute top-0.5 left-2 right-2 h-[45%] pointer-events-none"
                       style={{
                         background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
                         borderRadius: "1rem 1rem 50% 50%",
                       }} />
-                    <div className="relative flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center overflow-hidden"
+                    <div className="relative flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center overflow-hidden mb-1.5"
                       style={{
-                        background: "linear-gradient(180deg, #C4B5FD 0%, #8B5CF6 50%, #5B21B6 100%)",
-                        border: "1.5px solid #5B21B6",
-                        boxShadow: "0 1.5px 0 #4C1D95, 0 2px 5px rgba(139,92,246,0.30), inset 0 1.5px 2px rgba(255,255,255,0.55)",
+                        background: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #92400E 100%)",
+                        border: "2px solid #78350F",
+                        boxShadow: "0 2px 0 #78350F, inset 0 2px 3px rgba(255,255,255,0.55)",
                       }}>
-                      <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                      <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none rounded-t-full"
                         style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
-                      <span className="relative text-[22px] leading-none" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>🧘</span>
+                      <span className="relative text-[28px] leading-none" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>💪</span>
                     </div>
-                    <div className="relative flex-1 pt-1 min-w-0">
-                      <p className="text-[13px] uppercase tracking-[0.18em] font-bold mb-1 flex items-center gap-2" style={{ color: "#0F172A" }}>
-                        Yoga
-                        <span className="text-slate-400 text-base leading-none">{expandedMindset === "yoga" ? "−" : "+"}</span>
-                      </p>
-                      <p className="text-[16px] leading-relaxed text-slate-800" style={{ fontFamily: SERIF }}>
-                        Six foundational asanas. 1 minute each. Hold steady, breathe deep.
-                      </p>
-                    </div>
+                    <p className="relative text-[14px] uppercase tracking-[0.18em] font-extrabold leading-none" style={{ color: "#451A03" }}>
+                      Workout
+                    </p>
+                    <p className="relative text-[10.5px] text-amber-900/80 mt-1 leading-tight">
+                      10-min routine
+                    </p>
                   </button>
 
-                  {expandedMindset === "yoga" && (
-                    <div className="mt-2 ml-12 mr-2 p-4 rounded-2xl border-2"
+                  {/* YOGA */}
+                  <button
+                    onClick={() => setExpandedMindset(expandedMindset === "yoga" ? null : "yoga")}
+                    className="relative flex flex-col items-center text-center p-3 rounded-2xl overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
+                    style={{
+                      background: "linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 50%, #DDD6FE 100%)",
+                      border: "1.5px solid #8B5CF6",
+                      boxShadow: "0 2.5px 0 #6D28D9, 0 4px 8px rgba(139,92,246,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(91,33,182,0.15)",
+                    }}
+                  >
+                    <span className="absolute top-0.5 left-2 right-2 h-[45%] pointer-events-none"
                       style={{
-                        background: "linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 100%)",
-                        borderColor: "rgba(139,92,246,0.30)",
-                        boxShadow: "inset 0 1.5px 2px rgba(255,255,255,0.85)",
+                        background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                        borderRadius: "1rem 1rem 50% 50%",
+                      }} />
+                    <div className="relative flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center overflow-hidden mb-1.5"
+                      style={{
+                        background: "linear-gradient(180deg, #C4B5FD 0%, #8B5CF6 50%, #5B21B6 100%)",
+                        border: "2px solid #4C1D95",
+                        boxShadow: "0 2px 0 #4C1D95, inset 0 2px 3px rgba(255,255,255,0.55)",
                       }}>
-                      <p className="text-[12px] text-violet-800 italic leading-snug mb-3">
-                        These six poses cover standing balance, forward bending, back bending, and rest. Move slowly between them. Hold each for 5 deep breaths.
-                      </p>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        {[
-                          { emoji: "🏔️", sanskrit: "Tadasana", english: "Mountain Pose", instr: "Feet together, arms at sides. Stand tall, crown to ceiling." },
-                          { emoji: "🐕", sanskrit: "Adho Mukha Svanasana", english: "Downward Dog", instr: "Hands & feet on floor, hips up. Form an inverted V." },
-                          { emoji: "🐍", sanskrit: "Bhujangasana", english: "Cobra Pose", instr: "Lie face down. Press palms, lift chest, shoulders back." },
-                          { emoji: "🌳", sanskrit: "Vrikshasana", english: "Tree Pose", instr: "Stand on one leg. Other foot on inner thigh. Hands at heart." },
-                          { emoji: "🧒", sanskrit: "Balasana", english: "Child's Pose", instr: "Kneel, sit back on heels. Forehead down, arms forward. Rest." },
-                          { emoji: "🪷", sanskrit: "Padmasana", english: "Lotus Pose", instr: "Cross-legged. Each foot on opposite thigh. Spine tall." },
-                        ].map((pose, i) => (
-                          <div key={i}
-                            className="relative rounded-xl p-2.5 overflow-hidden"
+                      <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none rounded-t-full"
+                        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
+                      <span className="relative text-[28px] leading-none" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>🧘</span>
+                    </div>
+                    <p className="relative text-[14px] uppercase tracking-[0.18em] font-extrabold leading-none" style={{ color: "#2E1065" }}>
+                      Yoga
+                    </p>
+                    <p className="relative text-[10.5px] text-violet-900/80 mt-1 leading-tight">
+                      6 poses · 5 min
+                    </p>
+                  </button>
+                </div>
+
+                {/* WORKOUT expanded panel */}
+                {expandedMindset === "fuel" && (
+                  <div className="p-4 rounded-2xl border-2"
+                    style={{
+                      background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 100%)",
+                      borderColor: "rgba(245,158,11,0.30)",
+                      boxShadow: "inset 0 1.5px 2px rgba(255,255,255,0.85)",
+                    }}>
+                    {(() => {
+                      const f = brief.mindset.fuel;
+                      const headline = (typeof f === "string") ? f : (f && f.headline) || "10-min activation: mobility, breath, strength, cooldown";
+                      const totalMin = (f && typeof f === "object" && f.total_min) || 10;
+                      return (
+                        <>
+                          <p className="text-[12px] text-amber-800 italic leading-snug mb-3">
+                            Today's routine: {headline}. {totalMin} minutes total.
+                          </p>
+                          <button
+                            onClick={() => setRoutineFlowOpen(true)}
+                            className="relative w-full px-4 py-2.5 rounded-2xl text-white text-[15px] font-extrabold overflow-hidden transition active:scale-[0.97] active:translate-y-0.5 flex items-center justify-center gap-2"
                             style={{
-                              background: "linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%)",
-                              border: "1.5px solid #C4B5FD",
-                              boxShadow: "0 1.5px 0 #8B5CF6, inset 0 1px 1.5px rgba(255,255,255,0.95)",
-                            }}>
-                            <span className="absolute top-0.5 left-1.5 right-1.5 h-[40%] pointer-events-none"
+                              background: "linear-gradient(180deg, #334155 0%, #1E293B 50%, #020617 100%)",
+                              border: "2px solid #D4A574",
+                              boxShadow: "0 4px 0 #020617, 0 6px 14px rgba(2,6,23,0.45), inset 0 2px 3px rgba(255,255,255,0.35), inset 0 -3px 6px rgba(0,0,0,0.50)",
+                              textShadow: "0 1px 2px rgba(0,0,0,0.45)",
+                            }}
+                          >
+                            <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
                               style={{
-                                background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 100%)",
-                                borderRadius: "0.6rem 0.6rem 50% 50%",
+                                background: "linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)",
+                                borderRadius: "1rem 1rem 50% 50%",
                               }} />
-                            <div className="relative flex items-start gap-2">
-                              <span className="text-[28px] leading-none flex-shrink-0" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.15))" }}>{pose.emoji}</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[12px] font-bold leading-tight italic mb-0.5" style={{ fontFamily: SERIF, color: "#5B21B6" }}>
-                                  {pose.sanskrit}
-                                </p>
-                                <p className="text-[10px] uppercase tracking-wider text-violet-700 font-semibold leading-tight mb-1">
-                                  {pose.english}
-                                </p>
-                              </div>
-                            </div>
-                            <p className="relative text-[11px] text-slate-700 leading-snug mt-1.5">
-                              {pose.instr}
+                            <Play className="w-4 h-4 relative" /> <span className="relative">Start guided routine</span>
+                          </button>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {/* YOGA expanded panel — grid of pose cards, each tap opens modal */}
+                {expandedMindset === "yoga" && (
+                  <div className="p-4 rounded-2xl border-2"
+                    style={{
+                      background: "linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 100%)",
+                      borderColor: "rgba(139,92,246,0.30)",
+                      boxShadow: "inset 0 1.5px 2px rgba(255,255,255,0.85)",
+                    }}>
+                    <p className="text-[12px] text-violet-800 italic leading-snug mb-3">
+                      Tap any pose for instructions. Hold each for 5 deep breaths. Move slowly between poses.
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {YOGA_POSES.map((pose, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setSelectedYogaPose(pose)}
+                          className="relative rounded-xl overflow-hidden aspect-square transition active:scale-[0.95] active:translate-y-0.5"
+                          style={{
+                            background: "linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%)",
+                            border: "1.5px solid #C4B5FD",
+                            boxShadow: "0 1.5px 0 #8B5CF6, 0 2px 4px rgba(139,92,246,0.20), inset 0 1px 1.5px rgba(255,255,255,0.95)",
+                          }}>
+                          <span className="absolute top-0.5 left-1.5 right-1.5 h-[35%] pointer-events-none z-[2]"
+                            style={{
+                              background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)",
+                              borderRadius: "0.6rem 0.6rem 50% 50%",
+                            }} />
+                          {/* Pose image — loads from /yoga/[slug].jpg in /public.
+                              If missing, the broken-image alt text shows the pose name */}
+                          <img
+                            src={`/yoga/${pose.slug}.jpg`}
+                            alt={pose.english}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            onError={(e) => {
+                              // Graceful fallback when image isn't uploaded yet
+                              e.currentTarget.style.display = "none";
+                              const parent = e.currentTarget.parentElement;
+                              if (parent && !parent.querySelector(".yoga-placeholder")) {
+                                const ph = document.createElement("div");
+                                ph.className = "yoga-placeholder absolute inset-0 flex flex-col items-center justify-center text-center px-1";
+                                ph.innerHTML = `<div style="font-size:11px;font-weight:700;color:#5B21B6;font-family:Georgia,serif;font-style:italic">${pose.sanskrit}</div><div style="font-size:8px;color:#7C3AED;margin-top:2px;text-transform:uppercase;letter-spacing:0.05em">${pose.english}</div>`;
+                                parent.appendChild(ph);
+                              }
+                            }}
+                          />
+                          {/* Pose name overlay at bottom */}
+                          <div className="absolute bottom-0 left-0 right-0 px-1.5 py-1 z-[3]"
+                            style={{
+                              background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.30) 70%, transparent 100%)",
+                            }}>
+                            <p className="text-[8.5px] uppercase tracking-wider font-bold text-white text-center leading-tight"
+                              style={{ textShadow: "0 1px 1px rgba(0,0,0,0.50)" }}>
+                              {pose.english}
                             </p>
                           </div>
-                        ))}
-                      </div>
-                      <p className="text-[11px] text-violet-700/80 italic text-center mt-3">
-                        Sequence: Mountain → Downward Dog → Cobra → Mountain → Tree → Child → Lotus
-                      </p>
+                        </button>
+                      ))}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Routine completion + streak */}
                 <div className="pt-4 border-t border-slate-100">
@@ -5622,6 +5974,129 @@ function MindsetRowExpandable({ icon, emoji, kicker, body, color, expanded, onTo
   );
 }
 
+// ── Yoga Pose Detail Modal ──────────────────────────────────────
+// Full-screen modal showing the pose image + Sanskrit + English + step-by-step
+// instructions. Tap-to-dismiss on the backdrop. Image loads from /public/yoga/
+function YogaPoseModal({ pose, onClose }) {
+  if (!pose) return null;
+  const [imgLoaded, setImgLoaded] = React.useState(false);
+  const [imgError, setImgError] = React.useState(false);
+  return (
+    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
+      style={{ background: "rgba(15,23,42,0.75)", backdropFilter: "blur(6px)" }}
+      onClick={onClose}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl"
+        style={{
+          background: "linear-gradient(180deg, #F5F3FF 0%, #FFFFFF 30%, #FFFFFF 100%)",
+          boxShadow: "0 -10px 40px rgba(0,0,0,0.45)",
+        }}>
+        {/* Close button */}
+        <button onClick={onClose}
+          className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition active:scale-[0.92] active:translate-y-0.5"
+          style={{
+            background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+            border: "1.5px solid #64748B",
+            boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.18), inset 0 1.5px 2px rgba(255,255,255,1)",
+          }}
+          aria-label="Close">
+          <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+            style={{
+              background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+              borderRadius: "9999px 9999px 50% 50%",
+            }} />
+          <X className="w-5 h-5 text-slate-800 relative" />
+        </button>
+
+        {/* Pose image — large hero at the top */}
+        <div className="relative w-full aspect-[4/3] overflow-hidden"
+          style={{ background: "linear-gradient(135deg, #DDD6FE 0%, #C4B5FD 100%)" }}>
+          {!imgError && (
+            <img
+              src={`/yoga/${pose.slug}.jpg`}
+              alt={pose.english}
+              className="w-full h-full object-cover"
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgError(true)}
+              style={{ opacity: imgLoaded ? 1 : 0, transition: "opacity 0.3s" }}
+            />
+          )}
+          {imgError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+              <span className="text-[72px] leading-none mb-3" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.20))" }}>🧘</span>
+              <p className="text-[14px] text-violet-900 italic" style={{ fontFamily: SERIF }}>
+                Image not yet uploaded — add <span className="font-bold">/yoga/{pose.slug}.jpg</span> to your repo.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="px-5 py-5">
+          {/* Sanskrit name (big, italic, decorative) */}
+          <p className="text-[11px] uppercase tracking-[0.3em] font-bold mb-1" style={{ color: "#7C3AED" }}>
+            Asana
+          </p>
+          <h2 className="text-[26px] font-bold italic mb-1" style={{ fontFamily: SERIF, color: "#2E1065" }}>
+            {pose.sanskrit}
+          </h2>
+          <p className="text-[15px] uppercase tracking-wider text-violet-700 font-bold mb-4">
+            {pose.english}
+          </p>
+
+          {/* Benefit */}
+          <div className="rounded-2xl p-4 mb-4"
+            style={{
+              background: "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)",
+              border: "1.5px solid #FCD34D",
+            }}>
+            <p className="text-[11px] uppercase tracking-wider text-amber-800 font-bold mb-1.5 flex items-center gap-1.5">
+              ✨ Benefit
+            </p>
+            <p className="text-[14px] text-slate-900 leading-snug italic" style={{ fontFamily: SERIF }}>
+              {pose.benefit}
+            </p>
+          </div>
+
+          {/* Step-by-step instructions */}
+          <p className="text-[12px] uppercase tracking-[0.2em] text-violet-700 font-bold mb-3 flex items-center gap-1.5">
+            📋 How to do it
+          </p>
+          <ol className="space-y-2">
+            {pose.steps.map((step, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold text-white relative overflow-hidden mt-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #A78BFA 0%, #7C3AED 50%, #4C1D95 100%)",
+                    boxShadow: "0 1.5px 0 #4C1D95, inset 0 1px 1px rgba(255,255,255,0.55)",
+                  }}>
+                  <span className="absolute top-0 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                    style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)" }} />
+                  <span className="relative" style={{ textShadow: "0 1px 1px rgba(0,0,0,0.30)" }}>{i + 1}</span>
+                </span>
+                <p className="flex-1 text-[14.5px] text-slate-900 leading-snug pt-0.5">
+                  {step}
+                </p>
+              </li>
+            ))}
+          </ol>
+
+          {/* Hold timer hint */}
+          <div className="mt-5 pt-4 border-t border-violet-200 flex items-center justify-between">
+            <p className="text-[11px] uppercase tracking-wider text-violet-700 font-semibold">
+              ⏱️ Hold for {pose.holdSec} seconds
+            </p>
+            <p className="text-[10px] text-slate-600 italic">
+              Breathe deeply throughout
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RoutineFlow({ routine, onClose, onComplete }) {
   const [segIdx, setSegIdx] = React.useState(0);
   const [secondsLeft, setSecondsLeft] = React.useState(routine.segments[0].durationSec);
@@ -6429,13 +6904,14 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 function UnifiedPlaybookCard({ entry, onOpen }) {
   const [expanded, setExpanded] = React.useState(false);
 
-  // Action chip styling — bright solid candy colors like risk tier dots.
-  // No colored haze, just clean pop colors with 3D candy gloss.
+  // Action chip styling — bright candy gem colors with brilliant pop.
+  // High saturation, lighter tops, brighter mids, bigger 3D edge for that
+  // "Candy Crush gem you want to tap" feel.
   const actionStyle = {
-    TRIM:  { bg: "linear-gradient(180deg, #FCA5A5 0%, #EF4444 50%, #B91C1C 100%)", border: "#991B1B" },  // bright red
-    ADD:   { bg: "linear-gradient(180deg, #4ADE80 0%, #16A34A 50%, #14532D 100%)", border: "#14532D" },  // hunter green
-    HOLD:  { bg: "linear-gradient(180deg, #FDE68A 0%, #EAB308 50%, #854D0E 100%)", border: "#854D0E" },  // bright yellow
-    WATCH: { bg: "linear-gradient(180deg, #FDE68A 0%, #EAB308 50%, #854D0E 100%)", border: "#854D0E" },  // bright yellow
+    TRIM:  { bg: "linear-gradient(180deg, #FECACA 0%, #F87171 50%, #DC2626 100%)", border: "#B91C1C" },  // brilliant cherry red
+    ADD:   { bg: "linear-gradient(180deg, #86EFAC 0%, #22C55E 50%, #15803D 100%)", border: "#166534" },  // brilliant emerald
+    HOLD:  { bg: "linear-gradient(180deg, #FEF08A 0%, #FACC15 50%, #CA8A04 100%)", border: "#A16207" },  // brilliant gold
+    WATCH: { bg: "linear-gradient(180deg, #FEF08A 0%, #FACC15 50%, #CA8A04 100%)", border: "#A16207" },  // brilliant gold
   };
   const a = actionStyle[entry.action] || actionStyle.HOLD;
 
@@ -6451,11 +6927,6 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
   // Direction-based color coding (today's move) — slightly stronger tint for visibility
   const isUp = entry.changePct != null && entry.changePct >= 0;
   const isDown = entry.changePct != null && entry.changePct < 0;
-  const directionTint = isUp
-    ? "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)"
-    : isDown
-    ? "linear-gradient(135deg, #fff5f5 0%, #fee2e2 100%)"
-    : "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)";
   const stripeColor = isUp ? "#10B981" : isDown ? "#DC2626" : "#94A3B8";
 
   // P&L coloring
@@ -6467,27 +6938,12 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
   return (
     <div className="relative rounded-xl overflow-hidden"
       style={{
-        background: directionTint,
-        border: `1.5px solid ${isUp ? "#10B981" : isDown ? "#DC2626" : "#94A3B8"}`,
-        boxShadow: isUp
-          ? "0 2.5px 0 #047857, 0 4px 10px rgba(16,185,129,0.25), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(6,95,70,0.12)"
-          : isDown
-          ? "0 2.5px 0 #991B1B, 0 4px 10px rgba(220,38,38,0.25), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(127,29,29,0.12)"
-          : "0 2.5px 0 #64748B, 0 4px 10px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+        // Clean white card — no colored haze. Pure shadow for contrast.
+        background: "linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%)",
+        border: "1px solid #E2E8F0",
+        boxShadow: "0 1.5px 4px -1px rgba(15,23,42,0.10), 0 2px 6px -2px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,1)",
       }}>
-      {/* Top specular highlight — candy shine across the whole card */}
-      <span className="absolute top-0.5 left-2 right-2 h-[45%] pointer-events-none z-[1]"
-        style={{
-          background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
-          borderRadius: "0.75rem 0.75rem 50% 50%",
-        }} />
-      {/* Bottom shine */}
-      <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[12%] pointer-events-none z-[1]"
-        style={{
-          background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)",
-          borderRadius: "9999px",
-        }} />
-      {/* Left direction stripe */}
+      {/* Left direction stripe — only color accent on the card */}
       <div className="absolute top-0 left-0 bottom-0 w-[3px] z-[2]"
         style={{ background: stripeColor }} />
       {/* Tappable row */}
@@ -6511,19 +6967,19 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
               {entry.symbol}
             </span>
             {entry.currentPrice != null && (
-              <span className="text-[11px] font-semibold flex-shrink-0" style={{ color: "#0F172A" }}>
+              <span className="text-[12px] font-extrabold flex-shrink-0" style={{ color: "#020617" }}>
                 ${entry.currentPrice.toFixed(2)}
               </span>
             )}
             {entry.changePct != null && !Number.isNaN(entry.changePct) && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold flex-shrink-0"
-                style={{ color: isUp ? "#059669" : "#DC2626" }}>
-                <span style={{ fontSize: 11, lineHeight: 1, fontWeight: 900 }}>{isUp ? "▲" : "▼"}</span>
+              <span className="inline-flex items-center gap-0.5 text-[11px] font-black flex-shrink-0"
+                style={{ color: isUp ? "#047857" : "#B91C1C" }}>
+                <span style={{ fontSize: 12, lineHeight: 1, fontWeight: 900 }}>{isUp ? "▲" : "▼"}</span>
                 {Math.abs(entry.changePct).toFixed(1)}%
               </span>
             )}
             {entry.totalPct != null && (
-              <span className="text-[9.5px] font-bold flex-shrink-0" style={{ color: pnlColor }}>
+              <span className="text-[10.5px] font-black flex-shrink-0" style={{ color: pnlColor }}>
                 L:{pnlPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%
               </span>
             )}
@@ -6537,23 +6993,25 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
                 <span className="relative">{r.label}</span>
               </span>
             )}
-            <div className="relative inline-flex items-center rounded-full overflow-hidden font-bold tracking-wider uppercase text-white flex-shrink-0"
+            <div className="relative inline-flex items-center rounded-full overflow-hidden font-extrabold tracking-wider uppercase text-white flex-shrink-0"
               style={{
                 background: a.bg,
                 border: `1.5px solid ${a.border}`,
-                boxShadow: `0 2.5px 0 ${a.border}, 0 4px 8px rgba(15,23,42,0.20), inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -2.5px 5px rgba(0,0,0,0.25)`,
-                fontSize: 9,
-                padding: "3px 8px",
-                textShadow: "0 1px 1px rgba(0,0,0,0.40)",
+                boxShadow: `0 3px 0 ${a.border}, 0 5px 10px rgba(15,23,42,0.25), inset 0 2.5px 3.5px rgba(255,255,255,0.85), inset 0 -3px 5px rgba(0,0,0,0.20)`,
+                fontSize: 10,
+                padding: "4px 10px",
+                textShadow: "0 1px 1.5px rgba(0,0,0,0.45)",
               }}>
+              {/* Big top specular highlight — extra bright for brilliance */}
               <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
                 style={{
-                  background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.30) 50%, rgba(255,255,255,0) 100%)",
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.40) 50%, rgba(255,255,255,0) 100%)",
                   borderRadius: "9999px 9999px 50% 50%",
                 }} />
-              <span className="absolute bottom-0.5 left-[25%] right-[25%] h-[20%] pointer-events-none"
+              {/* Bottom shine for plump bubble feel */}
+              <span className="absolute bottom-0.5 left-[20%] right-[20%] h-[22%] pointer-events-none"
                 style={{
-                  background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)",
+                  background: "linear-gradient(to top, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)",
                   borderRadius: "9999px",
                 }} />
               <span className="relative">{entry.action}</span>
@@ -6584,9 +7042,9 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
             }
             // Truncate if needed (we'll let CSS truncate too)
             return (
-              <p className="text-[10.5px] leading-snug text-slate-700 truncate"
-                style={{ fontFamily: SERIF }}>
-                <span className="font-bold mr-1" style={{ color: a.border }}>→</span>
+              <p className="text-[11.5px] leading-snug truncate font-medium"
+                style={{ fontFamily: SERIF, color: "#0F172A" }}>
+                <span className="font-extrabold mr-1 text-[13px]" style={{ color: a.border }}>→</span>
                 {text}
               </p>
             );
