@@ -4083,85 +4083,50 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         <SortBtn id="totalDollar" label="Total $" />
                         <SortBtn id="totalPct" label="Total %" />
                       </div>
-                      <div className="space-y-1.5">
-                        {(() => {
-                          const acts = entries.filter((e) => e.action === "TRIM" || e.action === "ADD");
-                          const monitors = entries.filter((e) => e.action === "HOLD" || e.action === "WATCH");
-                          return (
-                            <div className="grid grid-cols-2 gap-2">
-                              {/* LEFT: ACT TODAY (TRIM + ADD) */}
-                              <div className="space-y-1">
-                                <div className="rounded-lg px-2 py-1.5 text-center"
-                                  style={{
-                                    background: "linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)",
-                                    border: "1px solid rgba(220,38,38,0.30)",
-                                  }}>
-                                  <p className="text-[9px] uppercase tracking-[0.18em] font-bold m-0 leading-tight" style={{ color: "#991B1B" }}>
-                                    Act Today
-                                  </p>
-                                  <p className="text-[8px] m-0 leading-tight" style={{ color: "#7F1D1D" }}>
-                                    {acts.length} trim/add
-                                  </p>
-                                </div>
-                                {acts.length > 0 ? (
-                                  acts.map((entry, i) => (
-                                    <UnifiedPlaybookCard
-                                      key={`act-${entry.symbol}-${i}`}
-                                      entry={entry}
-                                      onOpen={(e) => {
-                                        if (e._decisionIdx != null && e._decisionIdx >= 0) {
-                                          setOpenDecisionIdx(e._decisionIdx);
-                                        } else {
-                                          setSelectedPosition(e);
-                                        }
-                                      }}
-                                    />
-                                  ))
-                                ) : (
-                                  <p className="text-[10px] text-slate-500 italic text-center py-3">
-                                    No action items today.
-                                  </p>
-                                )}
+                      {/* Column table — ticker sticky-left, action chip sticky-right, numbers scroll between */}
+                      {entries.length > 0 ? (
+                        <div className="rounded-2xl overflow-hidden border border-slate-200"
+                          style={{
+                            background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)",
+                            boxShadow: "0 2px 6px rgba(15,23,42,0.08)",
+                          }}>
+                          {/* Header row */}
+                          <div className="overflow-x-auto" style={{ scrollbarWidth: "thin" }}>
+                            <div className="flex items-center text-[9px] uppercase tracking-[0.15em] font-extrabold text-slate-500 border-b border-slate-200"
+                              style={{ minWidth: "max-content", background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)" }}>
+                              <div className="px-2 py-2 sticky left-0 z-[2]"
+                                style={{ width: 78, background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)", borderRight: "1px solid #CBD5E1" }}>
+                                Ticker
                               </div>
-
-                              {/* RIGHT: MONITOR (HOLD + WATCH) */}
-                              <div className="space-y-1">
-                                <div className="rounded-lg px-2 py-1.5 text-center"
-                                  style={{
-                                    background: "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)",
-                                    border: "1px solid rgba(217,119,6,0.30)",
-                                  }}>
-                                  <p className="text-[9px] uppercase tracking-[0.18em] font-bold m-0 leading-tight" style={{ color: "#78350F" }}>
-                                    Monitor
-                                  </p>
-                                  <p className="text-[8px] m-0 leading-tight" style={{ color: "#92400E" }}>
-                                    {monitors.length} hold/watch
-                                  </p>
-                                </div>
-                                {monitors.length > 0 ? (
-                                  monitors.map((entry, i) => (
-                                    <UnifiedPlaybookCard
-                                      key={`mon-${entry.symbol}-${i}`}
-                                      entry={entry}
-                                      onOpen={(e) => {
-                                        if (e._decisionIdx != null && e._decisionIdx >= 0) {
-                                          setOpenDecisionIdx(e._decisionIdx);
-                                        } else {
-                                          setSelectedPosition(e);
-                                        }
-                                      }}
-                                    />
-                                  ))
-                                ) : (
-                                  <p className="text-[10px] text-slate-500 italic text-center py-3">
-                                    No monitored positions.
-                                  </p>
-                                )}
+                              <div className="px-2 py-2 text-right" style={{ width: 75 }}>Value</div>
+                              <div className="px-2 py-2 text-right" style={{ width: 100 }}>Today</div>
+                              <div className="px-2 py-2 text-right" style={{ width: 110 }}>All-time</div>
+                              <div className="px-2 py-2 text-center sticky right-0 z-[2]"
+                                style={{ width: 78, background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)", borderLeft: "1px solid #CBD5E1" }}>
+                                Action
                               </div>
                             </div>
-                          );
-                        })()}
-                      </div>
+                            {/* Data rows */}
+                            {entries.map((entry, i) => (
+                              <PlaybookColumnRow
+                                key={`pb-${entry.symbol}-${i}`}
+                                entry={entry}
+                                onOpen={(e) => {
+                                  if (e._decisionIdx != null && e._decisionIdx >= 0) {
+                                    setOpenDecisionIdx(e._decisionIdx);
+                                  } else {
+                                    setSelectedPosition(e);
+                                  }
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-[12px] text-slate-500 italic text-center py-6">
+                          No positions to show. Sync your portfolio to get started.
+                        </p>
+                      )}
                     </div>
                   );
                 })()}
@@ -7270,6 +7235,149 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 // P&L, action chip, risk badge). Designed to fit every CSV position cleanly,
 // not just the brief's decisions. Color-coded by action type with a separate
 // risk-tier dot indicator.
+// ─── PlaybookColumnRow ──────────────────────────────────────────────
+// Column-style row for the new spreadsheet-like Playbook table.
+// Each variable gets its own column. Ticker sticky-left, action chip
+// sticky-right. Middle columns (Value, Today, All-time) scroll
+// horizontally when screen is narrow. Tap row → opens detail page.
+function PlaybookColumnRow({ entry, onOpen }) {
+  // Action chip styling — PRIMARY pure red/green/yellow gems
+  const actionStyle = {
+    TRIM:  { bg: "linear-gradient(180deg, #FF8080 0%, #FF0000 45%, #B30000 100%)", border: "#800000" },
+    ADD:   { bg: "linear-gradient(180deg, #66DD7E 0%, #00C800 45%, #007F00 100%)", border: "#005000" },
+    HOLD:  { bg: "linear-gradient(180deg, #FFF59D 0%, #FFEB3B 45%, #C9A800 100%)", border: "#806B00" },
+    WATCH: { bg: "linear-gradient(180deg, #FFF59D 0%, #FFEB3B 45%, #C9A800 100%)", border: "#806B00" },
+  };
+  const a = actionStyle[entry.action] || actionStyle.HOLD;
+  // Risk dot
+  const riskStyle = {
+    LOWER:  { color: "#10B981", label: "L" },
+    MEDIUM: { color: "#F59E0B", label: "M" },
+    HIGHER: { color: "#EA580C", label: "H" },
+    HIGH:   { color: "#DC2626", label: "X" },
+  };
+  const r = entry.risk ? riskStyle[entry.risk] : null;
+  // Direction
+  const isUp = entry.changePct != null && entry.changePct >= 0;
+  const isDown = entry.changePct != null && entry.changePct < 0;
+  const stripeColor = isUp ? "#16A34A" : isDown ? "#DC2626" : "#94A3B8";
+  // P&L coloring
+  const pnlPositive = entry.totalDollar != null && entry.totalDollar > 0;
+  const pnlColor = entry.totalDollar == null ? "#64748B" : pnlPositive ? "#059669" : "#DC2626";
+  const todayDollarPositive = entry.todayDollar != null && entry.todayDollar > 0;
+  const todayColor = entry.todayDollar == null ? "#64748B" : todayDollarPositive ? "#059669" : "#DC2626";
+
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen && onOpen(entry)}
+      className="relative w-full flex items-stretch border-b border-slate-100 text-left transition active:bg-slate-50 hover:bg-slate-50"
+      style={{ minWidth: "max-content", background: "#FFFFFF" }}
+    >
+      {/* Direction stripe on far left */}
+      <span className="absolute top-0 left-0 bottom-0 w-[3px] z-[3]"
+        style={{ background: stripeColor, boxShadow: `0 0 4px ${stripeColor}66` }} />
+
+      {/* COLUMN 1: Ticker + risk (sticky-left, always visible) */}
+      <div className="flex items-center gap-1.5 px-2 py-2 sticky left-0 z-[2] flex-shrink-0"
+        style={{ width: 78, background: "#FFFFFF", borderRight: "1px solid #E2E8F0" }}>
+        <span className="text-[13px] font-bold tracking-tight leading-none flex-shrink-0"
+          style={{
+            fontFamily: SERIF,
+            background: "linear-gradient(180deg, #0F172A 0%, #334155 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}>
+          {entry.symbol}
+        </span>
+        {r && (
+          <span className="w-3 h-3 rounded-full flex items-center justify-center text-[7px] font-bold flex-shrink-0 relative overflow-hidden"
+            style={{ background: r.color, color: "#fff", boxShadow: "inset 0 1px 1px rgba(255,255,255,0.40), 0 1px 2px rgba(0,0,0,0.20)" }}
+            title={`${entry.risk} risk`}>
+            <span className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none"
+              style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0) 100%)", borderRadius: "50% 50% 0 0" }} />
+            <span className="relative">{r.label}</span>
+          </span>
+        )}
+      </div>
+
+      {/* COLUMN 2: Position value */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 75 }}>
+        {entry.currentPrice != null && entry.qty != null ? (
+          <span className="text-[12px] font-extrabold leading-tight" style={{ color: "#020617" }}>
+            ${(entry.currentPrice * entry.qty).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </span>
+        ) : entry.currentPrice != null ? (
+          <span className="text-[12px] font-extrabold leading-tight" style={{ color: "#020617" }}>
+            ${entry.currentPrice.toFixed(2)}
+          </span>
+        ) : (
+          <span className="text-[11px] text-slate-400">—</span>
+        )}
+      </div>
+
+      {/* COLUMN 3: Today change ($ + %) */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 100 }}>
+        {entry.todayDollar != null ? (
+          <div className="flex flex-col items-end leading-tight">
+            <span className="text-[12px] font-extrabold inline-flex items-center gap-0.5" style={{ color: todayColor }}>
+              <span style={{ fontSize: 10, lineHeight: 1, fontWeight: 900 }}>{todayDollarPositive ? "▲" : "▼"}</span>
+              {todayDollarPositive ? "+" : "-"}${Math.abs(entry.todayDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </span>
+            {entry.changePct != null && !Number.isNaN(entry.changePct) && (
+              <span className="text-[9.5px] font-bold" style={{ color: isUp ? "#047857" : "#B91C1C" }}>
+                {isUp ? "+" : ""}{entry.changePct.toFixed(1)}%
+              </span>
+            )}
+          </div>
+        ) : (
+          <span className="text-[11px] text-slate-400">—</span>
+        )}
+      </div>
+
+      {/* COLUMN 4: All-time change ($ + %) */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 110 }}>
+        {entry.totalDollar != null ? (
+          <div className="flex flex-col items-end leading-tight">
+            <span className="text-[12px] font-extrabold" style={{ color: pnlColor }}>
+              {pnlPositive ? "+" : "-"}${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </span>
+            {entry.totalPct != null && (
+              <span className="text-[9.5px] font-bold" style={{ color: pnlColor }}>
+                {pnlPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%
+              </span>
+            )}
+          </div>
+        ) : (
+          <span className="text-[11px] text-slate-400">—</span>
+        )}
+      </div>
+
+      {/* COLUMN 5: Action chip (sticky-right, always visible) */}
+      <div className="px-2 py-2 flex items-center justify-center sticky right-0 z-[2] flex-shrink-0"
+        style={{ width: 78, background: "#FFFFFF", borderLeft: "1px solid #E2E8F0" }}>
+        <div className="relative inline-flex items-center rounded-full overflow-hidden font-extrabold tracking-wider uppercase text-white"
+          style={{
+            background: a.bg,
+            border: `1.5px solid ${a.border}`,
+            boxShadow: `0 2px 0 ${a.border}, 0 3px 6px rgba(15,23,42,0.20), inset 0 2px 3px rgba(255,255,255,0.85), inset 0 -2.5px 4px rgba(0,0,0,0.20)`,
+            fontSize: 9.5,
+            padding: "3px 8px",
+            textShadow: "0 1px 1.5px rgba(0,0,0,0.45)",
+          }}>
+          <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
+            style={{
+              background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.40) 50%, rgba(255,255,255,0) 100%)",
+              borderRadius: "9999px 9999px 50% 50%",
+            }} />
+          <span className="relative">{entry.action}</span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
 function UnifiedPlaybookCard({ entry, onOpen }) {
   // Action chip styling — PRIMARY pure colors. Not pastel, not muddy.
   // The mid-stop is the "true" color; top is lighter for shine, bottom is
