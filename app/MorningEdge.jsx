@@ -6637,9 +6637,9 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           </div>
         </div>
 
-        {/* Pose image — match new cropped source 458x353 ratio (clean scene, no card/title) */}
-        <div className="relative" style={{ aspectRatio: "458 / 353", maxHeight: 340, background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 100%)" }}>
-          <YogaPoseImage pose={currentPose} style={{ objectFit: "cover", objectPosition: "center" }} />
+        {/* Pose image — new square source (492×492). Square aspect, no cropping. */}
+        <div className="relative" style={{ aspectRatio: "1 / 1", maxHeight: 360, background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 100%)" }}>
+          <YogaPoseImage pose={currentPose} style={{ objectFit: "contain", objectPosition: "center" }} />
         </div>
 
         {/* Pose name */}
@@ -10350,3 +10350,4 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
