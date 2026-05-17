@@ -159,127 +159,11 @@ const SUGGESTED = ["SPY", "QQQ", "AAPL", "NVDA", "MSFT", "GOOGL", "AMZN", "META"
 // Yoga pose library — 6 foundational asanas with full instructions and real
 // Wikimedia Commons photos. The `imageUrls` array gives multiple fallback URLs
 // per pose so we always render something real; if all fail, a text card shows.
-// ── YogaPoseSchematic — inline SVG diagrams of each pose ────────────────
-// Functional schematics, like yoga-book diagrams or bathroom-door icons.
-// Pure SVG shapes (circles, lines, paths). Always render — no network calls,
-// no uploads needed. Each pose has its own minimal stick-figure schematic.
-
-const YOGA_SCHEMATICS = {
-  // MOUNTAIN POSE — standing straight, arms at sides, palms forward
-  tadasana: (props) => (
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <rect width="100" height="100" fill="#EDE9FE" />
-      {/* ground line */}
-      <line x1="20" y1="92" x2="80" y2="92" stroke="#A78BFA" strokeWidth="0.8" strokeDasharray="2,2" />
-      {/* figure */}
-      <g stroke="#4C1D95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
-        {/* head */}
-        <circle cx="50" cy="20" r="6" fill="#4C1D95" />
-        {/* torso (long straight line) */}
-        <line x1="50" y1="26" x2="50" y2="64" />
-        {/* arms hanging at sides */}
-        <line x1="50" y1="30" x2="42" y2="62" />
-        <line x1="50" y1="30" x2="58" y2="62" />
-        {/* legs together */}
-        <line x1="50" y1="64" x2="46" y2="92" />
-        <line x1="50" y1="64" x2="54" y2="92" />
-      </g>
-    </svg>
-  ),
-  // DOWNWARD DOG — inverted V shape
-  "adho-mukha-svanasana": (props) => (
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <rect width="100" height="100" fill="#EDE9FE" />
-      <line x1="10" y1="92" x2="90" y2="92" stroke="#A78BFA" strokeWidth="0.8" strokeDasharray="2,2" />
-      <g stroke="#4C1D95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
-        {/* head hanging low between arms */}
-        <circle cx="22" cy="68" r="5" fill="#4C1D95" />
-        {/* arm from hand to hip (peak) */}
-        <line x1="18" y1="92" x2="55" y2="32" />
-        {/* leg from hip (peak) to foot */}
-        <line x1="55" y1="32" x2="82" y2="92" />
-        {/* second arm parallel */}
-        <line x1="22" y1="92" x2="52" y2="32" />
-        {/* second leg parallel */}
-        <line x1="52" y1="32" x2="78" y2="92" />
-      </g>
-    </svg>
-  ),
-  // COBRA — lying face down, chest lifted up
-  bhujangasana: (props) => (
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <rect width="100" height="100" fill="#EDE9FE" />
-      <line x1="10" y1="85" x2="90" y2="85" stroke="#A78BFA" strokeWidth="0.8" strokeDasharray="2,2" />
-      <g stroke="#4C1D95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
-        {/* head looking up/forward */}
-        <circle cx="22" cy="40" r="5" fill="#4C1D95" />
-        {/* chest curve - arched up from belly */}
-        <path d="M 22 45 Q 28 55, 38 65 L 78 80" />
-        {/* arms pressing into ground */}
-        <line x1="25" y1="48" x2="32" y2="80" />
-        {/* legs extended back, flat */}
-        <line x1="38" y1="80" x2="85" y2="83" />
-      </g>
-    </svg>
-  ),
-  // TREE — standing one leg, other foot on inner thigh, hands prayer overhead
-  vrikshasana: (props) => (
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <rect width="100" height="100" fill="#EDE9FE" />
-      <line x1="30" y1="92" x2="70" y2="92" stroke="#A78BFA" strokeWidth="0.8" strokeDasharray="2,2" />
-      <g stroke="#4C1D95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
-        {/* head */}
-        <circle cx="50" cy="20" r="6" fill="#4C1D95" />
-        {/* arms reaching up overhead, prayer position */}
-        <line x1="50" y1="26" x2="45" y2="6" />
-        <line x1="50" y1="26" x2="55" y2="6" />
-        {/* torso */}
-        <line x1="50" y1="26" x2="50" y2="56" />
-        {/* standing leg (straight down) */}
-        <line x1="50" y1="56" x2="50" y2="92" />
-        {/* bent leg — foot resting on inner thigh */}
-        <line x1="50" y1="56" x2="35" y2="68" />
-        <line x1="35" y1="68" x2="50" y2="72" />
-      </g>
-    </svg>
-  ),
-  // CHILD'S POSE — kneeling, folded forward, arms extended forward
-  balasana: (props) => (
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <rect width="100" height="100" fill="#EDE9FE" />
-      <line x1="10" y1="85" x2="90" y2="85" stroke="#A78BFA" strokeWidth="0.8" strokeDasharray="2,2" />
-      <g stroke="#4C1D95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
-        {/* head down on floor */}
-        <circle cx="32" cy="78" r="5" fill="#4C1D95" />
-        {/* arms extended forward */}
-        <line x1="32" y1="78" x2="14" y2="82" />
-        {/* torso folded over thighs */}
-        <path d="M 32 75 Q 50 70, 62 78" />
-        {/* legs folded under (heels meeting butt) */}
-        <line x1="62" y1="78" x2="72" y2="85" />
-        <line x1="72" y1="85" x2="55" y2="85" />
-      </g>
-    </svg>
-  ),
-  // LOTUS — seated cross-legged, hands on knees, spine tall
-  padmasana: (props) => (
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <rect width="100" height="100" fill="#EDE9FE" />
-      <line x1="20" y1="90" x2="80" y2="90" stroke="#A78BFA" strokeWidth="0.8" strokeDasharray="2,2" />
-      <g stroke="#4C1D95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
-        {/* head */}
-        <circle cx="50" cy="28" r="6" fill="#4C1D95" />
-        {/* tall spine */}
-        <line x1="50" y1="34" x2="50" y2="68" />
-        {/* arms hanging down to knees */}
-        <line x1="50" y1="40" x2="32" y2="72" />
-        <line x1="50" y1="40" x2="68" y2="72" />
-        {/* crossed legs (triangle base) */}
-        <path d="M 50 68 Q 30 78, 24 86 L 76 86 Q 70 78, 50 68 Z" />
-      </g>
-    </svg>
-  ),
-};
+// ── YogaPoseImage — tries multiple image URLs, falls back to clean text card ──
+// Uses real Wikimedia Commons schematic images via Special:FilePath URLs.
+// Each pose has 4 candidate URLs (different filename guesses); first one that
+// loads is shown. If none load, a clean violet text card displays the Sanskrit
+// + English name. No inline drawings — only real images from the internet.
 
 // YogaPoseImage — renders the schematic SVG for the given pose.
 // Tries external image URLs first if provided (so user can override with their
@@ -288,17 +172,8 @@ const YOGA_SCHEMATICS = {
 function YogaPoseImage({ pose, className = "", style = {} }) {
   const urls = pose.imageUrls || [];
   const [urlIdx, setUrlIdx] = React.useState(0);
-  const [useSchematic, setUseSchematic] = React.useState(urls.length === 0);
-  const SchematicComponent = YOGA_SCHEMATICS[pose.slug];
-  // Show schematic if no URLs left OR no URLs configured
-  if (useSchematic || urls.length === 0) {
-    if (SchematicComponent) {
-      return SchematicComponent({
-        className: `absolute inset-0 w-full h-full ${className}`,
-        style,
-        preserveAspectRatio: "xMidYMid meet",
-      });
-    }
+  const [allFailed, setAllFailed] = React.useState(urls.length === 0);
+  if (allFailed) {
     return (
       <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-2 ${className}`}
         style={{
@@ -318,13 +193,13 @@ function YogaPoseImage({ pose, className = "", style = {} }) {
     <img
       src={urls[urlIdx]}
       alt={pose.english}
-      className={`absolute inset-0 w-full h-full object-cover ${className}`}
-      style={style}
+      className={`absolute inset-0 w-full h-full ${className}`}
+      style={{ objectFit: "contain", background: "#EDE9FE", padding: "8%", ...style }}
       onError={() => {
         if (urlIdx < urls.length - 1) {
           setUrlIdx(urlIdx + 1);
         } else {
-          setUseSchematic(true); // fall through to inline schematic
+          setAllFailed(true);
         }
       }}
     />
@@ -338,9 +213,10 @@ const YOGA_POSES = [
     english: "Mountain Pose",
     benefit: "Improves posture, balance, and groundedness. The foundation of all standing poses.",
     imageUrls: [
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Vector_drawing_of_dandayamana_yoga_pose.svg/256px-Vector_drawing_of_dandayamana_yoga_pose.svg.png",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Mountain_pose_(Tadasana).svg?width=400",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Yoga_-_The_Noun_Project.svg?width=400",
       "/yoga/tadasana.svg",
-      "/yoga/tadasana.png",
-      "/yoga/tadasana.jpg",
     ],
     steps: [
       "Stand with feet together, big toes touching, heels slightly apart.",
@@ -359,9 +235,10 @@ const YOGA_POSES = [
     english: "Downward-Facing Dog",
     benefit: "Stretches the entire back body. Strengthens arms and shoulders. Calms the mind.",
     imageUrls: [
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Downward_Dog_Pose_-_Adho_Mukha_Svanasana.svg?width=400",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Adho_Mukha_Svanasana_yoga_asana_silhouette.svg?width=400",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Yoga_pose_05.svg?width=400",
       "/yoga/downward-dog.svg",
-      "/yoga/downward-dog.png",
-      "/yoga/downward-dog.jpg",
     ],
     steps: [
       "Begin on hands and knees. Wrists under shoulders, knees under hips.",
@@ -380,9 +257,10 @@ const YOGA_POSES = [
     english: "Cobra Pose",
     benefit: "Opens the chest and lungs. Strengthens the spine. Counteracts hours of sitting.",
     imageUrls: [
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Cobra_Pose_Bhujangasana.svg?width=400",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Yoga_pose_silhouette_cobra.svg?width=400",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Bhujangasana.svg?width=400",
       "/yoga/cobra.svg",
-      "/yoga/cobra.png",
-      "/yoga/cobra.jpg",
     ],
     steps: [
       "Lie face down. Legs extended, tops of feet on the floor.",
@@ -401,9 +279,10 @@ const YOGA_POSES = [
     english: "Tree Pose",
     benefit: "Builds focus, balance, and concentration. Strengthens legs and core.",
     imageUrls: [
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Vector_drawing_of_vrksasana_yoga_pose.svg/256px-Vector_drawing_of_vrksasana_yoga_pose.svg.png",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Tree_Pose_Vrikshasana.svg?width=400",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Vrksasana_yoga_silhouette.svg?width=400",
       "/yoga/tree.svg",
-      "/yoga/tree.png",
-      "/yoga/tree.jpg",
     ],
     steps: [
       "Start in Mountain Pose. Shift weight onto the left foot.",
@@ -422,9 +301,10 @@ const YOGA_POSES = [
     english: "Child's Pose",
     benefit: "Resting pose. Calms the nervous system. Gently stretches the back and hips.",
     imageUrls: [
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Childs_Pose_Balasana.svg?width=400",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Balasana_yoga_silhouette.svg?width=400",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Yoga_pose_child.svg?width=400",
       "/yoga/child.svg",
-      "/yoga/child.png",
-      "/yoga/child.jpg",
     ],
     steps: [
       "Kneel on the floor. Big toes touching, knees apart.",
@@ -443,9 +323,10 @@ const YOGA_POSES = [
     english: "Lotus Pose",
     benefit: "Classic meditation seat. Opens the hips. Encourages stillness and deep breath.",
     imageUrls: [
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Vector_drawing_of_seated_yoga_pose.svg/256px-Vector_drawing_of_seated_yoga_pose.svg.png",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Padmasana_lotus_pose_silhouette.svg?width=400",
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Lotus_position_yoga.svg?width=400",
       "/yoga/lotus.svg",
-      "/yoga/lotus.png",
-      "/yoga/lotus.jpg",
     ],
     steps: [
       "Sit on the floor with legs extended.",
