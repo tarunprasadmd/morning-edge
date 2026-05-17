@@ -146,7 +146,7 @@ function validateBody(raw: any): { ok: true; body: ValidatedRequestBody } | { ok
   for (const h of rawHoldings.slice(0, MAX_HOLDINGS)) {
     if (!h || typeof h !== "object") continue;
     const symbol = typeof h.symbol === "string" ? h.symbol.toUpperCase() : "";
-    if (!SYMBOL_RE.test(symbol)) continue;
+    if (!SYMBOL_RE.test(symbol)) continue; if (!Number.isFinite(h.qty) || Number(h.qty) <= 0) continue;
     holdings.push({
       symbol,
       qty: Number.isFinite(h.qty) ? Number(h.qty) : undefined,
