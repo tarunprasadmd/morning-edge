@@ -4891,7 +4891,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         "0 2px 0 #92400E, 0 4px 12px rgba(146,64,14,0.20), inset 0 1.5px 2px rgba(255,255,255,0.85)",
                     }}
                   >
-                    {/* Watermark: NYC Lower Manhattan skyline photo, very faded */}
+                    {/* Watermark: NYC Lower Manhattan skyline photo, positioned at bottom for natural look */}
                     <img
                       aria-hidden="true"
                       src="/hedge-bg.jpg"
@@ -4905,11 +4905,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         width: "100%",
                         height: "100%",
                         objectFit: "cover",
-                        objectPosition: "center",
-                        opacity: 0.75,
+                        objectPosition: "center bottom",
+                        opacity: 0.60,
                         pointerEvents: "none",
-                        mixBlendMode: "multiply",
                         borderBottomRightRadius: "1rem",
+                        borderBottomLeftRadius: "1rem",
                       }}
                     />
                     {/* Top gold accent line — premium identity */}
@@ -5420,20 +5420,17 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 {!(brief.mindset && (brief.mindset.gratitude || brief.mindset.focus)) &&
                  !(brief.clarity && (brief.clarity.breath_practice || brief.clarity.contemplation || brief.clarity.eastern_wisdom)) && (
                   <>
-                    {/* Default breath practice — 4-7-8 technique */}
-                    <div className="rounded-2xl p-5 relative overflow-hidden"
-                      style={{
-                        background: "linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)",
-                        border: "1px solid #818CF8",
-                        boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.85)",
-                      }}>
-                      <p className="text-[12px] uppercase tracking-[0.2em] font-semibold mb-2 relative flex items-center gap-1.5" style={{ color: "#3730A3" }}>
+                    {/* Default breath practice — uses the SAME interactive circle component */}
+                    <div className="pt-2">
+                      <p className="text-[12px] uppercase tracking-[0.2em] font-semibold mb-3 flex items-center gap-1.5" style={{ color: "#4338CA" }}>
                         🫁 Breath Practice
                       </p>
-                      <p className="text-[16px] font-bold text-indigo-900 mb-2">4-7-8 Calm Breath</p>
-                      <p className="text-[13px] text-indigo-800 leading-snug">
-                        Inhale 4 seconds → hold 7 seconds → exhale 8 seconds. Repeat 4 rounds before checking premarket. Calms the nervous system before decisions.
-                      </p>
+                      <InteractiveBreathGuide
+                        name="4-7-8 Calm Breath"
+                        pattern="4-7-8"
+                        description="Inhale 4, hold 7, exhale 8. Calms the nervous system before market open."
+                        rounds={4}
+                      />
                     </div>
 
                     {/* Default contemplation quote */}
