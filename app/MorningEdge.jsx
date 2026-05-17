@@ -4166,13 +4166,22 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <div>
                       {/* Column table — ticker sticky-left, action chip sticky-right, sortable headers */}
                       {entries.length > 0 ? (
-                        <div className="rounded-2xl overflow-hidden border border-slate-200"
+                        <div className="rounded-2xl border border-slate-200"
                           style={{
                             background: "#FFFFFF",
                             boxShadow: "0 3px 10px rgba(15,23,42,0.10)",
                             maxHeight: "65vh",
+                            // CRITICAL: do NOT use overflow:hidden here — it breaks
+                            // position:sticky on iOS Safari. Inner overflow-x-auto
+                            // handles the scroll context and visible clipping.
                           }}>
-                          <div className="overflow-x-auto overflow-y-auto" style={{ scrollbarWidth: "thin", maxHeight: "65vh", WebkitOverflowScrolling: "touch" }}>
+                          <div className="overflow-x-auto overflow-y-auto rounded-2xl"
+                            style={{
+                              scrollbarWidth: "thin",
+                              maxHeight: "65vh",
+                              WebkitOverflowScrolling: "touch",
+                              position: "relative",
+                            }}>
                             {/* HEADER ROW — sortable column headers */}
                             <div className="flex items-stretch text-[13px] uppercase tracking-[0.06em] border-b-2 border-slate-500 relative"
                               style={{
@@ -7627,8 +7636,13 @@ function PlaybookColumnRow({ entry, onOpen, onCycleAction }) {
       tabIndex={0}
       onClick={() => onOpen && onOpen(entry)}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen && onOpen(entry); } }}
-      className="relative w-full flex items-stretch border-b border-slate-200 text-left transition active:translate-y-0.5 cursor-pointer"
-      style={{ minWidth: "max-content", background: rowBg }}
+      className="relative w-full flex items-stretch border-b border-slate-200 text-left transition cursor-pointer"
+      style={{
+        minWidth: "max-content",
+        background: rowBg,
+        position: "relative",
+        isolation: "isolate",
+      }}
     >
       {/* Glossy top specular — strong shine */}
       <span className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-[1]"
