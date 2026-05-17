@@ -1199,6 +1199,8 @@ export default function MorningEdge() {
   const [tempPortfolio, setTempPortfolio] = useState([]);
   const [filter, setFilter] = useState("all"); // all | health | wealth | clarity
   const [showCsvImport, setShowCsvImport] = useState(false);
+  // Whether the Sync Portfolio modal is showing stock brokerages or crypto exchanges
+  const [syncAssetType, setSyncAssetType] = useState("stocks"); // "stocks" | "crypto"
   const [csvImportMessage, setCsvImportMessage] = useState(null);
   const csvFileInputRef = React.useRef(null);
   const [completedDecisions, setCompletedDecisions] = useState({}); // { "2026-04-29": [0, 2] }
@@ -2483,18 +2485,93 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
       {showCsvImport && (
         <div className="relative z-10 px-4 pb-5 pt-1">
           <div className="px-3 py-3 rounded-lg bg-white text-[14px] text-slate-800 space-y-3 shadow-inner">
+            {/* BIG asset class toggle — Stocks vs Crypto */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                onClick={() => setSyncAssetType("stocks")}
+                className="relative flex flex-col items-center text-center p-3 rounded-2xl overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
+                style={syncAssetType === "stocks" ? {
+                  background: "linear-gradient(180deg, #3B82F6 0%, #1D4ED8 50%, #1E3A8A 100%)",
+                  border: "2px solid #1E3A8A",
+                  boxShadow: "0 3px 0 #1E3A8A, 0 5px 12px rgba(59,130,246,0.35), inset 0 2px 3px rgba(255,255,255,0.45), inset 0 -3px 5px rgba(0,0,0,0.20)",
+                } : {
+                  background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #E2E8F0 100%)",
+                  border: "1.5px solid #94A3B8",
+                  boxShadow: "0 2px 0 #64748B, inset 0 1.5px 2px rgba(255,255,255,1)",
+                }}>
+                <span className="absolute top-0.5 left-2 right-2 h-[45%] pointer-events-none"
+                  style={{
+                    background: syncAssetType === "stocks"
+                      ? "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)"
+                      : "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "1rem 1rem 50% 50%",
+                  }} />
+                <span className="relative text-[28px] leading-none mb-1" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>📈</span>
+                <p className="relative text-[14px] font-extrabold uppercase tracking-[0.18em] leading-none"
+                  style={{
+                    color: syncAssetType === "stocks" ? "#fff" : "#1E293B",
+                    textShadow: syncAssetType === "stocks" ? "0 1px 1.5px rgba(0,0,0,0.30)" : "none",
+                  }}>
+                  Stocks
+                </p>
+                <p className="relative text-[10px] mt-0.5"
+                  style={{ color: syncAssetType === "stocks" ? "rgba(255,255,255,0.85)" : "#64748B" }}>
+                  Fidelity, Schwab, etc.
+                </p>
+              </button>
+              <button
+                onClick={() => setSyncAssetType("crypto")}
+                className="relative flex flex-col items-center text-center p-3 rounded-2xl overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
+                style={syncAssetType === "crypto" ? {
+                  background: "linear-gradient(180deg, #A78BFA 0%, #7C3AED 50%, #4C1D95 100%)",
+                  border: "2px solid #4C1D95",
+                  boxShadow: "0 3px 0 #4C1D95, 0 5px 12px rgba(139,92,246,0.35), inset 0 2px 3px rgba(255,255,255,0.45), inset 0 -3px 5px rgba(0,0,0,0.20)",
+                } : {
+                  background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #E2E8F0 100%)",
+                  border: "1.5px solid #94A3B8",
+                  boxShadow: "0 2px 0 #64748B, inset 0 1.5px 2px rgba(255,255,255,1)",
+                }}>
+                <span className="absolute top-0.5 left-2 right-2 h-[45%] pointer-events-none"
+                  style={{
+                    background: syncAssetType === "crypto"
+                      ? "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)"
+                      : "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "1rem 1rem 50% 50%",
+                  }} />
+                <span className="relative text-[28px] leading-none mb-1" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>🪙</span>
+                <p className="relative text-[14px] font-extrabold uppercase tracking-[0.18em] leading-none"
+                  style={{
+                    color: syncAssetType === "crypto" ? "#fff" : "#1E293B",
+                    textShadow: syncAssetType === "crypto" ? "0 1px 1.5px rgba(0,0,0,0.30)" : "none",
+                  }}>
+                  Crypto
+                </p>
+                <p className="relative text-[10px] mt-0.5"
+                  style={{ color: syncAssetType === "crypto" ? "rgba(255,255,255,0.85)" : "#64748B" }}>
+                  Coinbase, Kraken, etc.
+                </p>
+              </button>
+            </div>
+
             <div>
-              <p className="font-semibold text-slate-900 mb-2">Get your CSV from your brokerage</p>
+              <p className="font-semibold text-slate-900 mb-2">
+                Get your CSV from {syncAssetType === "crypto" ? "your exchange" : "your brokerage"}
+              </p>
               <p className="text-[14px] text-slate-800 leading-snug mb-2.5">
-                Tap to open the broker in a new tab. Log in, find your positions, save the CSV, then come back and upload it.
+                Tap to open in a new tab. Log in, find your positions, save the CSV, then come back and upload it.
                 {isMobile && (
                   <span className="block mt-1 text-[12px] text-amber-700">
-                    Heads up: brokerage CSV downloads usually work better on a computer.
+                    Heads up: CSV downloads usually work better on a computer.
                   </span>
                 )}
               </p>
               <div className="space-y-1.5">
-                {BROKERAGES.slice(0, 6).map((b) => (
+                {BROKERAGES
+                  .filter((b) => syncAssetType === "crypto" ? b.type === "crypto" : b.type !== "crypto")
+                  .slice(0, 6)
+                  .map((b) => {
+                    const isCrypto = b.type === "crypto";
+                    return (
                   <button
                     key={b.name}
                     onClick={() => {
@@ -2503,10 +2580,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       }
                     }}
                     className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-2 overflow-hidden text-left transition active:scale-[0.98] active:translate-y-0.5"
-                    style={{
-                      background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
-                      border: "1.5px solid #D97706",
-                      boxShadow: "0 2px 0 #92400E, 0 3px 8px rgba(217,119,6,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(146,64,14,0.15)",
+                    style={isCrypto ? {
+                      background: "linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 50%, #DDD6FE 100%)",
+                      border: "1.5px solid #8B5CF6",
+                      boxShadow: "0 2px 0 #6D28D9, 0 3px 8px rgba(139,92,246,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(91,33,182,0.10)",
+                    } : {
+                      background: "linear-gradient(180deg, #EFF6FF 0%, #DBEAFE 50%, #BFDBFE 100%)",
+                      border: "1.5px solid #3B82F6",
+                      boxShadow: "0 2px 0 #1D4ED8, 0 3px 8px rgba(59,130,246,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(30,64,175,0.10)",
                     }}
                   >
                     <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
@@ -2522,29 +2603,27 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <span className="relative text-[12px] text-slate-800 flex-1 truncate">
                       {b.path}
                     </span>
-                    <ExternalLink className="relative w-3 h-3 text-amber-700 flex-shrink-0" />
+                    <ExternalLink className="relative w-3 h-3 flex-shrink-0" style={{ color: isCrypto ? "#7C3AED" : "#1D4ED8" }} />
                   </button>
-                ))}
+                    );
+                  })}
               </div>
               <button
                 onClick={() => setShowBrokerageGuide(true)}
                 className="relative w-full mt-2 px-2.5 py-2 rounded-xl text-[14px] font-semibold flex items-center justify-center gap-1.5 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
                 style={{
-                  background: "linear-gradient(180deg, #FFFBEB 0%, #FCD34D 50%, #D97706 100%)",
-                  border: "1.5px solid #92400E",
-                  boxShadow: "0 2px 0 #78350F, 0 3px 8px rgba(217,119,6,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85), inset 0 -2px 4px rgba(146,64,14,0.30)",
-                  color: "#451A03",
-                  textShadow: "0 1px 1px rgba(255,255,255,0.55)",
+                  background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
+                  border: "1.5px solid #64748B",
+                  boxShadow: "0 2px 0 #475569, 0 3px 8px rgba(71,85,105,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -2px 4px rgba(71,85,105,0.15)",
+                  color: "#0F172A",
                 }}
               >
                 <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none"
                   style={{
-                    background: "linear-gradient(to bottom, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
                     borderRadius: "0.6rem 0.6rem 50% 50%",
                   }} />
-                <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[15%] pointer-events-none"
-                  style={{ background: "linear-gradient(to top, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
-                <span className="relative">See all {BROKERAGES.length} brokerages</span>
+                <span className="relative">See all {BROKERAGES.filter((b) => syncAssetType === "crypto" ? b.type === "crypto" : b.type !== "crypto").length}</span>
                 <ChevronRight className="relative w-3 h-3" />
               </button>
               <div className="mt-2 rounded-xl p-3 relative overflow-hidden"
@@ -3656,148 +3735,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 <p className="text-[13px] text-slate-700 italic mb-3 px-1 leading-snug">
                   Every position with live P&amp;L and a suggested action. Tap any card for full reasoning.
                 </p>
-                {/* Asset type toggle — always show when holdings present so user
-                    can discover the crypto feature */}
-                {holdings.length > 0 && (() => {
-                  const cryptoCount = holdings.filter((h) => h && h.type === "crypto").length;
-                  const stockCount = holdings.filter((h) => h && h.type !== "crypto").length;
-                  const hasNoCryptoYet = cryptoCount === 0;
-                  const options = [
-                    { id: "all", label: "All", count: holdings.length },
-                    { id: "stocks", label: "📈 Stocks", count: stockCount },
-                    { id: "crypto", label: "🪙 Crypto", count: cryptoCount },
-                  ];
-                  return (
-                    <>
-                      {/* Discovery banner when user has stocks but no crypto yet */}
-                      {hasNoCryptoYet && stockCount > 0 && (
-                        <div className="mb-3 rounded-2xl p-3 relative overflow-hidden flex items-center gap-3"
-                          style={{
-                            background: "linear-gradient(135deg, #FEF3C7 0%, #FCD34D 50%, #F59E0B 100%)",
-                            border: "1.5px solid #B45309",
-                            boxShadow: "0 3px 0 #92400E, 0 5px 12px rgba(180,83,9,0.30), inset 0 1.5px 2px rgba(255,255,255,0.85)",
-                          }}>
-                          <span className="absolute top-0.5 left-3 right-3 h-[40%] pointer-events-none"
-                            style={{
-                              background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)",
-                              borderRadius: "1rem 1rem 50% 50%",
-                            }} />
-                          <span className="relative text-[28px] leading-none flex-shrink-0" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.25))" }}>
-                            🪙
-                          </span>
-                          <div className="relative flex-1 min-w-0">
-                            <p className="text-[11px] uppercase tracking-[0.18em] font-extrabold leading-none mb-0.5" style={{ color: "#451A03" }}>
-                              NEW · Crypto support
-                            </p>
-                            <p className="text-[12.5px] leading-snug font-semibold" style={{ color: "#78350F" }}>
-                              Sync Coinbase, Kraken, or Gemini for crypto playbook.
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => setShowCsvImport(true)}
-                            className="relative px-3 py-1.5 rounded-xl text-white text-[11px] font-extrabold uppercase tracking-wider overflow-hidden transition active:scale-[0.95] active:translate-y-0.5 flex-shrink-0"
-                            style={{
-                              background: "linear-gradient(180deg, #B45309 0%, #78350F 100%)",
-                              border: "1.5px solid #451A03",
-                              boxShadow: "0 2px 0 #451A03, inset 0 1.5px 2px rgba(255,255,255,0.45)",
-                              textShadow: "0 1px 1px rgba(0,0,0,0.40)",
-                            }}>
-                            <span className="absolute top-0 left-1 right-1 h-[50%] pointer-events-none"
-                              style={{
-                                background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)",
-                                borderRadius: "0.7rem 0.7rem 50% 50%",
-                              }} />
-                            <span className="relative">Add</span>
-                          </button>
-                        </div>
-                      )}
-                      <div className="mb-3 flex items-center gap-1.5 px-1">
-                      {options.map((opt) => {
-                        const active = playbookAssetType === opt.id;
-                        return (
-                          <button
-                            key={opt.id}
-                            onClick={() => setPlaybookAssetType(opt.id)}
-                            className="relative flex-1 px-2 py-1.5 rounded-xl text-[11px] font-extrabold uppercase tracking-wider overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
-                            style={active ? {
-                              background: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #B45309 100%)",
-                              border: "1.5px solid #92400E",
-                              color: "#fff",
-                              boxShadow: "0 2.5px 0 #78350F, 0 4px 8px rgba(245,158,11,0.35), inset 0 1.5px 2px rgba(255,255,255,0.55)",
-                              textShadow: "0 1px 1px rgba(0,0,0,0.30)",
-                            } : {
-                              background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 100%)",
-                              border: "1.5px solid #FCD34D",
-                              color: "#78350F",
-                              boxShadow: "0 1.5px 0 #D97706, inset 0 1px 1.5px rgba(255,255,255,0.85)",
-                            }}>
-                            <span className="absolute top-0.5 left-1.5 right-1.5 h-[45%] pointer-events-none"
-                              style={{
-                                background: active
-                                  ? "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)"
-                                  : "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
-                                borderRadius: "0.7rem 0.7rem 50% 50%",
-                              }} />
-                            <span className="relative">{opt.label} <span className="font-bold opacity-80">{opt.count}</span></span>
-                          </button>
-                        );
-                      })}
-                      </div>
-                    </>
-                  );
-                })()}
+                {/* The Stocks/Crypto choice now lives inside the Sync Portfolio
+                    modal. The Playbook simply shows everything the user has
+                    synced. No redundant banner or toggle here. */}
 
-                {/* Crypto empty state — when user picks Crypto tab but hasn't synced any yet */}
-                {playbookAssetType === "crypto" && holdings.filter((h) => h && h.type === "crypto").length === 0 && (
-                  <div className="mb-3 rounded-2xl p-4 relative overflow-hidden"
-                    style={{
-                      background: "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
-                      border: "1.5px solid #F59E0B",
-                      boxShadow: "0 3px 0 #B45309, 0 5px 12px rgba(245,158,11,0.25), inset 0 1.5px 2px rgba(255,255,255,0.85)",
-                    }}>
-                    <span className="absolute top-0.5 left-3 right-3 h-[40%] pointer-events-none"
-                      style={{
-                        background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 100%)",
-                        borderRadius: "1rem 1rem 50% 50%",
-                      }} />
-                    <div className="relative flex items-center gap-3">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center relative overflow-hidden"
-                        style={{
-                          background: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #92400E 100%)",
-                          border: "2px solid #78350F",
-                          boxShadow: "0 2px 0 #78350F, inset 0 2px 3px rgba(255,255,255,0.55)",
-                        }}>
-                        <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
-                          style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
-                        <span className="relative text-[28px] leading-none" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>🪙</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[14px] font-extrabold leading-tight" style={{ color: "#451A03", fontFamily: SERIF }}>
-                          No crypto holdings yet
-                        </p>
-                        <p className="text-[12px] mt-0.5 leading-snug" style={{ color: "#78350F" }}>
-                          Sync Coinbase, Kraken, Gemini, or Crypto.com — same way you uploaded your stock CSV.
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowCsvImport(true)}
-                      className="relative w-full mt-3 py-2 rounded-xl text-white text-[13px] font-extrabold overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
-                      style={{
-                        background: "linear-gradient(180deg, #F59E0B 0%, #B45309 50%, #78350F 100%)",
-                        border: "1.5px solid #78350F",
-                        boxShadow: "0 2.5px 0 #451A03, 0 4px 8px rgba(146,64,14,0.35), inset 0 1.5px 2px rgba(255,255,255,0.45)",
-                        textShadow: "0 1px 1px rgba(0,0,0,0.30)",
-                      }}>
-                      <span className="absolute top-0.5 left-3 right-3 h-[50%] pointer-events-none"
-                        style={{
-                          background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)",
-                          borderRadius: "0.7rem 0.7rem 50% 50%",
-                        }} />
-                      <span className="relative">+ Sync a crypto exchange</span>
-                    </button>
-                  </div>
-                )}
+                {/* Crypto empty state was here — now lives in Sync Portfolio modal */}
 
                 {/* Personalization indicator */}
                 {holdings.length > 0 ? (
@@ -3916,14 +3858,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     return null;
                   };
 
-                  // Map every holding to a playbook entry — filter by asset type toggle
-                  const entries = holdings
-                    .filter((h) => {
-                      if (playbookAssetType === "stocks") return h.type !== "crypto";
-                      if (playbookAssetType === "crypto") return h.type === "crypto";
-                      return true; // "all"
-                    })
-                    .map((h) => {
+                  // Map every holding to a playbook entry
+                  const entries = holdings.map((h) => {
                     const sym = h.symbol;
                     // Live price data is already merged into the holding object by
                     // the parent /api/prices polling effect — read directly.
@@ -6274,10 +6210,10 @@ function PositionDetailModal({ entry, onClose, onAsk }) {
   if (!entry) return null;
   const isUp = entry.changePct != null && entry.changePct >= 0;
   const actionColors = {
-    TRIM:  { bg: "linear-gradient(180deg, #FCA5A5 0%, #EF4444 45%, #B91C1C 100%)", border: "#7F1D1D", text: "Reduce position size into strength. Take some profit off the table." },
-    ADD:   { bg: "linear-gradient(180deg, #6EE7B7 0%, #10B981 45%, #047857 100%)", border: "#064E3B", text: "Increase position on next dip. Conviction signals support adding here." },
-    HOLD:  { bg: "linear-gradient(180deg, #FEF9C3 0%, #FDE047 45%, #CA8A04 100%)", border: "#A16207", text: "Maintain position. No urgent action — keep watching for catalysts." },
-    WATCH: { bg: "linear-gradient(180deg, #FEF9C3 0%, #FDE047 45%, #CA8A04 100%)", border: "#A16207", text: "Track closely. No buy or sell yet — waiting for confirmation." },
+    TRIM:  { bg: "linear-gradient(180deg, #FF8080 0%, #FF0000 45%, #B30000 100%)", border: "#800000", text: "Reduce position size into strength. Take some profit off the table." },
+    ADD:   { bg: "linear-gradient(180deg, #66DD7E 0%, #00C800 45%, #007F00 100%)", border: "#005000", text: "Increase position on next dip. Conviction signals support adding here." },
+    HOLD:  { bg: "linear-gradient(180deg, #FFF59D 0%, #FFEB3B 45%, #C9A800 100%)", border: "#806B00", text: "Maintain position. No urgent action — keep watching for catalysts." },
+    WATCH: { bg: "linear-gradient(180deg, #FFF59D 0%, #FFEB3B 45%, #C9A800 100%)", border: "#806B00", text: "Track closely. No buy or sell yet — waiting for confirmation." },
   };
   const a = actionColors[entry.action] || actionColors.HOLD;
   const reasoning = entry.reasoning || a.text;
@@ -7237,13 +7173,14 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 // not just the brief's decisions. Color-coded by action type with a separate
 // risk-tier dot indicator.
 function UnifiedPlaybookCard({ entry, onOpen }) {
-  // Action chip styling — TRUE saturated red/green/yellow Candy Crush gems.
-  // Bottom tone is medium-dark (not muddy brown) to keep the color pure.
+  // Action chip styling — PRIMARY pure colors. Not pastel, not muddy.
+  // The mid-stop is the "true" color; top is lighter for shine, bottom is
+  // medium-dark to keep the gem look without going brown.
   const actionStyle = {
-    TRIM:  { bg: "linear-gradient(180deg, #FCA5A5 0%, #EF4444 45%, #B91C1C 100%)", border: "#7F1D1D" },  // proper red
-    ADD:   { bg: "linear-gradient(180deg, #6EE7B7 0%, #10B981 45%, #047857 100%)", border: "#064E3B" },  // proper green
-    HOLD:  { bg: "linear-gradient(180deg, #FEF9C3 0%, #FDE047 45%, #CA8A04 100%)", border: "#A16207" },  // proper yellow
-    WATCH: { bg: "linear-gradient(180deg, #FEF9C3 0%, #FDE047 45%, #CA8A04 100%)", border: "#A16207" },  // proper yellow
+    TRIM:  { bg: "linear-gradient(180deg, #FF8080 0%, #FF0000 45%, #B30000 100%)", border: "#800000" },  // PURE red
+    ADD:   { bg: "linear-gradient(180deg, #66DD7E 0%, #00C800 45%, #007F00 100%)", border: "#005000" },  // PURE green
+    HOLD:  { bg: "linear-gradient(180deg, #FFF59D 0%, #FFEB3B 45%, #C9A800 100%)", border: "#806B00" },  // PURE yellow
+    WATCH: { bg: "linear-gradient(180deg, #FFF59D 0%, #FFEB3B 45%, #C9A800 100%)", border: "#806B00" },  // PURE yellow
   };
   const a = actionStyle[entry.action] || actionStyle.HOLD;
 
@@ -7313,7 +7250,12 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
               }}>
               {entry.symbol}
             </span>
-            {entry.currentPrice != null && (
+            {entry.currentPrice != null && entry.qty != null && (
+              <span className="text-[12px] font-extrabold flex-shrink-0" style={{ color: "#020617" }}>
+                ${(entry.currentPrice * entry.qty).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </span>
+            )}
+            {entry.currentPrice != null && entry.qty == null && (
               <span className="text-[12px] font-extrabold flex-shrink-0" style={{ color: "#020617" }}>
                 ${entry.currentPrice.toFixed(2)}
               </span>
