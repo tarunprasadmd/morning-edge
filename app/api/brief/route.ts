@@ -813,7 +813,7 @@ function formatHoldingsBlock(
   const formatHolding = (h: any) => {
     const parts = [`${h.symbol}`];
     if (h.qty != null) parts.push(`${h.qty} sh`);
-    if (h.cost != null) parts.push(`@ $${h.cost.toFixed(2)}/share avg cost`);
+    if (h.cost != null) parts.push(`@ $${h.cost.toFixed(2)}/share avg cost`); if (h.cost != null && h.qty != null && h.value != null) { const tg = h.value - (h.cost * h.qty); parts.push((tg >= 0 ? "+" : "-") + "$" + Math.abs(tg).toFixed(0) + " total gain"); }
     if (h.gainPct != null) {
       const sign = h.gainPct >= 0 ? "+" : "";
       parts.push(`${sign}${h.gainPct.toFixed(1)}% total return`);
