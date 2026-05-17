@@ -194,7 +194,7 @@ function YogaPoseImage({ pose, className = "", style = {} }) {
       src={urls[urlIdx]}
       alt={pose.english}
       className={`absolute inset-0 w-full h-full ${className}`}
-      style={{ objectFit: "contain", background: "#EDE9FE", padding: "8%", ...style }}
+      style={{ objectFit: "cover", ...style }}
       onError={() => {
         if (urlIdx < urls.length - 1) {
           setUrlIdx(urlIdx + 1);
@@ -213,10 +213,7 @@ const YOGA_POSES = [
     english: "Mountain Pose",
     benefit: "Improves posture, balance, and groundedness. The foundation of all standing poses.",
     imageUrls: [
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Vector_drawing_of_dandayamana_yoga_pose.svg/256px-Vector_drawing_of_dandayamana_yoga_pose.svg.png",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Mountain_pose_(Tadasana).svg?width=400",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Yoga_-_The_Noun_Project.svg?width=400",
-      "/yoga/tadasana.svg",
+      "/yoga/tadasana.png",
     ],
     steps: [
       "Stand with feet together, big toes touching, heels slightly apart.",
@@ -235,10 +232,7 @@ const YOGA_POSES = [
     english: "Downward-Facing Dog",
     benefit: "Stretches the entire back body. Strengthens arms and shoulders. Calms the mind.",
     imageUrls: [
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Downward_Dog_Pose_-_Adho_Mukha_Svanasana.svg?width=400",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Adho_Mukha_Svanasana_yoga_asana_silhouette.svg?width=400",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Yoga_pose_05.svg?width=400",
-      "/yoga/downward-dog.svg",
+      "/yoga/adho-mukha-svanasana.png",
     ],
     steps: [
       "Begin on hands and knees. Wrists under shoulders, knees under hips.",
@@ -257,10 +251,7 @@ const YOGA_POSES = [
     english: "Cobra Pose",
     benefit: "Opens the chest and lungs. Strengthens the spine. Counteracts hours of sitting.",
     imageUrls: [
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Cobra_Pose_Bhujangasana.svg?width=400",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Yoga_pose_silhouette_cobra.svg?width=400",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Bhujangasana.svg?width=400",
-      "/yoga/cobra.svg",
+      "/yoga/bhujangasana.png",
     ],
     steps: [
       "Lie face down. Legs extended, tops of feet on the floor.",
@@ -279,10 +270,7 @@ const YOGA_POSES = [
     english: "Tree Pose",
     benefit: "Builds focus, balance, and concentration. Strengthens legs and core.",
     imageUrls: [
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Vector_drawing_of_vrksasana_yoga_pose.svg/256px-Vector_drawing_of_vrksasana_yoga_pose.svg.png",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Tree_Pose_Vrikshasana.svg?width=400",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Vrksasana_yoga_silhouette.svg?width=400",
-      "/yoga/tree.svg",
+      "/yoga/vrikshasana.png",
     ],
     steps: [
       "Start in Mountain Pose. Shift weight onto the left foot.",
@@ -301,10 +289,7 @@ const YOGA_POSES = [
     english: "Child's Pose",
     benefit: "Resting pose. Calms the nervous system. Gently stretches the back and hips.",
     imageUrls: [
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Childs_Pose_Balasana.svg?width=400",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Balasana_yoga_silhouette.svg?width=400",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Yoga_pose_child.svg?width=400",
-      "/yoga/child.svg",
+      "/yoga/balasana.png",
     ],
     steps: [
       "Kneel on the floor. Big toes touching, knees apart.",
@@ -323,10 +308,7 @@ const YOGA_POSES = [
     english: "Lotus Pose",
     benefit: "Classic meditation seat. Opens the hips. Encourages stillness and deep breath.",
     imageUrls: [
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Vector_drawing_of_seated_yoga_pose.svg/256px-Vector_drawing_of_seated_yoga_pose.svg.png",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Padmasana_lotus_pose_silhouette.svg?width=400",
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Lotus_position_yoga.svg?width=400",
-      "/yoga/lotus.svg",
+      "/yoga/padmasana.png",
     ],
     steps: [
       "Sit on the floor with legs extended.",
@@ -5203,20 +5185,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               background: "linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%)",
                               borderRadius: "0.6rem 0.6rem 50% 50%",
                             }} />
-                          {/* Pose name overlay at bottom with dark gradient */}
-                          <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 z-[3]"
-                            style={{
-                              background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.15) 85%, transparent 100%)",
-                            }}>
-                            <p className="text-[11px] uppercase tracking-wider font-extrabold text-white text-center leading-tight"
-                              style={{ textShadow: "0 1px 2px rgba(0,0,0,0.70)" }}>
-                              {pose.english}
-                            </p>
-                            <p className="text-[8.5px] italic text-white/85 text-center leading-tight mt-0.5"
-                              style={{ fontFamily: "Georgia, serif", textShadow: "0 1px 1px rgba(0,0,0,0.50)" }}>
-                              {pose.sanskrit}
-                            </p>
-                          </div>
+                          {/* Pose name labels are baked into the image — no overlay needed */}
                         </button>
                       ))}
                     </div>
