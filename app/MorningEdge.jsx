@@ -1187,6 +1187,8 @@ export default function MorningEdge() {
   const [playbookSortDir, setPlaybookSortDir] = useState("desc");
   // Asset-class filter for Playbook + Discovery: "all" | "stocks" | "crypto"
   const [playbookAssetType, setPlaybookAssetType] = useState("all");
+  // User overrides for AI action recommendations — tap chip to cycle TRIM/ADD/HOLD
+  const [actionOverrides, setActionOverrides] = useState({});
   const [showSettings, setShowSettings] = useState(false);
   const [showBrokerageGuide, setShowBrokerageGuide] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
@@ -1211,6 +1213,8 @@ export default function MorningEdge() {
   const [expandedMindset, setExpandedMindset] = useState(null); // 'gratitude' | 'fuel' | 'focus' | null
   // Currently-open yoga pose detail modal (null = closed)
   const [selectedYogaPose, setSelectedYogaPose] = useState(null);
+  // Yoga interactive session state — guided walkthrough with voice + timer
+  const [yogaSession, setYogaSession] = useState(null); // null | { poseIdx, secondsLeft, isPaused, sessionDuration }
   const [inAppBrowserUrl, setInAppBrowserUrl] = useState(null); // URL shown in the confirmation modal
   // Open a URL in the user's native browser, then show a small confirmation
   // modal. CRITICAL: window.open() must run synchronously inside the user's
@@ -3101,6 +3105,23 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
       {selectedYogaPose && (
         <YogaPoseModal pose={selectedYogaPose} onClose={() => setSelectedYogaPose(null)} />
       )}
+      {yogaSession && (
+        <YogaSessionModal
+          session={yogaSession}
+          poses={YOGA_POSES}
+          onUpdate={(updater) => {
+            if (typeof updater === "function") {
+              setYogaSession(updater);
+            } else {
+              setYogaSession(updater);
+            }
+          }}
+          onClose={() => {
+            try { if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+            setYogaSession(null);
+          }}
+        />
+      )}
 
       {/* Position detail modal — opens when user taps any stock card (briefed or not) */}
       {selectedPosition && (
@@ -3988,6 +4009,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       action = "HOLD";
                       reasoning = reasoning || "Monitored. No flagged action today.";
                     }
+                    // User override (manually set via tap on chip) takes precedence
+                    const aiAction = action;
+                    if (actionOverrides[sym]) {
+                      action = actionOverrides[sym];
+                    }
 
                     return {
                       symbol: sym,
@@ -4144,8 +4170,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           style={{
                             background: "#FFFFFF",
                             boxShadow: "0 3px 10px rgba(15,23,42,0.10)",
+                            maxHeight: "65vh",
                           }}>
-                          <div className="overflow-x-auto" style={{ scrollbarWidth: "thin" }}>
+                          <div className="overflow-x-auto overflow-y-auto" style={{ scrollbarWidth: "thin", maxHeight: "65vh", WebkitOverflowScrolling: "touch" }}>
                             {/* HEADER ROW — sortable column headers */}
                             <div className="flex items-stretch text-[13px] uppercase tracking-[0.06em] border-b-2 border-slate-500 relative"
                               style={{
@@ -4241,6 +4268,12 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                   } else {
                                     setSelectedPosition(e);
                                   }
+                                }}
+                                onCycleAction={(symbol, current) => {
+                                  // Cycle: TRIM → ADD → HOLD → TRIM
+                                  const cycle = { TRIM: "ADD", ADD: "HOLD", HOLD: "TRIM", WATCH: "TRIM" };
+                                  const next = cycle[current] || "HOLD";
+                                  setActionOverrides((prev) => ({ ...prev, [symbol]: next }));
                                 }}
                               />
                             ))}
@@ -4668,7 +4701,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     className="rounded-2xl border-2 p-4 relative overflow-hidden"
                     style={{
                       background:
-                        "linear-gradient(180deg, rgba(254,243,199,0.78) 0%, rgba(252,211,77,0.55) 50%, rgba(217,119,6,0.42) 100%)",
+                        "linear-gradient(180deg, rgba(254,243,199,0.55) 0%, rgba(252,211,77,0.35) 50%, rgba(217,119,6,0.25) 100%)",
                       borderColor: "#92400E",
                       boxShadow:
                         "0 2px 0 #92400E, 0 4px 12px rgba(146,64,14,0.20), inset 0 1.5px 2px rgba(255,255,255,0.85)",
@@ -4690,7 +4723,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         height: "70%",
                         objectFit: "cover",
                         objectPosition: "center",
-                        opacity: 0.30,
+                        opacity: 0.55,
                         pointerEvents: "none",
                         mixBlendMode: "multiply",
                         borderBottomRightRadius: "1rem",
@@ -4747,7 +4780,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     className="rounded-2xl border-2 p-4 relative overflow-hidden"
                     style={{
                       background:
-                        "linear-gradient(180deg, rgba(254,243,199,0.78) 0%, rgba(252,211,77,0.55) 50%, rgba(217,119,6,0.42) 100%)",
+                        "linear-gradient(180deg, rgba(254,243,199,0.55) 0%, rgba(252,211,77,0.35) 50%, rgba(217,119,6,0.25) 100%)",
                       borderColor: "#92400E",
                       boxShadow:
                         "0 2px 0 #92400E, 0 4px 12px rgba(146,64,14,0.20), inset 0 1.5px 2px rgba(255,255,255,0.85)",
@@ -4779,7 +4812,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         height: "70%",
                         objectFit: "cover",
                         objectPosition: "center",
-                        opacity: 0.30,
+                        opacity: 0.55,
                         pointerEvents: "none",
                         mixBlendMode: "multiply",
                         borderBottomRightRadius: "1rem",
@@ -4839,7 +4872,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     className="rounded-2xl border-2 p-4 relative overflow-hidden"
                     style={{
                       background:
-                        "linear-gradient(180deg, rgba(254,243,199,0.78) 0%, rgba(252,211,77,0.55) 50%, rgba(217,119,6,0.42) 100%)",
+                        "linear-gradient(180deg, rgba(254,243,199,0.55) 0%, rgba(252,211,77,0.35) 50%, rgba(217,119,6,0.25) 100%)",
                       borderColor: "#92400E",
                       boxShadow:
                         "0 2px 0 #92400E, 0 4px 12px rgba(146,64,14,0.20), inset 0 1.5px 2px rgba(255,255,255,0.85)",
@@ -4858,7 +4891,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         height: "70%",
                         objectFit: "cover",
                         objectPosition: "center",
-                        opacity: 0.30,
+                        opacity: 0.55,
                         pointerEvents: "none",
                         mixBlendMode: "multiply",
                         borderBottomRightRadius: "1rem",
@@ -5172,6 +5205,24 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <p className="text-[12px] text-violet-800 italic leading-snug mb-3">
                       Tap any pose to see the schematic and how to do it. Hold each for 5 deep breaths.
                     </p>
+                    {/* START GUIDED SESSION BUTTON — voice + timer walkthrough */}
+                    <button
+                      onClick={() => setYogaSession({ poseIdx: 0, secondsLeft: 45, isPaused: false, holdPerPose: 45, transitioning: false, justStarted: true })}
+                      className="relative w-full mb-3 px-4 py-3.5 rounded-2xl text-white text-[14px] font-extrabold overflow-hidden transition active:scale-[0.97] active:translate-y-0.5 inline-flex items-center justify-center gap-2"
+                      style={{
+                        background: "linear-gradient(180deg, #A78BFA 0%, #7C3AED 50%, #4C1D95 100%)",
+                        border: "2px solid #4C1D95",
+                        boxShadow: "0 3px 0 #4C1D95, 0 5px 12px rgba(139,92,246,0.45), inset 0 2px 3px rgba(255,255,255,0.45), inset 0 -3px 5px rgba(0,0,0,0.20)",
+                        textShadow: "0 1px 1.5px rgba(0,0,0,0.30)",
+                      }}>
+                      <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+                        style={{
+                          background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)",
+                          borderRadius: "1rem 1rem 50% 50%",
+                        }} />
+                      <span className="relative text-[18px]">▶</span>
+                      <span className="relative">Start Guided Session · 4.5 min</span>
+                    </button>
                     <div className="grid grid-cols-2 gap-2.5">
                       {YOGA_POSES.map((pose, i) => (
                         <button
@@ -6227,6 +6278,231 @@ function MindsetRowExpandable({ icon, emoji, kicker, body, color, expanded, onTo
 // ── Yoga Pose Detail Modal ──────────────────────────────────────
 // Full-screen modal showing the pose image + Sanskrit + English + step-by-step
 // instructions. Tap-to-dismiss on the backdrop. Image loads from /public/yoga/
+// ─── YogaSessionModal ──────────────────────────────────────────────
+// Interactive guided yoga session. Walks through all poses sequentially
+// with a countdown timer per pose and verbal instructions via Web Speech API.
+// Auto-advances when timer hits 0. User can pause/skip/exit at any time.
+function YogaSessionModal({ session, poses, onUpdate, onClose }) {
+  const currentPose = poses[session.poseIdx];
+  const totalPoses = poses.length;
+  const holdPerPose = session.holdPerPose || 45;
+  const totalDurationSec = holdPerPose * totalPoses;
+  const elapsedPoses = session.poseIdx * holdPerPose + (holdPerPose - session.secondsLeft);
+  const overallPct = (elapsedPoses / totalDurationSec) * 100;
+  const poseProgress = ((holdPerPose - session.secondsLeft) / holdPerPose) * 100;
+
+  // Speak helper — uses Web Speech API. iOS requires user gesture (Start button).
+  const speak = React.useCallback((text) => {
+    try {
+      if (typeof window === "undefined" || !window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const utterance = new window.SpeechSynthesisUtterance(text);
+      utterance.rate = 0.92;
+      utterance.pitch = 1.0;
+      utterance.volume = 0.95;
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      // Silently fail if speech is not supported
+    }
+  }, []);
+
+  // On mount, and when poseIdx changes, speak the new pose intro
+  React.useEffect(() => {
+    if (!currentPose) return;
+    if (session.justStarted) {
+      speak(`Let's begin. First pose: ${currentPose.english}. ${currentPose.steps[0]}`);
+      onUpdate({ ...session, justStarted: false });
+    }
+  }, [session.poseIdx]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Countdown timer
+  React.useEffect(() => {
+    if (session.isPaused) return;
+    if (!currentPose) return;
+    const interval = setInterval(() => {
+      onUpdate((prev) => {
+        if (!prev) return prev;
+        if (prev.secondsLeft > 1) {
+          // Mid-pose voice cues at key moments
+          const elapsed = holdPerPose - prev.secondsLeft;
+          // At 15s mark, prompt next instruction step
+          if (elapsed === 8 && currentPose.steps[1]) {
+            speak(currentPose.steps[1]);
+          }
+          if (elapsed === 20 && currentPose.steps[2]) {
+            speak(currentPose.steps[2]);
+          }
+          if (prev.secondsLeft === 5) {
+            speak("Five seconds remaining.");
+          }
+          return { ...prev, secondsLeft: prev.secondsLeft - 1 };
+        }
+        // Time up — move to next pose
+        if (prev.poseIdx < totalPoses - 1) {
+          const nextPose = poses[prev.poseIdx + 1];
+          speak(`Now transitioning to ${nextPose.english}. ${nextPose.steps[0]}`);
+          return { ...prev, poseIdx: prev.poseIdx + 1, secondsLeft: holdPerPose, justStarted: false };
+        }
+        // Session complete
+        speak("Session complete. Well done. Take a moment to breathe and reflect.");
+        return null;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [session.isPaused, session.poseIdx, currentPose, holdPerPose, totalPoses, poses, speak, onUpdate]);
+
+  // Cleanup speech on unmount
+  React.useEffect(() => {
+    return () => {
+      try { if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+    };
+  }, []);
+
+  if (!currentPose) return null;
+
+  // Circle progress geometry
+  const R = 56;
+  const C = 2 * Math.PI * R;
+  const poseStroke = C - (poseProgress / 100) * C;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      style={{ background: "rgba(46,16,101,0.85)", backdropFilter: "blur(10px)" }}>
+      <div className="relative w-full max-w-md rounded-3xl overflow-hidden flex flex-col"
+        style={{
+          background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 50%, #DDD6FE 100%)",
+          border: "3px solid #7C3AED",
+          boxShadow: "0 12px 40px rgba(76,29,149,0.50), inset 0 2px 4px rgba(255,255,255,0.85)",
+          maxHeight: "92vh",
+        }}>
+        {/* Glossy top specular */}
+        <span className="absolute top-0 left-4 right-4 h-[12%] pointer-events-none z-[1]"
+          style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)", borderRadius: "1.5rem 1.5rem 50% 50%" }} />
+
+        {/* Header — progress bar through full session */}
+        <div className="relative px-5 pt-4 pb-3 border-b border-violet-200 z-[2]">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[11px] uppercase tracking-[0.2em] font-extrabold text-violet-700">
+              Pose {session.poseIdx + 1} of {totalPoses}
+            </p>
+            <button onClick={onClose} className="text-violet-700 active:scale-90 transition"
+              style={{ fontSize: 18 }} title="End session">✕</button>
+          </div>
+          {/* Overall session progress bar */}
+          <div className="w-full h-1.5 bg-violet-200 rounded-full overflow-hidden">
+            <div className="h-full rounded-full transition-all duration-1000 ease-linear"
+              style={{
+                width: `${overallPct}%`,
+                background: "linear-gradient(90deg, #A78BFA, #7C3AED, #4C1D95)",
+              }} />
+          </div>
+        </div>
+
+        {/* Pose image */}
+        <div className="relative" style={{ aspectRatio: "1 / 1", maxHeight: 280 }}>
+          <YogaPoseImage pose={currentPose} />
+        </div>
+
+        {/* Pose name */}
+        <div className="px-5 py-3 text-center">
+          <p className="text-[20px] font-extrabold italic leading-tight" style={{ fontFamily: "Georgia, serif", color: "#4C1D95" }}>
+            {currentPose.sanskrit}
+          </p>
+          <p className="text-[12px] uppercase tracking-[0.18em] font-bold text-violet-700 mt-0.5">
+            {currentPose.english}
+          </p>
+        </div>
+
+        {/* Circular countdown timer */}
+        <div className="flex items-center justify-center pb-3">
+          <div className="relative" style={{ width: 130, height: 130 }}>
+            <svg width="130" height="130" viewBox="0 0 130 130">
+              {/* Background circle */}
+              <circle cx="65" cy="65" r={R} fill="none" stroke="#DDD6FE" strokeWidth="9" />
+              {/* Progress circle */}
+              <circle
+                cx="65"
+                cy="65"
+                r={R}
+                fill="none"
+                stroke="url(#yogaGrad)"
+                strokeWidth="9"
+                strokeLinecap="round"
+                strokeDasharray={C}
+                strokeDashoffset={poseStroke}
+                transform="rotate(-90 65 65)"
+                style={{ transition: "stroke-dashoffset 1s linear" }}
+              />
+              <defs>
+                <linearGradient id="yogaGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#A78BFA" />
+                  <stop offset="100%" stopColor="#4C1D95" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <p className="text-[32px] font-extrabold leading-none" style={{ color: "#4C1D95", fontFamily: "Georgia, serif" }}>
+                {session.secondsLeft}
+              </p>
+              <p className="text-[9px] uppercase tracking-wider font-bold text-violet-600 mt-1">
+                seconds
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Current instruction step */}
+        <div className="px-5 pb-3">
+          <p className="text-[13px] text-center leading-snug" style={{ color: "#3B0764" }}>
+            {(() => {
+              const elapsed = holdPerPose - session.secondsLeft;
+              const stepIdx = elapsed < 8 ? 0 : elapsed < 20 ? 1 : 2;
+              return currentPose.steps[Math.min(stepIdx, currentPose.steps.length - 1)];
+            })()}
+          </p>
+        </div>
+
+        {/* Control buttons */}
+        <div className="px-5 pb-5 flex items-center justify-center gap-3 relative z-[2]">
+          {/* Pause/Resume */}
+          <button
+            onClick={() => onUpdate({ ...session, isPaused: !session.isPaused })}
+            className="relative px-4 py-2.5 rounded-xl text-white text-[13px] font-extrabold overflow-hidden transition active:scale-[0.95] inline-flex items-center justify-center gap-1.5"
+            style={{
+              background: session.isPaused
+                ? "linear-gradient(180deg, #66DD7E 0%, #00C800 50%, #007F00 100%)"
+                : "linear-gradient(180deg, #FFA500 0%, #F59E0B 50%, #B45309 100%)",
+              border: `1.5px solid ${session.isPaused ? "#005000" : "#92400E"}`,
+              boxShadow: `0 2px 0 ${session.isPaused ? "#005000" : "#92400E"}, inset 0 2px 3px rgba(255,255,255,0.55)`,
+              textShadow: "0 1px 1.5px rgba(0,0,0,0.40)",
+              minWidth: 100,
+            }}>
+            {session.isPaused ? "▶ Resume" : "⏸ Pause"}
+          </button>
+          {/* Skip */}
+          <button
+            onClick={() => {
+              if (session.poseIdx < totalPoses - 1) {
+                onUpdate({ ...session, poseIdx: session.poseIdx + 1, secondsLeft: holdPerPose });
+              } else {
+                onClose();
+              }
+            }}
+            className="relative px-4 py-2.5 rounded-xl text-[13px] font-extrabold overflow-hidden transition active:scale-[0.95] inline-flex items-center justify-center gap-1.5"
+            style={{
+              background: "linear-gradient(180deg, #DDD6FE 0%, #C4B5FD 50%, #A78BFA 100%)",
+              border: "1.5px solid #7C3AED",
+              boxShadow: "0 2px 0 #7C3AED, inset 0 1.5px 2px rgba(255,255,255,0.85)",
+              color: "#4C1D95",
+            }}>
+            Skip ›
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function YogaPoseModal({ pose, onClose }) {
   if (!pose) return null;
   return (
@@ -7306,7 +7582,7 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 // candy gloss highlights. Ticker cell is the darker color anchor; whole row
 // is the lighter tint. Columns: Today $ | Today % | Total $ | Total %.
 // Ticker sticky-left, action chip sticky-right.
-function PlaybookColumnRow({ entry, onOpen }) {
+function PlaybookColumnRow({ entry, onOpen, onCycleAction }) {
   // Action chip
   const actionStyle = {
     TRIM:  { bg: "linear-gradient(180deg, #FF8080 0%, #FF0000 45%, #B30000 100%)", border: "#800000" },
@@ -7346,10 +7622,12 @@ function PlaybookColumnRow({ entry, onOpen }) {
   const todayPctColor = entry.changePct == null ? "#64748B" : isUp ? "#065F46" : "#7F1D1D";
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => onOpen && onOpen(entry)}
-      className="relative w-full flex items-stretch border-b border-slate-200 text-left transition active:translate-y-0.5 overflow-hidden"
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen && onOpen(entry); } }}
+      className="relative w-full flex items-stretch border-b border-slate-200 text-left transition active:translate-y-0.5 cursor-pointer"
       style={{ minWidth: "max-content", background: rowBg }}
     >
       {/* Glossy top specular — strong shine */}
@@ -7452,14 +7730,20 @@ function PlaybookColumnRow({ entry, onOpen }) {
         )}
       </div>
 
-      {/* COLUMN 8: Action chip — sticky-right */}
+      {/* COLUMN 8: Action chip — sticky-right, TAPPABLE TO CYCLE */}
       <div className="px-2 py-3 flex items-center justify-center sticky right-0 z-[3] flex-shrink-0 relative"
         style={{
           width: 82,
           background: rowBg,
           borderLeft: `1px solid ${isUp ? "rgba(20,83,45,0.35)" : isDown ? "rgba(127,29,29,0.35)" : "#CBD5E1"}`,
         }}>
-        <div className="relative inline-flex items-center rounded-full overflow-hidden font-extrabold tracking-wider uppercase text-white"
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onCycleAction) onCycleAction(entry.symbol, entry.action);
+          }}
+          className="relative inline-flex items-center rounded-full overflow-hidden font-extrabold tracking-wider uppercase text-white transition active:scale-[0.94] cursor-pointer"
           style={{
             background: a.bg,
             border: `1.5px solid ${a.border}`,
@@ -7467,16 +7751,17 @@ function PlaybookColumnRow({ entry, onOpen }) {
             fontSize: 10.5,
             padding: "4px 10px",
             textShadow: "0 1px 1.5px rgba(0,0,0,0.45)",
-          }}>
+          }}
+          title="Tap to cycle: Trim → Add → Hold">
           <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
             style={{
               background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.40) 50%, rgba(255,255,255,0) 100%)",
               borderRadius: "9999px 9999px 50% 50%",
             }} />
           <span className="relative">{entry.action}</span>
-        </div>
+        </button>
       </div>
-    </button>
+    </div>
   );
 }
 
