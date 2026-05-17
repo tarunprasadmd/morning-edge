@@ -3877,9 +3877,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           border: "2px solid #1E3A8A",
                           boxShadow: "0 3px 0 #1E3A8A, 0 5px 12px rgba(59,130,246,0.35), inset 0 2px 3px rgba(255,255,255,0.45), inset 0 -3px 5px rgba(0,0,0,0.20)",
                         } : {
-                          background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #E2E8F0 100%)",
-                          border: "1.5px solid #94A3B8",
-                          boxShadow: "0 2px 0 #64748B, inset 0 1.5px 2px rgba(255,255,255,1)",
+                          // Soft blue tint always — never gray. Stocks identity always visible.
+                          background: "linear-gradient(180deg, #EFF6FF 0%, #DBEAFE 50%, #BFDBFE 100%)",
+                          border: "1.5px solid #60A5FA",
+                          boxShadow: "0 2px 0 #2563EB, inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -1.5px 3px rgba(30,64,175,0.10)",
                         }}>
                         <span className="absolute top-0.5 left-2 right-2 h-[45%] pointer-events-none"
                           style={{
@@ -3891,13 +3892,13 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         <span className="relative text-[24px] leading-none mb-1" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>📈</span>
                         <p className="relative text-[13px] font-extrabold uppercase tracking-[0.18em] leading-none"
                           style={{
-                            color: playbookAssetType === "stocks" ? "#fff" : "#1E293B",
+                            color: playbookAssetType === "stocks" ? "#fff" : "#1E3A8A",
                             textShadow: playbookAssetType === "stocks" ? "0 1px 1.5px rgba(0,0,0,0.30)" : "none",
                           }}>
                           Stocks
                         </p>
                         <p className="relative text-[10px] mt-0.5 font-semibold"
-                          style={{ color: playbookAssetType === "stocks" ? "rgba(255,255,255,0.85)" : "#64748B" }}>
+                          style={{ color: playbookAssetType === "stocks" ? "rgba(255,255,255,0.85)" : "#1D4ED8" }}>
                           {stockCount} {stockCount === 1 ? "position" : "positions"}
                         </p>
                       </button>
@@ -3917,9 +3918,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           border: "2px solid #4C1D95",
                           boxShadow: "0 3px 0 #4C1D95, 0 5px 12px rgba(139,92,246,0.35), inset 0 2px 3px rgba(255,255,255,0.45), inset 0 -3px 5px rgba(0,0,0,0.20)",
                         } : {
-                          background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #E2E8F0 100%)",
-                          border: "1.5px solid #94A3B8",
-                          boxShadow: "0 2px 0 #64748B, inset 0 1.5px 2px rgba(255,255,255,1)",
+                          // Soft violet tint always — never gray. Crypto identity always visible.
+                          background: "linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 50%, #DDD6FE 100%)",
+                          border: "1.5px solid #A78BFA",
+                          boxShadow: "0 2px 0 #7C3AED, inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -1.5px 3px rgba(91,33,182,0.10)",
                         }}>
                         <span className="absolute top-0.5 left-2 right-2 h-[45%] pointer-events-none"
                           style={{
@@ -3931,13 +3933,13 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         <span className="relative text-[24px] leading-none mb-1" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>🪙</span>
                         <p className="relative text-[13px] font-extrabold uppercase tracking-[0.18em] leading-none"
                           style={{
-                            color: playbookAssetType === "crypto" ? "#fff" : "#1E293B",
+                            color: playbookAssetType === "crypto" ? "#fff" : "#4C1D95",
                             textShadow: playbookAssetType === "crypto" ? "0 1px 1.5px rgba(0,0,0,0.30)" : "none",
                           }}>
                           Crypto
                         </p>
                         <p className="relative text-[10px] mt-0.5 font-semibold"
-                          style={{ color: playbookAssetType === "crypto" ? "rgba(255,255,255,0.85)" : "#64748B" }}>
+                          style={{ color: playbookAssetType === "crypto" ? "rgba(255,255,255,0.85)" : "#7C3AED" }}>
                           {cryptoCount > 0
                             ? `${cryptoCount} ${cryptoCount === 1 ? "position" : "positions"}`
                             : "Tap to add"}
