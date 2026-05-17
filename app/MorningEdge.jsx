@@ -159,13 +159,146 @@ const SUGGESTED = ["SPY", "QQQ", "AAPL", "NVDA", "MSFT", "GOOGL", "AMZN", "META"
 // Yoga pose library — 6 foundational asanas with full instructions and real
 // Wikimedia Commons photos. The `imageUrls` array gives multiple fallback URLs
 // per pose so we always render something real; if all fail, a text card shows.
-// Yoga pose image component — tries each URL in the imageUrls array in order.
-// If all fail (network issue, image removed), shows the pose name as a fallback.
+// ── YogaPoseSchematic — inline SVG diagrams of each pose ────────────────
+// Functional schematics, like yoga-book diagrams or bathroom-door icons.
+// Pure SVG shapes (circles, lines, paths). Always render — no network calls,
+// no uploads needed. Each pose has its own minimal stick-figure schematic.
+
+const YOGA_SCHEMATICS = {
+  // MOUNTAIN POSE — standing straight, arms at sides, palms forward
+  tadasana: (props) => (
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <rect width="100" height="100" fill="#EDE9FE" />
+      {/* ground line */}
+      <line x1="20" y1="92" x2="80" y2="92" stroke="#A78BFA" strokeWidth="0.8" strokeDasharray="2,2" />
+      {/* figure */}
+      <g stroke="#4C1D95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        {/* head */}
+        <circle cx="50" cy="20" r="6" fill="#4C1D95" />
+        {/* torso (long straight line) */}
+        <line x1="50" y1="26" x2="50" y2="64" />
+        {/* arms hanging at sides */}
+        <line x1="50" y1="30" x2="42" y2="62" />
+        <line x1="50" y1="30" x2="58" y2="62" />
+        {/* legs together */}
+        <line x1="50" y1="64" x2="46" y2="92" />
+        <line x1="50" y1="64" x2="54" y2="92" />
+      </g>
+    </svg>
+  ),
+  // DOWNWARD DOG — inverted V shape
+  "adho-mukha-svanasana": (props) => (
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <rect width="100" height="100" fill="#EDE9FE" />
+      <line x1="10" y1="92" x2="90" y2="92" stroke="#A78BFA" strokeWidth="0.8" strokeDasharray="2,2" />
+      <g stroke="#4C1D95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        {/* head hanging low between arms */}
+        <circle cx="22" cy="68" r="5" fill="#4C1D95" />
+        {/* arm from hand to hip (peak) */}
+        <line x1="18" y1="92" x2="55" y2="32" />
+        {/* leg from hip (peak) to foot */}
+        <line x1="55" y1="32" x2="82" y2="92" />
+        {/* second arm parallel */}
+        <line x1="22" y1="92" x2="52" y2="32" />
+        {/* second leg parallel */}
+        <line x1="52" y1="32" x2="78" y2="92" />
+      </g>
+    </svg>
+  ),
+  // COBRA — lying face down, chest lifted up
+  bhujangasana: (props) => (
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <rect width="100" height="100" fill="#EDE9FE" />
+      <line x1="10" y1="85" x2="90" y2="85" stroke="#A78BFA" strokeWidth="0.8" strokeDasharray="2,2" />
+      <g stroke="#4C1D95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        {/* head looking up/forward */}
+        <circle cx="22" cy="40" r="5" fill="#4C1D95" />
+        {/* chest curve - arched up from belly */}
+        <path d="M 22 45 Q 28 55, 38 65 L 78 80" />
+        {/* arms pressing into ground */}
+        <line x1="25" y1="48" x2="32" y2="80" />
+        {/* legs extended back, flat */}
+        <line x1="38" y1="80" x2="85" y2="83" />
+      </g>
+    </svg>
+  ),
+  // TREE — standing one leg, other foot on inner thigh, hands prayer overhead
+  vrikshasana: (props) => (
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <rect width="100" height="100" fill="#EDE9FE" />
+      <line x1="30" y1="92" x2="70" y2="92" stroke="#A78BFA" strokeWidth="0.8" strokeDasharray="2,2" />
+      <g stroke="#4C1D95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        {/* head */}
+        <circle cx="50" cy="20" r="6" fill="#4C1D95" />
+        {/* arms reaching up overhead, prayer position */}
+        <line x1="50" y1="26" x2="45" y2="6" />
+        <line x1="50" y1="26" x2="55" y2="6" />
+        {/* torso */}
+        <line x1="50" y1="26" x2="50" y2="56" />
+        {/* standing leg (straight down) */}
+        <line x1="50" y1="56" x2="50" y2="92" />
+        {/* bent leg — foot resting on inner thigh */}
+        <line x1="50" y1="56" x2="35" y2="68" />
+        <line x1="35" y1="68" x2="50" y2="72" />
+      </g>
+    </svg>
+  ),
+  // CHILD'S POSE — kneeling, folded forward, arms extended forward
+  balasana: (props) => (
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <rect width="100" height="100" fill="#EDE9FE" />
+      <line x1="10" y1="85" x2="90" y2="85" stroke="#A78BFA" strokeWidth="0.8" strokeDasharray="2,2" />
+      <g stroke="#4C1D95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        {/* head down on floor */}
+        <circle cx="32" cy="78" r="5" fill="#4C1D95" />
+        {/* arms extended forward */}
+        <line x1="32" y1="78" x2="14" y2="82" />
+        {/* torso folded over thighs */}
+        <path d="M 32 75 Q 50 70, 62 78" />
+        {/* legs folded under (heels meeting butt) */}
+        <line x1="62" y1="78" x2="72" y2="85" />
+        <line x1="72" y1="85" x2="55" y2="85" />
+      </g>
+    </svg>
+  ),
+  // LOTUS — seated cross-legged, hands on knees, spine tall
+  padmasana: (props) => (
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <rect width="100" height="100" fill="#EDE9FE" />
+      <line x1="20" y1="90" x2="80" y2="90" stroke="#A78BFA" strokeWidth="0.8" strokeDasharray="2,2" />
+      <g stroke="#4C1D95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        {/* head */}
+        <circle cx="50" cy="28" r="6" fill="#4C1D95" />
+        {/* tall spine */}
+        <line x1="50" y1="34" x2="50" y2="68" />
+        {/* arms hanging down to knees */}
+        <line x1="50" y1="40" x2="32" y2="72" />
+        <line x1="50" y1="40" x2="68" y2="72" />
+        {/* crossed legs (triangle base) */}
+        <path d="M 50 68 Q 30 78, 24 86 L 76 86 Q 70 78, 50 68 Z" />
+      </g>
+    </svg>
+  ),
+};
+
+// YogaPoseImage — renders the schematic SVG for the given pose.
+// Tries external image URLs first if provided (so user can override with their
+// own image by uploading to /public/yoga/), but always falls back to the inline
+// schematic so something useful always shows.
 function YogaPoseImage({ pose, className = "", style = {} }) {
   const urls = pose.imageUrls || [];
   const [urlIdx, setUrlIdx] = React.useState(0);
-  const [allFailed, setAllFailed] = React.useState(false);
-  if (allFailed || urls.length === 0) {
+  const [useSchematic, setUseSchematic] = React.useState(urls.length === 0);
+  const SchematicComponent = YOGA_SCHEMATICS[pose.slug];
+  // Show schematic if no URLs left OR no URLs configured
+  if (useSchematic || urls.length === 0) {
+    if (SchematicComponent) {
+      return SchematicComponent({
+        className: `absolute inset-0 w-full h-full ${className}`,
+        style,
+        preserveAspectRatio: "xMidYMid meet",
+      });
+    }
     return (
       <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-2 ${className}`}
         style={{
@@ -191,7 +324,7 @@ function YogaPoseImage({ pose, className = "", style = {} }) {
         if (urlIdx < urls.length - 1) {
           setUrlIdx(urlIdx + 1);
         } else {
-          setAllFailed(true);
+          setUseSchematic(true); // fall through to inline schematic
         }
       }}
     />
@@ -3728,11 +3861,12 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 <p className="text-[13px] text-slate-700 italic mb-3 px-1 leading-snug">
                   Every position with live P&amp;L and a suggested action. Tap any card for full reasoning.
                 </p>
-                {/* Big Stocks/Crypto buttons — only show when user has both types */}
+                {/* Big Stocks/Crypto buttons — always show so user can switch
+                    between asset types. If no crypto yet, tapping the Crypto
+                    button shows the empty state inviting them to sync. */}
                 {holdings.length > 0 && (() => {
-                  const hasCrypto = holdings.some((h) => h && h.type === "crypto");
-                  const hasStocks = holdings.some((h) => h && h.type !== "crypto");
-                  if (!hasCrypto || !hasStocks) return null;
+                  const stockCount = holdings.filter((h) => h && h.type !== "crypto").length;
+                  const cryptoCount = holdings.filter((h) => h && h.type === "crypto").length;
                   return (
                     <div className="grid grid-cols-2 gap-2.5 mb-3">
                       <button
@@ -3764,11 +3898,19 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         </p>
                         <p className="relative text-[10px] mt-0.5 font-semibold"
                           style={{ color: playbookAssetType === "stocks" ? "rgba(255,255,255,0.85)" : "#64748B" }}>
-                          {holdings.filter((h) => h && h.type !== "crypto").length} positions
+                          {stockCount} {stockCount === 1 ? "position" : "positions"}
                         </p>
                       </button>
                       <button
-                        onClick={() => setPlaybookAssetType(playbookAssetType === "crypto" ? "all" : "crypto")}
+                        onClick={() => {
+                          if (cryptoCount === 0) {
+                            // No crypto yet — open the Sync Portfolio modal to add some
+                            setShowCsvImport(true);
+                            setSyncAssetType("crypto");
+                          } else {
+                            setPlaybookAssetType(playbookAssetType === "crypto" ? "all" : "crypto");
+                          }
+                        }}
                         className="relative flex flex-col items-center text-center p-2.5 rounded-2xl overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
                         style={playbookAssetType === "crypto" ? {
                           background: "linear-gradient(180deg, #A78BFA 0%, #7C3AED 50%, #4C1D95 100%)",
@@ -3796,7 +3938,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         </p>
                         <p className="relative text-[10px] mt-0.5 font-semibold"
                           style={{ color: playbookAssetType === "crypto" ? "rgba(255,255,255,0.85)" : "#64748B" }}>
-                          {holdings.filter((h) => h && h.type === "crypto").length} positions
+                          {cryptoCount > 0
+                            ? `${cryptoCount} ${cryptoCount === 1 ? "position" : "positions"}`
+                            : "Tap to add"}
                         </p>
                       </button>
                     </div>
@@ -7395,35 +7539,61 @@ function UnifiedPlaybookCard({ entry, onOpen }) {
             </div>
             <ChevronRight className="w-3 h-3 text-slate-400 flex-shrink-0" />
           </div>
-          {/* LINE 2: Today's $ change + arrow with CLEAR LABELS */}
-          {(entry.todayDollar != null || entry.changePct != null) && (
-            <div className="flex items-center gap-2 text-[11.5px] leading-tight mb-0.5">
-              <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Today</span>
+          {/* LINE 2: All numbers on ONE line — today + all-time, color coded */}
+          {(entry.todayDollar != null || entry.totalDollar != null) && (
+            <div className="flex items-center gap-1.5 text-[10.5px] leading-tight mb-0.5 flex-wrap">
               {entry.todayDollar != null && (
-                <span className="font-extrabold inline-flex items-center gap-0.5" style={{ color: todayColor }}>
-                  <span style={{ fontSize: 11, lineHeight: 1, fontWeight: 900 }}>{todayDollarPositive ? "▲" : "▼"}</span>
+                <span className="inline-flex items-center gap-0.5 font-extrabold" style={{ color: todayColor }}>
+                  <span className="text-slate-500 font-semibold uppercase tracking-wider text-[8.5px] mr-0.5">Today</span>
+                  <span style={{ fontSize: 10, lineHeight: 1, fontWeight: 900 }}>{todayDollarPositive ? "▲" : "▼"}</span>
                   {todayDollarPositive ? "+" : "-"}${Math.abs(entry.todayDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  {entry.changePct != null && !Number.isNaN(entry.changePct) && (
+                    <span className="font-bold ml-0.5">({isUp ? "+" : ""}{entry.changePct.toFixed(1)}%)</span>
+                  )}
                 </span>
               )}
-              {entry.changePct != null && !Number.isNaN(entry.changePct) && (
-                <span className="font-bold" style={{ color: isUp ? "#047857" : "#B91C1C" }}>
-                  ({isUp ? "+" : ""}{entry.changePct.toFixed(1)}%)
+              {entry.todayDollar != null && entry.totalDollar != null && (
+                <span className="text-slate-300">·</span>
+              )}
+              {entry.totalDollar != null && (
+                <span className="inline-flex items-center gap-0.5 font-extrabold" style={{ color: pnlColor }}>
+                  <span className="text-slate-500 font-semibold uppercase tracking-wider text-[8.5px] mr-0.5">All-time</span>
+                  {pnlPositive ? "+" : "-"}${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  {entry.totalPct != null && (
+                    <span className="font-bold ml-0.5">({pnlPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%)</span>
+                  )}
                 </span>
               )}
             </div>
           )}
-          {/* LINE 3: Total gain/loss since you bought */}
-          {entry.totalDollar != null && (
-            <div className="flex items-center gap-2 text-[11.5px] leading-tight">
-              <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">All-time</span>
-              <span className="font-extrabold" style={{ color: pnlColor }}>
-                {pnlPositive ? "+" : "-"}${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                {entry.totalPct != null && (
-                  <span className="ml-1 font-bold">({pnlPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%)</span>
-                )}
-              </span>
-            </div>
-          )}
+          {/* LINE 3: Concise actionable instruction — what to actually DO */}
+          {(() => {
+            // Use entry.instruction if AI provides it (future-proofed), otherwise
+            // derive a short cue from action + reasoning, otherwise canned fallback.
+            const explicit = entry.instruction || entry.action_instruction;
+            let text = explicit;
+            if (!text && entry.reasoning) {
+              // Use first sentence (or first ~70 chars) — keep it brief
+              const firstSentence = String(entry.reasoning).split(/(?<=[.!?])\s/)[0];
+              text = firstSentence.length > 80 ? firstSentence.slice(0, 78) + "…" : firstSentence;
+            }
+            if (!text) {
+              const fallback = {
+                TRIM: "Take some off near resistance. Lock in gains.",
+                ADD:  "Add on dip. Conviction setup confirmed.",
+                HOLD: "Hold. Watch for catalysts.",
+                WATCH: "Track closely. Wait for entry signal.",
+              };
+              text = fallback[entry.action] || "Tap for full reasoning.";
+            }
+            return (
+              <p className="text-[11.5px] leading-snug truncate font-medium"
+                style={{ color: "#0F172A" }}>
+                <span className="font-extrabold mr-1 text-[13px]" style={{ color: a.border }}>→</span>
+                {text}
+              </p>
+            );
+          })()}
         </div>
       </button>
     </div>
