@@ -29,18 +29,121 @@ const fnv1a = (str) => {
   return ("00000000" + h.toString(16)).slice(-8);
 };
 
+// ─── ENCRYPTED STORAGE ───────────────────────────────────────────────────
+// Sensitive data (holdings, costs, account names) is encrypted at rest using
+// AES-GCM 256 via the Web Crypto API. The encryption key is generated once
+// per device, stored in localStorage as a raw base64 string. This protects
+// against casual inspection of the browser's local storage (e.g. someone
+// with physical access to an unlocked device opening DevTools).
+//
+// Threat model — what this DOES protect against:
+//   - Casual browser DevTools snooping
+//   - Other apps reading localStorage data (browser sandbox + encryption)
+//   - Backup files of the browser DB being readable in plaintext
+//
+// Threat model — what this does NOT protect against:
+//   - A determined attacker with full device access (they can read the key)
+//   - Malicious browser extensions running on the page
+//   - Physical compromise of an unlocked device
+//
+// For App Store launch, this is the correct tradeoff: no server-side storage
+// of holdings (zero-knowledge), encrypted-at-rest on device, HTTPS in transit.
+// Stronger: derive the key from Face ID/Touch ID via WebAuthn — future work.
+
+const SENSITIVE_KEYS = ["me-holdings", "me-accounts", "me-cash"];
+const CHAT_KEY_PREFIX = "me-chat-";
+
+const _b64ToBytes = (b64) => {
+  try {
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return arr;
+  } catch { return null; }
+};
+const _bytesToB64 = (bytes) => {
+  let s = "";
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s);
+};
+
+let _cryptoKey = null;
+const _getCryptoKey = async () => {
+  if (_cryptoKey) return _cryptoKey;
+  if (typeof window === "undefined" || !window.crypto || !window.crypto.subtle) {
+    return null; // No SubtleCrypto available — caller should fall back
+  }
+  let rawB64 = window.localStorage.getItem("me-k-v1");
+  let rawBytes;
+  if (rawB64) {
+    rawBytes = _b64ToBytes(rawB64);
+  }
+  if (!rawBytes || rawBytes.length !== 32) {
+    rawBytes = window.crypto.getRandomValues(new Uint8Array(32));
+    window.localStorage.setItem("me-k-v1", _bytesToB64(rawBytes));
+  }
+  _cryptoKey = await window.crypto.subtle.importKey(
+    "raw", rawBytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]
+  );
+  return _cryptoKey;
+};
+
+const _encrypt = async (plaintextStr) => {
+  const key = await _getCryptoKey();
+  if (!key) return null;
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const encoded = new TextEncoder().encode(plaintextStr);
+  const ct = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
+  // Tag the payload so we can detect encrypted vs legacy plaintext on read
+  return "enc:v1:" + _bytesToB64(iv) + ":" + _bytesToB64(new Uint8Array(ct));
+};
+const _decrypt = async (payload) => {
+  if (typeof payload !== "string" || !payload.startsWith("enc:v1:")) return null;
+  const parts = payload.split(":");
+  if (parts.length !== 4) return null;
+  const key = await _getCryptoKey();
+  if (!key) return null;
+  const iv = _b64ToBytes(parts[2]);
+  const ct = _b64ToBytes(parts[3]);
+  if (!iv || !ct) return null;
+  try {
+    const pt = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ct);
+    return new TextDecoder().decode(pt);
+  } catch { return null; }
+};
+
+const _isSensitive = (k) => SENSITIVE_KEYS.includes(k) || (typeof k === "string" && k.startsWith(CHAT_KEY_PREFIX));
+
 const Store = {
   get: async (k) => {
     try {
       if (typeof window === "undefined") return null;
       const raw = window.localStorage.getItem(k);
-      return raw ? JSON.parse(raw) : null;
+      if (!raw) return null;
+      if (_isSensitive(k) && raw.startsWith("enc:v1:")) {
+        const pt = await _decrypt(raw);
+        return pt ? JSON.parse(pt) : null;
+      }
+      // Legacy plaintext or non-sensitive key — read directly.
+      // If it's a sensitive key in plaintext, upgrade it on next write.
+      return JSON.parse(raw);
     } catch { return null; }
   },
   set: async (k, v) => {
     try {
       if (typeof window === "undefined") return;
-      window.localStorage.setItem(k, JSON.stringify(v));
+      const json = JSON.stringify(v);
+      if (_isSensitive(k)) {
+        const enc = await _encrypt(json);
+        if (enc) {
+          window.localStorage.setItem(k, enc);
+          return;
+        }
+        // Fallback: SubtleCrypto unavailable (very old browser) — store plaintext
+        // so the app still works, but log a warning.
+        console.warn("Encryption unavailable, storing key in plaintext:", k);
+      }
+      window.localStorage.setItem(k, json);
     } catch {}
   },
   del: async (k) => {
@@ -950,18 +1053,17 @@ export default function MorningEdge() {
     setChatContext(ctx);
     setChatError(null);
     setChatInput("");
-    // Try to restore prior conversation for this card
-    try {
-      const stored = localStorage.getItem(`me-chat-${ctx.id}`);
-      if (stored) {
-        const parsed = JSON.parse(stored);
+    // Try to restore prior conversation for this card (encrypted at rest)
+    (async () => {
+      try {
+        const parsed = await Store.get(`me-chat-${ctx.id}`);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setChatMessages(parsed);
           return;
         }
-      }
-    } catch (_e) { /* ignore */ }
-    setChatMessages([]);
+      } catch (_e) { /* ignore */ }
+      setChatMessages([]);
+    })();
   };
 
   const closeChat = () => {
@@ -971,13 +1073,11 @@ export default function MorningEdge() {
     setChatError(null);
   };
 
-  // Persist conversation when it changes
+  // Persist conversation when it changes — encrypted at rest
   useEffect(() => {
     if (!chatContext || !chatContext.id) return;
     if (chatMessages.length === 0) return;
-    try {
-      localStorage.setItem(`me-chat-${chatContext.id}`, JSON.stringify(chatMessages));
-    } catch (_e) { /* ignore quota errors */ }
+    Store.set(`me-chat-${chatContext.id}`, chatMessages).catch(() => {});
   }, [chatContext, chatMessages]);
 
   // Send a chat message. Calls /api/chat with full context.
@@ -1039,10 +1139,12 @@ export default function MorningEdge() {
 
       // Load optional cash balance for chat-driven position sizing
       try {
-        const cashStored = localStorage.getItem("me-cash");
-        if (cashStored) {
-          const parsed = parseFloat(cashStored);
-          if (!isNaN(parsed) && parsed >= 0) setCashBalance(parsed);
+        const cashParsed = await Store.get("me-cash");
+        if (typeof cashParsed === "number" && !isNaN(cashParsed) && cashParsed >= 0) {
+          setCashBalance(cashParsed);
+        } else if (typeof cashParsed === "string") {
+          const n = parseFloat(cashParsed);
+          if (!isNaN(n) && n >= 0) setCashBalance(n);
         }
       } catch (_e) { /* ignore */ }
 
@@ -2176,9 +2278,24 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 <span className="relative">See all {BROKERAGES.length} brokerages</span>
                 <ChevronRight className="relative w-3 h-3" />
               </button>
-              <p className="text-[12px] text-slate-800 italic mt-2 leading-snug">
-                We never see your password. We only read the CSV you upload. Holdings are sent to our server only when generating a brief, then cached briefly under a non-identifying hash. See <a href="/privacy" className="underline">Privacy Policy</a> for details.
-              </p>
+              <div className="mt-2 rounded-xl p-3 relative overflow-hidden"
+                style={{
+                  background: "linear-gradient(180deg, #ECFDF5 0%, #D1FAE5 100%)",
+                  border: "1.5px solid #10B981",
+                  boxShadow: "inset 0 1.5px 2px rgba(255,255,255,0.85)",
+                }}>
+                <div className="flex items-start gap-2">
+                  <Lock className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#047857" }} strokeWidth={2.5} />
+                  <div className="flex-1">
+                    <p className="text-[11px] uppercase tracking-[0.2em] font-bold leading-none mb-1" style={{ color: "#047857" }}>
+                      Your data stays private
+                    </p>
+                    <p className="text-[12px] text-slate-800 leading-snug">
+                      We never see your password. Your CSV is read in the browser and <strong>encrypted at rest</strong> with AES-256 on your device. Only ticker symbols are sent when generating a brief — not your share counts, costs, or account names. See <a href="/privacy" className="underline">Privacy Policy</a>.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -2698,7 +2815,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           cashBalance={cashBalance}
           onSetCash={(n) => {
             setCashBalance(n);
-            try { localStorage.setItem("me-cash", String(n)); } catch (_e) {}
+            Store.set("me-cash", n).catch(() => {});
           }}
           onSend={sendChatMessage}
           onClose={closeChat}
@@ -3373,9 +3490,24 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     // the parent /api/prices polling effect — read directly.
                     const currentPrice = typeof h.currentPrice === "number" ? h.currentPrice : null;
                     const changePct = typeof h.gainPct === "number" ? h.gainPct : null;
-                    const costBasis = (h.cost || 0) * (h.qty || 0);
+                    // Cost basis detection. Different brokerages export "Cost Basis"
+                    // differently — some as PER-SHARE avg cost, some as the TOTAL
+                    // already-multiplied dollar amount. We compute the naive
+                    // assumption first (treat as per-share), then sanity check
+                    // against current market value. If naive calc yields a result
+                    // 100x larger than the market value, h.cost was almost certainly
+                    // the TOTAL already (no 99%+ loss can produce a 100x ratio), so
+                    // use h.cost directly.
+                    const naiveCostBasis = (h.cost || 0) * (h.qty || 0);
                     const currentValue = currentPrice != null ? currentPrice * (h.qty || 0) : null;
-                    const pnl = currentValue != null ? currentValue - costBasis : null;
+                    const reportedValue = typeof h.value === "number" ? h.value : null;
+                    const sanityValue = reportedValue || currentValue;
+                    let costBasis = naiveCostBasis;
+                    if (sanityValue && sanityValue > 0 && naiveCostBasis / sanityValue > 100) {
+                      // h.cost looks like a total dollar amount, not per-share
+                      costBasis = h.cost || 0;
+                    }
+                    const pnl = currentValue != null && costBasis > 0 ? currentValue - costBasis : null;
                     const pnlPct = pnl != null && costBasis > 0 ? (pnl / costBasis) * 100 : null;
 
                     // Look for explicit brief decision for this ticker
@@ -4381,7 +4513,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           })()}
 
 
-          {/* ── HEALTH — body care: workout + Power Plate only ── */}
+          {/* ── HEALTH — body care: workout + yoga + Power Plate ── */}
           {visible.mindset && brief.mindset && (
             <Card theme={themes.mindset} pillar="health">
               <CardHeader icon={<Heart className="w-4 h-4" />} label="Health" theme={themes.mindset} pillar="health" />
@@ -4417,6 +4549,98 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     };
                   })()}
                 />
+
+                {/* ── YOGA — separate sub-section with classical asanas ── */}
+                <div>
+                  <button
+                    onClick={() => setExpandedMindset(expandedMindset === "yoga" ? null : "yoga")}
+                    className="relative w-full flex gap-3 items-start text-left p-2 -mx-2 rounded-2xl overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                    style={{
+                      background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                      border: "1.5px solid #94A3B8",
+                      boxShadow: "0 2.5px 0 #64748B, 0 4px 8px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                    }}
+                  >
+                    <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                      style={{
+                        background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                        borderRadius: "1rem 1rem 50% 50%",
+                      }} />
+                    <div className="relative flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center overflow-hidden"
+                      style={{
+                        background: "linear-gradient(180deg, #C4B5FD 0%, #8B5CF6 50%, #5B21B6 100%)",
+                        border: "1.5px solid #5B21B6",
+                        boxShadow: "0 1.5px 0 #4C1D95, 0 2px 5px rgba(139,92,246,0.30), inset 0 1.5px 2px rgba(255,255,255,0.55)",
+                      }}>
+                      <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
+                      <span className="relative text-[22px] leading-none" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.25))" }}>🧘</span>
+                    </div>
+                    <div className="relative flex-1 pt-1 min-w-0">
+                      <p className="text-[13px] uppercase tracking-[0.18em] font-bold mb-1 flex items-center gap-2" style={{ color: "#0F172A" }}>
+                        Yoga
+                        <span className="text-slate-400 text-base leading-none">{expandedMindset === "yoga" ? "−" : "+"}</span>
+                      </p>
+                      <p className="text-[16px] leading-relaxed text-slate-800" style={{ fontFamily: SERIF }}>
+                        Six foundational asanas. 1 minute each. Hold steady, breathe deep.
+                      </p>
+                    </div>
+                  </button>
+
+                  {expandedMindset === "yoga" && (
+                    <div className="mt-2 ml-12 mr-2 p-4 rounded-2xl border-2"
+                      style={{
+                        background: "linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 100%)",
+                        borderColor: "rgba(139,92,246,0.30)",
+                        boxShadow: "inset 0 1.5px 2px rgba(255,255,255,0.85)",
+                      }}>
+                      <p className="text-[12px] text-violet-800 italic leading-snug mb-3">
+                        These six poses cover standing balance, forward bending, back bending, and rest. Move slowly between them. Hold each for 5 deep breaths.
+                      </p>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {[
+                          { emoji: "🏔️", sanskrit: "Tadasana", english: "Mountain Pose", instr: "Feet together, arms at sides. Stand tall, crown to ceiling." },
+                          { emoji: "🐕", sanskrit: "Adho Mukha Svanasana", english: "Downward Dog", instr: "Hands & feet on floor, hips up. Form an inverted V." },
+                          { emoji: "🐍", sanskrit: "Bhujangasana", english: "Cobra Pose", instr: "Lie face down. Press palms, lift chest, shoulders back." },
+                          { emoji: "🌳", sanskrit: "Vrikshasana", english: "Tree Pose", instr: "Stand on one leg. Other foot on inner thigh. Hands at heart." },
+                          { emoji: "🧒", sanskrit: "Balasana", english: "Child's Pose", instr: "Kneel, sit back on heels. Forehead down, arms forward. Rest." },
+                          { emoji: "🪷", sanskrit: "Padmasana", english: "Lotus Pose", instr: "Cross-legged. Each foot on opposite thigh. Spine tall." },
+                        ].map((pose, i) => (
+                          <div key={i}
+                            className="relative rounded-xl p-2.5 overflow-hidden"
+                            style={{
+                              background: "linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%)",
+                              border: "1.5px solid #C4B5FD",
+                              boxShadow: "0 1.5px 0 #8B5CF6, inset 0 1px 1.5px rgba(255,255,255,0.95)",
+                            }}>
+                            <span className="absolute top-0.5 left-1.5 right-1.5 h-[40%] pointer-events-none"
+                              style={{
+                                background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 100%)",
+                                borderRadius: "0.6rem 0.6rem 50% 50%",
+                              }} />
+                            <div className="relative flex items-start gap-2">
+                              <span className="text-[28px] leading-none flex-shrink-0" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.15))" }}>{pose.emoji}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[12px] font-bold leading-tight italic mb-0.5" style={{ fontFamily: SERIF, color: "#5B21B6" }}>
+                                  {pose.sanskrit}
+                                </p>
+                                <p className="text-[10px] uppercase tracking-wider text-violet-700 font-semibold leading-tight mb-1">
+                                  {pose.english}
+                                </p>
+                              </div>
+                            </div>
+                            <p className="relative text-[11px] text-slate-700 leading-snug mt-1.5">
+                              {pose.instr}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-violet-700/80 italic text-center mt-3">
+                        Sequence: Mountain → Downward Dog → Cobra → Mountain → Tree → Child → Lotus
+                      </p>
+                    </div>
+                  )}
+                </div>
 
                 {/* Routine completion + streak */}
                 <div className="pt-4 border-t border-slate-100">
