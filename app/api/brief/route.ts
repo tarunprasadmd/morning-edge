@@ -593,7 +593,7 @@ async function generateLayerB(opts: {
     else if (r.status === "rejected") console.warn("Layer B chunk failed:", r.reason?.message || r.reason);
   }
   if (layerA?.market_pulse) merged.market_pulse = layerA.market_pulse;
-  if (layerA?.smart_money) merged.smart_money = layerA.smart_money;
+  if (layerA?.smart_money) merged.smart_money = layerA.smart_money; if (Array.isArray(merged.opportunity_watch) && Array.isArray(merged.radar_watch)) { const oppTickers = new Set(merged.opportunity_watch.map((o: any) => (o.symbol || o.ticker || "").toUpperCase())); merged.radar_watch = merged.radar_watch.filter((r: any) => !oppTickers.has((r.symbol || r.ticker || "").toUpperCase())); }
   return merged;
 }
 
