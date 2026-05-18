@@ -519,7 +519,7 @@ async function generateConvictionFromContext(
   watchlist: string[],
   holdings: any[]
 ): Promise<any> {
-  const ownedSet = new Set((holdings || []).map((h: any) => h.symbol));
+  const ownedSet = new Set((holdings || []).map((h: any) => (h.symbol || "").toUpperCase()));
   const ownedNote = ownedSet.size > 0 ? `\nUser's holdings: ${Array.from(ownedSet).join(", ")}.` : "";
   const focusTickers = (holdings && holdings.length > 0)
     ? (holdings as any[]).slice(0, 5).map((h: any) => h.symbol)
@@ -567,7 +567,7 @@ conviction_watch: 8-10 entries. Mix add/hold/trim. EVERY entry MUST include deep
 opportunity_watch: 6-8 ideas. ABSOLUTELY EXCLUDE all tickers in user's holdings - cross-check every symbol against the holdings list before including. Pick from a MIX of sectors including ones user does NOT own - consider financials, healthcare/biotech, consumer staples, energy, industrials, REITs, materials, communications, not just AI/semis/nuclear. AT MOST 2 of 6-8 picks may be in user's existing themes; the rest MUST be in sectors user does not currently hold. CRITICAL: NEVER fabricate company descriptions. If you are not certain what a ticker's actual business is, OMIT IT. Returning 4 well-verified picks is far better than 8 with guessed descriptions.
 NEVER use placeholders like "DATA_UNAVAILABLE", "N/A", "NONE". Empty arrays are fine.`;
 
-  return callJsonChunk(prompt, { search: false, maxTokens: 7000, model: "claude-sonnet-4-6", label: "conviction" });
+  const conv_result = await callJsonChunk(prompt, { search: false, maxTokens: 7000, model: "claude-sonnet-4-6", label: "conviction" }); if (conv_result && Array.isArray(conv_result.opportunity_watch)) { conv_result.opportunity_watch = conv_result.opportunity_watch.filter((o: any) => !ownedSet.has((o.symbol || o.ticker || "").toUpperCase())); } return conv_result;
 }
 
 async function generateLayerB(opts: {
@@ -700,7 +700,7 @@ CRITICAL TICKER ACCURACY: Never guess company names. SMMT is Summit Therapeutics
 
 async function generatePulseAndEdge(name: string, watchlist: string[], holdings: any[], date: string) {
   const tickers = (watchlist && watchlist.length) ? watchlist.join(", ") : "general market";
-  const ownedSet = new Set((holdings || []).map((h: any) => h.symbol));
+  const ownedSet = new Set((holdings || []).map((h: any) => (h.symbol || "").toUpperCase()));
   const ownedNote = ownedSet.size > 0 ? `\nUser's holdings: ${Array.from(ownedSet).join(", ")}.` : "";
   const radarExclusion = ownedSet.size > 0 ? `\nFor radar_watch: EXCLUDE any tickers the user already owns.` : "";
 
@@ -761,7 +761,7 @@ CRITICAL DATA RULES:
 }
 
 async function generateConvictionAndOpportunity(name: string, watchlist: string[], holdings: any[], date: string) {
-  const ownedSet = new Set((holdings || []).map((h: any) => h.symbol));
+  const ownedSet = new Set((holdings || []).map((h: any) => (h.symbol || "").toUpperCase()));
   const ownedNote = ownedSet.size > 0 ? `\nUser's holdings: ${Array.from(ownedSet).join(", ")}.` : "";
   const focusTickers = (holdings && holdings.length > 0)
     ? (holdings as any[]).slice(0, 5).map((h: any) => h.symbol)
