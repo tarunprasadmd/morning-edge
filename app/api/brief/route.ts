@@ -567,7 +567,7 @@ conviction_watch: 8-10 entries. Mix add/hold/trim. EVERY entry MUST include deep
 opportunity_watch: 6-8 ideas. ABSOLUTELY EXCLUDE all tickers in user's holdings - cross-check every symbol against the holdings list before including. Pick from a MIX of sectors including ones user does NOT own - consider financials, healthcare/biotech, consumer staples, energy, industrials, REITs, materials, communications, not just AI/semis/nuclear. AT MOST 2 of 6-8 picks may be in user's existing themes; the rest MUST be in sectors user does not currently hold. CRITICAL: NEVER fabricate company descriptions. If you are not certain what a ticker's actual business is, OMIT IT. Returning 4 well-verified picks is far better than 8 with guessed descriptions.
 NEVER use placeholders like "DATA_UNAVAILABLE", "N/A", "NONE". Empty arrays are fine.`;
 
-  return callJsonChunk(prompt, { search: false, maxTokens: 7000, model: "claude-haiku-4-5", label: "conviction" });
+  return callJsonChunk(prompt, { search: false, maxTokens: 7000, model: "claude-sonnet-4-6", label: "conviction" });
 }
 
 async function generateLayerB(opts: {
