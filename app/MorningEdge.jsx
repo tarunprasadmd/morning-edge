@@ -4415,12 +4415,6 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                     setSelectedPosition(e);
                                   }
                                 }}
-                                onCycleAction={(symbol, current) => {
-                                  // Cycle: TRIM → ADD → HOLD → TRIM
-                                  const cycle = { TRIM: "ADD", ADD: "HOLD", HOLD: "TRIM", WATCH: "TRIM" };
-                                  const next = cycle[current] || "HOLD";
-                                  setActionOverrides((prev) => ({ ...prev, [symbol]: next }));
-                                }}
                               />
                             ))}
                           </div>
@@ -7961,7 +7955,7 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 // candy gloss highlights. Ticker cell is the darker color anchor; whole row
 // is the lighter tint. Columns: Today $ | Today % | Total $ | Total %.
 // Ticker sticky-left, action chip sticky-right.
-function PlaybookColumnRow({ entry, onOpen, onCycleAction }) {
+function PlaybookColumnRow({ entry, onOpen }) {
   // Action chip
   const actionStyle = {
     TRIM:  { bg: "linear-gradient(180deg, #FF8080 0%, #FF0000 45%, #B30000 100%)", border: "#800000" },
@@ -8114,20 +8108,15 @@ function PlaybookColumnRow({ entry, onOpen, onCycleAction }) {
         )}
       </div>
 
-      {/* COLUMN 8: Action chip — sticky-right, TAPPABLE TO CYCLE */}
+      {/* COLUMN 8: Action chip — sticky-right, READ-ONLY (no cycle) */}
       <div className="px-2 py-3 flex items-center justify-center sticky right-0 z-[3] flex-shrink-0 relative"
         style={{
           width: 82,
           background: rowBg,
           borderLeft: `1px solid ${isUp ? "rgba(20,83,45,0.35)" : isDown ? "rgba(127,29,29,0.35)" : "#CBD5E1"}`,
         }}>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onCycleAction) onCycleAction(entry.symbol, entry.action);
-          }}
-          className="relative inline-flex items-center rounded-full overflow-hidden font-extrabold tracking-wider uppercase text-white transition active:scale-[0.94] cursor-pointer"
+        <div
+          className="relative inline-flex items-center rounded-full overflow-hidden font-extrabold tracking-wider uppercase text-white"
           style={{
             background: a.bg,
             border: `1.5px solid ${a.border}`,
@@ -8135,15 +8124,14 @@ function PlaybookColumnRow({ entry, onOpen, onCycleAction }) {
             fontSize: 10.5,
             padding: "4px 10px",
             textShadow: "0 1px 1.5px rgba(0,0,0,0.45)",
-          }}
-          title="Tap to cycle: Trim → Add → Hold">
+          }}>
           <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
             style={{
               background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.40) 50%, rgba(255,255,255,0) 100%)",
               borderRadius: "9999px 9999px 50% 50%",
             }} />
           <span className="relative">{entry.action}</span>
-        </button>
+        </div>
       </div>
     </div>
   );
@@ -10045,6 +10033,29 @@ function PowerPlateCard({ plate }) {
     swap_options = [],
     pairing,
   } = plate;
+
+  // ─── Meal name guardrail ──────────────────────────────────────────
+  // The brief generator occasionally returns "creative" meal names that
+  // reference nuclear/radioactive disasters (Chernobyl, Fukushima, Atomic,
+  // Reactor, Nuked, etc.). Filter those out and substitute a safe generic.
+  const safeName = (() => {
+    const raw = typeof name === "string" ? name.trim() : "";
+    if (!raw) return "Today's Power Plate";
+    const RADIOACTIVE_TERMS = [
+      "radioactive", "radiation", "nuclear", "nuked", "nuke",
+      "atomic", "atom bomb", "atom-bomb",
+      "reactor", "meltdown", "fallout", "fission", "fusion bomb",
+      "plutonium", "uranium", "cesium", "strontium", "iodine-131",
+      "chernobyl", "fukushima", "three mile island", "three-mile island",
+      "hiroshima", "nagasaki", "bikini atoll", "hanford",
+      "geiger", "becquerel", "sievert", "rad ", "rem ",
+      "isotope", "half-life",
+    ];
+    const lower = raw.toLowerCase();
+    const hit = RADIOACTIVE_TERMS.some((t) => lower.includes(t));
+    return hit ? "Today's Power Plate" : raw;
+  })();
+
   return (
     <div className="relative rounded-2xl overflow-hidden"
       style={{
@@ -10091,7 +10102,7 @@ function PowerPlateCard({ plate }) {
             color: "#451A03",
             textShadow: "0 1px 0 rgba(255,255,255,0.45), 0 2px 4px rgba(154,52,18,0.20)",
           }}>
-          {name}
+          {safeName}
         </p>
         {description && (
           <p className="text-[14.5px] leading-relaxed mb-3 italic"
