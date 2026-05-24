@@ -4384,7 +4384,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                     }}
                                     className="px-3 py-2 flex items-center justify-start gap-0.5 sticky left-0 z-[2] flex-shrink-0 transition active:scale-[0.96] cursor-pointer overflow-hidden relative"
                                     style={{
-                                      width: 130,
+                                      width: 120,
                                       background: active ? headerStripActiveHighlight : headerStripBg,
                                       borderRight: `1px solid ${headerStripBorder}`,
                                       color: active ? headerStripActiveText : "#FFFFFF",
@@ -8022,7 +8022,7 @@ function tickerLogoUrl(symbol) {
   const sym = (symbol || "").toUpperCase();
   const domain = TICKER_DOMAIN_MAP[sym];
   if (!domain || !LOGO_DEV_TOKEN) return null;
-  return `https://img.logo.dev/${domain}?token=${LOGO_DEV_TOKEN}&size=72&retina=true`;
+  return `https://img.logo.dev/${domain}?token=${LOGO_DEV_TOKEN}&size=48`;
 }
 
 function PlaybookColumnRow({ entry, onOpen }) {
@@ -8138,11 +8138,11 @@ function PlaybookColumnRow({ entry, onOpen }) {
       {/* COLUMN 1: Logo + Ticker + Chip(inline) + Company name — ALL INSIDE same glossy cell.
           Layout: [logo] [TICKER ... CHIP]   ← top row
                   [     COMPANY NAME      ]  ← bottom row
-          Compact 130x52 — chip lives on ticker's row at the right, not stacked. */}
+          Compact 120x50 — chip lives on ticker's row at the right, not stacked. */}
       <div className="px-1.5 py-1 sticky left-0 z-[3] flex-shrink-0 flex flex-row items-center gap-1.5 relative overflow-hidden"
         style={{
-          width: 130,
-          minHeight: 52,
+          width: 120,
+          minHeight: 50,
           background: cellShade.bg,
           borderRight: `1.5px solid ${cellShade.border}`,
           boxShadow: `inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -2.5px 4px ${cellShade.shadow}`,
@@ -8151,7 +8151,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
         <span className="absolute top-0 left-1 right-1 h-[50%] pointer-events-none"
           style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.12) 60%, rgba(255,255,255,0) 100%)" }} />
 
-        {/* Logo (real or monogram fallback) */}
+        {/* Logo (real or monogram fallback) — lazy load + async decode for fast initial CSV */}
         {(() => {
           const url = tickerLogoUrl(entry.symbol);
           if (url) {
@@ -8163,6 +8163,8 @@ function PlaybookColumnRow({ entry, onOpen }) {
                   alt={entry.symbol}
                   width={22}
                   height={22}
+                  loading="lazy"
+                  decoding="async"
                   style={{ width: 22, height: 22, objectFit: "contain", display: "block" }}
                   onError={(e) => {
                     const parent = e.currentTarget.parentElement;
