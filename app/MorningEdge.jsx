@@ -4368,7 +4368,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                 style={{
                                   background: "linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0) 100%)",
                                 }} />
-                              {/* Sticky-left: Ticker (sortable alphabetically) — width matches data row (132) */}
+                              {/* Sticky-left: Ticker (sortable alphabetically) — width 156 matches data row w/ logo + chip stacked */}
                               {(() => {
                                 const active = playbookSortBy === "ticker";
                                 return (
@@ -4384,7 +4384,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                     }}
                                     className="px-3 py-2 flex items-center justify-start gap-0.5 sticky left-0 z-[2] flex-shrink-0 transition active:scale-[0.96] cursor-pointer overflow-hidden relative"
                                     style={{
-                                      width: 132,
+                                      width: 156,
                                       background: active ? headerStripActiveHighlight : headerStripBg,
                                       borderRight: `1px solid ${headerStripBorder}`,
                                       color: active ? headerStripActiveText : "#FFFFFF",
@@ -4396,42 +4396,6 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                         style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)", borderRadius: "0.4rem 0.4rem 50% 50%" }} />
                                     )}
                                     <span className="relative">Ticker</span>
-                                    {active && <span className="relative text-[10px]">{playbookSortDir === "desc" ? "▼" : "▲"}</span>}
-                                  </button>
-                                );
-                              })()}
-                              {/* Sticky-left: Action — moved here from sticky-right per Tarun 5/24/26.
-                                  Action chip sits right next to ticker so user sees company + decision at once. */}
-                              {(() => {
-                                const active = playbookSortBy === "action";
-                                return (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const nextLead = { TRIM: "ADD", ADD: "HOLD", HOLD: "TRIM" };
-                                      if (active) {
-                                        setActionLeadType(nextLead[actionLeadType] || "TRIM");
-                                      } else {
-                                        setPlaybookSortBy("action");
-                                        setActionLeadType("TRIM");
-                                      }
-                                      setPlaybookSortDir("asc");
-                                    }}
-                                    className="px-2 py-2 flex items-center justify-center gap-0.5 sticky z-[2] flex-shrink-0 transition active:scale-[0.96] cursor-pointer overflow-hidden relative"
-                                    style={{
-                                      width: 78,
-                                      left: 132,
-                                      background: active ? headerStripActiveHighlight : headerStripBg,
-                                      borderRight: `1px solid ${headerStripBorder}`,
-                                      color: active ? headerStripActiveText : "#FFFFFF",
-                                      fontWeight: 800,
-                                      textShadow: active ? "0 1px 0 rgba(255,255,255,0.65)" : "0 1px 2px rgba(0,0,0,0.55)",
-                                    }}>
-                                    {active && (
-                                      <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
-                                        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)", borderRadius: "0.4rem 0.4rem 50% 50%" }} />
-                                    )}
-                                    <span className="relative">Action</span>
                                     {active && <span className="relative text-[10px]">{playbookSortDir === "desc" ? "▼" : "▲"}</span>}
                                   </button>
                                 );
@@ -8000,6 +7964,67 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 // for modest), with ticker bold on top and company name below. Rest of
 // the row is clean white with refined sans-serif numbers, subtle direction
 // coloring. Action chip is read-only flat pill.
+// ─── Ticker → company domain map ─────────────────────────────────
+// Used by logo.dev to render real corporate logos. Domain accuracy matters —
+// some tickers have non-obvious domains (MSTR=strategy.com, QBTS=dwavesys.com,
+// IREN=irisenergy.co). Verified against company sites 5/24/26.
+// Add new positions here as Tarun's book evolves. Unmapped tickers fall back
+// to a clean dark monogram (handled in PlaybookColumnRow render).
+const TICKER_DOMAIN_MAP = {
+  // Tarun's current TOD positions
+  NVDA: "nvidia.com", MSFT: "microsoft.com", MSTR: "strategy.com",
+  VRT: "vertiv.com", IONQ: "ionq.com", USAR: "usare.com",
+  CRWV: "coreweave.com", FCN: "fticonsulting.com", TEM: "tempus.com",
+  QBTS: "dwavesys.com", QCOM: "qualcomm.com", AVAV: "avinc.com",
+  VST: "vistracorp.com", MP: "mpmaterials.com", KBR: "kbr.com",
+  CLS: "celestica.com", CEG: "constellationenergy.com", Q: "qnity.com",
+  NKE: "nike.com", IBM: "ibm.com", SMMT: "summittherapeutics.com",
+  VKTX: "viking-therapeutics.com", ORCL: "oracle.com", IREN: "irisenergy.co",
+  WULF: "terawulf.com", NFLX: "netflix.com", CIFR: "ciphermining.com",
+  APLD: "applieddigital.com",
+  // ETFs (issuer domains)
+  VOO: "vanguard.com", QQQ: "invesco.com", SMH: "vaneck.com",
+  VXUS: "vanguard.com", SCHD: "schwab.com", IBIT: "ishares.com",
+  NANC: "subversiveetf.com", GOP: "subversiveetf.com", BND: "vanguard.com",
+  // Rollover IRA positions
+  WFC: "wellsfargo.com", AAPL: "apple.com", GOOGL: "abc.xyz",
+  TSLA: "tesla.com", MU: "micron.com", META: "meta.com",
+  OKLO: "oklo.com", AMZN: "amazon.com",
+  // Dad's IRA positions
+  AMD: "amd.com", INTC: "intel.com", SMCI: "supermicro.com",
+  FTNT: "fortinet.com",
+  // Common US tickers (top 100+) for future adds
+  AVGO: "broadcom.com", PANW: "paloaltonetworks.com", CRM: "salesforce.com",
+  TSM: "tsmc.com", NBIS: "nebius.com", RKLB: "rocketlabusa.com",
+  LUNR: "intuitivemachines.com", INTU: "intuit.com", BRK: "berkshirehathaway.com",
+  JPM: "jpmorgan.com", V: "visa.com", MA: "mastercard.com",
+  UNH: "unitedhealthgroup.com", JNJ: "jnj.com", PG: "pg.com",
+  HD: "homedepot.com", BAC: "bankofamerica.com", XOM: "exxonmobil.com",
+  CVX: "chevron.com", WMT: "walmart.com", LLY: "lilly.com",
+  PFE: "pfizer.com", ABBV: "abbvie.com", KO: "coca-cola.com",
+  PEP: "pepsico.com", DIS: "thewaltdisneycompany.com", BA: "boeing.com",
+  CAT: "caterpillar.com", GE: "ge.com", HON: "honeywell.com",
+  LMT: "lockheedmartin.com", RTX: "rtx.com", NOC: "northropgrumman.com",
+  GD: "gd.com", PLTR: "palantir.com", SHOP: "shopify.com",
+  COIN: "coinbase.com", HOOD: "robinhood.com", SQ: "block.xyz",
+  SOFI: "sofi.com", MARA: "mara.com", RIOT: "riotplatforms.com",
+  UEC: "uraniumenergy.com", CCJ: "cameco.com", URA: "globalxetfs.com",
+  AKTX: "aktxpharma.com", SIDU: "sidusspace.com", ALOY: "alloy.com",
+  QXO: "qxo.com", TMDX: "transmedics.com", MOBX: "mobix.io",
+  AMPX: "amprius.com", PRSO: "perasoinc.com", LAES: "laes.com",
+  BBAI: "bigbear.ai", UMAC: "umac.com", TJX: "tjx.com",
+  JOBY: "jobyaviation.com", ALB: "albemarle.com", ATOM: "atomera.com",
+  CHPT: "chargepoint.com", EVLV: "evolv.com", FLYW: "flywire.com",
+  RIGL: "rigel.com", SPY: "spdrs.com", DIA: "spdrs.com",
+};
+const LOGO_DEV_TOKEN = (typeof process !== "undefined" && process.env && process.env.NEXT_PUBLIC_LOGO_DEV_TOKEN) || "";
+function tickerLogoUrl(symbol) {
+  const sym = (symbol || "").toUpperCase();
+  const domain = TICKER_DOMAIN_MAP[sym];
+  if (!domain || !LOGO_DEV_TOKEN) return null;
+  return `https://img.logo.dev/${domain}?token=${LOGO_DEV_TOKEN}&size=72&retina=true`;
+}
+
 function PlaybookColumnRow({ entry, onOpen }) {
   // Subtle, calm action-chip colors. Flat fills, darker text for visibility.
   const actionStyle = {
@@ -8110,11 +8135,13 @@ function PlaybookColumnRow({ entry, onOpen }) {
         fontVariantNumeric: "tabular-nums",
       }}
     >
-      {/* COLUMN 1: Ticker + Company name — sticky-left, GLOSSY shade by gain magnitude */}
-      <div className="px-3 py-2 sticky left-0 z-[3] flex-shrink-0 flex flex-col items-start justify-center relative overflow-hidden"
+      {/* COLUMN 1: Logo + Ticker + Company name + Action chip — ALL INSIDE same glossy cell.
+          Logo left (24x24), then 3-row stack: ticker / company / chip. Real logos via logo.dev
+          using TICKER_DOMAIN_MAP; falls back to dark-ink letter monogram if ticker unmapped. */}
+      <div className="px-2 py-2 sticky left-0 z-[3] flex-shrink-0 flex flex-row items-center gap-2 relative overflow-hidden"
         style={{
-          width: 132,
-          minHeight: 52,
+          width: 156,
+          minHeight: 72,
           background: cellShade.bg,
           borderRight: `1.5px solid ${cellShade.border}`,
           boxShadow: `inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -2.5px 4px ${cellShade.shadow}`,
@@ -8122,42 +8149,74 @@ function PlaybookColumnRow({ entry, onOpen }) {
         {/* Glossy top specular — candy gloss shine */}
         <span className="absolute top-0 left-1 right-1 h-[50%] pointer-events-none"
           style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.12) 60%, rgba(255,255,255,0) 100%)" }} />
-        <span className="relative text-[15px] font-extrabold tracking-tight leading-none"
-          style={{ color: "#0B0F19", letterSpacing: "-0.005em" }}>
-          {entry.symbol}
-        </span>
-        {companyName ? (
-          <span className="relative text-[10px] font-semibold uppercase tracking-wide mt-1 leading-tight"
-            style={{ color: "#1F2937", letterSpacing: "0.02em" }}>
-            {companyName}
+
+        {/* Logo (real or monogram fallback) */}
+        {(() => {
+          const url = tickerLogoUrl(entry.symbol);
+          if (url) {
+            return (
+              <div className="relative flex-shrink-0 rounded-md overflow-hidden bg-white"
+                style={{ width: 28, height: 28, boxShadow: "0 1px 2px rgba(0,0,0,0.15)" }}>
+                <img
+                  src={url}
+                  alt={entry.symbol}
+                  width={28}
+                  height={28}
+                  style={{ width: 28, height: 28, objectFit: "contain", display: "block" }}
+                  onError={(e) => {
+                    // Swap to dark-ink monogram on load failure (network, 404, etc.)
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      parent.innerHTML = `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:#0B0F19;color:#fff;font-weight:800;font-size:11px;letter-spacing:0.04em;font-family:inherit;">${entry.symbol.slice(0,2)}</div>`;
+                    }
+                  }}
+                />
+              </div>
+            );
+          }
+          // No domain mapping — clean dark monogram
+          return (
+            <div className="relative flex-shrink-0 rounded-md flex items-center justify-center"
+              style={{
+                width: 28, height: 28,
+                background: "#0B0F19", color: "#FFFFFF",
+                fontWeight: 800, fontSize: 11, letterSpacing: "0.04em",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.15)",
+              }}>
+              {entry.symbol.slice(0, 2)}
+            </div>
+          );
+        })()}
+
+        {/* Ticker / Name / Chip vertical stack */}
+        <div className="relative flex flex-col items-start justify-center min-w-0 flex-1">
+          <span className="text-[14px] font-extrabold tracking-tight leading-none truncate w-full"
+            style={{ color: "#0B0F19", letterSpacing: "-0.005em" }}>
+            {entry.symbol}
           </span>
-        ) : null}
+          {companyName ? (
+            <span className="text-[9px] font-semibold uppercase tracking-wide mt-0.5 leading-tight truncate w-full"
+              style={{ color: "#1F2937", letterSpacing: "0.02em" }}>
+              {companyName}
+            </span>
+          ) : null}
+          <span
+            className="inline-flex items-center rounded-full font-bold uppercase mt-1"
+            style={{
+              background: a.bg,
+              color: a.fg,
+              border: `1px solid ${a.border}`,
+              fontSize: 9.5,
+              padding: "1.5px 8px",
+              letterSpacing: "0.06em",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
+            }}>
+            {entry.action}
+          </span>
+        </div>
       </div>
 
-      {/* COLUMN 2: Action chip — sticky-left at left:132, sits right next to Ticker
-          (moved from sticky-right per Tarun 5/24/26) */}
-      <div className="px-2 py-2 flex items-center justify-center sticky z-[3] flex-shrink-0"
-        style={{
-          width: 78,
-          left: 132,
-          background: "#FFFFFF",
-          borderRight: "1px solid #F1F5F9",
-        }}>
-        <span
-          className="inline-flex items-center rounded-full font-bold uppercase"
-          style={{
-            background: a.bg,
-            color: a.fg,
-            border: `1px solid ${a.border}`,
-            fontSize: 10.5,
-            padding: "4px 10px",
-            letterSpacing: "0.05em",
-          }}>
-          {entry.action}
-        </span>
-      </div>
-
-      {/* COLUMN 3: Total Cost (total dollars invested) */}
+      {/* COLUMN 2: Total Cost (total dollars invested) */}
       <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 76 }}>
         {entry.totalCost != null && entry.totalCost > 0 ? (
           <span className="text-[13px] font-bold" style={{ color: "#111827" }}>
@@ -8168,7 +8227,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
         )}
       </div>
 
-      {/* COLUMN 4: Value */}
+      {/* COLUMN 3: Value */}
       <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 80 }}>
         {entry.currentPrice != null && entry.qty != null ? (
           <span className="text-[13px] font-bold" style={{ color: "#0B0F19" }}>
@@ -8183,7 +8242,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
         )}
       </div>
 
-      {/* COLUMN 5: Today $ */}
+      {/* COLUMN 4: Today $ */}
       <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 84 }}>
         {entry.todayDollar != null ? (
           <span className="text-[13px] font-bold" style={{ color: todayColor }}>
@@ -8194,7 +8253,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
         )}
       </div>
 
-      {/* COLUMN 6: Today % */}
+      {/* COLUMN 5: Today % */}
       <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 70 }}>
         {entry.changePct != null && !Number.isNaN(entry.changePct) ? (
           <span className="text-[13px] font-bold" style={{ color: todayPctColor }}>
@@ -8205,7 +8264,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
         )}
       </div>
 
-      {/* COLUMN 7: Total $ */}
+      {/* COLUMN 6: Total $ */}
       <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 94 }}>
         {entry.totalDollar != null ? (
           <span className="text-[13px] font-bold" style={{ color: pnlColor }}>
@@ -8216,7 +8275,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
         )}
       </div>
 
-      {/* COLUMN 8: Total % */}
+      {/* COLUMN 7: Total % */}
       <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 74 }}>
         {entry.totalPct != null ? (
           <span className="text-[13px] font-bold" style={{ color: totalPctColor }}>
