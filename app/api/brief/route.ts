@@ -560,7 +560,13 @@ async function generateConvictionFromContext(
     sector_heatmap: layerA?.smart_money?.sector_heatmap || null,
   };
 
-  const prompt = `${COMMON_PREAMBLE(name, date)}
+  // PARALLEL DISPATCH (5/24/26 perf fix): instead of one big call generating
+  // 8-10 conviction + 6-8 opportunity entries (~3000 tokens, 30-40 sec on Haiku),
+  // run two parallel calls — one for conviction only, one for opportunity only.
+  // Each generates ~1500 tokens = ~12-15 sec on Haiku. Total wall-clock: ~15 sec
+  // instead of 35. Same total content, half the time.
+
+  const convictionPrompt = `${COMMON_PREAMBLE(name, date)}
 You have already-fetched market context below. DO NOT search — use this context directly.
 
 MARKET CONTEXT (today, fetched at ${layerA?.generatedAt || date}):
@@ -579,7 +585,23 @@ Return ONLY this JSON:
       "action": "OPTIONAL concrete trade with size, max 12 words — omit for routine holds",
       "deep_reasoning": "130-180 word explanation written for someone NEW to trading. Cover: WHY this signal NOW, WHY YOU MIGHT WANT TO FOLLOW IT, WHAT TO THINK ABOUT FIRST (cost basis, position size, IRA vs taxable), WHAT COULD GO WRONG. Define any technical term in the same sentence. Use 'you' and 'your'. Full sentences."
     }
-  ],
+  ]
+}
+
+CRITICAL: No web_search. Reason from the context. Omit rather than fabricate.
+conviction_watch: 8-10 entries. Mix add/hold/trim. EVERY entry MUST include deep_reasoning.
+NEVER use placeholders like "DATA_UNAVAILABLE", "N/A", "NONE". Empty arrays are fine.`;
+
+  const opportunityPrompt = `${COMMON_PREAMBLE(name, date)}
+You have already-fetched market context below. DO NOT search — use this context directly.
+
+MARKET CONTEXT (today, fetched at ${layerA?.generatedAt || date}):
+${JSON.stringify(contextSlice, null, 2)}
+${ownedNote}
+
+Return ONLY this JSON:
+
+{
   "opportunity_watch": [
     {
       "ticker": "TICKER (must NOT be in user's holdings)",
@@ -592,16 +614,25 @@ Return ONLY this JSON:
 }
 
 CRITICAL: No web_search. Reason from the context. Omit rather than fabricate.
-conviction_watch: 8-10 entries. Mix add/hold/trim. EVERY entry MUST include deep_reasoning.
-opportunity_watch: 6-8 ideas. ABSOLUTELY EXCLUDE all tickers in user's holdings - cross-check every symbol against the holdings list before including. Pick from a MIX of sectors including ones user does NOT own - consider financials, healthcare/biotech, consumer staples, energy, industrials, REITs, materials, communications, not just AI/semis/nuclear. AT MOST 2 of 6-8 picks may be in user's existing themes; the rest MUST be in sectors user does not currently hold. CRITICAL: NEVER fabricate company descriptions. If you are not certain what a ticker's actual business is, OMIT IT. Returning 4 well-verified picks is far better than 8 with guessed descriptions.
+opportunity_watch: 6-8 ideas. ABSOLUTELY EXCLUDE all tickers in user's holdings - cross-check every symbol against the holdings list before including. Pick from a MIX of sectors including ones user does NOT own - consider financials, healthcare/biotech, consumer staples, energy, industrials, REITs, materials, communications, not just AI/semis/nuclear. AT MOST 2 of 6-8 picks may be in user's existing themes; the rest MUST be in sectors user does not currently hold. CRITICAL: NEVER fabricate company descriptions. If you are not certain what a ticker's actual business is, OMIT IT.
 NEVER use placeholders like "DATA_UNAVAILABLE", "N/A", "NONE". Empty arrays are fine.`;
 
-  // 5/24/26 perf fix: switched from sonnet-4-6 to haiku-4-5. This is the
-  // Tier 2 regen path (Layer A cached, regenerating personalized Layer B
-  // when user's holdings changed). Sonnet was outputting ~4000 tokens =
-  // 30-45 sec. Haiku does the same job in 10-15 sec. Conviction reasoning
-  // doesn't need Sonnet — it's structured output, not deep analysis.
-  const conv_result = await callJsonChunk(prompt, { search: false, maxTokens: 7000, model: "claude-haiku-4-5", label: "conviction" }); if (conv_result && Array.isArray(conv_result.opportunity_watch)) { conv_result.opportunity_watch = conv_result.opportunity_watch.filter((o: any) => !ownedSet.has((o.symbol || o.ticker || "").toUpperCase())); } return conv_result;
+  // Dispatch in parallel
+  const [convResult, oppResult] = await Promise.allSettled([
+    callJsonChunk(convictionPrompt, { search: false, maxTokens: 4500, model: "claude-haiku-4-5", label: "conviction-only" }),
+    callJsonChunk(opportunityPrompt, { search: false, maxTokens: 4500, model: "claude-haiku-4-5", label: "opportunity-only" }),
+  ]);
+
+  const merged: any = {};
+  if (convResult.status === "fulfilled" && convResult.value?.conviction_watch) {
+    merged.conviction_watch = convResult.value.conviction_watch;
+  }
+  if (oppResult.status === "fulfilled" && oppResult.value?.opportunity_watch) {
+    merged.opportunity_watch = oppResult.value.opportunity_watch.filter(
+      (o: any) => !ownedSet.has((o.symbol || o.ticker || "").toUpperCase())
+    );
+  }
+  return merged;
 }
 
 async function generateLayerB(opts: {
