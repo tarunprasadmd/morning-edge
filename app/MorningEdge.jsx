@@ -4384,6 +4384,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                   </button>
                                 );
                               })()}
+                              <ColHead id="qty"         label="Qty"     width={56} />
+                              <ColHead id="currentPrice" label="Price"  width={72} />
                               <ColHead id="totalCost"   label="Cost"    width={76} />
                               <ColHead id="value"       label="Value"   width={80} />
                               <ColHead id="todayDollar" label="Today $" width={84} />
@@ -8206,7 +8208,29 @@ function PlaybookColumnRow({ entry, onOpen }) {
         </div>
       </div>
 
-      {/* COLUMN 2: Total Cost (total dollars invested) */}
+      {/* COLUMN 2: Qty (shares owned, from CSV) */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 56 }}>
+        {entry.qty != null ? (
+          <span className="text-[13px] font-bold" style={{ color: "#111827" }}>
+            {entry.qty % 1 === 0 ? entry.qty : entry.qty.toFixed(3).replace(/\.?0+$/, "")}
+          </span>
+        ) : (
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
+        )}
+      </div>
+
+      {/* COLUMN 3: Live Price (current quote per share, from /api/prices) */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 72 }}>
+        {entry.currentPrice != null ? (
+          <span className="text-[13px] font-bold" style={{ color: "#0B0F19" }}>
+            ${entry.currentPrice < 10 ? entry.currentPrice.toFixed(2) : entry.currentPrice.toFixed(2)}
+          </span>
+        ) : (
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
+        )}
+      </div>
+
+      {/* COLUMN 4: Total Cost (total dollars invested) */}
       <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 76 }}>
         {entry.totalCost != null && entry.totalCost > 0 ? (
           <span className="text-[13px] font-bold" style={{ color: "#111827" }}>
