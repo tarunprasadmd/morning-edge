@@ -785,9 +785,42 @@ REAL GOOD EXAMPLE (acceptable rewrite of same setup):
   decision: "QCOM -6.1% to $200.08 — ADD 10 sh at open. Drawdown is capitulation into bullish semis tape; China iPhone modem concern is priced in at this level."
   → Single concrete action, single price, single stance. No conditionals. No homework. The user reads it and acts.
 
-CRITICAL TICKER ACCURACY: Never guess company names. SMMT is Summit Therapeutics. CIFR is Cipher Mining. APLD is Applied Digital. USAR is USA Rare Earth. SMR is NuScale. IREN is Iris Energy. When in doubt, use ticker only.`;
+CRITICAL TICKER ACCURACY: Never guess company names. SMMT is Summit Therapeutics. CIFR is Cipher Mining. APLD is Applied Digital. USAR is USA Rare Earth. SMR is NuScale. IREN is Iris Energy. When in doubt, use ticker only.
 
-  return callJsonChunk(prompt, { maxTokens: 5000, model: "claude-haiku-4-5", label: "light" });
+NON-NEGOTIABLE FIELD COMPLETENESS — every one of these MUST be a populated string (not empty, not null):
+- affirmation
+- mindset.gratitude
+- mindset.focus
+- clarity.contemplation
+- clarity.eastern_wisdom.quote (real, attributable — not invented)
+- clarity.eastern_wisdom.source
+- clarity.breath_practice.name and .pattern
+The UI renders each as its own row; an empty field shows as a blank/missing row to the user. Treat these as required fields, not optional placeholders. If you're unsure of a real wisdom quote, pick a well-known one (Marcus Aurelius, Lao Tzu, Rumi, Epictetus, Thich Nhat Hanh, Seneca) rather than invent.
+
+PARITY RULE — decisions and decisions_reasoning arrays MUST have IDENTICAL lengths. Every decision MUST have a matching reasoning at the same index. Never return 8 decisions with 7 reasonings or vice versa.`;
+
+  const result = await callJsonChunk(prompt, { maxTokens: 5000, model: "claude-haiku-4-5", label: "light" });
+
+  // Post-validate decisions ↔ decisions_reasoning length parity. If the AI
+  // returned mismatched counts (Haiku occasionally drops the last reasoning),
+  // pad with explanatory placeholder so the UI's index lookup never goes blank.
+  if (result && Array.isArray(result.decisions)) {
+    if (!Array.isArray(result.decisions_reasoning)) {
+      result.decisions_reasoning = [];
+    }
+    const decCount = result.decisions.length;
+    const reasCount = result.decisions_reasoning.length;
+    if (reasCount < decCount) {
+      for (let i = reasCount; i < decCount; i++) {
+        result.decisions_reasoning.push(
+          "Full reasoning unavailable for this decision. The short call above stands — tap any other row for context, or refresh the brief to regenerate."
+        );
+      }
+    } else if (reasCount > decCount) {
+      result.decisions_reasoning = result.decisions_reasoning.slice(0, decCount);
+    }
+  }
+  return result;
 }
 
 async function generatePulseAndEdge(name: string, watchlist: string[], holdings: any[], date: string) {
@@ -831,6 +864,181 @@ MARKET PULSE QUALITY BAR — STRICT:
 - Each bullet should pass the test: "Can a trader act on this?"`;
 
   return callJsonChunk(prompt, { search: true, maxTokens: 2800, maxSearches: 2, label: "pulse" });
+}
+
+// ─── SMART MONEY URL POST-PROCESSOR ────────────────────────────────
+// The AI generates source_urls from web_search results, which usually return
+// aggregator/landing pages (sec.gov homepage, capitoltrades.com homepage,
+// whalewisdom.com search). Prompt rules can't fully prevent this — we have
+// to intercept and rewrite at server side.
+//
+// Strategy: parse the entity name from the leading words of `text` (before
+// the first BOUGHT/SOLD/etc verb), look up in known-filer maps, and rewrite
+// source_url to point to that entity's specific SEC EDGAR filings list or
+// CapitolTrades politician page. These are SPECIFIC pages — not homepages —
+// so the user can actually verify the trade.
+
+const SEC_EDGAR_CIKS: Record<string, string> = {
+  // Berkshire / Buffett
+  "berkshire hathaway": "0001067983",
+  "berkshire": "0001067983",
+  "buffett": "0001067983",
+  "warren buffett": "0001067983",
+  // Major hedge funds
+  "viking global": "0001103804",
+  "viking global investors": "0001103804",
+  "renaissance technologies": "0001037389",
+  "renaissance": "0001037389",
+  "rentech": "0001037389",
+  "tiger global": "0001167483",
+  "tiger global management": "0001167483",
+  "coatue": "0001135730",
+  "coatue management": "0001135730",
+  "bridgewater": "0001350694",
+  "bridgewater associates": "0001350694",
+  "citadel": "0001423053",
+  "citadel advisors": "0001423053",
+  "two sigma": "0001179392",
+  "two sigma investments": "0001179392",
+  "millennium": "0001273087",
+  "millennium management": "0001273087",
+  "point72": "0001603466",
+  "point72 asset management": "0001603466",
+  "steve cohen": "0001603466",
+  "de shaw": "0001009207",
+  "d.e. shaw": "0001009207",
+  "aqr capital": "0001167557",
+  "aqr": "0001167557",
+  "soros": "0001029160",
+  "soros fund management": "0001029160",
+  "george soros": "0001029160",
+  "lone pine": "0001061165",
+  "lone pine capital": "0001061165",
+  "pershing square": "0001336528",
+  "pershing": "0001336528",
+  "ackman": "0001336528",
+  "bill ackman": "0001336528",
+  "greenlight capital": "0001079114",
+  "greenlight": "0001079114",
+  "einhorn": "0001079114",
+  "david einhorn": "0001079114",
+  "ark invest": "0001697748",
+  "ark": "0001697748",
+  "ark investment management": "0001697748",
+  "cathie wood": "0001697748",
+  "duquesne": "0001536411",
+  "duquesne family office": "0001536411",
+  "druckenmiller": "0001536411",
+  "stanley druckenmiller": "0001536411",
+  "scion asset management": "0001649339",
+  "scion": "0001649339",
+  "michael burry": "0001649339",
+  "burry": "0001649339",
+  "third point": "0001040273",
+  "loeb": "0001040273",
+  "dan loeb": "0001040273",
+  "appaloosa": "0001656456",
+  "tepper": "0001656456",
+  "david tepper": "0001656456",
+  "elliott management": "0001048445",
+  "elliott": "0001048445",
+  "icahn": "0000921669",
+  "carl icahn": "0000921669",
+  "blackrock": "0001364742",
+  "vanguard": "0000102909",
+  "state street": "0000093751",
+};
+
+function edgar13FUrl(cik: string): string {
+  // Direct link to that filer's most recent 13F-HR filings list. NOT homepage.
+  return `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik}&type=13F-HR&dateb=&owner=include&count=40`;
+}
+
+function edgarForm4Url(cik: string): string {
+  // Direct link to that filer's Form 4 (insider trade) filings list. NOT homepage.
+  return `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik}&type=4&dateb=&owner=include&count=40`;
+}
+
+function capitoltradesSearchUrl(rawName: string): string {
+  // Strip prefix titles, search CapitolTrades by name. Goes to a filtered
+  // search result page — specific to that politician — not the homepage.
+  const cleanName = (rawName || "")
+    .replace(/^(sen\.?|rep\.?|senator|representative)\s+/i, "")
+    .trim();
+  return `https://www.capitoltrades.com/politicians?search=${encodeURIComponent(cleanName)}`;
+}
+
+function isGenericUrl(url: string): boolean {
+  if (!url || typeof url !== "string") return true;
+  const lower = url.toLowerCase().replace(/\/+$/, "");
+  // Homepages and search-landing pages (not specific to a filer or trade)
+  if (/^https?:\/\/(www\.)?sec\.gov$/.test(lower)) return true;
+  if (/^https?:\/\/(www\.)?sec\.gov\/edgar$/.test(lower)) return true;
+  if (/^https?:\/\/(www\.)?sec\.gov\/edgar\/search$/.test(lower)) return true;
+  if (/^https?:\/\/(www\.)?sec\.gov\/cgi-bin\/browse-edgar$/.test(lower)) return true;
+  if (/^https?:\/\/(www\.)?capitoltrades\.com$/.test(lower)) return true;
+  if (/^https?:\/\/(www\.)?capitoltrades\.com\/trades$/.test(lower)) return true;
+  if (/^https?:\/\/(www\.)?capitoltrades\.com\/politicians$/.test(lower)) return true;
+  if (/^https?:\/\/(www\.)?whalewisdom\.com$/.test(lower)) return true;
+  if (/whalewisdom\.com\/search/.test(lower)) return true;
+  if (/wikipedia\.org/.test(lower)) return true;
+  if (/google\.com\/search/.test(lower)) return true;
+  if (/finance\.yahoo\.com\/news/.test(lower)) return true;
+  if (/news\.google/.test(lower)) return true;
+  return false;
+}
+
+function extractEntityFromText(text: string): string {
+  // Entries follow the schema "ENTITY VERB AMOUNT TICKER" (e.g.
+  // "Viking Global BOUGHT 2.1M shares NVDA"). Pull everything up to the
+  // first ALL-CAPS verb.
+  if (!text || typeof text !== "string") return "";
+  const verbMatch = text.match(/\b(BOUGHT|SOLD|ADDED|EXITED|HELD|TRIMMED|REDUCED|INITIATED|OPENED|CLOSED|BUYS?|SELLS?|ADDS?|EXITS?|HOLDS?)\b/);
+  if (verbMatch && verbMatch.index !== undefined) {
+    return text.slice(0, verbMatch.index).trim();
+  }
+  // Fallback: take the first 3 words
+  return text.split(/\s+/).slice(0, 3).join(" ").trim();
+}
+
+function rewriteSmartMoneySourceUrls(sm: any): any {
+  if (!sm || typeof sm !== "object") return sm;
+  const rewriteEntry = (entry: any, kind: "13F" | "form4" | "congress"): any => {
+    if (!entry || typeof entry !== "object") return entry;
+    const url = entry.source_url || "";
+    if (!isGenericUrl(url)) return entry; // already specific — keep it
+    const entity = extractEntityFromText(entry.text || "");
+    const entityLower = entity.toLowerCase();
+    if (!entityLower) return entry;
+    // Hedge funds / 13F filers: look up CIK
+    const cik = SEC_EDGAR_CIKS[entityLower];
+    if (cik) {
+      entry.source_url = kind === "form4" ? edgarForm4Url(cik) : edgar13FUrl(cik);
+      return entry;
+    }
+    // Try partial match: trim trailing words and retry
+    const parts = entityLower.split(/\s+/);
+    for (let i = parts.length; i > 0; i--) {
+      const partial = parts.slice(0, i).join(" ");
+      if (SEC_EDGAR_CIKS[partial]) {
+        entry.source_url = kind === "form4" ? edgarForm4Url(SEC_EDGAR_CIKS[partial]) : edgar13FUrl(SEC_EDGAR_CIKS[partial]);
+        return entry;
+      }
+    }
+    // Congressional: use capitoltrades politician search
+    if (kind === "congress") {
+      entry.source_url = capitoltradesSearchUrl(entity);
+      return entry;
+    }
+    // Unknown entity, unknown CIK: drop the URL field rather than ship a homepage
+    // (the entry still renders, just without a "view filing" link)
+    entry.source_url = "";
+    return entry;
+  };
+  if (Array.isArray(sm.whale_moves)) sm.whale_moves = sm.whale_moves.map((e: any) => rewriteEntry(e, "13F"));
+  if (Array.isArray(sm.hedge_fund_moves)) sm.hedge_fund_moves = sm.hedge_fund_moves.map((e: any) => rewriteEntry(e, "13F"));
+  if (Array.isArray(sm.congress_moves)) sm.congress_moves = sm.congress_moves.map((e: any) => rewriteEntry(e, "congress"));
+  return sm;
 }
 
 async function generateSmartMoneyOnly(name: string, date: string) {
@@ -883,7 +1091,14 @@ TEXT FIELD WORDING — PLAIN ENGLISH, NO JARGON:
   - "Sen Tuberville SOLD $250K TSLA" — not "sold TSLA"
 - Name the person or fund first, then the verb, then the size, then the ticker. Keep it scannable.`;
 
-  return callJsonChunk(prompt, { search: true, maxTokens: 5000, maxSearches: 2, label: "smart-money" });
+  const result = await callJsonChunk(prompt, { search: true, maxTokens: 5000, maxSearches: 2, label: "smart-money" });
+  // Post-process: rewrite any generic source_urls (sec.gov homepage,
+  // capitoltrades homepage, news aggregators) to point to that specific
+  // entity's filings list, by parsing the entity name from the entry text.
+  if (result && result.smart_money) {
+    result.smart_money = rewriteSmartMoneySourceUrls(result.smart_money);
+  }
+  return result;
 }
 
 async function generateConvictionAndOpportunity(name: string, watchlist: string[], holdings: any[], date: string) {
@@ -1021,6 +1236,12 @@ export async function POST(request: Request) {
     if (!fresh) {
       const cachedFull = await cacheReadFullBrief(dateKey, hHash);
       if (cachedFull) {
+        // Sanitize URLs on read: cached briefs may have been written with
+        // older code that didn't post-process URLs. Apply rewrite at serve
+        // time so users always see specific filing URLs, never homepages.
+        if (cachedFull.smart_money) {
+          cachedFull.smart_money = rewriteSmartMoneySourceUrls({ ...cachedFull.smart_money });
+        }
         const elapsed = Date.now() - startTime;
         console.log(`[brief ${requestId}] tier1 hit elapsed=${elapsed}ms`);
         if (wantsStream) return streamCachedBrief(cachedFull, requestId);
@@ -1058,7 +1279,11 @@ export async function POST(request: Request) {
               // smart_money, todays_edge appear right away. No wait.
               const layerAFields: any = {};
               if (layerA?.market_pulse) layerAFields.market_pulse = layerA.market_pulse;
-              if (layerA?.smart_money) layerAFields.smart_money = layerA.smart_money;
+              if (layerA?.smart_money) {
+                // Apply URL rewrite to cached smart_money so generic URLs from
+                // the cron-generated cache also get cleaned at serve time.
+                layerAFields.smart_money = rewriteSmartMoneySourceUrls({ ...layerA.smart_money });
+              }
               if (Object.keys(layerAFields).length > 0) {
                 Object.assign(accumulated, layerAFields);
                 send("chunk", { chunkName: "layer-a", fields: layerAFields });
