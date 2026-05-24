@@ -85,16 +85,80 @@ function normalizeSymbols(rawList: string[]): string[] {
 
 async function buildResponse(symbols: string[]) {
   const errors: string[] = [];
-  const settled = await Promise.allSettled(symbols.map((s) => fetchOne(s)));
-  const prices: Record<string, QuoteResult> = {};
-  settled.forEach((r, i) => {
-    const sym = symbols[i];
-    if (r.status === "fulfilled") {
-      prices[sym] = r.value;
+  const now = Date.now();
+
+  // Partition into cached vs uncached. Cached entries return instantly from the
+  // in-memory 30s cache; only uncached symbols hit Yahoo. After a warm worker
+  // has 45 tickers cached, a repeat call is microseconds.
+  const cachedPrices: Record<string, QuoteResult> = {};
+  const symbolsToFetch: string[] = [];
+  for (const sym of symbols) {
+    const c = cache.get(sym);
+    if (c && c.expiresAt > now) {
+      cachedPrices[sym] = c.data;
     } else {
-      errors.push(`${sym}: ${r.reason?.message || "fetch failed"}`);
+      symbolsToFetch.push(sym);
     }
-  });
+  }
+
+  let prices: Record<string, QuoteResult> = { ...cachedPrices };
+
+  if (symbolsToFetch.length > 0) {
+    try {
+      // SINGLE BULK REQUEST — one HTTP call to Yahoo for all uncached tickers.
+      // yahoo-finance2's quote() accepts an array and returns array of results.
+      // Replaces the previous 45-parallel-request fan-out which Yahoo throttled.
+      const bulk: any[] = await (yahooFinance as any).quote(symbolsToFetch);
+      const list: any[] = Array.isArray(bulk) ? bulk : [bulk];
+
+      // Build a lookup keyed by symbol so we can map results back regardless
+      // of order Yahoo returned them in.
+      const bySymbol: Record<string, any> = {};
+      for (const q of list) {
+        if (q && typeof q.symbol === "string") {
+          bySymbol[q.symbol.toUpperCase()] = q;
+        }
+      }
+
+      for (const sym of symbolsToFetch) {
+        const q = bySymbol[sym];
+        if (!q) {
+          errors.push(`${sym}: not returned by Yahoo`);
+          continue;
+        }
+        const price = typeof q?.regularMarketPrice === "number" ? q.regularMarketPrice : null;
+        const prevClose = typeof q?.regularMarketPreviousClose === "number" ? q.regularMarketPreviousClose : null;
+        let change: number | null = null;
+        if (typeof q?.regularMarketChange === "number") {
+          change = q.regularMarketChange;
+        } else if (price != null && prevClose != null) {
+          change = price - prevClose;
+        }
+        let changePct: number | null = null;
+        if (typeof q?.regularMarketChangePercent === "number") {
+          changePct = q.regularMarketChangePercent;
+        } else if (price != null && prevClose != null && prevClose !== 0) {
+          changePct = ((price - prevClose) / prevClose) * 100;
+        }
+        const result: QuoteResult = { price, change, changePct, prevClose };
+        cache.set(sym, { data: result, expiresAt: now + CACHE_MS });
+        prices[sym] = result;
+      }
+    } catch (bulkErr: any) {
+      // Fallback to per-symbol fetch with Promise.allSettled if bulk fails.
+      // This preserves correctness if Yahoo's bulk endpoint goes flaky.
+      const settled = await Promise.allSettled(symbolsToFetch.map((s) => fetchOne(s)));
+      settled.forEach((r, i) => {
+        const sym = symbolsToFetch[i];
+        if (r.status === "fulfilled") {
+          prices[sym] = r.value;
+        } else {
+          errors.push(`${sym}: ${r.reason?.message || "fetch failed"}`);
+        }
+      });
+    }
+  }
+
   return {
     prices,
     fetchedAt: new Date().toISOString(),

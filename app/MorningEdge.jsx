@@ -4265,7 +4265,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
                   // Header cell helper — tappable column header that sorts
                   // by that field. Shows ▼/▲ when active; subtle hover otherwise.
+                  // Uses outer headerStripBg via transparent inactive; active state
+                  // uses headerStripActiveHighlight defined below.
                   const ColHead = ({ id, label, align = "right", width, sticky }) => {
+                    const isCryptoModeLocal = playbookAssetType === "crypto";
+                    const activeHighlight = isCryptoModeLocal
+                      ? "linear-gradient(180deg, #DDD6FE 0%, #C4B5FD 50%, #A78BFA 100%)"
+                      : "linear-gradient(180deg, #DBEAFE 0%, #BFDBFE 50%, #93C5FD 100%)";
+                    const activeTextColor = isCryptoModeLocal ? "#4C1D95" : "#1E3A8A";
                     const active = playbookSortBy === id;
                     const onSort = () => {
                       if (active) {
@@ -4284,15 +4291,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           width,
                           textAlign: align,
                           justifyContent: align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start",
-                          background: active
-                            ? "linear-gradient(180deg, #DBEAFE 0%, #BFDBFE 50%, #93C5FD 100%)"
-                            : "transparent",
-                          color: active ? "#1E3A8A" : "#334155",
-                          fontWeight: 900,
+                          background: active ? activeHighlight : "transparent",
+                          color: active ? activeTextColor : "#FFFFFF",
+                          fontWeight: 800,
                           fontFamily: "inherit",
-                          borderRight: sticky === "right" ? undefined : "1px solid rgba(203,213,225,0.6)",
-                          ...(sticky === "left" ? { position: "sticky", left: 0, zIndex: 2, borderRight: "1px solid #CBD5E1" } : {}),
-                          ...(sticky === "right" ? { position: "sticky", right: 0, zIndex: 2, borderLeft: "1px solid #CBD5E1" } : {}),
+                          textShadow: active ? "0 1px 0 rgba(255,255,255,0.65)" : "0 1px 2px rgba(0,0,0,0.55)",
+                          borderRight: sticky === "right" ? undefined : "1px solid rgba(255,255,255,0.18)",
+                          ...(sticky === "left" ? { position: "sticky", left: 0, zIndex: 2 } : {}),
+                          ...(sticky === "right" ? { position: "sticky", right: 0, zIndex: 2 } : {}),
                         }}
                       >
                         {/* Glossy top specular on active */}
@@ -4308,6 +4314,21 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       </button>
                     );
                   };
+
+                  // Header strip color — match the active asset-type button.
+                  // Stocks (and "all" default): dark blue gradient matching the Stocks
+                  // button. Crypto: dark purple gradient matching the Crypto button.
+                  // Adds candy-gloss top specular over the strip.
+                  const isCryptoMode = playbookAssetType === "crypto";
+                  const headerStripBg = isCryptoMode
+                    ? "linear-gradient(180deg, #A78BFA 0%, #7C3AED 50%, #4C1D95 100%)"
+                    : "linear-gradient(180deg, #3B82F6 0%, #1D4ED8 50%, #1E3A8A 100%)";
+                  const headerStripBorder = isCryptoMode ? "#4C1D95" : "#1E3A8A";
+                  const headerStripShadow = isCryptoMode ? "rgba(91,33,182,0.45)" : "rgba(30,58,138,0.45)";
+                  const headerStripActiveHighlight = isCryptoMode
+                    ? "linear-gradient(180deg, #DDD6FE 0%, #C4B5FD 50%, #A78BFA 100%)"
+                    : "linear-gradient(180deg, #DBEAFE 0%, #BFDBFE 50%, #93C5FD 100%)";
+                  const headerStripActiveText = isCryptoMode ? "#4C1D95" : "#1E3A8A";
 
                   return (
                     <div>
@@ -4329,18 +4350,25 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               WebkitOverflowScrolling: "touch",
                               position: "relative",
                             }}>
-                            {/* HEADER ROW — sortable column headers */}
-                            <div className="flex items-stretch text-[13px] uppercase tracking-[0.06em] border-b-2 border-slate-500 relative"
+                            {/* HEADER ROW — sortable column headers, glossy colored strip */}
+                            <div className="flex items-stretch text-[12px] uppercase tracking-[0.06em] relative"
                               style={{
                                 minWidth: "max-content",
-                                background: "linear-gradient(180deg, #CBD5E1 0%, #94A3B8 100%)",
+                                background: headerStripBg,
+                                borderBottom: `2px solid ${headerStripBorder}`,
+                                boxShadow: `inset 0 2px 3px rgba(255,255,255,0.45), inset 0 -2px 4px ${headerStripShadow}`,
                                 fontFamily: SERIF,
-                                fontWeight: 900,
-                                color: "#020617",
-                                textShadow: "0 1px 0 rgba(255,255,255,0.55)",
-                                letterSpacing: "0.5px",
+                                fontWeight: 800,
+                                color: "#FFFFFF",
+                                textShadow: "0 1px 2px rgba(0,0,0,0.55)",
+                                letterSpacing: "0.06em",
                               }}>
-                              {/* Sticky-left: Ticker (sortable alphabetically) */}
+                              {/* Glossy top specular over entire strip */}
+                              <span className="absolute top-0 left-2 right-2 h-[55%] pointer-events-none z-[0]"
+                                style={{
+                                  background: "linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0) 100%)",
+                                }} />
+                              {/* Sticky-left: Ticker (sortable alphabetically) — width matches data row (132) */}
                               {(() => {
                                 const active = playbookSortBy === "ticker";
                                 return (
@@ -4354,15 +4382,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                         setPlaybookSortDir("asc");
                                       }
                                     }}
-                                    className="px-2 py-3 flex items-center justify-start gap-0.5 sticky left-0 z-[2] flex-shrink-0 transition active:scale-[0.96] cursor-pointer overflow-hidden relative"
+                                    className="px-3 py-2 flex items-center justify-start gap-0.5 sticky left-0 z-[2] flex-shrink-0 transition active:scale-[0.96] cursor-pointer overflow-hidden relative"
                                     style={{
-                                      width: 78,
-                                      background: active
-                                        ? "linear-gradient(180deg, #DBEAFE 0%, #BFDBFE 50%, #93C5FD 100%)"
-                                        : "linear-gradient(180deg, #E2E8F0 0%, #CBD5E1 100%)",
-                                      borderRight: "1px solid #94A3B8",
-                                      color: active ? "#1E3A8A" : "#334155",
-                                      fontWeight: 900,
+                                      width: 132,
+                                      background: active ? headerStripActiveHighlight : headerStripBg,
+                                      borderRight: `1px solid ${headerStripBorder}`,
+                                      color: active ? headerStripActiveText : "#FFFFFF",
+                                      fontWeight: 800,
+                                      textShadow: active ? "0 1px 0 rgba(255,255,255,0.65)" : "0 1px 2px rgba(0,0,0,0.55)",
                                     }}>
                                     {active && (
                                       <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
@@ -4373,20 +4400,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                   </button>
                                 );
                               })()}
-                              <ColHead id="totalCost"   label="Cost"    width={76} />
-                              <ColHead id="value"       label="Value"   width={80} />
-                              <ColHead id="todayDollar" label="Today $" width={84} />
-                              <ColHead id="todayPct"    label="Today %" width={70} />
-                              <ColHead id="totalDollar" label="Total $" width={94} />
-                              <ColHead id="totalPct"    label="Total %" width={74} />
-                              {/* Sticky-right: Action header — 3-way sort cycles TRIM → ADD → HOLD priority */}
+                              {/* Sticky-left: Action — moved here from sticky-right per Tarun 5/24/26.
+                                  Action chip sits right next to ticker so user sees company + decision at once. */}
                               {(() => {
                                 const active = playbookSortBy === "action";
                                 return (
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      // Cycle lead: TRIM → ADD → HOLD → TRIM
                                       const nextLead = { TRIM: "ADD", ADD: "HOLD", HOLD: "TRIM" };
                                       if (active) {
                                         setActionLeadType(nextLead[actionLeadType] || "TRIM");
@@ -4396,29 +4417,31 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                       }
                                       setPlaybookSortDir("asc");
                                     }}
-                                    className="px-2 py-3 flex items-center justify-center gap-0.5 sticky right-0 z-[2] flex-shrink-0 transition active:scale-[0.96] cursor-pointer overflow-hidden relative"
+                                    className="px-2 py-2 flex items-center justify-center gap-0.5 sticky z-[2] flex-shrink-0 transition active:scale-[0.96] cursor-pointer overflow-hidden relative"
                                     style={{
-                                      width: 82,
-                                      background: active
-                                        ? "linear-gradient(180deg, #DBEAFE 0%, #BFDBFE 50%, #93C5FD 100%)"
-                                        : "linear-gradient(180deg, #CBD5E1 0%, #94A3B8 100%)",
-                                      borderLeft: "1px solid #94A3B8",
-                                      color: active ? "#1E3A8A" : "#020617",
-                                      fontWeight: 900,
+                                      width: 78,
+                                      left: 132,
+                                      background: active ? headerStripActiveHighlight : headerStripBg,
+                                      borderRight: `1px solid ${headerStripBorder}`,
+                                      color: active ? headerStripActiveText : "#FFFFFF",
+                                      fontWeight: 800,
+                                      textShadow: active ? "0 1px 0 rgba(255,255,255,0.65)" : "0 1px 2px rgba(0,0,0,0.55)",
                                     }}>
                                     {active && (
                                       <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
                                         style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)", borderRadius: "0.4rem 0.4rem 50% 50%" }} />
                                     )}
                                     <span className="relative">Action</span>
-                                    {active && (
-                                      <span className="relative text-[9px] font-extrabold tracking-tight">
-                                        {actionLeadType[0]}
-                                      </span>
-                                    )}
+                                    {active && <span className="relative text-[10px]">{playbookSortDir === "desc" ? "▼" : "▲"}</span>}
                                   </button>
                                 );
                               })()}
+                              <ColHead id="totalCost"   label="Cost"    width={76} />
+                              <ColHead id="value"       label="Value"   width={80} />
+                              <ColHead id="todayDollar" label="Today $" width={84} />
+                              <ColHead id="todayPct"    label="Today %" width={70} />
+                              <ColHead id="totalDollar" label="Total $" width={94} />
+                              <ColHead id="totalPct"    label="Total %" width={74} />
                             </div>
                             {/* DATA ROWS */}
                             {entries.map((entry, i) => (
@@ -7991,11 +8014,11 @@ function PlaybookColumnRow({ entry, onOpen }) {
   const isUp = entry.changePct != null && entry.changePct >= 0;
   const isDown = entry.changePct != null && entry.changePct < 0;
 
-  // Muted P&L colors for the right-side numeric columns — DARKER for visibility
-  // (Tarun feedback 5/23/26: numbers were too light, hard to read at a glance)
-  const POS = "#065F46";   // deeper forest green
-  const NEG = "#7F1D1D";   // deeper crimson
-  const NEUTRAL = "#374151"; // darker gray (was #6B7280)
+  // Muted P&L colors for the right-side numeric columns — VIBRANT but readable
+  // (Tarun feedback 5/23/26: forest green was too muted, wanted more vibrant)
+  const POS = "#059669";   // vibrant emerald (was #065F46 forest — punchier now)
+  const NEG = "#B91C1C";   // strong red
+  const NEUTRAL = "#374151"; // darker gray
 
   const pnlPositive = entry.totalDollar != null && entry.totalDollar > 0;
   const pnlColor = entry.totalDollar == null ? NEUTRAL : pnlPositive ? POS : NEG;
@@ -8088,10 +8111,10 @@ function PlaybookColumnRow({ entry, onOpen }) {
       }}
     >
       {/* COLUMN 1: Ticker + Company name — sticky-left, GLOSSY shade by gain magnitude */}
-      <div className="px-3 py-3 sticky left-0 z-[3] flex-shrink-0 flex flex-col items-start justify-center relative overflow-hidden"
+      <div className="px-3 py-2 sticky left-0 z-[3] flex-shrink-0 flex flex-col items-start justify-center relative overflow-hidden"
         style={{
           width: 132,
-          minHeight: 60,
+          minHeight: 52,
           background: cellShade.bg,
           borderRight: `1.5px solid ${cellShade.border}`,
           boxShadow: `inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -2.5px 4px ${cellShade.shadow}`,
@@ -8104,89 +8127,21 @@ function PlaybookColumnRow({ entry, onOpen }) {
           {entry.symbol}
         </span>
         {companyName ? (
-          <span className="relative text-[10px] font-semibold uppercase tracking-wide mt-1.5 leading-tight"
+          <span className="relative text-[10px] font-semibold uppercase tracking-wide mt-1 leading-tight"
             style={{ color: "#1F2937", letterSpacing: "0.02em" }}>
             {companyName}
           </span>
         ) : null}
       </div>
 
-      {/* COLUMN 2: Total Cost (total dollars invested) */}
-      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 76 }}>
-        {entry.totalCost != null && entry.totalCost > 0 ? (
-          <span className="text-[13px] font-bold" style={{ color: "#111827" }}>
-            ${entry.totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-          </span>
-        ) : (
-          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
-        )}
-      </div>
-
-      {/* COLUMN 3: Value */}
-      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 80 }}>
-        {entry.currentPrice != null && entry.qty != null ? (
-          <span className="text-[13px] font-bold" style={{ color: "#0B0F19" }}>
-            ${(entry.currentPrice * entry.qty).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-          </span>
-        ) : entry.currentPrice != null ? (
-          <span className="text-[13px] font-bold" style={{ color: "#0B0F19" }}>
-            ${entry.currentPrice.toFixed(2)}
-          </span>
-        ) : (
-          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
-        )}
-      </div>
-
-      {/* COLUMN 4: Today $ */}
-      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 84 }}>
-        {entry.todayDollar != null ? (
-          <span className="text-[13px] font-bold" style={{ color: todayColor }}>
-            {todayDollarPositive ? "+" : "−"}${Math.abs(entry.todayDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-          </span>
-        ) : (
-          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
-        )}
-      </div>
-
-      {/* COLUMN 5: Today % */}
-      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 70 }}>
-        {entry.changePct != null && !Number.isNaN(entry.changePct) ? (
-          <span className="text-[13px] font-bold" style={{ color: todayPctColor }}>
-            {isUp ? "+" : ""}{entry.changePct.toFixed(1)}%
-          </span>
-        ) : (
-          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
-        )}
-      </div>
-
-      {/* COLUMN 6: Total $ */}
-      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 94 }}>
-        {entry.totalDollar != null ? (
-          <span className="text-[13px] font-bold" style={{ color: pnlColor }}>
-            {pnlPositive ? "+" : "−"}${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-          </span>
-        ) : (
-          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
-        )}
-      </div>
-
-      {/* COLUMN 7: Total % */}
-      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 74 }}>
-        {entry.totalPct != null ? (
-          <span className="text-[13px] font-bold" style={{ color: totalPctColor }}>
-            {totalPctPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%
-          </span>
-        ) : (
-          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
-        )}
-      </div>
-
-      {/* COLUMN 8: Action chip — sticky-right, flat pill (no gradient, no 3D) */}
-      <div className="px-2 py-3 flex items-center justify-center sticky right-0 z-[3] flex-shrink-0"
+      {/* COLUMN 2: Action chip — sticky-left at left:132, sits right next to Ticker
+          (moved from sticky-right per Tarun 5/24/26) */}
+      <div className="px-2 py-2 flex items-center justify-center sticky z-[3] flex-shrink-0"
         style={{
-          width: 82,
+          width: 78,
+          left: 132,
           background: "#FFFFFF",
-          borderLeft: "1px solid #F1F5F9",
+          borderRight: "1px solid #F1F5F9",
         }}>
         <span
           className="inline-flex items-center rounded-full font-bold uppercase"
@@ -8200,6 +8155,76 @@ function PlaybookColumnRow({ entry, onOpen }) {
           }}>
           {entry.action}
         </span>
+      </div>
+
+      {/* COLUMN 3: Total Cost (total dollars invested) */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 76 }}>
+        {entry.totalCost != null && entry.totalCost > 0 ? (
+          <span className="text-[13px] font-bold" style={{ color: "#111827" }}>
+            ${entry.totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </span>
+        ) : (
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
+        )}
+      </div>
+
+      {/* COLUMN 4: Value */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 80 }}>
+        {entry.currentPrice != null && entry.qty != null ? (
+          <span className="text-[13px] font-bold" style={{ color: "#0B0F19" }}>
+            ${(entry.currentPrice * entry.qty).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </span>
+        ) : entry.currentPrice != null ? (
+          <span className="text-[13px] font-bold" style={{ color: "#0B0F19" }}>
+            ${entry.currentPrice.toFixed(2)}
+          </span>
+        ) : (
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
+        )}
+      </div>
+
+      {/* COLUMN 5: Today $ */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 84 }}>
+        {entry.todayDollar != null ? (
+          <span className="text-[13px] font-bold" style={{ color: todayColor }}>
+            {todayDollarPositive ? "+" : "−"}${Math.abs(entry.todayDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </span>
+        ) : (
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
+        )}
+      </div>
+
+      {/* COLUMN 6: Today % */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 70 }}>
+        {entry.changePct != null && !Number.isNaN(entry.changePct) ? (
+          <span className="text-[13px] font-bold" style={{ color: todayPctColor }}>
+            {isUp ? "+" : ""}{entry.changePct.toFixed(1)}%
+          </span>
+        ) : (
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
+        )}
+      </div>
+
+      {/* COLUMN 7: Total $ */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 94 }}>
+        {entry.totalDollar != null ? (
+          <span className="text-[13px] font-bold" style={{ color: pnlColor }}>
+            {pnlPositive ? "+" : "−"}${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </span>
+        ) : (
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
+        )}
+      </div>
+
+      {/* COLUMN 8: Total % */}
+      <div className="px-2 py-2 text-right flex items-center justify-end flex-shrink-0" style={{ width: 74 }}>
+        {entry.totalPct != null ? (
+          <span className="text-[13px] font-bold" style={{ color: totalPctColor }}>
+            {totalPctPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%
+          </span>
+        ) : (
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
+        )}
       </div>
     </div>
   );

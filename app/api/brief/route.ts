@@ -386,6 +386,29 @@ RISK TIER LANGUAGE — when describing a position or candidate, label it as LOWE
 - HIGHER RISK = micro-cap, speculative, dilution risk, lottery money only (MOBX, PRSO, AMPX).
 
 AGGRESSIVE DISCOVERY POSTURE — when surfacing radar/opportunity candidates, lean AGGRESSIVE, not conservative. Include sub-$300M micro-caps with real catalysts (M&A, LOI, defense contracts, rare-earth wins). The $300M cap floor is BANNED — that filter previously missed MOBX before its 80%+ pop on the SPD rare-earth LOI on 5/14/26. Do not retreat to mega-cap "safer" alternatives unless explicitly required.
+
+UNIVERSAL ACTION VERB POLICY — applies to EVERY string field in EVERY section (smart_money, decisions, conviction_watch, opportunity_watch, radar_watch, reasoning, action, why_now, why_matters, headline, fits_gap, etc.):
+
+ALLOWED ACTION VERBS (use only these, capitalized when they lead an entry):
+  BOUGHT  — established a new position OR added significantly
+  SOLD    — closed a position OR reduced significantly
+  ADDED   — incremental add to existing position
+  EXITED  — full position close
+  HELD    — kept the position unchanged
+  AVOID   — recommendation to not buy
+
+BANNED VERBS (do NOT use any of these — they are vague, jargon, or filler):
+  initiated, boosted, raised, trimmed, cut, stake (as a verb), put (as a verb),
+  scaled, swung, faded, chased, legged-in, sized-up, sized-down, took-profit (as compound),
+  established (use BOUGHT), opened (use BOUGHT), closed (use SOLD or EXITED),
+  reduced (use SOLD or EXITED), unloaded, dumped, accumulated (use BOUGHT).
+
+ALWAYS include a SPECIFIC number with the verb: share count ("2.1M shares") OR dollar amount ("$48M") OR percent of position ("40% of position"). Vague terms like "a big stake," "a major position," "significant exposure" without numbers are BANNED.
+
+WHY THIS MATTERS: the user reads dozens of these per day. Consistent vocabulary across the entire app (smart-money cards, decisions, conviction, opportunity, radar, chat answers) makes scanning fast. Mixed verbs make every line require re-reading.
+
+PLAIN-ENGLISH SHORT-DECISION RULES (additional, for the decisions array specifically):
+- Use "shares" not "sh" or "SH" (e.g. "Sell 350 shares" not "Sell 350SH").
 `;
 
 async function callJsonChunk(
