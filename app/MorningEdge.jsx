@@ -4368,7 +4368,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                 style={{
                                   background: "linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0) 100%)",
                                 }} />
-                              {/* Sticky-left: Ticker (sortable alphabetically) — width 156 matches data row w/ logo + chip stacked */}
+                              {/* Sticky-left: Ticker (sortable alphabetically) — width 140 matches compacted data row */}
                               {(() => {
                                 const active = playbookSortBy === "ticker";
                                 return (
@@ -4384,7 +4384,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                     }}
                                     className="px-3 py-2 flex items-center justify-start gap-0.5 sticky left-0 z-[2] flex-shrink-0 transition active:scale-[0.96] cursor-pointer overflow-hidden relative"
                                     style={{
-                                      width: 156,
+                                      width: 130,
                                       background: active ? headerStripActiveHighlight : headerStripBg,
                                       borderRight: `1px solid ${headerStripBorder}`,
                                       color: active ? headerStripActiveText : "#FFFFFF",
@@ -8135,13 +8135,14 @@ function PlaybookColumnRow({ entry, onOpen }) {
         fontVariantNumeric: "tabular-nums",
       }}
     >
-      {/* COLUMN 1: Logo + Ticker + Company name + Action chip — ALL INSIDE same glossy cell.
-          Logo left (24x24), then 3-row stack: ticker / company / chip. Real logos via logo.dev
-          using TICKER_DOMAIN_MAP; falls back to dark-ink letter monogram if ticker unmapped. */}
-      <div className="px-2 py-2 sticky left-0 z-[3] flex-shrink-0 flex flex-row items-center gap-2 relative overflow-hidden"
+      {/* COLUMN 1: Logo + Ticker + Chip(inline) + Company name — ALL INSIDE same glossy cell.
+          Layout: [logo] [TICKER ... CHIP]   ← top row
+                  [     COMPANY NAME      ]  ← bottom row
+          Compact 130x52 — chip lives on ticker's row at the right, not stacked. */}
+      <div className="px-1.5 py-1 sticky left-0 z-[3] flex-shrink-0 flex flex-row items-center gap-1.5 relative overflow-hidden"
         style={{
-          width: 156,
-          minHeight: 72,
+          width: 130,
+          minHeight: 52,
           background: cellShade.bg,
           borderRight: `1.5px solid ${cellShade.border}`,
           boxShadow: `inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -2.5px 4px ${cellShade.shadow}`,
@@ -8156,31 +8157,29 @@ function PlaybookColumnRow({ entry, onOpen }) {
           if (url) {
             return (
               <div className="relative flex-shrink-0 rounded-md overflow-hidden bg-white"
-                style={{ width: 28, height: 28, boxShadow: "0 1px 2px rgba(0,0,0,0.15)" }}>
+                style={{ width: 22, height: 22, boxShadow: "0 1px 2px rgba(0,0,0,0.15)" }}>
                 <img
                   src={url}
                   alt={entry.symbol}
-                  width={28}
-                  height={28}
-                  style={{ width: 28, height: 28, objectFit: "contain", display: "block" }}
+                  width={22}
+                  height={22}
+                  style={{ width: 22, height: 22, objectFit: "contain", display: "block" }}
                   onError={(e) => {
-                    // Swap to dark-ink monogram on load failure (network, 404, etc.)
                     const parent = e.currentTarget.parentElement;
                     if (parent) {
-                      parent.innerHTML = `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:#0B0F19;color:#fff;font-weight:800;font-size:11px;letter-spacing:0.04em;font-family:inherit;">${entry.symbol.slice(0,2)}</div>`;
+                      parent.innerHTML = `<div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:#0B0F19;color:#fff;font-weight:800;font-size:9px;letter-spacing:0.03em;font-family:inherit;">${entry.symbol.slice(0,2)}</div>`;
                     }
                   }}
                 />
               </div>
             );
           }
-          // No domain mapping — clean dark monogram
           return (
             <div className="relative flex-shrink-0 rounded-md flex items-center justify-center"
               style={{
-                width: 28, height: 28,
+                width: 22, height: 22,
                 background: "#0B0F19", color: "#FFFFFF",
-                fontWeight: 800, fontSize: 11, letterSpacing: "0.04em",
+                fontWeight: 800, fontSize: 9, letterSpacing: "0.03em",
                 boxShadow: "0 1px 2px rgba(0,0,0,0.15)",
               }}>
               {entry.symbol.slice(0, 2)}
@@ -8188,31 +8187,36 @@ function PlaybookColumnRow({ entry, onOpen }) {
           );
         })()}
 
-        {/* Ticker / Name / Chip vertical stack */}
-        <div className="relative flex flex-col items-start justify-center min-w-0 flex-1">
-          <span className="text-[14px] font-extrabold tracking-tight leading-none truncate w-full"
-            style={{ color: "#0B0F19", letterSpacing: "-0.005em" }}>
-            {entry.symbol}
-          </span>
+        {/* Right side: ticker+chip on row 1, company name on row 2 */}
+        <div className="relative flex flex-col items-start justify-center min-w-0 flex-1 gap-0.5">
+          {/* Row 1: ticker (left) + chip (right) on SAME line */}
+          <div className="flex items-center justify-between w-full gap-1">
+            <span className="text-[13px] font-extrabold tracking-tight leading-none truncate"
+              style={{ color: "#0B0F19", letterSpacing: "-0.01em" }}>
+              {entry.symbol}
+            </span>
+            <span
+              className="inline-flex items-center rounded-full font-bold uppercase flex-shrink-0"
+              style={{
+                background: a.bg,
+                color: a.fg,
+                border: `1px solid ${a.border}`,
+                fontSize: 8,
+                padding: "1px 5px",
+                letterSpacing: "0.04em",
+                boxShadow: "0 1px 1.5px rgba(0,0,0,0.08)",
+                lineHeight: 1.2,
+              }}>
+              {entry.action}
+            </span>
+          </div>
+          {/* Row 2: company name */}
           {companyName ? (
-            <span className="text-[9px] font-semibold uppercase tracking-wide mt-0.5 leading-tight truncate w-full"
+            <span className="text-[8.5px] font-semibold uppercase tracking-wide leading-tight truncate w-full"
               style={{ color: "#1F2937", letterSpacing: "0.02em" }}>
               {companyName}
             </span>
           ) : null}
-          <span
-            className="inline-flex items-center rounded-full font-bold uppercase mt-1"
-            style={{
-              background: a.bg,
-              color: a.fg,
-              border: `1px solid ${a.border}`,
-              fontSize: 9.5,
-              padding: "1.5px 8px",
-              letterSpacing: "0.06em",
-              boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-            }}>
-            {entry.action}
-          </span>
         </div>
       </div>
 
