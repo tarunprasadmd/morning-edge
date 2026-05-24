@@ -1002,10 +1002,103 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── Tier 2: Layer A cached → fast Layer B regen ──
+    // ── Tier 2: Layer A cached → fast Layer B regen, STREAMED ──
+    // (5/24/26: previously this awaited all Layer B chunks via generateLayerB
+    // then streamed the result in one go — user waited 60 sec to see anything.
+    // Now we dispatch each chunk individually and stream as they complete.
+    // First useful content (Light chunk → Playbook decisions) arrives in
+    // ~15-25 sec on Haiku, conviction streams in after.)
     if (!fresh) {
       const layerA = await cacheReadLayerA(dateKey);
       if (layerA) {
+        if (wantsStream) {
+          // Stream Tier 2 chunks as they complete (parallel dispatch)
+          const stream = new ReadableStream({
+            async start(controller) {
+              const encoder = new TextEncoder();
+              const send = (eventName: string, data: any) => {
+                controller.enqueue(encoder.encode(sseEncode(eventName, data)));
+              };
+
+              send("chunk", { chunkName: "started", fields: {} });
+
+              const accumulated: any = {};
+              // Layer A passthrough — send immediately so market_pulse,
+              // smart_money, todays_edge appear right away. No wait.
+              const layerAFields: any = {};
+              if (layerA?.market_pulse) layerAFields.market_pulse = layerA.market_pulse;
+              if (layerA?.smart_money) layerAFields.smart_money = layerA.smart_money;
+              if (Object.keys(layerAFields).length > 0) {
+                Object.assign(accumulated, layerAFields);
+                send("chunk", { chunkName: "layer-a", fields: layerAFields });
+              }
+
+              // Dispatch Layer B tasks in parallel, stream each as it completes
+              const tasks = [
+                {
+                  name: "light",
+                  promise: generateLightChunk(name, holdings, accounts, holdingsAgeDays, date),
+                },
+                {
+                  name: "conviction",
+                  promise: generateConvictionFromContext(name, date, layerA, watchlist, holdings),
+                },
+                {
+                  name: "edge",
+                  promise: Promise.resolve(generateUserAwareEdge(name, date, layerA, holdings)),
+                },
+                {
+                  name: "radar",
+                  promise: Promise.resolve(generateRadarFromCandidates(layerA, holdings)),
+                },
+              ];
+
+              const failures: string[] = [];
+              const wired = tasks.map((t) =>
+                t.promise.then(
+                  (val) => {
+                    if (val && typeof val === "object") {
+                      Object.assign(accumulated, val);
+                      send("chunk", { chunkName: t.name, fields: val });
+                    }
+                  },
+                  (err) => {
+                    failures.push(`${t.name}: ${err?.message || "unknown"}`);
+                    send("error", { chunkName: t.name, message: err?.message || "Chunk failed" });
+                  }
+                )
+              );
+
+              await Promise.all(wired);
+
+              // De-dup radar against opportunity
+              if (Array.isArray(accumulated.opportunity_watch) && Array.isArray(accumulated.radar_watch)) {
+                const oppT = new Set(accumulated.opportunity_watch.map((o: any) => (o.symbol || o.ticker || "").toUpperCase()));
+                accumulated.radar_watch = accumulated.radar_watch.filter((r: any) => !oppT.has((r.symbol || r.ticker || "").toUpperCase()));
+              }
+
+              // Cache the full result so the next load is Tier 1 (instant)
+              if (Object.keys(accumulated).length > 0) {
+                await cacheWriteFullBrief(dateKey, hHash, accumulated);
+              }
+
+              const elapsed = Date.now() - startTime;
+              console.log(`[brief ${requestId}] tier2 stream done elapsed=${elapsed}ms failures=${failures.length}`);
+              send("complete", { brief: accumulated, cached: false, tier: 2, _meta: { requestId, elapsedMs: elapsed } });
+              send("done", {});
+              controller.close();
+            },
+          });
+          return new Response(stream, {
+            headers: {
+              "Content-Type": "text/event-stream",
+              "Cache-Control": "no-cache, no-transform",
+              "Connection": "keep-alive",
+              "X-Accel-Buffering": "no",
+            },
+          });
+        }
+        // Non-streaming Tier 2 (legacy fallback)
         try {
           const merged = await generateLayerB({
             name, watchlist, holdings, accounts, holdingsAgeDays, date, layerA,
@@ -1014,7 +1107,6 @@ export async function POST(request: Request) {
             await cacheWriteFullBrief(dateKey, hHash, merged);
             const elapsed = Date.now() - startTime;
             console.log(`[brief ${requestId}] tier2 ok elapsed=${elapsed}ms`);
-            if (wantsStream) return streamCachedBrief(merged, requestId);
             return NextResponse.json({
               brief: merged,
               cached: false,
