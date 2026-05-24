@@ -464,22 +464,25 @@ export async function GET(request: Request) {
     console.warn(`[cron ${requestId}] smart-money failed:`, smResult.reason?.message);
   }
 
-  // ─── Write Layer A only if BOTH market_pulse and smart_money have ──
-  // genuine content. The old guard `if (market_pulse && smart_money)`
-  // passed when smart_money existed as an object with empty arrays —
-  // which then served as a poisoned cache for hours.
-  const layerAHasContent =
-    hasMarketPulseContent(layerA.market_pulse) && hasSmartMoneyContent(layerA.smart_money);
+  // ─── Write Layer A as long as market_pulse has content ──────────
+  // (relaxed 5/24/26: previously required smart_money to also have content,
+  // but on weekends/holidays smart_money search returns sparse data. The
+  // validation failed, Layer A wasn't cached, all user opens hit the cold
+  // 2-minute path. Now we cache whatever Layer A we got — even if
+  // smart_money is sparse, the rest of the brief is still useful. Tier 2
+  // will fill in fresh smart_money if needed.)
+  const layerAHasContent = hasMarketPulseContent(layerA.market_pulse);
+  const smartMoneyHasContent = hasSmartMoneyContent(layerA.smart_money);
   if (layerAHasContent) {
     try {
       await redis.set(`layer-a:${dateKey}`, layerA, { ex: LAYER_A_TTL_SECONDS });
-      console.log(`[cron ${requestId}] wrote layer-a (content-validated)`);
+      console.log(`[cron ${requestId}] wrote layer-a (market_pulse=ok smart_money=${smartMoneyHasContent ? "ok" : "empty"})`);
     } catch (err) {
       console.warn(`[cron ${requestId}] failed to write layer-a:`, err);
     }
   } else {
     console.warn(
-      `[cron ${requestId}] SKIPPED layer-a write — market_pulse_ok=${hasMarketPulseContent(layerA.market_pulse)} smart_money_ok=${hasSmartMoneyContent(layerA.smart_money)}`
+      `[cron ${requestId}] SKIPPED layer-a write — market_pulse_ok=false`
     );
   }
 
@@ -516,18 +519,20 @@ export async function GET(request: Request) {
   if (lightResult.status === "fulfilled" && lightResult.value) Object.assign(merged, lightResult.value);
   if (convictionResult.status === "fulfilled" && convictionResult.value) Object.assign(merged, convictionResult.value);
 
-  // ─── Write brief-full only when smart_money has populated arrays ──
+  // ─── Write brief-full whenever market_pulse has content. ─────────
+  // (relaxed 5/24/26: smart_money can be empty on weekends/holidays —
+  // don't gate caching on that.)
   const hHash = holdingsHash(holdings);
-  const fullHasContent = hasSmartMoneyContent(merged.smart_money);
+  const fullHasContent = hasMarketPulseContent(merged.market_pulse);
   if (fullHasContent) {
     try {
       await redis.set(`brief-full:${dateKey}:${hHash}`, merged, { ex: FULL_BRIEF_TTL_SECONDS });
-      console.log(`[cron ${requestId}] wrote brief-full hash=${hHash} (content-validated)`);
+      console.log(`[cron ${requestId}] wrote brief-full hash=${hHash} (smart_money=${hasSmartMoneyContent(merged.smart_money) ? "ok" : "empty"})`);
     } catch (err) {
       console.warn(`[cron ${requestId}] failed to write brief-full:`, err);
     }
   } else {
-    console.warn(`[cron ${requestId}] SKIPPED brief-full write — smart_money empty`);
+    console.warn(`[cron ${requestId}] SKIPPED brief-full write — market_pulse empty`);
   }
 
   const elapsedMs = Date.now() - startTime;

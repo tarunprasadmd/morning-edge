@@ -3532,56 +3532,27 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         </div>
       )}
 
-      {/* Loading skeleton — branded placeholder cards that show the shape
-          of the brief, with section labels visible so users see what's
-          coming. Each card has a colored top bar matching the real card
-          for that section, plus a small "Building your X..." status. */}
+      {/* Slim loading banner — non-blocking. When no cached brief and we're
+          generating, show a small status line at the top instead of replacing
+          the entire UI with skeleton placeholders. The Playbook below renders
+          immediately from holdings + live prices (no AI needed for the table). */}
       {loading && !brief && (
-        <main className="relative px-4 pb-16 space-y-4">
-          {/* Status banner */}
+        <div className="px-4 pt-2 pb-1">
           <div className="rounded-xl p-3 bg-gradient-to-br from-violet-100 to-indigo-100 border border-violet-200 flex items-center gap-2">
             <RefreshCw className="w-4 h-4 text-violet-700 animate-spin flex-shrink-0" strokeWidth={2.5} />
-            <p className="text-[14px] text-violet-900 font-semibold">
-              Building your edge — reading today's tape, checking your holdings…
+            <p className="text-[13px] text-violet-900 font-semibold">
+              Building today's edge — your Playbook is ready, sections fill in as they arrive.
             </p>
           </div>
-          {/* Affirmation skeleton */}
-          <div className="rounded-3xl p-8 shadow-md border border-slate-100 bg-gradient-to-br from-amber-50 via-rose-50 to-violet-50">
-            <div className="w-12 h-12 rounded-full mx-auto mb-4 bg-white/60 animate-pulse" />
-            <div className="h-3 w-24 mx-auto mb-3 rounded bg-slate-200/60 animate-pulse" />
-            <div className="h-5 w-3/4 mx-auto mb-2 rounded bg-slate-300/60 animate-pulse" />
-            <div className="h-5 w-2/3 mx-auto rounded bg-slate-300/60 animate-pulse" />
-          </div>
-          {/* Section skeletons with labels so the user knows what's loading */}
-          {[
-            { label: "Market Pulse", color: "#3b82f6" },
-            { label: "Your Holdings · Today", color: "#10b981" },
-            { label: "Your Holdings · Ongoing Watch", color: "#059669" },
-            { label: "Insider Flow", color: "#d97706" },
-            { label: "Discovery · Opportunities & Radar", color: "#0891b2" },
-          ].map((sec) => (
-            <div key={sec.label} className="rounded-2xl bg-white shadow-md border border-slate-100 overflow-hidden">
-              {/* Colored top bar */}
-              <div className="h-1 w-full" style={{ background: sec.color }} />
-              {/* Label */}
-              <div className="px-4 py-3 flex items-center gap-2 border-b border-slate-100">
-                <div className="w-7 h-7 rounded-md animate-pulse" style={{ background: sec.color, opacity: 0.2 }} />
-                <p className="text-[12px] uppercase tracking-[0.2em] font-bold text-slate-500">
-                  {sec.label}
-                </p>
-              </div>
-              <div className="px-5 py-4 space-y-3">
-                <div className="h-4 w-full rounded bg-slate-200 animate-pulse" />
-                <div className="h-4 w-5/6 rounded bg-slate-200 animate-pulse" />
-                <div className="h-4 w-4/6 rounded bg-slate-200 animate-pulse" />
-              </div>
-            </div>
-          ))}
-        </main>
+        </div>
       )}
 
-      {/* Brief */}
-      {brief && (
+      {/* Main UI — renders when we have a brief OR holdings.
+          (Changed 5/24/26: was {brief && ...} which blocked rendering entirely
+          while brief loaded. Now Playbook table shows immediately from
+          holdings + live prices; brief-dependent sections gracefully no-op
+          when brief.* is missing until streamed chunks arrive.) */}
+      {(brief || holdings.length > 0) && (
         <main
           className="relative px-4 pb-16 space-y-4"
           style={{
@@ -3592,7 +3563,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {/* NAMASTE — small black/gold greeting card at the top, addresses the
               user by name with today's wisdom. Sets the calm tone before any
               financial info appears. */}
-          {brief.affirmation && (
+          {brief && brief.affirmation && (
             <div className="relative rounded-2xl px-4 py-3 overflow-hidden"
               style={{
                 background: "linear-gradient(160deg, #1E293B 0%, #0F172A 60%, #020617 100%)",
@@ -3683,7 +3654,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             <ChevronRight className="w-5 h-5 text-violet-400 flex-shrink-0" strokeWidth={2.5} />
           </button>
 
-          {visible.market_pulse && brief.market_pulse && (() => {
+          {visible.market_pulse && brief && brief.market_pulse && (() => {
             // Tone drives the hero color treatment so the card feels alive
             // rather than dry. Bullish = teal energy, cautious = amber care,
             // bearish = rose alert. Each tone gets a gradient banner + matching
@@ -3796,16 +3767,26 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     <span className="inline-block flex-1 h-px" style={{ background: toneTheme.accent, opacity: 0.3 }}></span>
                   </p>
                   <div className="flex flex-col gap-2.5">
-                    {(brief.market_pulse.key_levels || []).map((k, i) => (
-                      <ExpandableLevelRow key={i} index={i + 1} text={k} theme={toneTheme} />
-                    ))}
+                    {(brief.market_pulse.key_levels || []).map((k, i) => {
+                      // Backwards-compat: key_levels may be either:
+                      //   - string (old briefs cached before 5/24/26)
+                      //   - { text, deep_context } object (new briefs)
+                      const isObj = k && typeof k === "object";
+                      const txt = isObj ? (k.text || "") : (k || "");
+                      const detail = isObj ? (k.deep_context || null) : null;
+                      return (
+                        <ExpandableLevelRow key={i} index={i + 1} text={txt} theme={toneTheme} detail={detail} />
+                      );
+                    })}
                   </div>
                 </div>
               </Card>
             );
           })()}
-          {/* PLAYBOOK — tappable check-offs that persist per day */}
-          {visible.decisions && brief && (
+          {/* PLAYBOOK — renders when user has holdings, regardless of brief state.
+              Brief.decisions fills in action chips when streaming completes;
+              until then, fallback chip = HOLD (defined in playbook entry build). */}
+          {visible.decisions && (brief || holdings.length > 0) && (
             <Card theme={themes.play} pillar="wealth">
               <CardHeader icon={<CheckSquare className="w-4 h-4" />} label="Today's Playbook" theme={themes.play} pillar="wealth" />
               <div className="px-3 py-5">
@@ -4583,7 +4564,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               </Card>
             )
           )}
-          {visible.smart_money && (
+          {visible.smart_money && brief && (
             brief.smart_money ? (
             <Card theme={themes.money} pillar="wealth">
               <CardHeader icon={<Eye className="w-4 h-4" />} label="Insider Flow" theme={themes.money} pillar="wealth" />
@@ -5130,7 +5111,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           )}
 
 
-          {visible.radar && (() => {
+          {visible.radar && brief && (() => {
             const hasRadar = Array.isArray(brief.radar_watch) && brief.radar_watch.length > 0;
             const hasOpportunity = Array.isArray(brief.opportunity_watch) && brief.opportunity_watch.length > 0;
             // Show the section if EITHER list has content. If both are
@@ -5433,7 +5414,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 </div>
 
                 {/* Daily Power Plate */}
-                {brief.power_plate && (
+                {brief && brief.power_plate && (
                   <div className="pt-5 border-t border-slate-100">
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-[12px] uppercase tracking-[0.2em] text-amber-700 font-semibold flex items-center gap-1.5">
@@ -5455,7 +5436,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {/* ── CLARITY — mind care: gratitude + focus + breath + contemplation + wisdom ── */}
           {/* Always render when visible. Inner sections (gratitude, contemplation,
               etc.) are conditionally rendered based on brief content below. */}
-          {visible.clarity_card && (
+          {visible.clarity_card && brief && (
             <Card theme={themes.clarity} pillar="clarity">
               <CardHeader icon={<Flower2 className="w-4 h-4" />} label="Clarity" theme={themes.clarity} pillar="clarity" />
               <div className="px-5 py-5 space-y-3">

@@ -469,7 +469,12 @@ Return ONLY this JSON:
   "market_pulse": {
     "tone": "bullish or cautious or bearish",
     "summary": "ONE short headline sentence, max 14 words",
-    "key_levels": ["4-6 short bullets, max 10 words each — index futures, VIX, key commodities, sector rotation, today's catalysts"]
+    "key_levels": [
+      {
+        "text": "Short bullet, max 14 words — WHAT + DIRECTION + MAGNITUDE + CONTEXT (e.g. 'S&P futures +0.4% before open, watching CPI Wed', 'VIX at 14.2, 1-month low', 'Brent crude $78, OPEC+ meeting Thursday', 'Semis leading: SMH +1.1% premarket')",
+        "deep_context": "60-90 word plain-English explanation of WHY this specific bullet matters today. Reference the specific number from text. Tell the reader what to watch for and what action could make sense. Don't repeat the bullet — go DEEPER. Define any technical term in the same sentence. Use 'you'."
+      }
+    ]
   },
   "todays_edge_market": {
     "binary_catalysts": [ { "ticker": "TICKER", "event": "event date", "context": "max 12 words" } ],
@@ -486,6 +491,7 @@ Return ONLY this JSON:
   ]
 }
 
+key_levels: 6-8 bullets. EACH bullet MUST be an object with both 'text' AND 'deep_context' fields. Vague bullets like "Tech sector strong" or "Watching the Fed" are BANNED — every bullet cites a specific number. Every bullet must pass: "Can a trader act on this?"
 todays_edge_market: 0-3 risk flags total — only if genuinely time-sensitive. Empty arrays are fine.
 radar_candidates: 8-10 high-conviction thematic stocks across AI / semis / nuclear / quantum / rare earths / biotech / crypto infra. The user's actual holdings will be filtered out later — don't try to filter here. Each entry MUST include deep_reasoning.`;
 
@@ -590,7 +596,12 @@ conviction_watch: 8-10 entries. Mix add/hold/trim. EVERY entry MUST include deep
 opportunity_watch: 6-8 ideas. ABSOLUTELY EXCLUDE all tickers in user's holdings - cross-check every symbol against the holdings list before including. Pick from a MIX of sectors including ones user does NOT own - consider financials, healthcare/biotech, consumer staples, energy, industrials, REITs, materials, communications, not just AI/semis/nuclear. AT MOST 2 of 6-8 picks may be in user's existing themes; the rest MUST be in sectors user does not currently hold. CRITICAL: NEVER fabricate company descriptions. If you are not certain what a ticker's actual business is, OMIT IT. Returning 4 well-verified picks is far better than 8 with guessed descriptions.
 NEVER use placeholders like "DATA_UNAVAILABLE", "N/A", "NONE". Empty arrays are fine.`;
 
-  const conv_result = await callJsonChunk(prompt, { search: false, maxTokens: 7000, model: "claude-sonnet-4-6", label: "conviction" }); if (conv_result && Array.isArray(conv_result.opportunity_watch)) { conv_result.opportunity_watch = conv_result.opportunity_watch.filter((o: any) => !ownedSet.has((o.symbol || o.ticker || "").toUpperCase())); } return conv_result;
+  // 5/24/26 perf fix: switched from sonnet-4-6 to haiku-4-5. This is the
+  // Tier 2 regen path (Layer A cached, regenerating personalized Layer B
+  // when user's holdings changed). Sonnet was outputting ~4000 tokens =
+  // 30-45 sec. Haiku does the same job in 10-15 sec. Conviction reasoning
+  // doesn't need Sonnet — it's structured output, not deep analysis.
+  const conv_result = await callJsonChunk(prompt, { search: false, maxTokens: 7000, model: "claude-haiku-4-5", label: "conviction" }); if (conv_result && Array.isArray(conv_result.opportunity_watch)) { conv_result.opportunity_watch = conv_result.opportunity_watch.filter((o: any) => !ownedSet.has((o.symbol || o.ticker || "").toUpperCase())); } return conv_result;
 }
 
 async function generateLayerB(opts: {
@@ -763,7 +774,12 @@ Return ONLY this JSON:
   "market_pulse": {
     "tone": "bullish or cautious or bearish",
     "summary": "ONE short headline sentence, max 14 words",
-    "key_levels": ["6-8 detailed bullets, max 14 words each — each MUST name a specific index/sector/commodity AND its direction AND a number (e.g. 'S&P futures +0.4% before open', 'VIX at 14.2, 1-month low', 'Brent crude $78, OPEC+ meeting Thursday', 'Semis leading: SMH +1.1% premarket', 'Treasury 10Y at 4.32%, watching CPI Wed'). Make it scannable and informative — like a Bloomberg desk note, not generic 'market is up'."]
+    "key_levels": [
+      {
+        "text": "max 14 words — WHAT + DIRECTION + MAGNITUDE + CONTEXT (e.g. 'S&P futures +0.4% before open', 'VIX at 14.2, 1-month low', 'Brent crude $78, OPEC+ Thursday')",
+        "deep_context": "60-90 word plain-English explanation of WHY this bullet matters today. Reference the number. Tell reader what to watch and what action could make sense. Define any term in the same sentence. Use 'you'."
+      }
+    ]
   },
   "todays_edge": {
     "earnings_alerts": [ { "ticker": "TICKER", "when": "today after close", "your_shares": 0 } ],
