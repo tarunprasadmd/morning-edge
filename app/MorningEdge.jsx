@@ -2163,12 +2163,16 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           // Skip stablecoins from "playbook" eligibility — they're cash equivalents
           // (still imported, but won't generate trading recommendations)
           const isStablecoin = ["USDC","USDT","DAI","BUSD","TUSD","FRAX"].includes(raw);
+          // Skip sold positions — Fidelity / Schwab exports leave rows with qty=0
+          // for closed lots. Importing them clutters Playbook with zero-share entries.
+          const parsedQty = qtyCol !== -1 ? parseNum(cells[qtyCol]) : null;
+          if (parsedQty === 0) continue;
           tickers.add(raw);
           newHoldings.push({
             symbol: raw,
             type: isCrypto ? "crypto" : "stock",
             isStablecoin: isStablecoin || undefined,
-            qty: qtyCol !== -1 ? parseNum(cells[qtyCol]) : null,
+            qty: parsedQty,
             // Cost data — when broker provides explicit columns, store both so
             // we can use the right one without heuristics.
             totalCost: totalCostCol !== -1 ? parseNum(cells[totalCostCol]) : null,
