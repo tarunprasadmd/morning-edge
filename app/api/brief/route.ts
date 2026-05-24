@@ -763,7 +763,7 @@ Return ONLY this JSON:
   "market_pulse": {
     "tone": "bullish or cautious or bearish",
     "summary": "ONE short headline sentence, max 14 words",
-    "key_levels": ["4-6 short bullets, max 10 words each"]
+    "key_levels": ["6-8 detailed bullets, max 14 words each — each MUST name a specific index/sector/commodity AND its direction AND a number (e.g. 'S&P futures +0.4% before open', 'VIX at 14.2, 1-month low', 'Brent crude $78, OPEC+ meeting Thursday', 'Semis leading: SMH +1.1% premarket', 'Treasury 10Y at 4.32%, watching CPI Wed'). Make it scannable and informative — like a Bloomberg desk note, not generic 'market is up'."]
   },
   "todays_edge": {
     "earnings_alerts": [ { "ticker": "TICKER", "when": "today after close", "your_shares": 0 } ],
@@ -776,7 +776,12 @@ Return ONLY this JSON:
 }
 
 todays_edge: 0-3 alerts. Empty arrays fine.
-radar_watch: 4-6 high-conviction thematic stocks the user does NOT own.`;
+radar_watch: 4-6 high-conviction thematic stocks the user does NOT own.
+
+MARKET PULSE QUALITY BAR — STRICT:
+- Each key_levels bullet must include: WHAT (index/sector/commodity/yield), DIRECTION (up/down/holding), MAGNITUDE (number — % or absolute level), and CONTEXT (why it matters today — earnings, FOMC, OPEC, CPI, etc.)
+- BANNED: vague bullets like "Tech sector strong" or "Market is mixed" or "Watching the Fed". Always cite the specific data point.
+- Each bullet should pass the test: "Can a trader act on this?"`;
 
   return callJsonChunk(prompt, { search: true, maxTokens: 2800, maxSearches: 2, label: "pulse" });
 }
@@ -796,9 +801,9 @@ Return ONLY this JSON:
       "net_bearish_sectors": ["1-2 sector names"]
     },
     "sector_heatmap": [{ "sector": "name max 22 chars", "direction": "buying|selling|neutral", "intensity": 1 }],
-    "whale_moves": [{ "text": "TRADE_VERB SHARES/DOLLARS TICKER (max 12 words)", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation." }],
-    "congress_moves": [{ "text": "TRADE_VERB SHARES/DOLLARS TICKER (max 12 words)", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation." }],
-    "hedge_fund_moves": [{ "text": "TRADE_VERB SHARES/DOLLARS TICKER (max 12 words)", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation." }]
+    "whale_moves": [{ "text": "PERSON/FUND VERB AMOUNT TICKER (plain English, max 12 words)", "ticker": "TICKER", "source_url": "DIRECT-FILING-URL", "why_matters": "60-90 word plain-English explanation, written like you're texting a friend." }],
+    "congress_moves": [{ "text": "PERSON/FUND VERB AMOUNT TICKER (plain English, max 12 words)", "ticker": "TICKER", "source_url": "DIRECT-FILING-URL", "why_matters": "60-90 word plain-English explanation, written like you're texting a friend." }],
+    "hedge_fund_moves": [{ "text": "PERSON/FUND VERB AMOUNT TICKER (plain English, max 12 words)", "ticker": "TICKER", "source_url": "DIRECT-FILING-URL", "why_matters": "60-90 word plain-English explanation, written like you're texting a friend." }]
   }
 }
 
@@ -807,17 +812,27 @@ CRITICAL DATA RULES:
 - whale_moves/congress_moves/hedge_fund_moves: 3-5 entries each. Every entry MUST be a SPECIFIC TRADE by a NAMED person/fund with a real ticker. Empty arrays are fine if no real trades found.
 - BAD: news commentary, calendar notes, vague exposure summaries, political headlines, generic crowd statements.
 
-TEXT FIELD WORDING — STRICT:
-- Lead with one capitalized action verb: BOUGHT, SOLD, ADDED, or EXITED. Use BOUGHT for new positions and adds; SOLD for full exits and big reductions; ADDED for incremental adds; EXITED for full position close.
-- BANNED soft verbs in text field: "initiated", "boosted", "cut", "trimmed", "stake", "position" as a verb. These read vague. Replace with direct verbs above.
-- ALWAYS include a specific number: share count ("2.1M shares", "500K shares") OR dollar amount ("$48M", "$2.3B") OR clear percentage of position ("40% of position").
+SOURCE URL — DIRECT TO FILING ONLY (NON-NEGOTIABLE):
+The source_url field MUST link to the SPECIFIC filing or disclosure document, NOT a generic landing page. The user clicks this to verify the trade actually happened. Generic pages fail this test.
+- For 13F filings: link to the SEC EDGAR filing detail page for THAT specific 13F-HR. Format: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=13F-HR — or better, the direct filing index URL.
+- For Form 4 insider trades: link to the SEC EDGAR Form 4 filing detail page (https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=4).
+- For congressional STOCK Act trades: link to the SPECIFIC trade page on capitoltrades.com (e.g. https://www.capitoltrades.com/trades/{trade_id}) OR the original PDF filing on house.gov/senate.gov clerk site. NOT capitoltrades.com homepage.
+- BANNED source URLs (these will fail user trust): sec.gov/edgar homepage, capitoltrades.com homepage, whalewisdom.com generic search, news aggregator URLs, wikipedia, generic broker pages.
+- If you can't find a direct filing URL, OMIT the entire entry. Don't fall back to a generic page.
+
+TEXT FIELD WORDING — PLAIN ENGLISH, NO JARGON:
+- Lead with the person or fund name, then a plain verb, then the size, then the ticker.
+- Use ONLY these verbs: BOUGHT, SOLD, ADDED, EXITED, HELD.
+- BANNED jargon verbs: "initiated", "boosted", "raised", "trimmed", "cut", "stake", "position" (as a verb), "scaled", "swung", "established", "opened", "closed", "reduced", "unloaded".
+- ALWAYS include a specific number: share count ("2.1M shares"), dollar amount ("$48M"), OR clear percentage ("40% of position").
 - Format examples (FOLLOW THESE EXACTLY):
-  - "Viking Global BOUGHT 2.1M shares NVDA" — not "added 2.1M shares"
-  - "Druckenmiller SOLD 500K shares TSLA" — not "sold 500K stake"
-  - "Renaissance BOUGHT 1.8M shares PLTR" — not "boosted PLTR by 1.8M"
-  - "Coatue BOUGHT 900K shares IONQ" — not "initiated 900K share position"
-  - "Tiger Global SOLD 40% of META" — not "cut META stake by 40 percent"
-  - "Rep Gottheimer BOUGHT $50K NVDA calls" — not "bought NVDA calls"
+  - "Viking Global BOUGHT 2.1M shares NVDA"
+  - "Druckenmiller SOLD 500K shares TSLA"
+  - "Renaissance BOUGHT 1.8M shares PLTR"
+  - "Coatue BOUGHT 900K shares IONQ"
+  - "Tiger Global SOLD 40% of META"
+  - "Rep Gottheimer BOUGHT $50K NVDA calls"
+  - "Sen Tuberville SOLD $250K TSLA"
   - "Sen Tuberville SOLD $250K TSLA" — not "sold TSLA"
 - Name the person or fund first, then the verb, then the size, then the ticker. Keep it scannable.`;
 

@@ -2284,8 +2284,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
     // CSV-first UX: if no brief exists yet, auto-generate one with the
     // freshly uploaded holdings. Saves the user from sitting through one
-    // generation without holdings, then a second after upload. Wrapped in
-    // a tiny delay so React flushes the holdings state first.
+    // generation without holdings, then a second after upload.
+    // CHANGED 5/24/26: only auto-regen when there's NO brief at all. Don't
+    // re-regen if a brief already exists — user was waiting ~60s after every
+    // CSV update. Instead, the existing "Positions changed?" banner already
+    // prompts user to tap-to-sync and regenerate when they want fresh.
     if (!brief && !loading) {
       setTimeout(() => generateBrief(), 100);
     }
