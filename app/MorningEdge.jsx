@@ -4724,7 +4724,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         ).filter((t) => t && typeof t === "string" && !/^DATA_UNAVAIL|^N\/?A$|^NONE$|^UNKNOWN$/i.test(t.trim())).slice(0, 2).map((tkr, i) => (
                           <button
                             key={i}
-                            onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${tkr.toUpperCase()}`)}
+                            onClick={() => openLinkInBrowser(`https://whalewisdom.com/stock/${tkr.toLowerCase()}`)}
                             className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-1.5 overflow-hidden text-left transition active:scale-[0.97] active:translate-y-0.5 min-w-0"
                             style={{
                               background: "linear-gradient(180deg, #D1FAE5 0%, #A7F3D0 50%, #6EE7B7 100%)",
@@ -4760,7 +4760,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         ).filter((t) => t && typeof t === "string" && !/^DATA_UNAVAIL|^N\/?A$|^NONE$|^UNKNOWN$/i.test(t.trim())).slice(0, 2).map((tkr, i) => (
                           <button
                             key={i}
-                            onClick={() => openLinkInBrowser(`https://finance.yahoo.com/quote/${tkr.toUpperCase()}`)}
+                            onClick={() => openLinkInBrowser(`https://whalewisdom.com/stock/${tkr.toLowerCase()}`)}
                             className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-1.5 overflow-hidden text-left transition active:scale-[0.97] active:translate-y-0.5 min-w-0"
                             style={{
                               background: "linear-gradient(180deg, #FEE2E2 0%, #FECACA 50%, #FCA5A5 100%)",
