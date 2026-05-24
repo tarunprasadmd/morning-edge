@@ -1536,13 +1536,30 @@ export default function MorningEdge() {
       }
     };
 
-    // Fetch immediately, then refresh every 5 minutes while the app is
-    // open. This keeps the ticker fresh without hammering the data source.
+    // Fetch immediately, then refresh every 60 seconds while the app is
+    // open. Yahoo's free quote API handles this cadence fine for ~40 symbols.
+    // Was 5 minutes — felt stale. 60s matches Robinhood / Webull "live" feel.
     fetchPrices();
-    const interval = setInterval(fetchPrices, 5 * 60 * 1000);
+    const interval = setInterval(() => {
+      // Skip polling when tab is hidden — saves API calls while phone is
+      // locked or app is backgrounded. Re-fires immediately on focus below.
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      fetchPrices();
+    }, 60 * 1000);
+    // Refresh instantly when user returns to the app — don't make them wait
+    // up to 60s for the next interval tick to see fresh prices.
+    const onVisibility = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") fetchPrices();
+    };
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisibility);
+    }
     return () => {
       cancelled = true;
       clearInterval(interval);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisibility);
+      }
     };
     // We deliberately use a stable string key derived from the symbol
     // list (not holdings.length) so the effect re-fires when symbols
@@ -7955,17 +7972,16 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 // not just the brief's decisions. Color-coded by action type with a separate
 // risk-tier dot indicator.
 // ─── PlaybookColumnRow ──────────────────────────────────────────────
-// Glossy longitudinal strip — each row tinted green (up) or red (down) with
-// candy gloss highlights. Ticker cell is the darker color anchor; whole row
-// is the lighter tint. Columns: Today $ | Today % | Total $ | Total %.
-// Ticker sticky-left, action chip sticky-right.
+// Brokerage-style row — clean white, refined sans-serif, subtle green/red,
+// no candy gloss. Columns: Ticker | Cost | Value | Today $ | Today % |
+// Total $ | Total % | Action. Action chip is read-only.
 function PlaybookColumnRow({ entry, onOpen }) {
-  // Action chip
+  // Subtle, calm action-chip colors. Flat fills, no gradients, no 3D.
   const actionStyle = {
-    TRIM:  { bg: "linear-gradient(180deg, #FF8080 0%, #FF0000 45%, #B30000 100%)", border: "#800000" },
-    ADD:   { bg: "linear-gradient(180deg, #66DD7E 0%, #00C800 45%, #007F00 100%)", border: "#005000" },
-    HOLD:  { bg: "linear-gradient(180deg, #FFF59D 0%, #FFEB3B 45%, #C9A800 100%)", border: "#806B00" },
-    WATCH: { bg: "linear-gradient(180deg, #FFF59D 0%, #FFEB3B 45%, #C9A800 100%)", border: "#806B00" },
+    TRIM:  { bg: "#FEE2E2", fg: "#991B1B", border: "#FCA5A5" },
+    ADD:   { bg: "#DCFCE7", fg: "#065F46", border: "#86EFAC" },
+    HOLD:  { bg: "#FEF3C7", fg: "#92400E", border: "#FCD34D" },
+    WATCH: { bg: "#FEF3C7", fg: "#92400E", border: "#FCD34D" },
   };
   const a = actionStyle[entry.action] || actionStyle.HOLD;
 
@@ -7973,30 +7989,19 @@ function PlaybookColumnRow({ entry, onOpen }) {
   const isUp = entry.changePct != null && entry.changePct >= 0;
   const isDown = entry.changePct != null && entry.changePct < 0;
 
-  // WHISPER-LIGHT pastel row tint — barely tinted, very soft
-  const rowBg = isUp
-    ? "linear-gradient(180deg, #FAFFF7 0%, #F0FDF4 50%, #DCFCE7 100%)"
-    : isDown
-    ? "linear-gradient(180deg, #FFFAFA 0%, #FEF2F2 50%, #FEE2E2 100%)"
-    : "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)";
+  // Muted forest-green / muted red — classy, not neon. Matches the
+  // mockup direction Tarun approved (5/23/26 brokerage-view spec).
+  const POS = "#047857";
+  const NEG = "#B91C1C";
+  const NEUTRAL = "#6B7280";
 
-  // BOLD ticker cell — deep saturated green/red anchor
-  const tickerBg = isUp
-    ? "linear-gradient(180deg, #22C55E 0%, #15803D 50%, #14532D 100%)"
-    : isDown
-    ? "linear-gradient(180deg, #EF4444 0%, #B91C1C 50%, #7F1D1D 100%)"
-    : "linear-gradient(180deg, #CBD5E1 0%, #94A3B8 50%, #475569 100%)";
-  const tickerBorder = isUp ? "#14532D" : isDown ? "#7F1D1D" : "#334155";
-  const tickerShadow = isUp ? "rgba(20,83,45,0.55)" : isDown ? "rgba(127,29,29,0.55)" : "rgba(51,65,85,0.40)";
-
-  // P&L coloring — punchier dark
   const pnlPositive = entry.totalDollar != null && entry.totalDollar > 0;
-  const pnlColor = entry.totalDollar == null ? "#64748B" : pnlPositive ? "#065F46" : "#7F1D1D";
+  const pnlColor = entry.totalDollar == null ? NEUTRAL : pnlPositive ? POS : NEG;
   const totalPctPositive = entry.totalPct != null && entry.totalPct > 0;
-  const totalPctColor = entry.totalPct == null ? "#64748B" : totalPctPositive ? "#065F46" : "#7F1D1D";
+  const totalPctColor = entry.totalPct == null ? NEUTRAL : totalPctPositive ? POS : NEG;
   const todayDollarPositive = entry.todayDollar != null && entry.todayDollar > 0;
-  const todayColor = entry.todayDollar == null ? "#64748B" : todayDollarPositive ? "#065F46" : "#7F1D1D";
-  const todayPctColor = entry.changePct == null ? "#64748B" : isUp ? "#065F46" : "#7F1D1D";
+  const todayColor = entry.todayDollar == null ? NEUTRAL : todayDollarPositive ? POS : NEG;
+  const todayPctColor = entry.changePct == null ? NEUTRAL : isUp ? POS : NEG;
 
   return (
     <div
@@ -8004,138 +8009,116 @@ function PlaybookColumnRow({ entry, onOpen }) {
       tabIndex={0}
       onClick={() => onOpen && onOpen(entry)}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen && onOpen(entry); } }}
-      className="relative w-full flex items-stretch border-b border-slate-200 text-left transition cursor-pointer"
+      className="relative w-full flex items-stretch text-left transition cursor-pointer hover:bg-slate-50"
       style={{
         minWidth: "max-content",
-        background: rowBg,
-        position: "relative",
-        isolation: "isolate",
+        background: "#FFFFFF",
+        borderBottom: "1px solid #F1F5F9",
+        fontVariantNumeric: "tabular-nums",
       }}
     >
-      {/* Glossy top specular — strong shine */}
-      <span className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-[1]"
-        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.20) 60%, rgba(255,255,255,0) 100%)" }} />
-      {/* Bottom darkening */}
-      <span className="absolute bottom-0 left-0 right-0 h-[22%] pointer-events-none z-[1]"
-        style={{
-          background: isUp
-            ? "linear-gradient(to top, rgba(20,83,45,0.20) 0%, rgba(20,83,45,0) 100%)"
-            : isDown
-            ? "linear-gradient(to top, rgba(127,29,29,0.20) 0%, rgba(127,29,29,0) 100%)"
-            : "linear-gradient(to top, rgba(71,85,105,0.10) 0%, rgba(71,85,105,0) 100%)",
-        }} />
-
-      {/* COLUMN 1: Ticker — sticky-left, BOLD color anchor */}
-      <div className="px-2 py-3 sticky left-0 z-[3] flex-shrink-0 flex items-center justify-center relative overflow-hidden"
+      {/* COLUMN 1: Ticker — sticky-left, bold black text on clean white */}
+      <div className="px-3 py-3 sticky left-0 z-[3] flex-shrink-0 flex items-center"
         style={{
           width: 78,
-          background: tickerBg,
-          borderRight: `1.5px solid ${tickerBorder}`,
-          boxShadow: `inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -2.5px 4px ${tickerShadow}`,
+          background: "#FFFFFF",
+          borderRight: "1px solid #F1F5F9",
         }}>
-        <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
-          style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)" }} />
-        <span className="relative text-[14px] font-extrabold tracking-tight leading-none"
-          style={{ fontFamily: SERIF, color: "#FFFFFF", textShadow: "0 1px 2px rgba(0,0,0,0.40)" }}>
+        <span className="text-[14px] font-bold tracking-tight leading-none"
+          style={{ color: "#111113", letterSpacing: "-0.005em" }}>
           {entry.symbol}
         </span>
       </div>
 
       {/* COLUMN 2: Total Cost (total dollars invested) */}
-      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 76 }}>
+      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 76 }}>
         {entry.totalCost != null && entry.totalCost > 0 ? (
-          <span className="text-[13px] font-extrabold" style={{ color: "#334155" }}>
+          <span className="text-[13px] font-semibold" style={{ color: "#374151" }}>
             ${entry.totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </span>
         ) : (
-          <span className="text-[11px] text-slate-400">—</span>
+          <span className="text-[12px]" style={{ color: "#9CA3AF" }}>—</span>
         )}
       </div>
 
       {/* COLUMN 3: Value */}
-      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 80 }}>
+      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 80 }}>
         {entry.currentPrice != null && entry.qty != null ? (
-          <span className="text-[13px] font-extrabold" style={{ color: "#020617" }}>
+          <span className="text-[13px] font-semibold" style={{ color: "#111113" }}>
             ${(entry.currentPrice * entry.qty).toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </span>
         ) : entry.currentPrice != null ? (
-          <span className="text-[13px] font-extrabold" style={{ color: "#020617" }}>
+          <span className="text-[13px] font-semibold" style={{ color: "#111113" }}>
             ${entry.currentPrice.toFixed(2)}
           </span>
         ) : (
-          <span className="text-[11px] text-slate-400">—</span>
+          <span className="text-[12px]" style={{ color: "#9CA3AF" }}>—</span>
         )}
       </div>
 
       {/* COLUMN 4: Today $ */}
-      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 84 }}>
+      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 84 }}>
         {entry.todayDollar != null ? (
-          <span className="text-[13px] font-extrabold inline-flex items-center gap-0.5" style={{ color: todayColor }}>
-            <span style={{ fontSize: 11, lineHeight: 1, fontWeight: 900 }}>{todayDollarPositive ? "▲" : "▼"}</span>
-            {todayDollarPositive ? "+" : "-"}${Math.abs(entry.todayDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          <span className="text-[13px] font-semibold" style={{ color: todayColor }}>
+            {todayDollarPositive ? "+" : "−"}${Math.abs(entry.todayDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </span>
         ) : (
-          <span className="text-[11px] text-slate-400">—</span>
+          <span className="text-[12px]" style={{ color: "#9CA3AF" }}>—</span>
         )}
       </div>
 
       {/* COLUMN 5: Today % */}
-      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 70 }}>
+      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 70 }}>
         {entry.changePct != null && !Number.isNaN(entry.changePct) ? (
-          <span className="text-[13px] font-extrabold" style={{ color: todayPctColor }}>
+          <span className="text-[13px] font-semibold" style={{ color: todayPctColor }}>
             {isUp ? "+" : ""}{entry.changePct.toFixed(1)}%
           </span>
         ) : (
-          <span className="text-[11px] text-slate-400">—</span>
+          <span className="text-[12px]" style={{ color: "#9CA3AF" }}>—</span>
         )}
       </div>
 
       {/* COLUMN 6: Total $ */}
-      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 94 }}>
+      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 94 }}>
         {entry.totalDollar != null ? (
-          <span className="text-[13px] font-extrabold" style={{ color: pnlColor }}>
-            {pnlPositive ? "+" : "-"}${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          <span className="text-[13px] font-semibold" style={{ color: pnlColor }}>
+            {pnlPositive ? "+" : "−"}${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </span>
         ) : (
-          <span className="text-[11px] text-slate-400">—</span>
+          <span className="text-[12px]" style={{ color: "#9CA3AF" }}>—</span>
         )}
       </div>
 
       {/* COLUMN 7: Total % */}
-      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0 relative z-[2]" style={{ width: 74 }}>
+      <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 74 }}>
         {entry.totalPct != null ? (
-          <span className="text-[13px] font-extrabold" style={{ color: totalPctColor }}>
+          <span className="text-[13px] font-semibold" style={{ color: totalPctColor }}>
             {totalPctPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%
           </span>
         ) : (
-          <span className="text-[11px] text-slate-400">—</span>
+          <span className="text-[12px]" style={{ color: "#9CA3AF" }}>—</span>
         )}
       </div>
 
-      {/* COLUMN 8: Action chip — sticky-right, READ-ONLY (no cycle) */}
-      <div className="px-2 py-3 flex items-center justify-center sticky right-0 z-[3] flex-shrink-0 relative"
+      {/* COLUMN 8: Action chip — sticky-right, flat pill (no gradient, no 3D) */}
+      <div className="px-2 py-3 flex items-center justify-center sticky right-0 z-[3] flex-shrink-0"
         style={{
           width: 82,
-          background: rowBg,
-          borderLeft: `1px solid ${isUp ? "rgba(20,83,45,0.35)" : isDown ? "rgba(127,29,29,0.35)" : "#CBD5E1"}`,
+          background: "#FFFFFF",
+          borderLeft: "1px solid #F1F5F9",
         }}>
-        <div
-          className="relative inline-flex items-center rounded-full overflow-hidden font-extrabold tracking-wider uppercase text-white"
+        <span
+          className="inline-flex items-center rounded-full font-bold uppercase"
           style={{
             background: a.bg,
-            border: `1.5px solid ${a.border}`,
-            boxShadow: `0 2.5px 0 ${a.border}, 0 4px 7px rgba(15,23,42,0.25), inset 0 2.5px 3.5px rgba(255,255,255,0.85), inset 0 -3px 5px rgba(0,0,0,0.20)`,
+            color: a.fg,
+            border: `1px solid ${a.border}`,
             fontSize: 10.5,
             padding: "4px 10px",
-            textShadow: "0 1px 1.5px rgba(0,0,0,0.45)",
+            letterSpacing: "0.05em",
           }}>
-          <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
-            style={{
-              background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.40) 50%, rgba(255,255,255,0) 100%)",
-              borderRadius: "9999px 9999px 50% 50%",
-            }} />
-          <span className="relative">{entry.action}</span>
-        </div>
+          {entry.action}
+        </span>
       </div>
     </div>
   );
