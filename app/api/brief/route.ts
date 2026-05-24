@@ -746,16 +746,30 @@ Return ONLY this JSON:
       "net_bearish_sectors": ["1-2 sector names"]
     },
     "sector_heatmap": [{ "sector": "name max 22 chars", "direction": "buying|selling|neutral", "intensity": 1 }],
-    "whale_moves": [{ "text": "named trade max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation." }],
-    "congress_moves": [{ "text": "named congressional trade max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation." }],
-    "hedge_fund_moves": [{ "text": "named hedge fund trade max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation." }]
+    "whale_moves": [{ "text": "TRADE_VERB SHARES/DOLLARS TICKER (max 12 words)", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation." }],
+    "congress_moves": [{ "text": "TRADE_VERB SHARES/DOLLARS TICKER (max 12 words)", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation." }],
+    "hedge_fund_moves": [{ "text": "TRADE_VERB SHARES/DOLLARS TICKER (max 12 words)", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation." }]
   }
 }
 
 CRITICAL DATA RULES:
 - NEVER use placeholder strings.
 - whale_moves/congress_moves/hedge_fund_moves: 3-5 entries each. Every entry MUST be a SPECIFIC TRADE by a NAMED person/fund with a real ticker. Empty arrays are fine if no real trades found.
-- BAD: news commentary, calendar notes, vague exposure summaries, political headlines, generic crowd statements.`;
+- BAD: news commentary, calendar notes, vague exposure summaries, political headlines, generic crowd statements.
+
+TEXT FIELD WORDING — STRICT:
+- Lead with one capitalized action verb: BOUGHT, SOLD, ADDED, or EXITED. Use BOUGHT for new positions and adds; SOLD for full exits and big reductions; ADDED for incremental adds; EXITED for full position close.
+- BANNED soft verbs in text field: "initiated", "boosted", "cut", "trimmed", "stake", "position" as a verb. These read vague. Replace with direct verbs above.
+- ALWAYS include a specific number: share count ("2.1M shares", "500K shares") OR dollar amount ("$48M", "$2.3B") OR clear percentage of position ("40% of position").
+- Format examples (FOLLOW THESE EXACTLY):
+  - "Viking Global BOUGHT 2.1M shares NVDA" — not "added 2.1M shares"
+  - "Druckenmiller SOLD 500K shares TSLA" — not "sold 500K stake"
+  - "Renaissance BOUGHT 1.8M shares PLTR" — not "boosted PLTR by 1.8M"
+  - "Coatue BOUGHT 900K shares IONQ" — not "initiated 900K share position"
+  - "Tiger Global SOLD 40% of META" — not "cut META stake by 40 percent"
+  - "Rep Gottheimer BOUGHT $50K NVDA calls" — not "bought NVDA calls"
+  - "Sen Tuberville SOLD $250K TSLA" — not "sold TSLA"
+- Name the person or fund first, then the verb, then the size, then the ticker. Keep it scannable.`;
 
   return callJsonChunk(prompt, { search: true, maxTokens: 5000, maxSearches: 2, label: "smart-money" });
 }
