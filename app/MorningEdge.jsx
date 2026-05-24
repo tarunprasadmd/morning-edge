@@ -3069,26 +3069,22 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
             <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-40 pointer-events-none"
               style={{ background: "radial-gradient(circle, #818CF8 0%, transparent 60%)" }} />
-            <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
-              <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center relative overflow-hidden"
+            <div className="relative z-10 px-3 py-2.5 flex flex-row items-center gap-2.5 min-h-[60px]">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center relative overflow-hidden"
                 style={{
                   background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
                   boxShadow: "0 2px 0 #92400E, inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -2px 3px rgba(146,64,14,0.30)",
                 }}>
                 <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
                   style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
-                <Sparkles className="w-4 h-4 relative" style={{ color: "#451A03" }} />
+                <Sparkles className="w-3.5 h-3.5 relative" style={{ color: "#451A03" }} />
               </div>
-              <div className="flex-1">
-                <p className="text-[9px] tracking-[0.25em] uppercase font-bold leading-none mb-1"
-                  style={{ color: "#FCD34D", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
-                  ✦ {brief ? "Refresh" : "Begin"}
-                </p>
-                <p className="text-[16px] leading-tight"
-                  style={{ fontFamily: SERIF, fontWeight: 500, color: "#FFFFFF", textShadow: "0 1px 2px rgba(0,0,0,0.55)" }}>
+              <div className="flex-1 min-w-0">
+                <p className="text-[14px] leading-tight truncate"
+                  style={{ fontFamily: SERIF, fontWeight: 600, color: "#FFFFFF", textShadow: "0 1px 2px rgba(0,0,0,0.55)" }}>
                   {brief ? "Regenerate" : "Generate Brief"}
                 </p>
-                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.85)", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
+                <p className="text-[10px] leading-snug mt-0.5 truncate" style={{ color: "rgba(248,250,252,0.85)", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
                   {loading ? "Reading the tape…" : brief ? "Pull fresh data" : "See today's tape"}
                 </p>
               </div>
@@ -3128,26 +3124,22 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
             <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-40 pointer-events-none"
               style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
-            <div className="relative z-10 px-3 py-4 flex flex-col items-start gap-2 min-h-[110px]">
-              <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center relative overflow-hidden"
+            <div className="relative z-10 px-3 py-2.5 flex flex-row items-center gap-2.5 min-h-[60px]">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center relative overflow-hidden"
                 style={{
                   background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
                   boxShadow: "0 2px 0 #92400E, inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -2px 3px rgba(146,64,14,0.30)",
                 }}>
                 <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
                   style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
-                <Briefcase className="w-4 h-4 relative" style={{ color: "#451A03" }} />
+                <Briefcase className="w-3.5 h-3.5 relative" style={{ color: "#451A03" }} />
               </div>
-              <div className="flex-1">
-                <p className="text-[9px] tracking-[0.25em] uppercase font-bold leading-none mb-1"
-                  style={{ color: "#FCD34D", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
-                  ✦ {holdings.length > 0 ? "Manage" : "Personalize"}
-                </p>
-                <p className="text-[16px] leading-tight"
-                  style={{ fontFamily: SERIF, fontWeight: 500, color: "#FFFFFF", textShadow: "0 1px 2px rgba(0,0,0,0.55)" }}>
+              <div className="flex-1 min-w-0">
+                <p className="text-[14px] leading-tight truncate"
+                  style={{ fontFamily: SERIF, fontWeight: 600, color: "#FFFFFF", textShadow: "0 1px 2px rgba(0,0,0,0.55)" }}>
                   Sync Portfolio
                 </p>
-                <p className="text-[11px] leading-snug mt-1" style={{ color: "rgba(248,250,252,0.85)", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
+                <p className="text-[10px] leading-snug mt-0.5 truncate" style={{ color: "rgba(248,250,252,0.85)", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
                   {holdings.length > 0 ? `${holdings.length} positions` : "Connect holdings"}
                 </p>
               </div>
@@ -7986,12 +7978,12 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 // the row is clean white with refined sans-serif numbers, subtle direction
 // coloring. Action chip is read-only flat pill.
 function PlaybookColumnRow({ entry, onOpen }) {
-  // Subtle, calm action-chip colors. Flat fills, no gradients, no 3D.
+  // Subtle, calm action-chip colors. Flat fills, darker text for visibility.
   const actionStyle = {
-    TRIM:  { bg: "#FEE2E2", fg: "#991B1B", border: "#FCA5A5" },
-    ADD:   { bg: "#DCFCE7", fg: "#065F46", border: "#86EFAC" },
-    HOLD:  { bg: "#FEF3C7", fg: "#92400E", border: "#FCD34D" },
-    WATCH: { bg: "#FEF3C7", fg: "#92400E", border: "#FCD34D" },
+    TRIM:  { bg: "#FEE2E2", fg: "#7F1D1D", border: "#F87171" },
+    ADD:   { bg: "#DCFCE7", fg: "#064E3B", border: "#4ADE80" },
+    HOLD:  { bg: "#FEF3C7", fg: "#78350F", border: "#FBBF24" },
+    WATCH: { bg: "#FEF3C7", fg: "#78350F", border: "#FBBF24" },
   };
   const a = actionStyle[entry.action] || actionStyle.HOLD;
 
@@ -7999,10 +7991,11 @@ function PlaybookColumnRow({ entry, onOpen }) {
   const isUp = entry.changePct != null && entry.changePct >= 0;
   const isDown = entry.changePct != null && entry.changePct < 0;
 
-  // Muted P&L colors for the right-side numeric columns
-  const POS = "#047857";
-  const NEG = "#B91C1C";
-  const NEUTRAL = "#6B7280";
+  // Muted P&L colors for the right-side numeric columns — DARKER for visibility
+  // (Tarun feedback 5/23/26: numbers were too light, hard to read at a glance)
+  const POS = "#065F46";   // deeper forest green
+  const NEG = "#7F1D1D";   // deeper crimson
+  const NEUTRAL = "#374151"; // darker gray (was #6B7280)
 
   const pnlPositive = entry.totalDollar != null && entry.totalDollar > 0;
   const pnlColor = entry.totalDollar == null ? NEUTRAL : pnlPositive ? POS : NEG;
@@ -8121,70 +8114,70 @@ function PlaybookColumnRow({ entry, onOpen }) {
       {/* COLUMN 2: Total Cost (total dollars invested) */}
       <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 76 }}>
         {entry.totalCost != null && entry.totalCost > 0 ? (
-          <span className="text-[13px] font-semibold" style={{ color: "#374151" }}>
+          <span className="text-[13px] font-bold" style={{ color: "#111827" }}>
             ${entry.totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </span>
         ) : (
-          <span className="text-[12px]" style={{ color: "#9CA3AF" }}>—</span>
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
         )}
       </div>
 
       {/* COLUMN 3: Value */}
       <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 80 }}>
         {entry.currentPrice != null && entry.qty != null ? (
-          <span className="text-[13px] font-semibold" style={{ color: "#111113" }}>
+          <span className="text-[13px] font-bold" style={{ color: "#0B0F19" }}>
             ${(entry.currentPrice * entry.qty).toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </span>
         ) : entry.currentPrice != null ? (
-          <span className="text-[13px] font-semibold" style={{ color: "#111113" }}>
+          <span className="text-[13px] font-bold" style={{ color: "#0B0F19" }}>
             ${entry.currentPrice.toFixed(2)}
           </span>
         ) : (
-          <span className="text-[12px]" style={{ color: "#9CA3AF" }}>—</span>
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
         )}
       </div>
 
       {/* COLUMN 4: Today $ */}
       <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 84 }}>
         {entry.todayDollar != null ? (
-          <span className="text-[13px] font-semibold" style={{ color: todayColor }}>
+          <span className="text-[13px] font-bold" style={{ color: todayColor }}>
             {todayDollarPositive ? "+" : "−"}${Math.abs(entry.todayDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </span>
         ) : (
-          <span className="text-[12px]" style={{ color: "#9CA3AF" }}>—</span>
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
         )}
       </div>
 
       {/* COLUMN 5: Today % */}
       <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 70 }}>
         {entry.changePct != null && !Number.isNaN(entry.changePct) ? (
-          <span className="text-[13px] font-semibold" style={{ color: todayPctColor }}>
+          <span className="text-[13px] font-bold" style={{ color: todayPctColor }}>
             {isUp ? "+" : ""}{entry.changePct.toFixed(1)}%
           </span>
         ) : (
-          <span className="text-[12px]" style={{ color: "#9CA3AF" }}>—</span>
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
         )}
       </div>
 
       {/* COLUMN 6: Total $ */}
       <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 94 }}>
         {entry.totalDollar != null ? (
-          <span className="text-[13px] font-semibold" style={{ color: pnlColor }}>
+          <span className="text-[13px] font-bold" style={{ color: pnlColor }}>
             {pnlPositive ? "+" : "−"}${Math.abs(entry.totalDollar).toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </span>
         ) : (
-          <span className="text-[12px]" style={{ color: "#9CA3AF" }}>—</span>
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
         )}
       </div>
 
       {/* COLUMN 7: Total % */}
       <div className="px-2 py-3 text-right flex items-center justify-end flex-shrink-0" style={{ width: 74 }}>
         {entry.totalPct != null ? (
-          <span className="text-[13px] font-semibold" style={{ color: totalPctColor }}>
+          <span className="text-[13px] font-bold" style={{ color: totalPctColor }}>
             {totalPctPositive ? "+" : ""}{entry.totalPct.toFixed(1)}%
           </span>
         ) : (
-          <span className="text-[12px]" style={{ color: "#9CA3AF" }}>—</span>
+          <span className="text-[12px] font-semibold" style={{ color: "#6B7280" }}>—</span>
         )}
       </div>
 

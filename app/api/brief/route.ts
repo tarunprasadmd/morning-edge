@@ -611,7 +611,34 @@ async function generateLightChunk(
     ? `\nMULTI-ACCOUNT REQUIREMENT: User has positions in ${accounts!.length} accounts. EVERY decision MUST name the specific account (e.g., "Trim NVDA in Fidelity TOD: 30 of 75 sh").`
     : "";
 
-  const prompt = `${COMMON_PREAMBLE(name, date)}${holdingsBlock}
+  // ─── Power Plate diversity rotation ──────────────────────────────
+  // Seeded by day-of-year so the same date always picks the same meal
+  // (idempotent for cache). 15 proteins × 15 cuisines = salmon appears
+  // at most 1 in every 15 days. Fixes the "salmon every day" feedback.
+  const dayOfYear = (() => {
+    try {
+      const d = new Date(date);
+      if (Number.isNaN(d.getTime())) return 0;
+      const start = new Date(d.getFullYear(), 0, 0);
+      return Math.floor((d.getTime() - start.getTime()) / 86400000);
+    } catch { return 0; }
+  })();
+  const PROTEIN_ROTATION = [
+    "chicken thigh", "cod or branzino", "lentils", "lamb", "turkey breast",
+    "rainbow trout", "shrimp", "extra-firm tofu", "ground bison or lean beef",
+    "bay scallops", "chickpeas with halloumi", "duck breast", "albacore tuna",
+    "salmon", "eggs with feta and greens",
+  ];
+  const CUISINE_ROTATION = [
+    "Mediterranean", "Japanese", "Indian", "Mexican", "Thai",
+    "Italian", "Greek", "Korean", "Middle Eastern", "Vietnamese",
+    "French Provençal", "Moroccan", "Chinese-inspired", "California fresh", "Peruvian",
+  ];
+  const todayProtein = PROTEIN_ROTATION[dayOfYear % PROTEIN_ROTATION.length];
+  const todayCuisine = CUISINE_ROTATION[(dayOfYear + 3) % CUISINE_ROTATION.length];
+  const powerPlateRule = `\nPOWER PLATE STRICT ROTATION (NON-NEGOTIABLE):\n- Today's protein MUST be: ${todayProtein}\n- Today's cuisine MUST be: ${todayCuisine}\n- DO NOT substitute. DO NOT default to salmon unless today's protein IS salmon.\n- Build the recipe name, description, groceries, and prep_steps entirely around this protein + cuisine pairing.\n- Style field should reflect the cuisine (e.g., "Mediterranean" / "Japanese" / "Indian" / "Mexican") — not always "High Protein".`;
+
+  const prompt = `${COMMON_PREAMBLE(name, date)}${holdingsBlock}${powerPlateRule}
 
 Return ONLY this JSON shape with all fields populated:
 
