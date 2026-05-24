@@ -2119,6 +2119,8 @@ export default function MorningEdge() {
         };
         // Symbol column — also accepts crypto "Asset", "Currency", "Coin" headers
         const symCol = findCol(/^symbol$/, /^ticker$/, /^asset$/, /^currency$/, /^coin$/, /symbol|ticker|asset|currency|coin/, /^stock$|security/);
+        // Company / security name — Fidelity "Description", Schwab "Description", others "Security Name" / "Name"
+        const nameCol = findCol(/^description$/, /^security description$/, /^security name$/, /^name$/, /description|security name|company name|stock name/);
         // Quantity — crypto exchanges may use "Amount", "Balance", "Quantity"
         const qtyCol = findCol(/^quantity$/, /^shares$/, /^qty$/, /^amount$/, /^balance$/, /quantity|shares|qty|amount|balance/);
         // EXPLICIT columns — when broker provides both, we know which is which (no heuristic needed)
@@ -2187,6 +2189,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           tickers.add(raw);
           newHoldings.push({
             symbol: raw,
+            name: nameCol !== -1 ? (cells[nameCol] || "").replace(/^"|"$/g, "").trim() : "",
             type: isCrypto ? "crypto" : "stock",
             isStablecoin: isStablecoin || undefined,
             qty: parsedQty,
@@ -4158,6 +4161,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
                     return {
                       symbol: sym,
+                      name: h.name || "",
                       qty: h.qty,
                       cost: h.cost,
                       avgCost: avgCostPerShare,
@@ -7972,9 +7976,11 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
 // not just the brief's decisions. Color-coded by action type with a separate
 // risk-tier dot indicator.
 // ─── PlaybookColumnRow ──────────────────────────────────────────────
-// Brokerage-style row — clean white, refined sans-serif, subtle green/red,
-// no candy gloss. Columns: Ticker | Cost | Value | Today $ | Today % |
-// Total $ | Total % | Action. Action chip is read-only.
+// Brokerage-style row matching reference: colored ticker cell (gloss
+// gradient shaded by gain magnitude — dark green for big gains, lighter
+// for modest), with ticker bold on top and company name below. Rest of
+// the row is clean white with refined sans-serif numbers, subtle direction
+// coloring. Action chip is read-only flat pill.
 function PlaybookColumnRow({ entry, onOpen }) {
   // Subtle, calm action-chip colors. Flat fills, no gradients, no 3D.
   const actionStyle = {
@@ -7989,8 +7995,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
   const isUp = entry.changePct != null && entry.changePct >= 0;
   const isDown = entry.changePct != null && entry.changePct < 0;
 
-  // Muted forest-green / muted red — classy, not neon. Matches the
-  // mockup direction Tarun approved (5/23/26 brokerage-view spec).
+  // Muted P&L colors for the right-side numeric columns
   const POS = "#047857";
   const NEG = "#B91C1C";
   const NEUTRAL = "#6B7280";
@@ -8002,6 +8007,74 @@ function PlaybookColumnRow({ entry, onOpen }) {
   const todayDollarPositive = entry.todayDollar != null && entry.todayDollar > 0;
   const todayColor = entry.todayDollar == null ? NEUTRAL : todayDollarPositive ? POS : NEG;
   const todayPctColor = entry.changePct == null ? NEUTRAL : isUp ? POS : NEG;
+
+  // ─── Ticker cell shading: glossy gradient by gain magnitude ───
+  // Use today's % change. Bigger move = more saturated. Small / null move
+  // = pale shade. This produces the brokerage "heat-map" left column look.
+  const cellShade = (() => {
+    const pct = entry.changePct;
+    if (pct == null || Number.isNaN(pct)) {
+      return {
+        bg: "linear-gradient(180deg, #F9FAFB 0%, #F3F4F6 50%, #E5E7EB 100%)",
+        border: "#D1D5DB",
+        shadow: "rgba(107,114,128,0.35)",
+      };
+    }
+    const abs = Math.abs(pct);
+    if (pct >= 0) {
+      if (abs >= 8) return {
+        bg: "linear-gradient(180deg, #86EFAC 0%, #22C55E 45%, #15803D 100%)",
+        border: "#14532D",
+        shadow: "rgba(20,83,45,0.50)",
+      };
+      if (abs >= 4) return {
+        bg: "linear-gradient(180deg, #BBF7D0 0%, #4ADE80 45%, #16A34A 100%)",
+        border: "#15803D",
+        shadow: "rgba(21,128,61,0.40)",
+      };
+      if (abs >= 1.5) return {
+        bg: "linear-gradient(180deg, #DCFCE7 0%, #86EFAC 50%, #4ADE80 100%)",
+        border: "#22C55E",
+        shadow: "rgba(34,197,94,0.30)",
+      };
+      return {
+        bg: "linear-gradient(180deg, #F0FDF4 0%, #DCFCE7 50%, #BBF7D0 100%)",
+        border: "#86EFAC",
+        shadow: "rgba(74,222,128,0.25)",
+      };
+    }
+    if (abs >= 8) return {
+      bg: "linear-gradient(180deg, #FCA5A5 0%, #EF4444 45%, #B91C1C 100%)",
+      border: "#7F1D1D",
+      shadow: "rgba(127,29,29,0.50)",
+    };
+    if (abs >= 4) return {
+      bg: "linear-gradient(180deg, #FECACA 0%, #F87171 45%, #DC2626 100%)",
+      border: "#B91C1C",
+      shadow: "rgba(185,28,28,0.40)",
+    };
+    if (abs >= 1.5) return {
+      bg: "linear-gradient(180deg, #FEE2E2 0%, #FCA5A5 50%, #F87171 100%)",
+      border: "#EF4444",
+      shadow: "rgba(239,68,68,0.30)",
+    };
+    return {
+      bg: "linear-gradient(180deg, #FEF2F2 0%, #FEE2E2 50%, #FECACA 100%)",
+      border: "#FCA5A5",
+      shadow: "rgba(248,113,113,0.25)",
+    };
+  })();
+
+  // Company name display — truncate cleanly if long. CSV may have the
+  // full legal name (e.g. "NVIDIA CORPORATION") — title-case it for
+  // a cleaner look that matches the reference brokerage style.
+  const titleCase = (s) => {
+    if (!s) return "";
+    return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
+      // Preserve common acronyms / suffixes
+      .replace(/\b(Inc|Corp|Co|Llc|Ltd|Plc|Etf|Reit|N\.v|S\.a)\b/gi, (m) => m.toUpperCase());
+  };
+  const companyName = titleCase(entry.name || "").slice(0, 22);
 
   return (
     <div
@@ -8017,17 +8090,28 @@ function PlaybookColumnRow({ entry, onOpen }) {
         fontVariantNumeric: "tabular-nums",
       }}
     >
-      {/* COLUMN 1: Ticker — sticky-left, bold black text on clean white */}
-      <div className="px-3 py-3 sticky left-0 z-[3] flex-shrink-0 flex items-center"
+      {/* COLUMN 1: Ticker + Company name — sticky-left, GLOSSY shade by gain magnitude */}
+      <div className="px-3 py-3 sticky left-0 z-[3] flex-shrink-0 flex flex-col items-start justify-center relative overflow-hidden"
         style={{
-          width: 78,
-          background: "#FFFFFF",
-          borderRight: "1px solid #F1F5F9",
+          width: 132,
+          minHeight: 60,
+          background: cellShade.bg,
+          borderRight: `1.5px solid ${cellShade.border}`,
+          boxShadow: `inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -2.5px 4px ${cellShade.shadow}`,
         }}>
-        <span className="text-[14px] font-bold tracking-tight leading-none"
-          style={{ color: "#111113", letterSpacing: "-0.005em" }}>
+        {/* Glossy top specular — candy gloss shine */}
+        <span className="absolute top-0 left-1 right-1 h-[50%] pointer-events-none"
+          style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.12) 60%, rgba(255,255,255,0) 100%)" }} />
+        <span className="relative text-[15px] font-extrabold tracking-tight leading-none"
+          style={{ color: "#0B0F19", letterSpacing: "-0.005em" }}>
           {entry.symbol}
         </span>
+        {companyName ? (
+          <span className="relative text-[10px] font-semibold uppercase tracking-wide mt-1.5 leading-tight"
+            style={{ color: "#1F2937", letterSpacing: "0.02em" }}>
+            {companyName}
+          </span>
+        ) : null}
       </div>
 
       {/* COLUMN 2: Total Cost (total dollars invested) */}
