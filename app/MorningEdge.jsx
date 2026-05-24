@@ -3069,25 +3069,25 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
             <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-40 pointer-events-none"
               style={{ background: "radial-gradient(circle, #818CF8 0%, transparent 60%)" }} />
-            <div className="relative z-10 px-3 py-2.5 flex flex-row items-center gap-2.5 min-h-[60px]">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center relative overflow-hidden"
-                style={{
-                  background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
-                  boxShadow: "0 2px 0 #92400E, inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -2px 3px rgba(146,64,14,0.30)",
-                }}>
-                <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
-                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
-                <Sparkles className="w-3.5 h-3.5 relative" style={{ color: "#451A03" }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[14px] leading-tight truncate"
+            <div className="relative z-10 px-3 py-3 flex flex-col items-start gap-1 min-h-[78px]">
+              <div className="flex items-center gap-2 w-full">
+                <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center relative overflow-hidden"
+                  style={{
+                    background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
+                    boxShadow: "0 2px 0 #92400E, inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -2px 3px rgba(146,64,14,0.30)",
+                  }}>
+                  <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                    style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
+                  <Sparkles className="w-3.5 h-3.5 relative" style={{ color: "#451A03" }} />
+                </div>
+                <p className="text-[14px] leading-tight truncate flex-1"
                   style={{ fontFamily: SERIF, fontWeight: 600, color: "#FFFFFF", textShadow: "0 1px 2px rgba(0,0,0,0.55)" }}>
                   {brief ? "Regenerate" : "Generate Brief"}
                 </p>
-                <p className="text-[10px] leading-snug mt-0.5 truncate" style={{ color: "rgba(248,250,252,0.85)", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
-                  {loading ? "Reading the tape…" : brief ? "Pull fresh data" : "See today's tape"}
-                </p>
               </div>
+              <p className="text-[10px] leading-snug truncate w-full" style={{ color: "rgba(248,250,252,0.85)", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
+                {loading ? "Reading the tape…" : brief ? "Pull fresh data" : "See today's tape"}
+              </p>
             </div>
           </button>
 
@@ -3124,25 +3124,25 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
             <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-40 pointer-events-none"
               style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
-            <div className="relative z-10 px-3 py-2.5 flex flex-row items-center gap-2.5 min-h-[60px]">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center relative overflow-hidden"
-                style={{
-                  background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
-                  boxShadow: "0 2px 0 #92400E, inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -2px 3px rgba(146,64,14,0.30)",
-                }}>
-                <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
-                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
-                <Briefcase className="w-3.5 h-3.5 relative" style={{ color: "#451A03" }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[14px] leading-tight truncate"
+            <div className="relative z-10 px-3 py-3 flex flex-col items-start gap-1 min-h-[78px]">
+              <div className="flex items-center gap-2 w-full">
+                <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center relative overflow-hidden"
+                  style={{
+                    background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
+                    boxShadow: "0 2px 0 #92400E, inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -2px 3px rgba(146,64,14,0.30)",
+                  }}>
+                  <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                    style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
+                  <Briefcase className="w-3.5 h-3.5 relative" style={{ color: "#451A03" }} />
+                </div>
+                <p className="text-[14px] leading-tight truncate flex-1"
                   style={{ fontFamily: SERIF, fontWeight: 600, color: "#FFFFFF", textShadow: "0 1px 2px rgba(0,0,0,0.55)" }}>
                   Sync Portfolio
                 </p>
-                <p className="text-[10px] leading-snug mt-0.5 truncate" style={{ color: "rgba(248,250,252,0.85)", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
-                  {holdings.length > 0 ? `${holdings.length} positions` : "Connect holdings"}
-                </p>
               </div>
+              <p className="text-[10px] leading-snug truncate w-full" style={{ color: "rgba(248,250,252,0.85)", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
+                {holdings.length > 0 ? `${holdings.length} positions` : "Connect holdings"}
+              </p>
             </div>
           </button>
         </div>
