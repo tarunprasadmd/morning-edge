@@ -12,23 +12,22 @@
 //             affirmation, mindset, clarity, power_plate, decisions,
 //             conviction_watch, opportunity_watch
 //
-// HARDENING (vs the previous version):
-//   - Single source of truth for "is this content populated" — hasSmartMoneyContent
-//     and hasMarketPulseContent. Both reads AND writes use these so a partial
-//     LLM response (smart_money block exists but all arrays empty) is never
-//     cached and never served from cache.
-//   - Input validation on POST body. Symbols regex-validated, message lengths
-//     capped, holdings capped to 200, prompt-injection-resistant.
-//   - Rate limiting via Upstash INCR — 60 req/hr per IP. Silently disabled
-//     when Upstash isn't configured (local dev).
-//   - Retry wrapper on Anthropic calls — one retry on transient/5xx errors.
-//   - Request-ID logging for every request so cron and brief calls can be
-//     correlated in Vercel logs.
-//   - cacheWriteUserState validates inputs before writing (the cron reads
-//     this — preventing poisoning is critical).
-//   - formatHoldingsBlock labels cost as "$X.XX/share avg cost" so the LLM
-//     never reads $5.99 as a total dollar value for a 175-share position.
-//   - Dead buildPrompt function (250 lines, unused since Layer A/B split) removed.
+// 5/24/26 — SMART MONEY SWAP:
+//   generateSmartMoneyOnly now hits Quiver Quantitative (Trader tier) for
+//   structured Congressional / Insider Form 4 / 13F / Lobbying data instead
+//   of AI + web_search. Same output shape, four real data sources, zero LLM
+//   hallucination risk on entities and source URLs.
+//
+//   Field mapping (preserves existing UI bindings):
+//     whale_moves       ← Quiver /beta/live/insiders          (Form 4)
+//     congress_moves    ← Quiver /beta/live/congresstrading
+//     hedge_fund_moves  ← Quiver /beta/live/sec13fchanges     (13F)
+//     lobbying_moves    ← Quiver /beta/live/lobbying          (NEW)
+//
+//   The existing UI renders Whales/Congress/Hedge boxes from the first three.
+//   lobbying_moves ships in the payload but isn't rendered until the JSX adds
+//   a 4th box. Old AI fallback removed — the brief generator already handles
+//   empty smart_money via Promise.allSettled.
 
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
@@ -65,17 +64,13 @@ try {
 }
 
 // ─── Content validation — single source of truth ────────────────────
-// Used in BOTH cache reads and cache writes. The old version validated
-// only on read (line 53, 60, 527, 536), which left the door open to
-// writing empty content into cache. Now writes refuse to persist any
-// brief whose smart_money block has all-empty arrays.
-
 function hasSmartMoneyContent(sm: any): boolean {
   if (!sm || typeof sm !== "object") return false;
   const whaleN = Array.isArray(sm.whale_moves) ? sm.whale_moves.length : 0;
   const congressN = Array.isArray(sm.congress_moves) ? sm.congress_moves.length : 0;
   const hedgeN = Array.isArray(sm.hedge_fund_moves) ? sm.hedge_fund_moves.length : 0;
-  return (whaleN + congressN + hedgeN) > 0;
+  const lobbyN = Array.isArray(sm.lobbying_moves) ? sm.lobbying_moves.length : 0;
+  return (whaleN + congressN + hedgeN + lobbyN) > 0;
 }
 
 function hasMarketPulseContent(mp: any): boolean {
@@ -84,8 +79,6 @@ function hasMarketPulseContent(mp: any): boolean {
   return true;
 }
 
-// A brief is "cacheable" when its smart_money block has at least one
-// real move. This is the gating function for ALL cache writes.
 function briefIsCacheable(brief: any): boolean {
   return hasSmartMoneyContent(brief?.smart_money);
 }
@@ -190,8 +183,8 @@ function validateBody(raw: any): { ok: true; body: ValidatedRequestBody } | { ok
 }
 
 // ─── Rate limiting ─────────────────────────────────────────────────
-const BRIEF_RATE_LIMIT = 60;     // per IP per hour
-const BRIEF_RATE_WINDOW = 3600;  // seconds
+const BRIEF_RATE_LIMIT = 60;
+const BRIEF_RATE_WINDOW = 3600;
 
 async function checkRateLimit(req: Request): Promise<{ ok: boolean; retryAfter: number }> {
   if (!redis) return { ok: true, retryAfter: 0 };
@@ -220,7 +213,6 @@ function holdingsHash(holdings: any[]): string {
 }
 
 // ─── L1+L2 brief cache ─────────────────────────────────────────────
-// Read path validates content via briefIsCacheable BEFORE returning.
 async function cacheReadBrief(cacheKey: string): Promise<any | null> {
   const memHit = briefCache.get(cacheKey);
   if (memHit && Date.now() - memHit.storedAt < CACHE_TTL_MS && briefIsCacheable(memHit.brief)) {
@@ -239,7 +231,6 @@ async function cacheReadBrief(cacheKey: string): Promise<any | null> {
   return null;
 }
 
-// Write path GATES on briefIsCacheable. Empty briefs never get cached.
 async function cacheWriteBrief(cacheKey: string, brief: any): Promise<void> {
   if (!briefIsCacheable(brief)) {
     console.warn("Brief cache write skipped — content empty");
@@ -313,8 +304,6 @@ async function cacheWriteFullBrief(date: string, hash: string, brief: any): Prom
   }
 }
 
-// User state is what the cron job picks up. Already validated before
-// being passed in here, but defense-in-depth.
 async function cacheWriteUserState(state: ValidatedRequestBody): Promise<void> {
   if (!redis) return;
   try {
@@ -333,8 +322,6 @@ async function cacheWriteUserState(state: ValidatedRequestBody): Promise<void> {
   }
 }
 
-// Side effect: when Tier 3 generates a full brief, extract the Layer A
-// slice so subsequent same-day CSV updates get the fast Tier 2 path.
 function extractLayerAFromBrief(brief: any): any | null {
   if (!brief) return null;
   const slice: any = {
@@ -354,7 +341,6 @@ function extractLayerAFromBrief(brief: any): any | null {
 }
 
 // ─── Anthropic call helpers ────────────────────────────────────────
-// Retry wrapper — one retry on transient/5xx errors. Schema/4xx fail fast.
 async function callWithRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
   try {
     return await fn();
@@ -440,7 +426,6 @@ async function callJsonChunk(
   return stripCiteTags(JSON.parse(cleaned.slice(start, end + 1)));
 }
 
-// Strip <cite> tags injected by web_search; they leak into JSON strings.
 function stripCiteTags<T>(value: T): T {
   if (typeof value === "string") {
     return value
@@ -560,12 +545,6 @@ async function generateConvictionFromContext(
     sector_heatmap: layerA?.smart_money?.sector_heatmap || null,
   };
 
-  // PARALLEL DISPATCH (5/24/26 perf fix): instead of one big call generating
-  // 8-10 conviction + 6-8 opportunity entries (~3000 tokens, 30-40 sec on Haiku),
-  // run two parallel calls — one for conviction only, one for opportunity only.
-  // Each generates ~1500 tokens = ~12-15 sec on Haiku. Total wall-clock: ~15 sec
-  // instead of 35. Same total content, half the time.
-
   const convictionPrompt = `${COMMON_PREAMBLE(name, date)}
 You have already-fetched market context below. DO NOT search — use this context directly.
 
@@ -617,7 +596,6 @@ CRITICAL: No web_search. Reason from the context. Omit rather than fabricate.
 opportunity_watch: 6-8 ideas. ABSOLUTELY EXCLUDE all tickers in user's holdings - cross-check every symbol against the holdings list before including. Pick from a MIX of sectors including ones user does NOT own - consider financials, healthcare/biotech, consumer staples, energy, industrials, REITs, materials, communications, not just AI/semis/nuclear. AT MOST 2 of 6-8 picks may be in user's existing themes; the rest MUST be in sectors user does not currently hold. CRITICAL: NEVER fabricate company descriptions. If you are not certain what a ticker's actual business is, OMIT IT.
 NEVER use placeholders like "DATA_UNAVAILABLE", "N/A", "NONE". Empty arrays are fine.`;
 
-  // Dispatch in parallel
   const [convResult, oppResult] = await Promise.allSettled([
     callJsonChunk(convictionPrompt, { search: false, maxTokens: 4500, model: "claude-haiku-4-5", label: "conviction-only" }),
     callJsonChunk(opportunityPrompt, { search: false, maxTokens: 4500, model: "claude-haiku-4-5", label: "opportunity-only" }),
@@ -676,10 +654,6 @@ async function generateLightChunk(
     ? `\nMULTI-ACCOUNT REQUIREMENT: User has positions in ${accounts!.length} accounts. EVERY decision MUST name the specific account (e.g., "Trim NVDA in Fidelity TOD: 30 of 75 sh").`
     : "";
 
-  // ─── Power Plate diversity rotation ──────────────────────────────
-  // Seeded by day-of-year so the same date always picks the same meal
-  // (idempotent for cache). 15 proteins × 15 cuisines = salmon appears
-  // at most 1 in every 15 days. Fixes the "salmon every day" feedback.
   const dayOfYear = (() => {
     try {
       const d = new Date(date);
@@ -801,9 +775,6 @@ PARITY RULE — decisions and decisions_reasoning arrays MUST have IDENTICAL len
 
   const result = await callJsonChunk(prompt, { maxTokens: 5000, model: "claude-haiku-4-5", label: "light" });
 
-  // Post-validate decisions ↔ decisions_reasoning length parity. If the AI
-  // returned mismatched counts (Haiku occasionally drops the last reasoning),
-  // pad with explanatory placeholder so the UI's index lookup never goes blank.
   if (result && Array.isArray(result.decisions)) {
     if (!Array.isArray(result.decisions_reasoning)) {
       result.decisions_reasoning = [];
@@ -867,24 +838,14 @@ MARKET PULSE QUALITY BAR — STRICT:
 }
 
 // ─── SMART MONEY URL POST-PROCESSOR ────────────────────────────────
-// The AI generates source_urls from web_search results, which usually return
-// aggregator/landing pages (sec.gov homepage, capitoltrades.com homepage,
-// whalewisdom.com search). Prompt rules can't fully prevent this — we have
-// to intercept and rewrite at server side.
-//
-// Strategy: parse the entity name from the leading words of `text` (before
-// the first BOUGHT/SOLD/etc verb), look up in known-filer maps, and rewrite
-// source_url to point to that entity's specific SEC EDGAR filings list or
-// CapitolTrades politician page. These are SPECIFIC pages — not homepages —
-// so the user can actually verify the trade.
-
+// Retained from previous version. Quiver-built URLs are already specific,
+// but cached briefs written by the old AI version may contain homepage
+// URLs — this rewriter cleans them on read.
 const SEC_EDGAR_CIKS: Record<string, string> = {
-  // Berkshire / Buffett
   "berkshire hathaway": "0001067983",
   "berkshire": "0001067983",
   "buffett": "0001067983",
   "warren buffett": "0001067983",
-  // Major hedge funds
   "viking global": "0001103804",
   "viking global investors": "0001103804",
   "renaissance technologies": "0001037389",
@@ -950,18 +911,18 @@ const SEC_EDGAR_CIKS: Record<string, string> = {
 };
 
 function edgar13FUrl(cik: string): string {
-  // Direct link to that filer's most recent 13F-HR filings list. NOT homepage.
   return `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik}&type=13F-HR&dateb=&owner=include&count=40`;
 }
 
 function edgarForm4Url(cik: string): string {
-  // Direct link to that filer's Form 4 (insider trade) filings list. NOT homepage.
   return `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik}&type=4&dateb=&owner=include&count=40`;
 }
 
+function edgarForm4ByTickerUrl(ticker: string): string {
+  return `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=&type=4&dateb=&owner=include&count=40&company=${encodeURIComponent(ticker)}`;
+}
+
 function capitoltradesSearchUrl(rawName: string): string {
-  // Strip prefix titles, search CapitolTrades by name. Goes to a filtered
-  // search result page — specific to that politician — not the homepage.
   const cleanName = (rawName || "")
     .replace(/^(sen\.?|rep\.?|senator|representative)\s+/i, "")
     .trim();
@@ -971,7 +932,6 @@ function capitoltradesSearchUrl(rawName: string): string {
 function isGenericUrl(url: string): boolean {
   if (!url || typeof url !== "string") return true;
   const lower = url.toLowerCase().replace(/\/+$/, "");
-  // Homepages and search-landing pages (not specific to a filer or trade)
   if (/^https?:\/\/(www\.)?sec\.gov$/.test(lower)) return true;
   if (/^https?:\/\/(www\.)?sec\.gov\/edgar$/.test(lower)) return true;
   if (/^https?:\/\/(www\.)?sec\.gov\/edgar\/search$/.test(lower)) return true;
@@ -989,34 +949,28 @@ function isGenericUrl(url: string): boolean {
 }
 
 function extractEntityFromText(text: string): string {
-  // Entries follow the schema "ENTITY VERB AMOUNT TICKER" (e.g.
-  // "Viking Global BOUGHT 2.1M shares NVDA"). Pull everything up to the
-  // first ALL-CAPS verb.
   if (!text || typeof text !== "string") return "";
-  const verbMatch = text.match(/\b(BOUGHT|SOLD|ADDED|EXITED|HELD|TRIMMED|REDUCED|INITIATED|OPENED|CLOSED|BUYS?|SELLS?|ADDS?|EXITS?|HOLDS?)\b/);
+  const verbMatch = text.match(/\b(BOUGHT|SOLD|ADDED|EXITED|HELD|TRIMMED|REDUCED|INITIATED|OPENED|CLOSED|BUYS?|SELLS?|ADDS?|EXITS?|HOLDS?|SPENT)\b/);
   if (verbMatch && verbMatch.index !== undefined) {
     return text.slice(0, verbMatch.index).trim();
   }
-  // Fallback: take the first 3 words
   return text.split(/\s+/).slice(0, 3).join(" ").trim();
 }
 
 function rewriteSmartMoneySourceUrls(sm: any): any {
   if (!sm || typeof sm !== "object") return sm;
-  const rewriteEntry = (entry: any, kind: "13F" | "form4" | "congress"): any => {
+  const rewriteEntry = (entry: any, kind: "13F" | "form4" | "congress" | "lobbying"): any => {
     if (!entry || typeof entry !== "object") return entry;
     const url = entry.source_url || "";
-    if (!isGenericUrl(url)) return entry; // already specific — keep it
+    if (!isGenericUrl(url)) return entry;
     const entity = extractEntityFromText(entry.text || "");
     const entityLower = entity.toLowerCase();
     if (!entityLower) return entry;
-    // Hedge funds / 13F filers: look up CIK
     const cik = SEC_EDGAR_CIKS[entityLower];
     if (cik) {
       entry.source_url = kind === "form4" ? edgarForm4Url(cik) : edgar13FUrl(cik);
       return entry;
     }
-    // Try partial match: trim trailing words and retry
     const parts = entityLower.split(/\s+/);
     for (let i = parts.length; i > 0; i--) {
       const partial = parts.slice(0, i).join(" ");
@@ -1025,80 +979,361 @@ function rewriteSmartMoneySourceUrls(sm: any): any {
         return entry;
       }
     }
-    // Congressional: use capitoltrades politician search
     if (kind === "congress") {
       entry.source_url = capitoltradesSearchUrl(entity);
       return entry;
     }
-    // Unknown entity, unknown CIK: drop the URL field rather than ship a homepage
-    // (the entry still renders, just without a "view filing" link)
     entry.source_url = "";
     return entry;
   };
-  if (Array.isArray(sm.whale_moves)) sm.whale_moves = sm.whale_moves.map((e: any) => rewriteEntry(e, "13F"));
+  if (Array.isArray(sm.whale_moves)) sm.whale_moves = sm.whale_moves.map((e: any) => rewriteEntry(e, "form4"));
   if (Array.isArray(sm.hedge_fund_moves)) sm.hedge_fund_moves = sm.hedge_fund_moves.map((e: any) => rewriteEntry(e, "13F"));
   if (Array.isArray(sm.congress_moves)) sm.congress_moves = sm.congress_moves.map((e: any) => rewriteEntry(e, "congress"));
+  if (Array.isArray(sm.lobbying_moves)) sm.lobbying_moves = sm.lobbying_moves.map((e: any) => rewriteEntry(e, "lobbying"));
   return sm;
 }
 
-async function generateSmartMoneyOnly(name: string, date: string) {
-  const prompt = `${COMMON_PREAMBLE(name, date)}
-Use web_search up to 3 times to fetch the LATEST 13F disclosures, biggest insider Form 4 trades from the past 1-2 weeks, and most recent congressional STOCK Act filings.
+// ─── QUIVER QUANTITATIVE INTEGRATION ──────────────────────────────
+// 5/24/26: Structured smart-money replaces AI/web_search generation.
+// Trader-tier subscription required. Endpoints used:
+//   /beta/live/congresstrading  — Congressional STOCK Act
+//   /beta/live/insiders          — Form 4 insider transactions
+//   /beta/live/sec13fchanges     — 13F quarterly position changes
+//   /beta/live/lobbying          — Corporate lobbying disclosures
+//
+// All fetches are parallel, timeout-bounded, and fail-soft — if any
+// endpoint returns null we keep the other three. If all four fail,
+// smart_money is omitted entirely (caller already handles this via
+// Promise.allSettled in generateLayerA).
 
-Return ONLY this JSON:
+const QUIVER_BASE = "https://api.quiverquant.com/beta";
+const QUIVER_TIMEOUT_MS = 25000;
 
-{
-  "smart_money": {
-    "summary": {
-      "most_bought": ["TICKER1", "TICKER2"],
-      "most_sold": ["TICKER1", "TICKER2"],
-      "net_bullish_sectors": ["2-3 sector names"],
-      "net_bearish_sectors": ["1-2 sector names"]
-    },
-    "sector_heatmap": [{ "sector": "name max 22 chars", "direction": "buying|selling|neutral", "intensity": 1 }],
-    "whale_moves": [{ "text": "PERSON/FUND VERB AMOUNT TICKER (plain English, max 12 words)", "ticker": "TICKER", "source_url": "DIRECT-FILING-URL", "why_matters": "60-90 word plain-English explanation, written like you're texting a friend." }],
-    "congress_moves": [{ "text": "PERSON/FUND VERB AMOUNT TICKER (plain English, max 12 words)", "ticker": "TICKER", "source_url": "DIRECT-FILING-URL", "why_matters": "60-90 word plain-English explanation, written like you're texting a friend." }],
-    "hedge_fund_moves": [{ "text": "PERSON/FUND VERB AMOUNT TICKER (plain English, max 12 words)", "ticker": "TICKER", "source_url": "DIRECT-FILING-URL", "why_matters": "60-90 word plain-English explanation, written like you're texting a friend." }]
+async function quiverFetch(path: string): Promise<any[] | null> {
+  const key = process.env.QUIVER_API_KEY;
+  if (!key) {
+    console.warn(`Quiver ${path}: QUIVER_API_KEY not set`);
+    return null;
+  }
+  const url = `${QUIVER_BASE}${path}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), QUIVER_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "Authorization": `Bearer ${key}`,
+        "Accept": "application/json",
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!res.ok) {
+      const bodySample = await res.text().then((t) => t.slice(0, 200)).catch(() => "");
+      console.warn(`Quiver ${path}: HTTP ${res.status} ${res.statusText} | ${bodySample}`);
+      return null;
+    }
+    const data = await res.json();
+    if (Array.isArray(data)) return data;
+    if (Array.isArray((data as any)?.data)) return (data as any).data;
+    console.warn(`Quiver ${path}: unexpected response shape (keys: ${Object.keys(data || {}).join(",")})`);
+    return null;
+  } catch (err: any) {
+    clearTimeout(timer);
+    console.warn(`Quiver ${path} fetch failed:`, err?.message || err);
+    return null;
   }
 }
 
-CRITICAL DATA RULES:
-- NEVER use placeholder strings.
-- whale_moves/congress_moves/hedge_fund_moves: 3-5 entries each. Every entry MUST be a SPECIFIC TRADE by a NAMED person/fund with a real ticker. Empty arrays are fine if no real trades found.
-- BAD: news commentary, calendar notes, vague exposure summaries, political headlines, generic crowd statements.
-
-SOURCE URL — DIRECT TO FILING ONLY (NON-NEGOTIABLE):
-The source_url field MUST link to the SPECIFIC filing or disclosure document, NOT a generic landing page. The user clicks this to verify the trade actually happened. Generic pages fail this test.
-- For 13F filings: link to the SEC EDGAR filing detail page for THAT specific 13F-HR. Format: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=13F-HR — or better, the direct filing index URL.
-- For Form 4 insider trades: link to the SEC EDGAR Form 4 filing detail page (https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=4).
-- For congressional STOCK Act trades: link to the SPECIFIC trade page on capitoltrades.com (e.g. https://www.capitoltrades.com/trades/{trade_id}) OR the original PDF filing on house.gov/senate.gov clerk site. NOT capitoltrades.com homepage.
-- BANNED source URLs (these will fail user trust): sec.gov/edgar homepage, capitoltrades.com homepage, whalewisdom.com generic search, news aggregator URLs, wikipedia, generic broker pages.
-- If you can't find a direct filing URL, OMIT the entire entry. Don't fall back to a generic page.
-
-TEXT FIELD WORDING — PLAIN ENGLISH, NO JARGON:
-- Lead with the person or fund name, then a plain verb, then the size, then the ticker.
-- Use ONLY these verbs: BOUGHT, SOLD, ADDED, EXITED, HELD.
-- BANNED jargon verbs: "initiated", "boosted", "raised", "trimmed", "cut", "stake", "position" (as a verb), "scaled", "swung", "established", "opened", "closed", "reduced", "unloaded".
-- ALWAYS include a specific number: share count ("2.1M shares"), dollar amount ("$48M"), OR clear percentage ("40% of position").
-- Format examples (FOLLOW THESE EXACTLY):
-  - "Viking Global BOUGHT 2.1M shares NVDA"
-  - "Druckenmiller SOLD 500K shares TSLA"
-  - "Renaissance BOUGHT 1.8M shares PLTR"
-  - "Coatue BOUGHT 900K shares IONQ"
-  - "Tiger Global SOLD 40% of META"
-  - "Rep Gottheimer BOUGHT $50K NVDA calls"
-  - "Sen Tuberville SOLD $250K TSLA"
-  - "Sen Tuberville SOLD $250K TSLA" — not "sold TSLA"
-- Name the person or fund first, then the verb, then the size, then the ticker. Keep it scannable.`;
-
-  const result = await callJsonChunk(prompt, { search: true, maxTokens: 5000, maxSearches: 2, label: "smart-money" });
-  // Post-process: rewrite any generic source_urls (sec.gov homepage,
-  // capitoltrades homepage, news aggregators) to point to that specific
-  // entity's filings list, by parsing the entity name from the entry text.
-  if (result && result.smart_money) {
-    result.smart_money = rewriteSmartMoneySourceUrls(result.smart_money);
+function fmtMoney(v: any): string {
+  if (typeof v === "string" && v.length > 0 && /\$/.test(v)) {
+    // Pre-formatted range from Quiver, e.g. "$1,001 - $15,000"
+    return v.trim();
   }
-  return result;
+  const n = Number(v);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  if (n >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(1)}B`;
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+  return `$${n.toFixed(0)}`;
+}
+
+function fmtShares(n: any): string {
+  const v = Number(n);
+  if (!Number.isFinite(v) || v <= 0) return "";
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M shares`;
+  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K shares`;
+  return `${v.toFixed(0)} shares`;
+}
+
+function daysAgo(dateStr: any): number {
+  if (!dateStr) return Infinity;
+  const d = new Date(String(dateStr));
+  if (Number.isNaN(d.getTime())) return Infinity;
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+
+function cleanPolitician(name: any): string {
+  if (typeof name !== "string") return "";
+  return name
+    .replace(/^(sen\.?|rep\.?|senator|representative|the honorable)\s+/i, "")
+    .trim();
+}
+
+function form4Verb(transaction: any): "BOUGHT" | "SOLD" | null {
+  const t = String(transaction || "").toUpperCase().trim();
+  if (!t) return null;
+  if (t === "P" || t === "PURCHASE" || t === "BUY" || t === "BOUGHT" || t.includes("PURCHASE")) return "BOUGHT";
+  if (t === "S" || t === "SALE" || t === "SELL" || t === "SOLD" || t.includes("SALE") || t.includes("SOLD")) return "SOLD";
+  return null;
+}
+
+function congressVerb(transaction: any): "BOUGHT" | "SOLD" | null {
+  const t = String(transaction || "").toLowerCase().trim();
+  if (!t) return null;
+  if (t.includes("purchase") || t.includes("buy") || t === "p") return "BOUGHT";
+  if (t.includes("sale") || t.includes("sell") || t === "s") return "SOLD";
+  return null;
+}
+
+// Try a few common field names — Quiver capitalization varies by dataset
+function pick(row: any, keys: string[]): any {
+  for (const k of keys) {
+    if (row && row[k] != null && row[k] !== "") return row[k];
+  }
+  return undefined;
+}
+
+// ─── Congressional moves ───────────────────────────────────────────
+async function buildCongressMoves(): Promise<any[]> {
+  const raw = await quiverFetch("/live/congresstrading");
+  if (!raw) return [];
+  if (raw.length > 0) console.log(`Quiver congress: ${raw.length} rows, sample keys: ${Object.keys(raw[0]).join(",")}`);
+  const recent = raw.filter((row: any) => {
+    const dStr = pick(row, ["TransactionDate", "Date", "transaction_date"]);
+    return daysAgo(dStr) <= 60;
+  });
+  recent.sort((a: any, b: any) => {
+    const da = new Date(String(pick(a, ["TransactionDate", "Date", "transaction_date"]) || 0)).getTime();
+    const db = new Date(String(pick(b, ["TransactionDate", "Date", "transaction_date"]) || 0)).getTime();
+    return db - da;
+  });
+  const out: any[] = [];
+  for (const row of recent) {
+    if (out.length >= 5) break;
+    const verb = congressVerb(pick(row, ["Transaction", "transaction"]));
+    const ticker = String(pick(row, ["Ticker", "ticker"]) || "").toUpperCase();
+    const rep = cleanPolitician(pick(row, ["Representative", "representative", "Name"]));
+    if (!verb || !ticker || !rep) continue;
+    const amount = fmtMoney(pick(row, ["Range", "Amount", "range", "amount"]));
+    const house = String(pick(row, ["House", "house"]) || "").toLowerCase();
+    const prefix = house.includes("senate") ? "Sen " : house.includes("house") ? "Rep " : "";
+    const text = `${prefix}${rep} ${verb} ${amount} ${ticker}`.replace(/\s+/g, " ").trim();
+    const source_url = capitoltradesSearchUrl(rep);
+    const dateStr = String(pick(row, ["TransactionDate", "Date"]) || "").slice(0, 10);
+    out.push({
+      text,
+      ticker,
+      source_url,
+      why_matters: `${rep} ${verb.toLowerCase()} ${amount || "a position in"} ${ticker}${dateStr ? ` on ${dateStr}` : ""}. Congressional STOCK Act disclosures carry a 45-day reporting delay, but cluster activity by multiple members on the same ticker has historically preceded notable moves. Watch for follow-up filings on this name over the next two weeks.`,
+    });
+  }
+  return out;
+}
+
+// ─── Insider Form 4 moves (renders in the "Whales" UI box) ─────────
+async function buildInsiderMoves(): Promise<any[]> {
+  const raw = await quiverFetch("/live/insiders");
+  if (!raw) return [];
+  if (raw.length > 0) console.log(`Quiver insiders: ${raw.length} rows, sample keys: ${Object.keys(raw[0]).join(",")}`);
+  const recent = raw.filter((row: any) => {
+    const dStr = pick(row, ["Date", "FilingDate", "filing_date", "TransactionDate"]);
+    return daysAgo(dStr) <= 21;
+  });
+  recent.sort((a: any, b: any) => {
+    const da = new Date(String(pick(a, ["Date", "FilingDate", "TransactionDate"]) || 0)).getTime();
+    const db = new Date(String(pick(b, ["Date", "FilingDate", "TransactionDate"]) || 0)).getTime();
+    return db - da;
+  });
+  const out: any[] = [];
+  for (const row of recent) {
+    if (out.length >= 5) break;
+    const verb = form4Verb(pick(row, ["Transaction", "AcquiredDisposed", "TransactionCode"]));
+    const ticker = String(pick(row, ["Ticker", "ticker"]) || "").toUpperCase();
+    const name = String(pick(row, ["Name", "Insider", "ReporterName", "name"]) || "").trim();
+    if (!verb || !ticker || !name) continue;
+    const shares = Number(pick(row, ["Shares", "shares", "SharesTransacted"]));
+    const price = Number(pick(row, ["PricePerShare", "Price", "price_per_share"]));
+    let sizeStr = "";
+    if (Number.isFinite(shares) && shares > 0) {
+      if (Number.isFinite(price) && price > 0) {
+        sizeStr = fmtMoney(shares * price);
+      } else {
+        sizeStr = fmtShares(shares);
+      }
+    }
+    if (!sizeStr) continue;
+    const text = `${name} ${verb} ${sizeStr} ${ticker}`;
+    out.push({
+      text,
+      ticker,
+      source_url: edgarForm4ByTickerUrl(ticker),
+      why_matters: `${name} ${verb.toLowerCase()} ${sizeStr} of ${ticker} using personal cash, disclosed via SEC Form 4. Insider purchases by executives and directors are one of the strongest conviction signals — they have material non-public information about the business. Cluster buying (multiple insiders same direction within 30 days) has historically preceded outperformance.`,
+    });
+  }
+  return out;
+}
+
+// ─── Hedge fund moves (13F quarterly position changes) ─────────────
+async function buildHedgeFundMoves(): Promise<any[]> {
+  const raw = await quiverFetch("/live/sec13fchanges");
+  if (!raw) return [];
+  if (raw.length > 0) console.log(`Quiver 13F: ${raw.length} rows, sample keys: ${Object.keys(raw[0]).join(",")}`);
+  const recent = raw.filter((row: any) => {
+    const dStr = pick(row, ["Date", "FilingDate", "ReportDate", "filing_date"]);
+    return daysAgo(dStr) <= 90;
+  });
+  recent.sort((a: any, b: any) => {
+    const va = Math.abs(Number(pick(a, ["Value", "DollarChange", "ValueChange"]) || 0));
+    const vb = Math.abs(Number(pick(b, ["Value", "DollarChange", "ValueChange"]) || 0));
+    if (vb !== va) return vb - va;
+    const sa = Math.abs(Number(pick(a, ["Change", "SharesChange"]) || 0));
+    const sb = Math.abs(Number(pick(b, ["Change", "SharesChange"]) || 0));
+    return sb - sa;
+  });
+  const out: any[] = [];
+  for (const row of recent) {
+    if (out.length >= 5) break;
+    const ticker = String(pick(row, ["Ticker", "ticker"]) || "").toUpperCase();
+    const filer = String(pick(row, ["Filer", "OwnerName", "Owner", "filer"]) || "").trim();
+    if (!ticker || !filer) continue;
+    const shareChange = Number(pick(row, ["Change", "SharesChange", "shares_change"]));
+    const valueChange = Number(pick(row, ["Value", "DollarChange", "value_change"]));
+    let verb: "ADDED" | "SOLD" | "BOUGHT" | "EXITED" | null = null;
+    let sizeStr = "";
+    if (Number.isFinite(valueChange) && valueChange !== 0) {
+      verb = valueChange > 0 ? "ADDED" : "SOLD";
+      sizeStr = fmtMoney(Math.abs(valueChange));
+    } else if (Number.isFinite(shareChange) && shareChange !== 0) {
+      verb = shareChange > 0 ? "ADDED" : "SOLD";
+      sizeStr = fmtShares(Math.abs(shareChange));
+    }
+    if (!verb || !sizeStr) continue;
+    const filerLower = filer.toLowerCase();
+    const cik = SEC_EDGAR_CIKS[filerLower];
+    const source_url = cik
+      ? edgar13FUrl(cik)
+      : `https://efts.sec.gov/LATEST/search-index?q=%22${encodeURIComponent(filer)}%22&forms=13F-HR`;
+    const text = `${filer} ${verb} ${sizeStr} ${ticker}`;
+    out.push({
+      text,
+      ticker,
+      source_url,
+      why_matters: `${filer} ${verb.toLowerCase()} ${sizeStr} of ${ticker} in their latest 13F filing. Institutional 13F filings are quarterly and carry a 45-day reporting lag, so this position change reflects activity 1-3 months ago. Useful as thematic confirmation rather than a real-time signal — watch for cluster moves across multiple top hedge funds on the same name.`,
+    });
+  }
+  return out;
+}
+
+// ─── Lobbying moves (NEW — not rendered until UI adds 4th box) ─────
+async function buildLobbyingMoves(): Promise<any[]> {
+  const raw = await quiverFetch("/live/lobbying");
+  if (!raw) return [];
+  if (raw.length > 0) console.log(`Quiver lobbying: ${raw.length} rows, sample keys: ${Object.keys(raw[0]).join(",")}`);
+  const recent = raw.filter((row: any) => {
+    const dStr = pick(row, ["Date", "FilingDate", "filing_date"]);
+    return daysAgo(dStr) <= 120;
+  });
+  recent.sort((a: any, b: any) => {
+    const va = Number(pick(a, ["Amount", "amount"]) || 0);
+    const vb = Number(pick(b, ["Amount", "amount"]) || 0);
+    return vb - va;
+  });
+  const out: any[] = [];
+  for (const row of recent) {
+    if (out.length >= 5) break;
+    const ticker = String(pick(row, ["Ticker", "ticker"]) || "").toUpperCase();
+    const client = String(pick(row, ["Client", "Registrant", "client"]) || "").trim();
+    const amount = Number(pick(row, ["Amount", "amount"]));
+    if (!ticker || !client || !Number.isFinite(amount) || amount <= 0) continue;
+    const sizeStr = fmtMoney(amount);
+    const issue = String(pick(row, ["Issue", "SpecificIssues", "issue"]) || "").trim().slice(0, 60);
+    const text = `${client} SPENT ${sizeStr} lobbying ${ticker}`;
+    out.push({
+      text,
+      ticker,
+      source_url: `https://www.opensecrets.org/orgs/lookup?text=${encodeURIComponent(client)}&type=lobbyer`,
+      why_matters: `${client} spent ${sizeStr} on federal lobbying${issue ? ` covering ${issue}` : ""}. Heavy lobbying spend signals policy tailwinds or risks the company is actively trying to shape — defense contractors, semis under export-control regimes, pharma during drug-pricing fights, and crypto firms during regulatory shifts are classic patterns. Pair this with congressional trade data on the same ticker for confirmation.`,
+    });
+  }
+  return out;
+}
+
+function buildSmartMoneySummary(allMoves: any[]): any {
+  const buyTally: Record<string, number> = {};
+  const sellTally: Record<string, number> = {};
+  for (const m of allMoves) {
+    const t = String(m?.ticker || "").toUpperCase();
+    if (!t) continue;
+    const txt = String(m?.text || "").toUpperCase();
+    if (/\b(BOUGHT|ADDED)\b/.test(txt)) buyTally[t] = (buyTally[t] || 0) + 1;
+    else if (/\b(SOLD|EXITED)\b/.test(txt)) sellTally[t] = (sellTally[t] || 0) + 1;
+  }
+  const topN = (tally: Record<string, number>, n: number) =>
+    Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, n).map(([t]) => t);
+  return {
+    most_bought: topN(buyTally, 5),
+    most_sold: topN(sellTally, 5),
+    net_bullish_sectors: [],
+    net_bearish_sectors: [],
+  };
+}
+
+// ─── DROP-IN REPLACEMENT — same signature as before ────────────────
+async function generateSmartMoneyOnly(name: string, date: string) {
+  const startedAt = Date.now();
+  const [congress, insiders, hedge, lobbying] = await Promise.allSettled([
+    buildCongressMoves(),
+    buildInsiderMoves(),
+    buildHedgeFundMoves(),
+    buildLobbyingMoves(),
+  ]);
+
+  const congress_moves = congress.status === "fulfilled" ? congress.value : [];
+  const whale_moves = insiders.status === "fulfilled" ? insiders.value : [];
+  const hedge_fund_moves = hedge.status === "fulfilled" ? hedge.value : [];
+  const lobbying_moves = lobbying.status === "fulfilled" ? lobbying.value : [];
+  const allMoves = [...congress_moves, ...whale_moves, ...hedge_fund_moves, ...lobbying_moves];
+
+  const elapsed = Date.now() - startedAt;
+  console.log(`Quiver smart money: ${elapsed}ms | congress=${congress_moves.length} insiders=${whale_moves.length} 13f=${hedge_fund_moves.length} lobbying=${lobbying_moves.length}`);
+
+  if (allMoves.length === 0) {
+    console.warn("Quiver smart money: all 4 sources returned empty — check QUIVER_API_KEY and Trader-tier subscription");
+    // Returning the object shape with empty arrays lets the cache layer
+    // reject (hasSmartMoneyContent returns false on all-empty) and forces
+    // a regen next call rather than caching null.
+    return {
+      smart_money: {
+        summary: { most_bought: [], most_sold: [], net_bullish_sectors: [], net_bearish_sectors: [] },
+        sector_heatmap: [],
+        whale_moves: [],
+        congress_moves: [],
+        hedge_fund_moves: [],
+        lobbying_moves: [],
+      },
+    };
+  }
+
+  return {
+    smart_money: {
+      summary: buildSmartMoneySummary(allMoves),
+      sector_heatmap: [], // sector tagging requires a ticker→sector table; punted
+      whale_moves,        // Insider Form 4 — renders in existing "Whales" box
+      congress_moves,     // Congressional STOCK Act — existing "Congress" box
+      hedge_fund_moves,   // 13F changes — existing "Hedge" box
+      lobbying_moves,     // NEW — invisible until UI adds 4th box
+    },
+  };
 }
 
 async function generateConvictionAndOpportunity(name: string, watchlist: string[], holdings: any[], date: string) {
@@ -1130,9 +1365,6 @@ opportunity_watch: 6-8 ideas. ABSOLUTELY EXCLUDE all tickers in user's holdings 
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
-// CRITICAL: 'cost' in holdings is the per-share average cost basis from
-// the Fidelity CSV. We label this explicitly so the LLM never reads
-// "$5.99 cost" as a total dollar value on a 175-share position.
 function formatHoldingsBlock(
   holdings: any[],
   accounts: any[] | undefined,
@@ -1192,7 +1424,6 @@ export async function POST(request: Request) {
   const startTime = Date.now();
 
   try {
-    // Rate limit
     const rateCheck = await checkRateLimit(request);
     if (!rateCheck.ok) {
       return NextResponse.json(
@@ -1222,7 +1453,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Save user state for cron job to pick up tomorrow (fire-and-forget)
     cacheWriteUserState(validBody).catch(() => {});
 
     const dateKey = todayDateString();
@@ -1232,13 +1462,9 @@ export async function POST(request: Request) {
       `[brief ${requestId}] start fresh=${fresh} stream=${wantsStream} holdings=${holdings.length} watchlist=${watchlist.length} hash=${hHash}`
     );
 
-    // ── Tier 1: full-brief cache ──
     if (!fresh) {
       const cachedFull = await cacheReadFullBrief(dateKey, hHash);
       if (cachedFull) {
-        // Sanitize URLs on read: cached briefs may have been written with
-        // older code that didn't post-process URLs. Apply rewrite at serve
-        // time so users always see specific filing URLs, never homepages.
         if (cachedFull.smart_money) {
           cachedFull.smart_money = rewriteSmartMoneySourceUrls({ ...cachedFull.smart_money });
         }
@@ -1254,17 +1480,10 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── Tier 2: Layer A cached → fast Layer B regen, STREAMED ──
-    // (5/24/26: previously this awaited all Layer B chunks via generateLayerB
-    // then streamed the result in one go — user waited 60 sec to see anything.
-    // Now we dispatch each chunk individually and stream as they complete.
-    // First useful content (Light chunk → Playbook decisions) arrives in
-    // ~15-25 sec on Haiku, conviction streams in after.)
     if (!fresh) {
       const layerA = await cacheReadLayerA(dateKey);
       if (layerA) {
         if (wantsStream) {
-          // Stream Tier 2 chunks as they complete (parallel dispatch)
           const stream = new ReadableStream({
             async start(controller) {
               const encoder = new TextEncoder();
@@ -1275,13 +1494,9 @@ export async function POST(request: Request) {
               send("chunk", { chunkName: "started", fields: {} });
 
               const accumulated: any = {};
-              // Layer A passthrough — send immediately so market_pulse,
-              // smart_money, todays_edge appear right away. No wait.
               const layerAFields: any = {};
               if (layerA?.market_pulse) layerAFields.market_pulse = layerA.market_pulse;
               if (layerA?.smart_money) {
-                // Apply URL rewrite to cached smart_money so generic URLs from
-                // the cron-generated cache also get cleaned at serve time.
                 layerAFields.smart_money = rewriteSmartMoneySourceUrls({ ...layerA.smart_money });
               }
               if (Object.keys(layerAFields).length > 0) {
@@ -1289,7 +1504,6 @@ export async function POST(request: Request) {
                 send("chunk", { chunkName: "layer-a", fields: layerAFields });
               }
 
-              // Dispatch Layer B tasks in parallel, stream each as it completes
               const tasks = [
                 {
                   name: "light",
@@ -1327,13 +1541,11 @@ export async function POST(request: Request) {
 
               await Promise.all(wired);
 
-              // De-dup radar against opportunity
               if (Array.isArray(accumulated.opportunity_watch) && Array.isArray(accumulated.radar_watch)) {
                 const oppT = new Set(accumulated.opportunity_watch.map((o: any) => (o.symbol || o.ticker || "").toUpperCase()));
                 accumulated.radar_watch = accumulated.radar_watch.filter((r: any) => !oppT.has((r.symbol || r.ticker || "").toUpperCase()));
               }
 
-              // Cache the full result so the next load is Tier 1 (instant)
               if (Object.keys(accumulated).length > 0) {
                 await cacheWriteFullBrief(dateKey, hHash, accumulated);
               }
@@ -1354,7 +1566,6 @@ export async function POST(request: Request) {
             },
           });
         }
-        // Non-streaming Tier 2 (legacy fallback)
         try {
           const merged = await generateLayerB({
             name, watchlist, holdings, accounts, holdingsAgeDays, date, layerA,
@@ -1376,7 +1587,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── Tier 3: Full legacy generation ──
     if (wantsStream) {
       const cacheKey = buildCacheKey({ name, watchlist, holdings, date });
       return streamFreshBrief({
@@ -1432,7 +1642,6 @@ export async function POST(request: Request) {
   }
 }
 
-// ─── SSE streaming ─────────────────────────────────────────────────
 function sseEncode(eventName: string, data: any): string {
   return `event: ${eventName}\ndata: ${JSON.stringify(data)}\n\n`;
 }
