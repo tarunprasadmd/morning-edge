@@ -166,7 +166,12 @@ Return ONLY this JSON:
   "market_pulse": {
     "tone": "bullish or cautious or bearish",
     "summary": "ONE short headline sentence, max 14 words",
-    "key_levels": ["4-6 short bullets, max 10 words each"]
+    "key_levels": [
+      {
+        "text": "Short bullet, max 14 words — WHAT + DIRECTION + MAGNITUDE + CONTEXT (e.g. 'S&P futures +0.4% before open, watching CPI Wed', 'VIX at 14.2, 1-month low', 'Brent crude $78, OPEC+ meeting Thursday', 'Semis leading: SMH +1.1% premarket')",
+        "deep_context": "60-90 word plain-English explanation of WHY this specific bullet matters today. Reference the specific number from text. Tell the reader what to watch for and what action could make sense. Don't repeat the bullet — go DEEPER. Define any technical term in the same sentence. Use 'you'."
+      }
+    ]
   },
   "todays_edge_market": {
     "binary_catalysts": [ { "ticker": "TICKER", "event": "event date", "context": "max 12 words" } ],
@@ -183,6 +188,7 @@ Return ONLY this JSON:
   ]
 }
 
+key_levels: 6-8 bullets. EACH bullet MUST be an object with both 'text' AND 'deep_context' fields. Vague bullets like "Tech sector strong" or "Watching the Fed" are BANNED — every bullet cites a specific number. Every bullet must pass: "Can a trader act on this?"
 todays_edge_market: 0-3 risk flags only if genuinely time-sensitive. Empty arrays fine.
 radar_candidates: 8-10 high-conviction thematic stocks across AI/semis/nuclear/quantum/rare earths/biotech/crypto infra. Each entry MUST include deep_reasoning.`;
 
@@ -204,16 +210,35 @@ Return ONLY this JSON:
       "net_bearish_sectors": ["1-2 sector names"]
     },
     "sector_heatmap": [{ "sector": "name max 22 chars", "direction": "buying|selling|neutral", "intensity": 1 }],
-    "whale_moves": [{ "text": "named trade max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation defining any technical term." }],
-    "congress_moves": [{ "text": "named congressional trade max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation." }],
-    "hedge_fund_moves": [{ "text": "named hedge fund trade max 12 words", "ticker": "TICKER", "source_url": "https://...", "why_matters": "80-120 word plain-English explanation." }]
+    "whale_moves": [{ "text": "PERSON/FUND VERB AMOUNT TICKER (plain English, max 12 words)", "ticker": "TICKER", "source_url": "DIRECT-FILING-URL", "why_matters": "60-90 word plain-English explanation, written like you're texting a friend." }],
+    "congress_moves": [{ "text": "PERSON/FUND VERB AMOUNT TICKER (plain English, max 12 words)", "ticker": "TICKER", "source_url": "DIRECT-FILING-URL", "why_matters": "60-90 word plain-English explanation, written like you're texting a friend." }],
+    "hedge_fund_moves": [{ "text": "PERSON/FUND VERB AMOUNT TICKER (plain English, max 12 words)", "ticker": "TICKER", "source_url": "DIRECT-FILING-URL", "why_matters": "60-90 word plain-English explanation, written like you're texting a friend." }]
   }
 }
 
 CRITICAL DATA RULES:
 - NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD".
 - whale_moves/congress_moves/hedge_fund_moves: 3-5 entries each. Every entry MUST be a SPECIFIC TRADE by a NAMED person/fund with a real ticker. Empty arrays fine.
-- BAD examples never to include: news commentary, calendar notes, vague exposure summaries, political headlines, generic crowd statements.`;
+- BAD examples never to include: news commentary, calendar notes, vague exposure summaries, political headlines, generic crowd statements.
+
+SOURCE URL — DIRECT TO FILING ONLY (NON-NEGOTIABLE):
+The source_url field MUST link to the SPECIFIC filing or disclosure document, NOT a generic landing page. The user clicks this to verify the trade actually happened. Generic pages fail this test.
+- For 13F filings: link to the SEC EDGAR filing detail page for THAT specific 13F-HR. Format: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=13F-HR — or better, the direct filing index URL.
+- For Form 4 insider trades: link to the SEC EDGAR Form 4 filing detail page (https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=4).
+- For congressional STOCK Act trades: link to the SPECIFIC trade page on capitoltrades.com (e.g. https://www.capitoltrades.com/trades/{trade_id}) OR the original PDF filing on house.gov/senate.gov clerk site. NOT capitoltrades.com homepage.
+- BANNED source URLs (these will fail user trust): sec.gov/edgar homepage, capitoltrades.com homepage, whalewisdom.com generic search, news aggregator URLs, wikipedia, generic broker pages.
+- If you can't find a direct filing URL, OMIT the entire entry. Don't fall back to a generic page.
+
+TEXT FIELD WORDING — PLAIN ENGLISH, NO JARGON:
+- Lead with the person or fund name, then a plain verb, then the size, then the ticker.
+- Use ONLY these verbs: BOUGHT, SOLD, ADDED, EXITED, HELD.
+- BANNED jargon verbs: "initiated", "boosted", "raised", "trimmed", "cut", "stake", "position" (as a verb), "scaled", "swung", "established", "opened", "closed", "reduced", "unloaded".
+- ALWAYS include a specific number: share count ("2.1M shares"), dollar amount ("$48M"), OR clear percentage ("40% of position").
+- Format examples (FOLLOW THESE EXACTLY):
+  - "Viking Global BOUGHT 2.1M shares NVDA"
+  - "Druckenmiller SOLD 500K shares TSLA"
+  - "Rep Gottheimer BOUGHT $50K NVDA calls"
+  - "Sen Tuberville SOLD $250K TSLA"`;
 
   return callJsonChunk(prompt, { search: true, maxTokens: 8000, maxSearches: 4, label: "smart-money" });
 }
