@@ -5,15 +5,10 @@
 // (Layer A + Layer B), and writes the results back to cache so the user's
 // 7 AM open finds a pre-generated brief and returns instantly.
 //
-// Authorization: Vercel automatically signs cron requests with the
-// CRON_SECRET environment variable. We verify the Authorization header
-// matches "Bearer ${CRON_SECRET}" before doing any work.
-//
-// Cache safety: Layer A and brief-full are written ONLY when their
-// content is genuinely populated. An empty smart_money block (whales,
-// congress, hedge funds all empty arrays) is treated as a failed
-// generation and NOT cached — preventing poisoned cache from serving
-// blank Insider Flow boxes for hours.
+// 5/24/26 — SMART MONEY SWAP:
+//   generateSmartMoney now hits Quiver Quantitative (Trader tier) for
+//   structured Congress / Insider Form 4 / 13F / Lobbying data instead
+//   of AI + web_search. Mirrors the swap in /api/brief/route.ts.
 
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
@@ -41,15 +36,13 @@ const LAYER_A_TTL_SECONDS = 30 * 60 * 60;
 const FULL_BRIEF_TTL_SECONDS = 30 * 60 * 60;
 
 // ─── Content validation helpers ──────────────────────────────────────
-// Single source of truth for "is this content actually populated".
-// Used in both write guards and any future read paths.
-
 function hasSmartMoneyContent(sm: any): boolean {
   if (!sm || typeof sm !== "object") return false;
   const whaleN = Array.isArray(sm.whale_moves) ? sm.whale_moves.length : 0;
   const congressN = Array.isArray(sm.congress_moves) ? sm.congress_moves.length : 0;
   const hedgeN = Array.isArray(sm.hedge_fund_moves) ? sm.hedge_fund_moves.length : 0;
-  return (whaleN + congressN + hedgeN) > 0;
+  const lobbyN = Array.isArray(sm.lobbying_moves) ? sm.lobbying_moves.length : 0;
+  return (whaleN + congressN + hedgeN + lobbyN) > 0;
 }
 
 function hasMarketPulseContent(mp: any): boolean {
@@ -70,8 +63,6 @@ function holdingsHash(holdings: any[]): string {
   return crypto.createHash("sha256").update(fp).digest("hex").slice(0, 16);
 }
 
-// Strip <cite> tags from model output — they're meant for inline citation
-// but show up as visible <cite> text in JSON strings when web_search is used.
 function stripCiteTags<T>(value: T): T {
   if (typeof value === "string") {
     return value
@@ -89,8 +80,6 @@ function stripCiteTags<T>(value: T): T {
   return value;
 }
 
-// Retry wrapper for Anthropic calls — two attempts with 1.5s backoff on
-// transient/5xx errors. Schema errors fail fast.
 async function callWithRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
   try {
     return await fn();
@@ -195,57 +184,386 @@ radar_candidates: 8-10 high-conviction thematic stocks across AI/semis/nuclear/q
   return callJsonChunk(prompt, { search: true, maxTokens: 6000, maxSearches: 3, label: "layerA-market" });
 }
 
-async function generateSmartMoney(name: string, date: string): Promise<any> {
-  const prompt = `${COMMON_PREAMBLE(name, date)}
-Use web_search up to 4 times to fetch the LATEST 13F disclosures, biggest insider Form 4 trades from the past 1-2 weeks, and most recent congressional STOCK Act filings.
+// ─── QUIVER QUANTITATIVE INTEGRATION ──────────────────────────────
+// Trader-tier subscription. Endpoints:
+//   /beta/live/congresstrading
+//   /beta/live/insiders
+//   /beta/live/sec13fchanges
+//   /beta/live/lobbying
+const QUIVER_BASE = "https://api.quiverquant.com/beta";
+const QUIVER_TIMEOUT_MS = 25000;
 
-Return ONLY this JSON:
+const SEC_EDGAR_CIKS: Record<string, string> = {
+  "berkshire hathaway": "0001067983",
+  "berkshire": "0001067983",
+  "buffett": "0001067983",
+  "warren buffett": "0001067983",
+  "viking global": "0001103804",
+  "renaissance technologies": "0001037389",
+  "renaissance": "0001037389",
+  "tiger global": "0001167483",
+  "coatue": "0001135730",
+  "coatue management": "0001135730",
+  "bridgewater": "0001350694",
+  "citadel": "0001423053",
+  "citadel advisors": "0001423053",
+  "two sigma": "0001179392",
+  "millennium": "0001273087",
+  "millennium management": "0001273087",
+  "point72": "0001603466",
+  "steve cohen": "0001603466",
+  "de shaw": "0001009207",
+  "d.e. shaw": "0001009207",
+  "aqr capital": "0001167557",
+  "aqr": "0001167557",
+  "soros": "0001029160",
+  "george soros": "0001029160",
+  "lone pine": "0001061165",
+  "pershing square": "0001336528",
+  "ackman": "0001336528",
+  "bill ackman": "0001336528",
+  "greenlight capital": "0001079114",
+  "einhorn": "0001079114",
+  "david einhorn": "0001079114",
+  "ark invest": "0001697748",
+  "ark": "0001697748",
+  "cathie wood": "0001697748",
+  "duquesne": "0001536411",
+  "druckenmiller": "0001536411",
+  "stanley druckenmiller": "0001536411",
+  "scion asset management": "0001649339",
+  "scion": "0001649339",
+  "michael burry": "0001649339",
+  "burry": "0001649339",
+  "third point": "0001040273",
+  "loeb": "0001040273",
+  "dan loeb": "0001040273",
+  "appaloosa": "0001656456",
+  "tepper": "0001656456",
+  "david tepper": "0001656456",
+  "elliott management": "0001048445",
+  "elliott": "0001048445",
+  "icahn": "0000921669",
+  "carl icahn": "0000921669",
+  "blackrock": "0001364742",
+  "vanguard": "0000102909",
+  "state street": "0000093751",
+};
 
-{
-  "smart_money": {
-    "summary": {
-      "most_bought": ["TICKER1", "TICKER2"],
-      "most_sold": ["TICKER1", "TICKER2"],
-      "net_bullish_sectors": ["2-3 sector names"],
-      "net_bearish_sectors": ["1-2 sector names"]
-    },
-    "sector_heatmap": [{ "sector": "name max 22 chars", "direction": "buying|selling|neutral", "intensity": 1 }],
-    "whale_moves": [{ "text": "PERSON/FUND VERB AMOUNT TICKER (plain English, max 12 words)", "ticker": "TICKER", "source_url": "DIRECT-FILING-URL", "why_matters": "60-90 word plain-English explanation, written like you're texting a friend." }],
-    "congress_moves": [{ "text": "PERSON/FUND VERB AMOUNT TICKER (plain English, max 12 words)", "ticker": "TICKER", "source_url": "DIRECT-FILING-URL", "why_matters": "60-90 word plain-English explanation, written like you're texting a friend." }],
-    "hedge_fund_moves": [{ "text": "PERSON/FUND VERB AMOUNT TICKER (plain English, max 12 words)", "ticker": "TICKER", "source_url": "DIRECT-FILING-URL", "why_matters": "60-90 word plain-English explanation, written like you're texting a friend." }]
+function edgar13FUrl(cik: string): string {
+  return `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik}&type=13F-HR&dateb=&owner=include&count=40`;
+}
+
+function edgarForm4ByTickerUrl(ticker: string): string {
+  return `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=&type=4&dateb=&owner=include&count=40&company=${encodeURIComponent(ticker)}`;
+}
+
+function capitoltradesSearchUrl(rawName: string): string {
+  const cleanName = (rawName || "")
+    .replace(/^(sen\.?|rep\.?|senator|representative)\s+/i, "")
+    .trim();
+  return `https://www.capitoltrades.com/politicians?search=${encodeURIComponent(cleanName)}`;
+}
+
+async function quiverFetch(path: string): Promise<any[] | null> {
+  const key = process.env.QUIVER_API_KEY;
+  if (!key) {
+    console.warn(`Quiver ${path}: QUIVER_API_KEY not set`);
+    return null;
+  }
+  const url = `${QUIVER_BASE}${path}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), QUIVER_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "Authorization": `Bearer ${key}`,
+        "Accept": "application/json",
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!res.ok) {
+      const bodySample = await res.text().then((t) => t.slice(0, 200)).catch(() => "");
+      console.warn(`Quiver ${path}: HTTP ${res.status} ${res.statusText} | ${bodySample}`);
+      return null;
+    }
+    const data = await res.json();
+    if (Array.isArray(data)) return data;
+    if (Array.isArray((data as any)?.data)) return (data as any).data;
+    console.warn(`Quiver ${path}: unexpected response shape (keys: ${Object.keys(data || {}).join(",")})`);
+    return null;
+  } catch (err: any) {
+    clearTimeout(timer);
+    console.warn(`Quiver ${path} fetch failed:`, err?.message || err);
+    return null;
   }
 }
 
-CRITICAL DATA RULES:
-- NEVER use placeholder strings like "DATA_UNAVAILABLE", "N/A", "NONE", "UNKNOWN", "TBD".
-- whale_moves/congress_moves/hedge_fund_moves: 3-5 entries each. Every entry MUST be a SPECIFIC TRADE by a NAMED person/fund with a real ticker. Empty arrays fine.
-- BAD examples never to include: news commentary, calendar notes, vague exposure summaries, political headlines, generic crowd statements.
-
-SOURCE URL — DIRECT TO FILING ONLY (NON-NEGOTIABLE):
-The source_url field MUST link to the SPECIFIC filing or disclosure document, NOT a generic landing page. The user clicks this to verify the trade actually happened. Generic pages fail this test.
-- For 13F filings: link to the SEC EDGAR filing detail page for THAT specific 13F-HR. Format: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=13F-HR — or better, the direct filing index URL.
-- For Form 4 insider trades: link to the SEC EDGAR Form 4 filing detail page (https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=4).
-- For congressional STOCK Act trades: link to the SPECIFIC trade page on capitoltrades.com (e.g. https://www.capitoltrades.com/trades/{trade_id}) OR the original PDF filing on house.gov/senate.gov clerk site. NOT capitoltrades.com homepage.
-- BANNED source URLs (these will fail user trust): sec.gov/edgar homepage, capitoltrades.com homepage, whalewisdom.com generic search, news aggregator URLs, wikipedia, generic broker pages.
-- If you can't find a direct filing URL, OMIT the entire entry. Don't fall back to a generic page.
-
-TEXT FIELD WORDING — PLAIN ENGLISH, NO JARGON:
-- Lead with the person or fund name, then a plain verb, then the size, then the ticker.
-- Use ONLY these verbs: BOUGHT, SOLD, ADDED, EXITED, HELD.
-- BANNED jargon verbs: "initiated", "boosted", "raised", "trimmed", "cut", "stake", "position" (as a verb), "scaled", "swung", "established", "opened", "closed", "reduced", "unloaded".
-- ALWAYS include a specific number: share count ("2.1M shares"), dollar amount ("$48M"), OR clear percentage ("40% of position").
-- Format examples (FOLLOW THESE EXACTLY):
-  - "Viking Global BOUGHT 2.1M shares NVDA"
-  - "Druckenmiller SOLD 500K shares TSLA"
-  - "Rep Gottheimer BOUGHT $50K NVDA calls"
-  - "Sen Tuberville SOLD $250K TSLA"`;
-
-  return callJsonChunk(prompt, { search: true, maxTokens: 8000, maxSearches: 4, label: "smart-money" });
+function fmtMoney(v: any): string {
+  if (typeof v === "string" && v.length > 0 && /\$/.test(v)) return v.trim();
+  const n = Number(v);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  if (n >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(1)}B`;
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+  return `$${n.toFixed(0)}`;
 }
 
-// Holdings block — IMPORTANT: cost field from the frontend is per-share
-// average cost basis (Fidelity CSV format), labeled clearly to avoid the
-// LLM misreading "$5.99 cost" as a total dollar value.
+function fmtShares(n: any): string {
+  const v = Number(n);
+  if (!Number.isFinite(v) || v <= 0) return "";
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M shares`;
+  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K shares`;
+  return `${v.toFixed(0)} shares`;
+}
+
+function daysAgo(dateStr: any): number {
+  if (!dateStr) return Infinity;
+  const d = new Date(String(dateStr));
+  if (Number.isNaN(d.getTime())) return Infinity;
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+
+function cleanPolitician(name: any): string {
+  if (typeof name !== "string") return "";
+  return name
+    .replace(/^(sen\.?|rep\.?|senator|representative|the honorable)\s+/i, "")
+    .trim();
+}
+
+function form4Verb(transaction: any): "BOUGHT" | "SOLD" | null {
+  const t = String(transaction || "").toUpperCase().trim();
+  if (!t) return null;
+  if (t === "P" || t === "PURCHASE" || t === "BUY" || t === "BOUGHT" || t.includes("PURCHASE")) return "BOUGHT";
+  if (t === "S" || t === "SALE" || t === "SELL" || t === "SOLD" || t.includes("SALE") || t.includes("SOLD")) return "SOLD";
+  return null;
+}
+
+function congressVerb(transaction: any): "BOUGHT" | "SOLD" | null {
+  const t = String(transaction || "").toLowerCase().trim();
+  if (!t) return null;
+  if (t.includes("purchase") || t.includes("buy") || t === "p") return "BOUGHT";
+  if (t.includes("sale") || t.includes("sell") || t === "s") return "SOLD";
+  return null;
+}
+
+function pick(row: any, keys: string[]): any {
+  for (const k of keys) {
+    if (row && row[k] != null && row[k] !== "") return row[k];
+  }
+  return undefined;
+}
+
+async function buildCongressMoves(): Promise<any[]> {
+  const raw = await quiverFetch("/live/congresstrading");
+  if (!raw) return [];
+  if (raw.length > 0) console.log(`Cron Quiver congress: ${raw.length} rows`);
+  const recent = raw.filter((row: any) => {
+    const dStr = pick(row, ["TransactionDate", "Date", "transaction_date"]);
+    return daysAgo(dStr) <= 60;
+  });
+  recent.sort((a: any, b: any) => {
+    const da = new Date(String(pick(a, ["TransactionDate", "Date"]) || 0)).getTime();
+    const db = new Date(String(pick(b, ["TransactionDate", "Date"]) || 0)).getTime();
+    return db - da;
+  });
+  const out: any[] = [];
+  for (const row of recent) {
+    if (out.length >= 5) break;
+    const verb = congressVerb(pick(row, ["Transaction"]));
+    const ticker = String(pick(row, ["Ticker"]) || "").toUpperCase();
+    const rep = cleanPolitician(pick(row, ["Representative", "Name"]));
+    if (!verb || !ticker || !rep) continue;
+    const amount = fmtMoney(pick(row, ["Range", "Amount"]));
+    const house = String(pick(row, ["House"]) || "").toLowerCase();
+    const prefix = house.includes("senate") ? "Sen " : house.includes("house") ? "Rep " : "";
+    const text = `${prefix}${rep} ${verb} ${amount} ${ticker}`.replace(/\s+/g, " ").trim();
+    const source_url = capitoltradesSearchUrl(rep);
+    const dateStr = String(pick(row, ["TransactionDate", "Date"]) || "").slice(0, 10);
+    out.push({
+      text,
+      ticker,
+      source_url,
+      why_matters: `${rep} ${verb.toLowerCase()} ${amount || "a position in"} ${ticker}${dateStr ? ` on ${dateStr}` : ""}. Congressional STOCK Act disclosures carry a 45-day reporting delay, but cluster activity by multiple members on the same ticker has historically preceded notable moves. Watch for follow-up filings.`,
+    });
+  }
+  return out;
+}
+
+async function buildInsiderMoves(): Promise<any[]> {
+  const raw = await quiverFetch("/live/insiders");
+  if (!raw) return [];
+  if (raw.length > 0) console.log(`Cron Quiver insiders: ${raw.length} rows`);
+  const recent = raw.filter((row: any) => {
+    const dStr = pick(row, ["Date", "FilingDate", "TransactionDate"]);
+    return daysAgo(dStr) <= 21;
+  });
+  recent.sort((a: any, b: any) => {
+    const da = new Date(String(pick(a, ["Date", "FilingDate"]) || 0)).getTime();
+    const db = new Date(String(pick(b, ["Date", "FilingDate"]) || 0)).getTime();
+    return db - da;
+  });
+  const out: any[] = [];
+  for (const row of recent) {
+    if (out.length >= 5) break;
+    const verb = form4Verb(pick(row, ["Transaction", "AcquiredDisposed", "TransactionCode"]));
+    const ticker = String(pick(row, ["Ticker"]) || "").toUpperCase();
+    const name = String(pick(row, ["Name", "Insider", "ReporterName"]) || "").trim();
+    if (!verb || !ticker || !name) continue;
+    const shares = Number(pick(row, ["Shares", "SharesTransacted"]));
+    const price = Number(pick(row, ["PricePerShare", "Price"]));
+    let sizeStr = "";
+    if (Number.isFinite(shares) && shares > 0) {
+      if (Number.isFinite(price) && price > 0) sizeStr = fmtMoney(shares * price);
+      else sizeStr = fmtShares(shares);
+    }
+    if (!sizeStr) continue;
+    const text = `${name} ${verb} ${sizeStr} ${ticker}`;
+    out.push({
+      text,
+      ticker,
+      source_url: edgarForm4ByTickerUrl(ticker),
+      why_matters: `${name} ${verb.toLowerCase()} ${sizeStr} of ${ticker} using personal cash, disclosed via SEC Form 4. Insider purchases by executives and directors are one of the strongest conviction signals — they have material non-public information about the business. Cluster buying historically precedes outperformance.`,
+    });
+  }
+  return out;
+}
+
+async function buildHedgeFundMoves(): Promise<any[]> {
+  const raw = await quiverFetch("/live/sec13fchanges");
+  if (!raw) return [];
+  if (raw.length > 0) console.log(`Cron Quiver 13F: ${raw.length} rows`);
+  const recent = raw.filter((row: any) => {
+    const dStr = pick(row, ["Date", "FilingDate", "ReportDate"]);
+    return daysAgo(dStr) <= 90;
+  });
+  recent.sort((a: any, b: any) => {
+    const va = Math.abs(Number(pick(a, ["Value", "DollarChange", "ValueChange"]) || 0));
+    const vb = Math.abs(Number(pick(b, ["Value", "DollarChange", "ValueChange"]) || 0));
+    if (vb !== va) return vb - va;
+    const sa = Math.abs(Number(pick(a, ["Change", "SharesChange"]) || 0));
+    const sb = Math.abs(Number(pick(b, ["Change", "SharesChange"]) || 0));
+    return sb - sa;
+  });
+  const out: any[] = [];
+  for (const row of recent) {
+    if (out.length >= 5) break;
+    const ticker = String(pick(row, ["Ticker"]) || "").toUpperCase();
+    const filer = String(pick(row, ["Filer", "OwnerName", "Owner"]) || "").trim();
+    if (!ticker || !filer) continue;
+    const shareChange = Number(pick(row, ["Change", "SharesChange"]));
+    const valueChange = Number(pick(row, ["Value", "DollarChange"]));
+    let verb: "ADDED" | "SOLD" | null = null;
+    let sizeStr = "";
+    if (Number.isFinite(valueChange) && valueChange !== 0) {
+      verb = valueChange > 0 ? "ADDED" : "SOLD";
+      sizeStr = fmtMoney(Math.abs(valueChange));
+    } else if (Number.isFinite(shareChange) && shareChange !== 0) {
+      verb = shareChange > 0 ? "ADDED" : "SOLD";
+      sizeStr = fmtShares(Math.abs(shareChange));
+    }
+    if (!verb || !sizeStr) continue;
+    const filerLower = filer.toLowerCase();
+    const cik = SEC_EDGAR_CIKS[filerLower];
+    const source_url = cik
+      ? edgar13FUrl(cik)
+      : `https://efts.sec.gov/LATEST/search-index?q=%22${encodeURIComponent(filer)}%22&forms=13F-HR`;
+    const text = `${filer} ${verb} ${sizeStr} ${ticker}`;
+    out.push({
+      text,
+      ticker,
+      source_url,
+      why_matters: `${filer} ${verb.toLowerCase()} ${sizeStr} of ${ticker} in their latest 13F filing. Institutional 13F filings are quarterly and carry a 45-day reporting lag, so this reflects activity 1-3 months ago. Useful as thematic confirmation — watch for cluster moves across multiple top hedge funds on the same name.`,
+    });
+  }
+  return out;
+}
+
+async function buildLobbyingMoves(): Promise<any[]> {
+  const raw = await quiverFetch("/live/lobbying");
+  if (!raw) return [];
+  if (raw.length > 0) console.log(`Cron Quiver lobbying: ${raw.length} rows`);
+  const recent = raw.filter((row: any) => {
+    const dStr = pick(row, ["Date", "FilingDate"]);
+    return daysAgo(dStr) <= 120;
+  });
+  recent.sort((a: any, b: any) => {
+    const va = Number(pick(a, ["Amount"]) || 0);
+    const vb = Number(pick(b, ["Amount"]) || 0);
+    return vb - va;
+  });
+  const out: any[] = [];
+  for (const row of recent) {
+    if (out.length >= 5) break;
+    const ticker = String(pick(row, ["Ticker"]) || "").toUpperCase();
+    const client = String(pick(row, ["Client", "Registrant"]) || "").trim();
+    const amount = Number(pick(row, ["Amount"]));
+    if (!ticker || !client || !Number.isFinite(amount) || amount <= 0) continue;
+    const sizeStr = fmtMoney(amount);
+    const issue = String(pick(row, ["Issue", "SpecificIssues"]) || "").trim().slice(0, 60);
+    const text = `${client} SPENT ${sizeStr} lobbying ${ticker}`;
+    out.push({
+      text,
+      ticker,
+      source_url: `https://www.opensecrets.org/orgs/lookup?text=${encodeURIComponent(client)}&type=lobbyer`,
+      why_matters: `${client} spent ${sizeStr} on federal lobbying${issue ? ` covering ${issue}` : ""}. Heavy lobbying spend signals policy tailwinds or risks the company is actively trying to shape — defense, semis under export controls, pharma during drug-pricing fights, and crypto during regulatory shifts are classic patterns. Pair with congressional trade data on the same ticker.`,
+    });
+  }
+  return out;
+}
+
+function buildSmartMoneySummary(allMoves: any[]): any {
+  const buyTally: Record<string, number> = {};
+  const sellTally: Record<string, number> = {};
+  for (const m of allMoves) {
+    const t = String(m?.ticker || "").toUpperCase();
+    if (!t) continue;
+    const txt = String(m?.text || "").toUpperCase();
+    if (/\b(BOUGHT|ADDED)\b/.test(txt)) buyTally[t] = (buyTally[t] || 0) + 1;
+    else if (/\b(SOLD|EXITED)\b/.test(txt)) sellTally[t] = (sellTally[t] || 0) + 1;
+  }
+  const topN = (tally: Record<string, number>, n: number) =>
+    Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, n).map(([t]) => t);
+  return {
+    most_bought: topN(buyTally, 5),
+    most_sold: topN(sellTally, 5),
+    net_bullish_sectors: [],
+    net_bearish_sectors: [],
+  };
+}
+
+// ─── DROP-IN REPLACEMENT — same signature as before ────────────────
+async function generateSmartMoney(name: string, date: string): Promise<any> {
+  const startedAt = Date.now();
+  const [congress, insiders, hedge, lobbying] = await Promise.allSettled([
+    buildCongressMoves(),
+    buildInsiderMoves(),
+    buildHedgeFundMoves(),
+    buildLobbyingMoves(),
+  ]);
+
+  const congress_moves = congress.status === "fulfilled" ? congress.value : [];
+  const whale_moves = insiders.status === "fulfilled" ? insiders.value : [];
+  const hedge_fund_moves = hedge.status === "fulfilled" ? hedge.value : [];
+  const lobbying_moves = lobbying.status === "fulfilled" ? lobbying.value : [];
+  const allMoves = [...congress_moves, ...whale_moves, ...hedge_fund_moves, ...lobbying_moves];
+
+  const elapsed = Date.now() - startedAt;
+  console.log(`Cron Quiver smart money: ${elapsed}ms | congress=${congress_moves.length} insiders=${whale_moves.length} 13f=${hedge_fund_moves.length} lobbying=${lobbying_moves.length}`);
+
+  return {
+    smart_money: {
+      summary: buildSmartMoneySummary(allMoves),
+      sector_heatmap: [],
+      whale_moves,
+      congress_moves,
+      hedge_fund_moves,
+      lobbying_moves,
+    },
+  };
+}
+
 function formatHoldingsBlock(
   holdings: any[],
   accounts: any[] | undefined,
@@ -267,7 +585,6 @@ function formatHoldingsBlock(
   const formatHolding = (h: any) => {
     const parts = [`${h.symbol}`];
     if (h.qty != null) parts.push(`${h.qty} sh`);
-    // Per-share average cost basis — be explicit so the model doesn't confuse it with total dollars
     if (h.cost != null) parts.push(`@ $${h.cost.toFixed(2)}/share avg cost`);
     if (h.gainPct != null) {
       const sign = h.gainPct >= 0 ? "+" : "";
@@ -346,37 +663,17 @@ ${accountRule}
 
 CRITICAL: holdings 'cost' is PER-SHARE average. To get total $ basis, multiply cost × qty.
 
-PLAIN ENGLISH IN THE SHORT DECISION FIELD — write so a non-trader understands at a glance:
-- Use "shares" not "sh" or "SH" (e.g. "Sell 350 shares" not "Sell 350SH").
-- Use "$" + dollar gain alongside percentage when the cost basis is known (e.g. "SIDU is up $980 (+12.3%) on 700 shares" — not "SIDU +12.3% on 700SH").
-- Spell out times explicitly: "at market open (9:30 AM ET)" not just "Market Open."
-- BAN these trader-slang phrases in the short decision text: "house money", "lock 50%", "ride the rest", "scale out", "let it run", "size up", "size down", "trim into strength", "fade", "chase", "leg in", "swing", "tape." Use plain replacements:
-  * "house money" → "the rest is pure profit — anything from here is bonus"
-  * "lock 50% gain" → "take half your profit off the table"
-  * "scale out" → "sell in pieces"
-  * "trim into strength" → "sell some while the price is high"
-- The short decision must still be ONE concrete trade (not multiple steps), under ~25 words, but in language an investor who's NOT a day-trader can read in 3 seconds and understand.
+PLAIN ENGLISH IN THE SHORT DECISION FIELD:
+- Use "shares" not "sh" or "SH"
+- Use "$" + dollar gain alongside percentage when cost basis is known
+- Spell out times explicitly: "at market open (9:30 AM ET)"
+- BAN trader-slang: "house money", "lock 50%", "scale out", "trim into strength", "fade", "chase", "leg in"
 
-GOOD short-decision example (plain English):
-  "SIDU is up $980 (+12.3%) on 700 shares — sell 350 shares at market open (9:30 AM ET) to take half your profit off the table. The remaining 350 shares are pure profit from here."
-BAD short-decision example (jargon — rejected):
-  "SIDU +12.3% on 700SH — Lock 50% gain. Sell 350SH at Market Open; House money from here."
+ABSOLUTE BAN ON CONDITIONALS AND HOMEWORK:
+- Every decision must be a SINGLE concrete trade. No "check if", "verify", "reassess", "wait for", "depending on", "see if".
+- If you don't have data to decide cleanly: OMIT.
 
-ABSOLUTE BAN ON CONDITIONALS AND HOMEWORK — applies to BOTH decisions AND decisions_reasoning:
-- Every decision must be a SINGLE concrete trade. ZERO conditionals. ZERO homework. The user pays this app TO DO the research — never tell them to do it.
-- ANY decision OR reasoning string containing the words "check if", "verify", "reassess", "wait for", "depending on", "see if", "if silent", "if any", "if execs sold", "if they", or any phrase like "if X then do A else do B" is INVALID and must be rewritten as a single direct stance.
-- If you don't have data to decide cleanly: OMIT the position from decisions entirely. Do NOT generate a hedged or conditional entry. Cutting a decision is better than offloading work onto the user.
-- The decisions_reasoning paragraph is ALSO subject to this rule — no "what to consider" lists that secretly ask the user to do research. The reasoning explains WHY you took the stance you took; it does NOT enumerate things the user should check.
-
-REAL BAD EXAMPLE (rejected — exact pattern recently seen in production):
-  decision: "QCOM -6.1% drawdown is capitulation signal in otherwise bullish sector. Check if any Form 4s filed by insiders in last 48 hours. If silent, add 10 shares at market open; if execs sold, reduce to 15 shares and reassess China exposure thesis."
-  → THREE rule violations: (1) tells user to "check Form 4s" (homework), (2) conditional logic ("if silent... if execs sold..."), (3) "reassess thesis" (more homework). This is a generic equivocation, not a decision.
-
-REAL GOOD EXAMPLE (acceptable rewrite of same setup):
-  decision: "QCOM -6.1% to $200.08 — ADD 10 sh at open. Drawdown is capitulation into bullish semis tape; China iPhone modem concern is priced in at this level."
-  → Single concrete action, single price, single stance. No conditionals. No homework. The user reads it and acts.
-
-CRITICAL TICKER ACCURACY: Never guess company names. SMMT is Summit Therapeutics (NOT Summit Materials). CIFR is Cipher Mining. APLD is Applied Digital. USAR is USA Rare Earth. SMR is NuScale. IREN is Iris Energy. When in doubt, use ticker only.`;
+CRITICAL TICKER ACCURACY: Never guess. SMMT = Summit Therapeutics. CIFR = Cipher Mining. APLD = Applied Digital. USAR = USA Rare Earth. SMR = NuScale. IREN = Iris Energy.`;
 
   return callJsonChunk(prompt, { maxTokens: 5000, model: "claude-haiku-4-5", label: "light" });
 }
@@ -428,9 +725,6 @@ NEVER use placeholders like N/A. Empty arrays acceptable.`;
 export async function GET(request: Request) {
   const requestId = Math.random().toString(36).slice(2, 10);
 
-  // Verify Vercel cron auth. Two valid auth methods:
-  //   1. CRON_SECRET env var set → require "Authorization: Bearer ${CRON_SECRET}"
-  //   2. Vercel's automatic x-vercel-cron header
   const authHeader = request.headers.get("authorization");
   const vercelCronHeader = request.headers.get("x-vercel-cron");
   const userAgent = request.headers.get("user-agent") || "";
@@ -455,7 +749,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Anthropic API key missing" }, { status: 503 });
   }
 
-  // Read latest user state
   const userState = await redis.get<any>("latest-user-state").catch(() => null);
   if (!userState) {
     return NextResponse.json({
@@ -471,7 +764,6 @@ export async function GET(request: Request) {
   const startTime = Date.now();
   console.log(`[cron ${requestId}] start date=${dateKey} holdings=${holdings.length} watchlist=${watchlist.length}`);
 
-  // Generate Layer A (market data) in parallel
   const [marketResult, smResult] = await Promise.allSettled([
     generateLayerAMarket(name, tickers, date || dateKey),
     generateSmartMoney(name, date || dateKey),
@@ -489,13 +781,6 @@ export async function GET(request: Request) {
     console.warn(`[cron ${requestId}] smart-money failed:`, smResult.reason?.message);
   }
 
-  // ─── Write Layer A as long as market_pulse has content ──────────
-  // (relaxed 5/24/26: previously required smart_money to also have content,
-  // but on weekends/holidays smart_money search returns sparse data. The
-  // validation failed, Layer A wasn't cached, all user opens hit the cold
-  // 2-minute path. Now we cache whatever Layer A we got — even if
-  // smart_money is sparse, the rest of the brief is still useful. Tier 2
-  // will fill in fresh smart_money if needed.)
   const layerAHasContent = hasMarketPulseContent(layerA.market_pulse);
   const smartMoneyHasContent = hasSmartMoneyContent(layerA.smart_money);
   if (layerAHasContent) {
@@ -511,7 +796,6 @@ export async function GET(request: Request) {
     );
   }
 
-  // Generate Layer B in parallel
   const ownedSet = new Set((holdings || []).map((h: any) => (h.symbol || "").toUpperCase()));
   const layerEdge = layerA?.todays_edge_market || {};
   const binaryCatalysts = Array.isArray(layerEdge.binary_catalysts) ? layerEdge.binary_catalysts : [];
@@ -544,9 +828,6 @@ export async function GET(request: Request) {
   if (lightResult.status === "fulfilled" && lightResult.value) Object.assign(merged, lightResult.value);
   if (convictionResult.status === "fulfilled" && convictionResult.value) Object.assign(merged, convictionResult.value);
 
-  // ─── Write brief-full whenever market_pulse has content. ─────────
-  // (relaxed 5/24/26: smart_money can be empty on weekends/holidays —
-  // don't gate caching on that.)
   const hHash = holdingsHash(holdings);
   const fullHasContent = hasMarketPulseContent(merged.market_pulse);
   if (fullHasContent) {
