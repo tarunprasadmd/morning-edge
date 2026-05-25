@@ -1,5 +1,5 @@
-// /api/brief — Quiver-backed smart money. v5: streaming paths now strip
-// hallucinated smart_money/market_pulse before merge (matches non-stream paths).
+// /api/brief — Quiver-backed smart money. v5.1: streaming paths strip hallucinated
+// smart_money/market_pulse + buildHedgeFundMoves skips empty-filer rows (was capping at 2).
 // Identical hedge-fund logic: MAX_PER_FILER=2, dedup by (filer+ticker),
 // iterate ALL ranked rows. Mirrors /api/cron/generate-brief/route.ts.
 
@@ -347,7 +347,11 @@ async function buildHedgeFundMoves(): Promise<any[]> {
     if (out.length >= 5) break;
     const ticker = pickStr(row, "Ticker", "ticker", "Symbol").toUpperCase();
     if (!ticker) continue;
-    const filer = pickStr(row, "Filer", "OwnerName", "Owner", "filer", "owner", "Reporter", "Name", "Fund", "fund") || "Hedge fund";
+    // v5.1 FIX: Quiver's 13F primary field is "Fund" per spec. If missing,
+    // skip the row entirely rather than bucketing all anonymous rows into
+    // a "Hedge fund" default group that hits MAX_PER_FILER=2 and starves the rest.
+    const filer = pickStr(row, "Fund", "Filer", "OwnerName", "Owner", "fund", "filer", "owner", "Reporter", "Name");
+    if (!filer) continue;
     const filerKey = filer.toLowerCase();
     const pairKey = `${filerKey}|${ticker}`;
     if (seenPair.has(pairKey)) continue;
