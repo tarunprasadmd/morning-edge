@@ -1327,6 +1327,61 @@ export default function MorningEdge() {
     Store.set(`me-chat-${chatContext.id}`, chatMessages).catch(() => {});
   }, [chatContext, chatMessages]);
 
+  // Normalize a holding into unambiguous {avgCostPerShare, totalCost} before
+  // sending to chat. Mirrors the same heuristic used in the positions renderer
+  // at lines ~4030-4056. h.cost in raw holdings can be PER-SHARE or TOTAL
+  // depending on which broker CSV path was taken — this resolves the ambiguity
+  // once on the frontend so the chat backend gets clean fields.
+  const normalizeHoldingForChat = (h) => {
+    if (!h || typeof h !== "object") return null;
+    const qty = typeof h.qty === "number" ? h.qty : 0;
+    const value = typeof h.value === "number"
+      ? h.value
+      : (typeof h.currentValue === "number" ? h.currentValue : null);
+    let avgCostPerShare = null;
+    let totalCost = null;
+
+    if (typeof h.totalCost === "number" && h.totalCost > 0) {
+      // BEST CASE — broker gave total dollar amount directly
+      totalCost = h.totalCost;
+      avgCostPerShare = qty > 0 ? h.totalCost / qty : 0;
+    } else if (typeof h.avgCost === "number" && h.avgCost > 0 && qty > 0) {
+      // SECOND BEST — broker gave per-share, multiply for total
+      avgCostPerShare = h.avgCost;
+      totalCost = h.avgCost * qty;
+    } else if (typeof h.cost === "number" && h.cost > 0) {
+      // LEGACY FALLBACK — ambiguous "cost" column. Use heuristic:
+      // 1. Cross-check with gainPct if available (strongest signal)
+      // 2. Otherwise use 5x ratio rule
+      const naiveCostBasis = h.cost * qty;
+      const gainPctReported = typeof h.gainPct === "number" ? h.gainPct : null;
+      if (value != null && value > 0 && gainPctReported != null && gainPctReported > 5 && naiveCostBasis > value) {
+        // Broker says GAIN but naive interpretation shows LOSS → h.cost is TOTAL
+        totalCost = h.cost;
+        avgCostPerShare = qty > 0 ? h.cost / qty : 0;
+      } else if (value != null && value > 0 && naiveCostBasis / value > 5) {
+        // Naive cost is >5x market value → h.cost was already TOTAL
+        totalCost = h.cost;
+        avgCostPerShare = qty > 0 ? h.cost / qty : 0;
+      } else {
+        // Treat h.cost as PER-SHARE average
+        totalCost = naiveCostBasis;
+        avgCostPerShare = h.cost;
+      }
+    }
+
+    return {
+      symbol: h.symbol,
+      qty: qty,
+      value: value,
+      cost: avgCostPerShare,            // legacy field, per-share (matches brief route)
+      avgCostPerShare: avgCostPerShare, // explicit per-share avg
+      totalCost: totalCost,             // explicit total cost basis
+      gainPct: typeof h.gainPct === "number" ? h.gainPct : null,
+      accountId: h.accountId,
+    };
+  };
+
   // Send a chat message. Calls /api/chat with full context.
   const sendChatMessage = async (text) => {
     if (!text || !text.trim() || chatLoading) return;
@@ -1344,13 +1399,29 @@ export default function MorningEdge() {
           messages: newMessages,
           cardContext: chatContext,
           portfolio: {
-            holdings: holdings,
+            holdings: (holdings || []).map(normalizeHoldingForChat).filter(Boolean),
             cashBalance: cashBalance,
           },
           briefSummary: brief?.market_pulse ? {
             tone: brief.market_pulse.tone,
             summary: brief.market_pulse.summary,
             date: new Date().toISOString().slice(0, 10),
+          } : null,
+          // v2: pass today's smart-money snapshot so chat can cite confirming
+          // sources by name instead of falling back to web_search every turn.
+          smartMoney: brief?.smart_money ? {
+            whale_moves: brief.smart_money.whale_moves || [],
+            congress_moves: brief.smart_money.congress_moves || [],
+            hedge_fund_moves: brief.smart_money.hedge_fund_moves || [],
+            lobbying_moves: brief.smart_money.lobbying_moves || [],
+          } : null,
+          // v2: pass today's brief content so chat can cross-reference items
+          // user is asking about ("the brief mentioned X — tell me more").
+          briefSnapshot: brief ? {
+            conviction_watch: brief.conviction_watch || [],
+            radar_watch: brief.radar_watch || [],
+            opportunity_watch: brief.opportunity_watch || [],
+            todays_edge: brief.todays_edge || null,
           } : null,
           userName: name,
         }),

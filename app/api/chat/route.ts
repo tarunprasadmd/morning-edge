@@ -1,4 +1,10 @@
-// /api/chat — v2: Ask Morning Edge upgrade
+// /api/chat — v2.2: Ask Morning Edge upgrade
+//
+// v2.2: cost basis math now uses normalized avgCostPerShare + totalCost fields
+// from frontend (which applies the h.cost ambiguity heuristic before sending).
+// Falls back to legacy cost-as-per-share if normalized fields absent.
+// v2.1: fixed cost basis math — h.cost is PER-SHARE avg (matches brief route),
+// was being treated as total which produced 100x wrong unrealized gains.
 //
 // The user taps "Ask about this" on any card OR the top-level "Ask Morning
 // Edge" entry. Their question + conversation history flows here. Claude
@@ -157,6 +163,8 @@ function validateBody(body: any): { ok: true; data: ValidatedBody } | { ok: fals
         cost: Number.isFinite(h.cost) ? Number(h.cost) : undefined,
         value: Number.isFinite(h.value) ? Number(h.value) : undefined,
         gainPct: Number.isFinite(h.gainPct) ? Number(h.gainPct) : undefined,
+        avgCostPerShare: Number.isFinite(h.avgCostPerShare) ? Number(h.avgCostPerShare) : undefined,
+        totalCost: Number.isFinite(h.totalCost) ? Number(h.totalCost) : undefined,
       });
     }
     const cashBalance = Number.isFinite(body.portfolio.cashBalance)
@@ -225,7 +233,7 @@ function validateBody(body: any): { ok: true; data: ValidatedBody } | { ok: fals
 
 interface ChatMessage { role: "user" | "assistant"; content: string; }
 interface CardContext { type: "playbook" | "conviction" | "radar" | "insider" | "opportunity" | "general"; description: string; ticker?: string; }
-interface ValidatedHolding { symbol: string; qty?: number; cost?: number; value?: number; gainPct?: number; }
+interface ValidatedHolding { symbol: string; qty?: number; cost?: number; value?: number; gainPct?: number; avgCostPerShare?: number; totalCost?: number; }
 interface SmartMoneyMove { text: string; ticker?: string; source_url?: string; why_matters?: string; }
 interface ValidatedBody {
   messages: ChatMessage[];
@@ -818,13 +826,24 @@ CONTEXT YOU HAVE:`;
       const parts: string[] = [h.symbol];
       if (h.qty != null) parts.push(`${h.qty}sh`);
       if (h.value != null) parts.push(`$${Math.round(h.value).toLocaleString()}`);
-      if (h.cost != null && h.qty != null && h.qty > 0) {
+      if (h.qty != null && h.qty > 0 && ((h.avgCostPerShare != null && h.avgCostPerShare > 0) || (h.cost != null && h.cost > 0))) {
         withCost++;
-        const avg = h.cost / h.qty;
-        const unreal = (h.value ?? 0) - h.cost;
-        const pct = h.cost > 0 ? (unreal / h.cost) * 100 : 0;
+        // v2.2: Prefer explicit normalized fields from frontend. The frontend
+        // applies the cost-basis heuristic before sending (handles ambiguous
+        // h.cost cases — per-share vs total — using gainPct cross-check and
+        // 5x ratio rule). If normalized fields missing (older client), fall
+        // back to treating h.cost as per-share (matches brief route).
+        const avgCostPerShare = (h.avgCostPerShare != null && h.avgCostPerShare > 0)
+          ? h.avgCostPerShare
+          : (h.cost as number);
+        const totalCost = (h.totalCost != null && h.totalCost > 0)
+          ? h.totalCost
+          : avgCostPerShare * h.qty;
+        const unreal = (h.value ?? 0) - totalCost;
+        const pct = totalCost > 0 ? (unreal / totalCost) * 100 : 0;
         const sign = unreal >= 0 ? "+" : "";
-        parts.push(`avg $${avg.toFixed(2)}`);
+        parts.push(`avg $${avgCostPerShare.toFixed(2)}/sh`);
+        parts.push(`total cost $${Math.round(totalCost).toLocaleString()}`);
         parts.push(`unrealized ${sign}$${Math.round(unreal).toLocaleString()} (${sign}${pct.toFixed(1)}%)`);
       } else if (h.gainPct != null) {
         const sign = h.gainPct >= 0 ? "+" : "";
