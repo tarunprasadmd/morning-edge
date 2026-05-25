@@ -731,7 +731,7 @@ export async function GET(request: Request) {
   const isVercelCronUA = userAgent.includes("vercel-cron");
 
   if (process.env.CRON_SECRET) {
-    if (authHeader !== `Token ${process.env.CRON_SECRET}`) {
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   } else if (!vercelCronHeader && !isVercelCronUA) {
