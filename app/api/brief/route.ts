@@ -496,7 +496,14 @@ async function generateLayerB(opts: any): Promise<any> {
   ];
   const results = await Promise.allSettled(tasks);
   const merged: any = {};
-  for (const r of results) if (r.status === "fulfilled" && r.value) Object.assign(merged, r.value);
+  for (const r of results) if (r.status === "fulfilled" && r.value) {
+    // Strip authoritative fields so AI hallucinations don't overwrite layer-A
+    const v: any = { ...r.value };
+    delete v.smart_money;
+    delete v.market_pulse;
+    Object.assign(merged, v);
+  }
+  // Layer-A wins for these (assigned LAST so nothing overwrites)
   if (layerA?.market_pulse) merged.market_pulse = layerA.market_pulse;
   if (layerA?.smart_money) merged.smart_money = layerA.smart_money;
   if (Array.isArray(merged.opportunity_watch) && Array.isArray(merged.radar_watch)) {
@@ -657,17 +664,26 @@ export async function POST(request: Request) {
     }
 
     const tasks = [
-      generateLightChunk(name, holdings, accounts, holdingsAgeDays, date),
-      generatePulseAndEdge(name, watchlist, holdings, date),
-      generateSmartMoneyOnly(name, date),
-      generateConvictionAndOpportunity(name, watchlist, holdings, date),
+      { name: "light", promise: generateLightChunk(name, holdings, accounts, holdingsAgeDays, date) },
+      { name: "pulse", promise: generatePulseAndEdge(name, watchlist, holdings, date) },
+      { name: "smart_money", promise: generateSmartMoneyOnly(name, date) },
+      { name: "conviction", promise: generateConvictionAndOpportunity(name, watchlist, holdings, date) },
     ];
-    const results = await Promise.allSettled(tasks);
+    const results = await Promise.allSettled(tasks.map(t => t.promise));
     const merged: any = {};
     const failures: string[] = [];
-    for (const r of results) {
-      if (r.status === "fulfilled" && r.value) Object.assign(merged, r.value);
-      else if (r.status === "rejected") failures.push(r.reason?.message || "unknown");
+    // Assign in order so smart_money (from generateSmartMoneyOnly) wins over any hallucinated field
+    for (let i = 0; i < results.length; i++) {
+      const r = results[i];
+      const taskName = tasks[i].name;
+      if (r.status === "fulfilled" && r.value) {
+        const v: any = { ...r.value };
+        // Only the smart_money task should set smart_money
+        if (taskName !== "smart_money") delete v.smart_money;
+        // Only the pulse task should set market_pulse
+        if (taskName !== "pulse") delete v.market_pulse;
+        Object.assign(merged, v);
+      } else if (r.status === "rejected") failures.push(r.reason?.message || "unknown");
     }
     if (Object.keys(merged).length === 0) return NextResponse.json({ error: `All chunks failed: ${failures.join("; ")}` }, { status: 502 });
     const cacheKey = buildCacheKey({ name, watchlist, holdings, date });
