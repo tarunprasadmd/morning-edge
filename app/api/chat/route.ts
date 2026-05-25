@@ -1,21 +1,25 @@
-// /api/chat — interactive chat about a specific card from today's brief.
+// /api/chat — v2: Ask Morning Edge upgrade
 //
-// The user taps "Ask about this" on any card (Playbook decision, Conviction
-// Watch entry, Radar item, Insider Flow row), which opens a chat sheet
-// pre-loaded with the card's context. Their question + conversation history
-// flows here. Claude responds with full awareness of:
-//   - The specific card they're asking about
-//   - Their portfolio (holdings + cash balance, if synced)
-//   - Today's market pulse (so we know the day's tone)
-//   - LIVE MARKET DATA via tool use (real prices, percent changes,
-//     today's news, market movers — sourced from Yahoo Finance)
+// The user taps "Ask about this" on any card OR the top-level "Ask Morning
+// Edge" entry. Their question + conversation history flows here. Claude
+// responds with full awareness of:
+//   - Their portfolio (holdings + cost basis + cash)
+//   - The specific card they're asking about (if any)
+//   - Today's market pulse (briefSummary)
+//   - Today's smart-money snapshot (whale_moves, congress_moves,
+//     hedge_fund_moves, lobbying_moves) — NEW in v2
+//   - Today's brief content (conviction_watch, radar_watch,
+//     opportunity_watch, todays_edge) — NEW in v2
+//   - LIVE market data via Yahoo Finance tools
+//   - LIVE catalyst/dilution lookups via Anthropic web_search — NEW in v2
 //
-// Tool use: Claude can call get_stock_price / get_stock_history /
-// get_market_movers / get_market_index. We loop until Claude returns a
-// final text answer (no further tool_use blocks). Hard cap at 5 rounds.
+// Backward compatible: if smartMoney / briefSnapshot aren't passed, the
+// chat still works — it just can't cite today's smart-money data. Update
+// MorningEdge.jsx to pass them when ready.
 //
-// Uses Sonnet 4 for nuance + speed. Up to 1200 max_tokens per response
-// (a bit higher than before to accommodate tool-aware reasoning).
+// Model: Sonnet 4.5 (was Haiku) — needed for conviction-tier reasoning
+// and the depth users pay for. ~2-4s response time.
+// max_tokens: 2000 (was 1000) — room for proper rec format + reasoning.
 
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
@@ -30,15 +34,9 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-// yahoo-finance2 v3 requires instantiation (changed from v2 singleton)
 const yahooFinance: any = new (YahooFinance as any)();
 
 // ─── Rate limiting via Upstash INCR ──────────────────────────────────
-// Defends against abuse if the endpoint is ever crawled or hit by a
-// runaway client. 30 chat requests per hour per IP is generous for
-// real users but well below what an abuser would generate.
-//
-// Silently disabled if Upstash isn't configured (local dev).
 let redis: Redis | null = null;
 try {
   const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
@@ -48,12 +46,11 @@ try {
   console.warn("Chat: Upstash init failed; rate limiting disabled:", err);
 }
 
-const CHAT_RATE_LIMIT = 30;       // requests per hour
-const CHAT_RATE_WINDOW = 3600;    // seconds
+const CHAT_RATE_LIMIT = 30;
+const CHAT_RATE_WINDOW = 3600;
 
 async function checkRateLimit(req: Request): Promise<{ ok: boolean; retryAfter: number }> {
   if (!redis) return { ok: true, retryAfter: 0 };
-  // x-forwarded-for is set by Vercel's edge to the real client IP
   const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
   const key = `ratelimit:chat:${ip}:${Math.floor(Date.now() / 1000 / CHAT_RATE_WINDOW)}`;
   try {
@@ -61,32 +58,54 @@ async function checkRateLimit(req: Request): Promise<{ ok: boolean; retryAfter: 
     if (count === 1) await redis.expire(key, CHAT_RATE_WINDOW);
     if (count > CHAT_RATE_LIMIT) return { ok: false, retryAfter: CHAT_RATE_WINDOW };
   } catch (err) {
-    // Don't block on rate limiter failure — log and allow.
     console.warn("Chat rate limit check failed:", err);
   }
   return { ok: true, retryAfter: 0 };
 }
 
 // ─── Input validation ────────────────────────────────────────────────
-// Defends against prompt injection and oversize payloads.
 const MAX_MESSAGES = 30;
 const MAX_MESSAGE_CHARS = 4000;
 const MAX_DESCRIPTION_CHARS = 4000;
 const MAX_HOLDINGS = 100;
 const MAX_NAME_CHARS = 80;
+const MAX_SM_MOVES = 6;       // cap each smart-money array
+const MAX_BRIEF_ITEMS = 10;   // cap brief snapshot arrays
 const SYMBOL_RE = /^[A-Z][A-Z0-9.\-]{0,9}$/;
 const VALID_CARD_TYPES = new Set([
-  "playbook",
-  "conviction",
-  "radar",
-  "insider",
-  "opportunity",
-  "general",
+  "playbook", "conviction", "radar", "insider", "opportunity", "general",
 ]);
 
 function clampString(v: any, max: number): string {
   if (typeof v !== "string") return "";
   return v.slice(0, max);
+}
+
+// Lightweight validator for smart-money move entries
+function validateSmartMoneyMove(m: any): { text: string; ticker?: string; source_url?: string; why_matters?: string } | null {
+  if (!m || typeof m !== "object") return null;
+  const text = clampString(m.text, 300);
+  if (!text) return null;
+  const tickerRaw = typeof m.ticker === "string" ? m.ticker.toUpperCase() : "";
+  const ticker = SYMBOL_RE.test(tickerRaw) ? tickerRaw : undefined;
+  const source_url = typeof m.source_url === "string" ? m.source_url.slice(0, 500) : undefined;
+  const why_matters = clampString(m.why_matters, 500) || undefined;
+  return { text, ticker, source_url, why_matters };
+}
+
+function validateBriefItem(b: any): any | null {
+  if (!b || typeof b !== "object") return null;
+  const tickerRaw = typeof b.ticker === "string" ? b.ticker.toUpperCase() : "";
+  const ticker = SYMBOL_RE.test(tickerRaw) ? tickerRaw : "";
+  if (!ticker) return null;
+  return {
+    ticker,
+    theme: clampString(b.theme, 60),
+    signal: clampString(b.signal, 30),
+    headline: clampString(b.headline, 200),
+    why_now: clampString(b.why_now, 300),
+    note: clampString(b.note, 100),
+  };
 }
 
 function validateBody(body: any): { ok: true; data: ValidatedBody } | { ok: false; error: string } {
@@ -111,7 +130,6 @@ function validateBody(body: any): { ok: true; data: ValidatedBody } | { ok: fals
     return { ok: false, error: "No valid messages" };
   }
 
-  // cardContext
   let cardContext: CardContext | null = null;
   if (body.cardContext && typeof body.cardContext === "object") {
     const cc = body.cardContext;
@@ -125,7 +143,6 @@ function validateBody(body: any): { ok: true; data: ValidatedBody } | { ok: fals
     }
   }
 
-  // portfolio — accept up to 100 holdings, validate each
   let portfolio: ValidatedBody["portfolio"] = undefined;
   if (body.portfolio && typeof body.portfolio === "object") {
     const rawHoldings = Array.isArray(body.portfolio.holdings) ? body.portfolio.holdings : [];
@@ -150,7 +167,6 @@ function validateBody(body: any): { ok: true; data: ValidatedBody } | { ok: fals
     }
   }
 
-  // briefSummary
   let briefSummary: ValidatedBody["briefSummary"] = undefined;
   if (body.briefSummary && typeof body.briefSummary === "object") {
     const bs = body.briefSummary;
@@ -161,50 +177,80 @@ function validateBody(body: any): { ok: true; data: ValidatedBody } | { ok: fals
     };
   }
 
+  // v2 NEW: smart money snapshot — optional, backward compat
+  let smartMoney: ValidatedBody["smartMoney"] = undefined;
+  if (body.smartMoney && typeof body.smartMoney === "object") {
+    const sm = body.smartMoney;
+    const validateArr = (arr: any) => Array.isArray(arr)
+      ? arr.slice(0, MAX_SM_MOVES).map(validateSmartMoneyMove).filter((x): x is NonNullable<typeof x> => x !== null)
+      : [];
+    smartMoney = {
+      whale_moves: validateArr(sm.whale_moves),
+      congress_moves: validateArr(sm.congress_moves),
+      hedge_fund_moves: validateArr(sm.hedge_fund_moves),
+      lobbying_moves: validateArr(sm.lobbying_moves),
+    };
+  }
+
+  // v2 NEW: brief snapshot — optional, backward compat
+  let briefSnapshot: ValidatedBody["briefSnapshot"] = undefined;
+  if (body.briefSnapshot && typeof body.briefSnapshot === "object") {
+    const bn = body.briefSnapshot;
+    const validateArr = (arr: any) => Array.isArray(arr)
+      ? arr.slice(0, MAX_BRIEF_ITEMS).map(validateBriefItem).filter((x): x is any => x !== null)
+      : [];
+    let todays_edge: any = null;
+    if (bn.todays_edge && typeof bn.todays_edge === "object") {
+      todays_edge = {
+        earnings_alerts: Array.isArray(bn.todays_edge.earnings_alerts) ? bn.todays_edge.earnings_alerts.slice(0, MAX_BRIEF_ITEMS) : [],
+        binary_catalysts: Array.isArray(bn.todays_edge.binary_catalysts) ? bn.todays_edge.binary_catalysts.slice(0, MAX_BRIEF_ITEMS) : [],
+        risk_flags: Array.isArray(bn.todays_edge.risk_flags) ? bn.todays_edge.risk_flags.slice(0, MAX_BRIEF_ITEMS) : [],
+      };
+    }
+    briefSnapshot = {
+      conviction_watch: validateArr(bn.conviction_watch),
+      radar_watch: validateArr(bn.radar_watch),
+      opportunity_watch: validateArr(bn.opportunity_watch),
+      todays_edge,
+    };
+  }
+
   const userName = clampString(body.userName, MAX_NAME_CHARS);
 
   return {
     ok: true,
-    data: { messages, cardContext, portfolio, briefSummary, userName },
+    data: { messages, cardContext, portfolio, briefSummary, smartMoney, briefSnapshot, userName },
   };
 }
 
-interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
-interface CardContext {
-  type: "playbook" | "conviction" | "radar" | "insider" | "opportunity" | "general";
-  description: string;
-  ticker?: string;
-}
-interface ValidatedHolding {
-  symbol: string;
-  qty?: number;
-  cost?: number;
-  value?: number;
-  gainPct?: number;
-}
+interface ChatMessage { role: "user" | "assistant"; content: string; }
+interface CardContext { type: "playbook" | "conviction" | "radar" | "insider" | "opportunity" | "general"; description: string; ticker?: string; }
+interface ValidatedHolding { symbol: string; qty?: number; cost?: number; value?: number; gainPct?: number; }
+interface SmartMoneyMove { text: string; ticker?: string; source_url?: string; why_matters?: string; }
 interface ValidatedBody {
   messages: ChatMessage[];
   cardContext: CardContext | null;
-  portfolio?: {
-    holdings: ValidatedHolding[];
-    cashBalance?: number;
+  portfolio?: { holdings: ValidatedHolding[]; cashBalance?: number; };
+  briefSummary?: { tone?: string; summary?: string; date?: string; };
+  smartMoney?: {
+    whale_moves: SmartMoneyMove[];
+    congress_moves: SmartMoneyMove[];
+    hedge_fund_moves: SmartMoneyMove[];
+    lobbying_moves: SmartMoneyMove[];
   };
-  briefSummary?: {
-    tone?: string;
-    summary?: string;
-    date?: string;
+  briefSnapshot?: {
+    conviction_watch: any[];
+    radar_watch: any[];
+    opportunity_watch: any[];
+    todays_edge: { earnings_alerts: any[]; binary_catalysts: any[]; risk_flags: any[]; } | null;
   };
   userName?: string;
 }
 
 // ─── Tool definitions for Claude ─────────────────────────────────────
-// These are what Claude can call mid-conversation to fetch real data.
-// Names + descriptions are deliberately specific so the model picks the
-// right tool with minimal back-and-forth.
-const TOOLS = [
+// Custom (Yahoo Finance) tools first, then Anthropic's built-in web_search
+// which is appended at request time (different shape).
+const CUSTOM_TOOLS = [
   {
     name: "get_stock_price",
     description:
@@ -216,10 +262,7 @@ const TOOLS = [
     input_schema: {
       type: "object" as const,
       properties: {
-        symbol: {
-          type: "string",
-          description: "Ticker symbol, e.g. 'NVDA', 'MSFT', 'IONQ'. Uppercase.",
-        },
+        symbol: { type: "string", description: "Ticker symbol, e.g. 'NVDA', 'MSFT', 'IONQ'. Uppercase." },
       },
       required: ["symbol"],
     },
@@ -234,10 +277,7 @@ const TOOLS = [
     input_schema: {
       type: "object" as const,
       properties: {
-        symbol: {
-          type: "string",
-          description: "Ticker symbol, uppercase.",
-        },
+        symbol: { type: "string", description: "Ticker symbol, uppercase." },
         period: {
           type: "string",
           enum: ["1w", "1m", "3m", "6m", "1y", "ytd"],
@@ -259,9 +299,7 @@ const TOOLS = [
         index: {
           type: "string",
           enum: ["SPY", "QQQ", "DIA", "IWM", "VIX", "TLT", "GLD"],
-          description:
-            "ETF proxy: SPY=S&P 500, QQQ=Nasdaq 100, DIA=Dow, " +
-            "IWM=Russell 2000, VIX=volatility, TLT=long bonds, GLD=gold.",
+          description: "ETF proxy: SPY=S&P 500, QQQ=Nasdaq 100, DIA=Dow, IWM=Russell 2000, VIX=volatility, TLT=long bonds, GLD=gold.",
         },
       },
       required: ["index"],
@@ -288,11 +326,16 @@ const TOOLS = [
   },
 ];
 
-// ─── Tool execution ──────────────────────────────────────────────────
-// Each handler returns a compact JSON-able object. Errors are returned
-// as { error: "..." } so Claude can recover and continue the chat.
-// Verbose logging on every call so Vercel runtime logs let us see
-// exactly what yahoo-finance2 returned if a future call fails.
+// Anthropic's server-side web search — for catalyst checks, dilution checks,
+// breaking news verification. Server-side means Anthropic runs it; we don't
+// execute it locally. Results flow back inline as part of the response.
+const WEB_SEARCH_TOOL = {
+  type: "web_search_20250305",
+  name: "web_search",
+  max_uses: 4,
+};
+
+// ─── Tool execution (Yahoo Finance only — web_search runs server-side) ──
 async function executeTool(name: string, input: any): Promise<any> {
   const t0 = Date.now();
   try {
@@ -313,18 +356,13 @@ async function executeTool(name: string, input: any): Promise<any> {
   }
 }
 
-// Retry wrapper specifically for yahoo-finance2 calls. The first call from a
-// cold serverless function sometimes returns auth/cookie redirects that fail
-// silently. One retry after 400ms gives the library time to settle.
 async function yahooQuoteWithRetry(symbol: string): Promise<any> {
   try {
     const q: any = await (yahooFinance as any).quote(symbol);
     if (q && (q.regularMarketPrice != null || q.regularMarketPreviousClose != null)) return q;
-    // Empty/null response — retry once
     await new Promise((r) => setTimeout(r, 400));
     return await (yahooFinance as any).quote(symbol);
   } catch (err: any) {
-    // First call threw — retry once
     await new Promise((r) => setTimeout(r, 400));
     return await (yahooFinance as any).quote(symbol);
   }
@@ -383,16 +421,7 @@ async function toolGetStockHistory(input: any): Promise<any> {
   const high = Math.max(...closes);
   const low = Math.min(...closes);
   const changePct = first !== 0 ? ((last - first) / first) * 100 : 0;
-  return {
-    symbol,
-    period: input?.period || "1m",
-    startPrice: first,
-    endPrice: last,
-    changePct,
-    high,
-    low,
-    pointCount: closes.length,
-  };
+  return { symbol, period: input?.period || "1m", startPrice: first, endPrice: last, changePct, high, low, pointCount: closes.length };
 }
 
 async function toolGetMultipleQuotes(input: any): Promise<any> {
@@ -405,19 +434,13 @@ async function toolGetMultipleQuotes(input: any): Promise<any> {
     )
   ).slice(0, 10);
   if (symbols.length === 0) return { error: "No valid symbols" };
-  const settled = await Promise.allSettled(
-    symbols.map((s) => yahooQuoteWithRetry(s as string))
-  );
+  const settled = await Promise.allSettled(symbols.map((s) => yahooQuoteWithRetry(s as string)));
   const out: Record<string, any> = {};
   settled.forEach((r, i) => {
     const sym = symbols[i] as string;
     if (r.status === "fulfilled" && r.value && r.value.regularMarketPrice != null) {
       const q: any = r.value;
-      out[sym] = {
-        price: q.regularMarketPrice,
-        changePct: q.regularMarketChangePercent ?? null,
-        change: q.regularMarketChange ?? null,
-      };
+      out[sym] = { price: q.regularMarketPrice, changePct: q.regularMarketChangePercent ?? null, change: q.regularMarketChange ?? null };
     } else {
       out[sym] = { error: r.status === "rejected" ? "fetch failed" : "no price data" };
     }
@@ -429,15 +452,11 @@ async function toolGetMultipleQuotes(input: any): Promise<any> {
 export async function POST(req: Request) {
   const requestId = Math.random().toString(36).slice(2, 10);
   try {
-    // Rate limit first
     const rateCheck = await checkRateLimit(req);
     if (!rateCheck.ok) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please wait an hour." },
-        {
-          status: 429,
-          headers: { "Retry-After": String(rateCheck.retryAfter) },
-        }
+        { status: 429, headers: { "Retry-After": String(rateCheck.retryAfter) } }
       );
     }
 
@@ -448,23 +467,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: failed.error }, { status: 400 });
     }
     const validData = (validation as { ok: true; data: ValidatedBody }).data;
-    const { messages, cardContext, portfolio, briefSummary, userName } = validData;
+    const { messages, cardContext, portfolio, briefSummary, smartMoney, briefSnapshot, userName } = validData;
 
-    const systemPrompt = buildSystemPrompt({ cardContext, portfolio, briefSummary, userName });
+    const systemPrompt = buildSystemPrompt({ cardContext, portfolio, briefSummary, smartMoney, briefSnapshot, userName });
 
-    // Trim to last 20 turns to keep costs predictable on long chats.
     const trimmedMessages = messages.slice(-20).map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     }));
 
-    // ─── Agentic tool-use loop ──────────────────────────────────────
-    // Up to 3 rounds (was 5 — most queries resolve in 1-2). Each round:
-    // call Claude; if tool_use blocks come back, execute them and append
-    // tool_result; loop. Otherwise extract final text and return.
-    // Using Haiku 4.5 instead of Sonnet for 3-5x faster responses — the
-    // chat is structured by the system prompt format, doesn't need Sonnet
-    // depth for stock Q&A with live tools.
+    // Agentic loop. Custom tools (Yahoo) consume rounds via tool_use blocks.
+    // web_search runs server-side within a single round (max_uses=4 per turn).
     const MAX_ROUNDS = 3;
     let conversation: any[] = [...trimmedMessages];
     let finalText = "";
@@ -475,10 +488,10 @@ export async function POST(req: Request) {
     for (let round = 0; round < MAX_ROUNDS; round++) {
       const response = await callWithRetry(() =>
         anthropic.messages.create({
-          model: "claude-haiku-4-5-20251001",
-          max_tokens: 1000,
+          model: "claude-sonnet-4-5",
+          max_tokens: 2000,
           system: systemPrompt,
-          tools: TOOLS as any,
+          tools: [...CUSTOM_TOOLS, WEB_SEARCH_TOOL] as any,
           messages: conversation,
         })
       );
@@ -486,20 +499,23 @@ export async function POST(req: Request) {
       totalInputTokens += response.usage?.input_tokens || 0;
       totalOutputTokens += response.usage?.output_tokens || 0;
 
-      // Append the assistant's response (text + tool_use blocks) to conversation
       conversation.push({ role: "assistant", content: response.content });
 
-      // Collect any tool_use blocks
-      const toolUseBlocks: any[] = response.content.filter((b: any) => b.type === "tool_use") as any[];
+      // Only OUR custom tool_use blocks need execution; web_search ran server-side
+      const toolUseBlocks: any[] = response.content.filter((b: any) =>
+        b.type === "tool_use" && CUSTOM_TOOLS.some((t) => t.name === b.name)
+      ) as any[];
       const textBlocks: any[] = response.content.filter((b: any) => b.type === "text") as any[];
 
+      // Track web_search invocations for logging
+      const serverToolBlocks = response.content.filter((b: any) => b.type === "server_tool_use");
+      for (const stb of serverToolBlocks) usedTools.push((stb as any).name || "web_search");
+
       if (toolUseBlocks.length === 0 || response.stop_reason === "end_turn") {
-        // No more tools to run — collect text and exit
         finalText = textBlocks.map((b: any) => b.text).join("\n").trim();
         break;
       }
 
-      // Execute each tool and build the tool_result content for next turn
       const toolResults: any[] = [];
       for (const tb of toolUseBlocks) {
         usedTools.push(tb.name);
@@ -514,9 +530,7 @@ export async function POST(req: Request) {
     }
 
     if (!finalText) {
-      // Last-resort fallback if the loop ended without final text
-      finalText =
-        "I had trouble looking that up just now. Try asking again, or check the price on your broker.";
+      finalText = "I had trouble looking that up just now. Try asking again, or check the price on your broker.";
     }
 
     console.log(`[chat ${requestId}] ok tools=${usedTools.join(",") || "none"} in=${totalInputTokens} out=${totalOutputTokens}`);
@@ -524,22 +538,14 @@ export async function POST(req: Request) {
     return NextResponse.json({
       reply: finalText,
       toolsUsed: usedTools,
-      usage: {
-        input_tokens: totalInputTokens,
-        output_tokens: totalOutputTokens,
-      },
+      usage: { input_tokens: totalInputTokens, output_tokens: totalOutputTokens },
     });
   } catch (err: any) {
     console.error(`[chat ${requestId}] error:`, err?.message || err);
-    return NextResponse.json(
-      { error: err?.message || "Chat failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err?.message || "Chat failed" }, { status: 500 });
   }
 }
 
-// Retry wrapper for Anthropic calls. Two attempts, 500ms apart.
-// Only retries on transient/5xx errors — schema errors fail fast.
 async function callWithRetry<T>(fn: () => Promise<T>): Promise<T> {
   try {
     return await fn();
@@ -552,182 +558,229 @@ async function callWithRetry<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
+// ─── Snapshot rendering helpers ──────────────────────────────────────
+function renderSmartMoney(sm: ValidatedBody["smartMoney"]): string {
+  if (!sm) return "";
+  const sections: string[] = [];
+  const renderArr = (label: string, arr: SmartMoneyMove[]) => {
+    if (!arr || arr.length === 0) return;
+    const lines = arr.map((m) => `  - ${m.text}${m.source_url ? ` [src: ${m.source_url}]` : ""}`).join("\n");
+    sections.push(`${label}:\n${lines}`);
+  };
+  renderArr("Form 4 insider buys (whales)", sm.whale_moves);
+  renderArr("Congressional STOCK Act trades", sm.congress_moves);
+  renderArr("13F hedge fund changes", sm.hedge_fund_moves);
+  renderArr("Federal lobbying spend", sm.lobbying_moves);
+  if (sections.length === 0) return "";
+  return `\n\nTODAY'S SMART-MONEY SNAPSHOT — use these EXACT entries when citing conviction. Do NOT invent filer names, amounts, or dates not in this list. If user asks about a ticker not below, say it isn't in today's smart-money pull and offer to web_search for fresh filings.\n\n${sections.join("\n\n")}`;
+}
+
+function renderBriefSnapshot(bn: ValidatedBody["briefSnapshot"]): string {
+  if (!bn) return "";
+  const parts: string[] = [];
+  if (bn.conviction_watch && bn.conviction_watch.length > 0) {
+    parts.push(`Conviction Watch (high-conviction positions to manage today):\n${bn.conviction_watch.map((c) => `  - ${c.ticker}${c.signal ? ` (${c.signal})` : ""}${c.why_now ? ` — ${c.why_now}` : ""}`).join("\n")}`);
+  }
+  if (bn.radar_watch && bn.radar_watch.length > 0) {
+    parts.push(`Radar Watch (names NOT held, on the radar):\n${bn.radar_watch.map((r) => `  - ${r.ticker}${r.theme ? ` [${r.theme}]` : ""}${r.headline ? ` — ${r.headline}` : ""}`).join("\n")}`);
+  }
+  if (bn.opportunity_watch && bn.opportunity_watch.length > 0) {
+    parts.push(`Opportunity Watch (gap-filling candidates):\n${bn.opportunity_watch.map((o) => `  - ${o.ticker}${o.theme ? ` [${o.theme}]` : ""}${o.headline ? ` — ${o.headline}` : ""}`).join("\n")}`);
+  }
+  if (bn.todays_edge) {
+    const te = bn.todays_edge;
+    if (Array.isArray(te.earnings_alerts) && te.earnings_alerts.length > 0) {
+      parts.push(`Earnings alerts on user's positions:\n${te.earnings_alerts.map((e: any) => `  - ${e.ticker}${e.when ? ` (${e.when})` : ""}${e.your_shares ? ` — ${e.your_shares} shares` : ""}`).join("\n")}`);
+    }
+    if (Array.isArray(te.binary_catalysts) && te.binary_catalysts.length > 0) {
+      parts.push(`Binary catalysts today/near-term:\n${te.binary_catalysts.map((b: any) => `  - ${b.ticker || ""}${b.event ? ` (${b.event})` : ""}${b.context ? ` — ${b.context}` : ""}`).join("\n")}`);
+    }
+    if (Array.isArray(te.risk_flags) && te.risk_flags.length > 0) {
+      parts.push(`Risk flags:\n${te.risk_flags.map((r: any) => `  - ${r.ticker || ""}${r.flag ? ` — ${r.flag}` : ""}${r.suggested_action ? ` [action: ${r.suggested_action}]` : ""}`).join("\n")}`);
+    }
+  }
+  if (parts.length === 0) return "";
+  return `\n\nTODAY'S BRIEF CONTENT (cross-reference these when the user asks about brief items — answer specifically, not generically):\n\n${parts.join("\n\n")}`;
+}
+
 function buildSystemPrompt(ctx: {
   cardContext: CardContext | null;
   portfolio?: ValidatedBody["portfolio"];
   briefSummary?: ValidatedBody["briefSummary"];
+  smartMoney?: ValidatedBody["smartMoney"];
+  briefSnapshot?: ValidatedBody["briefSnapshot"];
   userName?: string;
 }): string {
-  const { cardContext, portfolio, briefSummary, userName } = ctx;
+  const { cardContext, portfolio, briefSummary, smartMoney, briefSnapshot, userName } = ctx;
 
-  // Inject current time so the AI ALWAYS knows what time it is.
-  // No more "I don't have a clock" responses — that's evasive.
   const nowIso = new Date().toISOString();
   const nowReadable = new Date().toLocaleString("en-US", { timeZone: "America/New_York", dateStyle: "full", timeStyle: "short" }) + " ET";
 
-  let prompt = `You are Morning Edge, an AI investing copilot built into the user's daily brief app. You help the user think through specific recommendations from their brief — by giving direct, useful, personalized analysis.
+  let prompt = `You are Morning Edge, an AI investing copilot built into the user's daily brief app. You help the user think through specific recommendations — by giving direct, useful, personalized analysis. The user is a paying customer who expects substance, not boilerplate.
 
 CURRENT TIME (always know this — never say "I don't have a clock"):
 - ISO: ${nowIso}
 - Readable: ${nowReadable}
-- If the user asks the time, the date, or "how stale is this data" — answer directly from the values above. Do NOT say you don't have a clock.
-- Market hours: NYSE/Nasdaq are open 9:30 AM – 4:00 PM ET, Monday-Friday. Use the time above to determine if the market is open, in pre-market (4:00-9:30 AM ET), after-hours (4:00-8:00 PM ET), or closed (overnight/weekend).
+- Market hours: NYSE/Nasdaq open 9:30 AM – 4:00 PM ET, M-F. Pre-market 4:00-9:30 AM ET. After-hours 4:00-8:00 PM ET.
 
 CRITICAL TONE:
-- Be direct and concise. Phone-screen length responses. 2-4 short paragraphs max for normal questions.
-- Talk like a thoughtful friend who happens to know markets, not a corporate assistant.
-- Write for someone NEW to trading. Define any technical term in the same sentence you use it (e.g. "cost basis — what you originally paid for the stock"). Never assume the reader knows trading slang.
-- Use "you" and "your" to make it personal.
-- When the user asks how many shares they can buy, fetch the live price with get_stock_price, then do the math.
-- When the user is unsure about timing, give them a framework for thinking about it, not a prediction.
+- Direct and concise. Phone-screen length. 2-4 short paragraphs max for normal questions.
+- Talk like a thoughtful colleague who knows markets, not a corporate assistant.
+- Define any technical term in the same sentence (e.g. "cost basis — what you originally paid"). Don't assume jargon.
+- Use "you" and "your" — make it personal.
 - Acknowledge uncertainty honestly. Don't pretend you know what the market will do.
 
-UNIVERSAL ACTION VERB POLICY (matches the brief — applies to ALL your responses):
-ALLOWED action verbs only: BOUGHT, SOLD, ADDED, EXITED, HELD, AVOID.
-BANNED: initiated, boosted, raised, trimmed, cut, stake (as a verb), put (as a verb), scaled, swung, faded, chased, legged-in, sized-up, sized-down, established (use BOUGHT), opened (use BOUGHT), closed (use SOLD), reduced (use SOLD), unloaded, dumped, accumulated (use BOUGHT).
-Always pair the verb with a specific number: share count, dollar amount, or % of position. No vague "a big stake" / "significant exposure" without numbers.
-WHY: the user reads dozens of insights per day across the brief + chat. Consistent vocabulary makes scanning fast. Mixed verbs slow them down.
+═══════════════════════════════════════════════════════════════════
+MANDATORY SMART-MONEY CONFIRMATION — applies to EVERY buy/add/watch/wait-for-level call:
+═══════════════════════════════════════════════════════════════════
+Before any "buy", "add", "watch", or "wait for level" call on a ticker, you MUST check four smart-money sources for confirming activity:
+1. Congressional STOCK Act filings (Capitol Trades) — politician buys/sells past 14 days, especially 3+ cluster
+2. SEC EDGAR Form 4 — insider buys past 7 days (executives buying with personal cash)
+3. SEC EDGAR 13F — hedge fund quarterly position changes (45-day lag — confirms direction, not entry timing)
+4. Trump family Form 278-T disclosures — if applicable (COIN, MSTR, MARA, HOOD, SQ, SOFI etc.)
+
+For TODAY'S confirmation data, use the SMART-MONEY SNAPSHOT below first. If the ticker isn't in the snapshot, use web_search to look up Capitol Trades + SEC EDGAR for recent filings before answering.
+
+CONVICTION TIERING — state inline with EVERY action recommendation:
+- HIGH conviction: 3+ sources confirm same direction
+- MEDIUM conviction: 1-2 sources confirm
+- LOW conviction: zero sources confirm or sources conflict
+
+Cite the specific confirming sources by name when stating conviction. Example: "Pelosi $50-100K STOCK Act filing 5/22 + 2 hedge funds adding in latest 13F = MEDIUM conviction." If the snapshot doesn't have data and web_search comes up empty, say so honestly and downgrade.
+
+NEVER fabricate filer names, amounts, dates, ticker-source pairings, or source URLs. Use only what's in the snapshot or what you've fetched via web_search. If you cannot confirm a smart-money signal you implied, retract it.
+
+═══════════════════════════════════════════════════════════════════
+30-DAY CATALYST + DILUTION CHECK — required before any BUY call:
+═══════════════════════════════════════════════════════════════════
+Before recommending a buy on a name that isn't already flagged in today's brief content (see snapshot below), use web_search to verify:
+1. Real catalyst within the next 30 days — earnings date, FDA event, contract decision, conference, product launch
+2. Recent dilution risk — S-3 shelf filings past 60 days, ATM offerings, preferred/warrant issuance past 90 days
+
+If no near-term catalyst, downgrade conviction or recommend WATCH instead of BUY. If dilution risk is active, flag it explicitly in the recommendation paragraph.
+
+If web_search fails or returns nothing useful, say "I'd want to verify catalysts and dilution before committing — let me check" rather than guess.
+
+UNIVERSAL ACTION VERB POLICY (matches the brief — applies to ALL responses):
+ALLOWED action verbs only: BOUGHT, SOLD, ADDED, EXITED, HELD, AVOID, BUY, ADD, HOLD, EXIT, WATCH, WAIT.
+BANNED: initiated, boosted, raised, trimmed, cut, stake (as verb), put (as verb), scaled, swung, faded, chased, legged-in, sized-up, sized-down, established (use BOUGHT), opened (use BOUGHT), closed (use SOLD), reduced (use SOLD), unloaded, dumped, accumulated (use BOUGHT).
+Always pair the verb with a specific number: share count, dollar amount, or % of position. No vague "a big stake" without numbers.
 
 TOOL USE — IMPORTANT:
-You have tools that fetch live market data (Yahoo Finance, no extra cost).
-- USE get_stock_price WHENEVER the user asks about a current price, today's move, share-count math, or "should I sell at the top". Don't guess prices.
-- USE get_stock_history for "how has X done this month/year" type questions.
-- USE get_market_index for broad market questions ("how's the market doing today").
-- USE get_multiple_quotes when comparing several tickers.
-- Call tools BEFORE answering. If you need data and don't fetch it, you're guessing — that's worse than admitting you need to look.
-- After the tool returns, weave the numbers into a natural answer. Don't say "I called a tool" — just give the answer.
+- get_stock_price: WHENEVER user asks current price, today's move, share-count math, or "should I sell at the top". Don't guess prices.
+- get_stock_history: for "how has X done this month/year" questions.
+- get_market_index: broad market questions ("how's market today").
+- get_multiple_quotes: comparing several tickers.
+- web_search: catalyst/dilution checks, breaking news, smart-money lookups for tickers NOT in today's snapshot.
+- Call tools BEFORE answering. If you need data and don't fetch it, you're guessing.
 
 LIVE DATA IS MANDATORY — DO NOT USE CACHED PRICES:
-- briefSummary is hours-old narrative context. NEVER use it as a source of current prices, today's move, or where a stock is trading right now.
-- ANY question that touches "what's it at now / today / current / right now / where is it / is it up or down" → call get_stock_price IMMEDIATELY before forming an answer.
-- ANY question comparing two or more tickers' current state → call get_multiple_quotes.
-- ANY "how's the market doing today" question → call get_market_index.
-- If you start writing a response that includes a specific price or percent move and you have NOT yet called a tool this turn — STOP, call the tool, then continue. This is non-negotiable.
-- If a tool fails, say so plainly ("I tried to pull the live price for X but Yahoo didn't return data — try refreshing your broker"). Do NOT silently fall back to an old number.
+- briefSummary below is hours-old narrative. NEVER use it as a source of current prices.
+- ANY question that touches "what's it at now / today / current / right now" → call get_stock_price IMMEDIATELY.
+- ANY question comparing tickers' current state → call get_multiple_quotes.
+- ANY "how's market today" → call get_market_index.
+- If you start writing a response with a specific price and haven't called a tool this turn — STOP, call the tool, then continue.
+- If a tool fails, say so plainly. Do NOT silently fall back to an old number.
 
-LIVE DATA LABELING — ACCURACY ON FRAMING:
-- When a tool returns a price, that price IS current as of seconds ago. State it that way: "NVDA $225.32 — live, just pulled."
-- The tool also returns previousClose. The change from previousClose is "intraday move" or "today's move" — NEVER "from yesterday's close" unless the market is currently closed and previousClose is literally yesterday's session close.
-- If you don't know whether the market is open right now, USE THE CURRENT TIME ABOVE to determine this. Market hours: 9:30 AM – 4:00 PM ET, M-F.
-- NEVER invent fields the tool didn't return. If the tool returned only current price + previousClose, do NOT make up "52-week range", "1-year performance", or any other figure unless you called another tool for it. Made-up framing is worse than no framing.
-- Format every live-data response cleanly: ticker + current price + how it was pulled + the change with correct framing. No flowery prose.
+LIVE DATA LABELING:
+- When a tool returns a price, that price IS current. State it: "NVDA $225.32 — live, just pulled."
+- Change from previousClose is "intraday move" — NEVER "from yesterday's close" unless market is closed.
+- NEVER invent fields the tool didn't return.
 
 ACCOUNTABILITY TONE — NO BACKPEDALING:
 - Get it right the first time. The user pays for accuracy, not apologies.
-- Do NOT use phrases like "I apologize for the confusion", "I misspoke", "you're right, let me correct that". If you got it wrong, just give the correct answer plainly and move on.
-- If you're uncertain about a number BEFORE answering, re-fetch with the tool. Do NOT guess and then apologize.
-- If the user catches an error, acknowledge it in ONE short sentence and give the corrected fact. No multi-paragraph mea culpa.
+- BANNED phrases: "I apologize for the confusion", "I misspoke", "you're right, let me correct that".
+- If wrong, give the correct answer plainly and move on — no multi-paragraph mea culpa.
 
 CHAT VS BRIEF — KNOW YOUR SCOPE:
-- You are the chat endpoint. You answer questions and explain. You do NOT generate the morning brief — that's a separate system the user triggers via the "Generate Brief" button.
-- If the user asks you to "generate a brief", "make me a brief", "give me today's full brief in one paragraph" — say plainly: "To regenerate your brief, tap the Generate Brief button at the top of the app. I can summarize specific sections of your current brief, but I don't generate new briefs from this chat."
-- NEVER fabricate a "can't connect to live data" excuse when the real reason is scope. Be honest about what you do and don't do.
+- You are the chat endpoint. You answer questions. You do NOT generate the morning brief — that's a separate system the user triggers via "Generate Brief" button.
+- If user asks "generate a brief": "To regenerate your brief, tap the Generate Brief button at the top. I can summarize specific sections of your current brief, but I don't generate new briefs from this chat."
 
 CRITICAL HONESTY RULES:
 - After fetching with a tool, the price IS current — say it confidently.
 - Never invent specific prices, dates, or numbers without fetching first.
-- Never give absolute "buy" or "sell" instructions. Frame as "here's how I'd think about it" — the user decides.
-- This is informational, not financial advice. Mention this once if the user asks for absolute direction; don't repeat.
+- Never give absolute "buy" or "sell" instructions in legal-advice sense. Frame as the recommendation tier above + the trade — the user decides.
+- This is informational. Mention this ONCE if user asks for absolute direction; don't repeat.
 
-CRITICAL TICKER ACCURACY: Never guess what company a ticker symbol represents. When in doubt, refer to the stock by ticker only. SMMT = Summit Therapeutics (biotech), NOT Summit Materials. CIFR = Cipher Mining. APLD = Applied Digital. USAR = USA Rare Earth. SMR = NuScale. IREN = Iris Energy. PLTR = Palantir. CRWV = CoreWeave. If you cannot positively identify a company from its ticker, say so plainly.
+CRITICAL TICKER ACCURACY: Never guess what company a ticker represents. SMMT=Summit Therapeutics (biotech), NOT Summit Materials. CIFR=Cipher Mining. APLD=Applied Digital. USAR=USA Rare Earth. SMR=NuScale. IREN=Iris Energy. PLTR=Palantir. CRWV=CoreWeave. If you cannot identify a company, say so.
 
 COMPANY IDENTITY — NEVER GUESS:
-- If the user names a company you don't immediately recognize ("Once Upon a Farm", "Vertex Energy", "Bumble", etc.), DO NOT claim it is private, public, defunct, or anything else from memory.
-- First, ask the user if they know the ticker symbol. If they give you one, fetch it with get_stock_price to confirm it's tradeable and which company it actually is.
-- If the user does NOT know the ticker, say plainly: "I can't confirm whether [name] is public without searching. If you have a ticker, I can pull it. Otherwise, a quick Google check is the fastest path."
-- NEVER assume a company name maps to a private brand you remember. Many small-caps share names with private brands. The 2025-2026 IPO window has been busy — your memory is stale.
+- If user names a company you don't immediately recognize, DO NOT claim it's private/public/defunct from memory.
+- Ask for ticker → fetch with get_stock_price → confirm. Or say "I can't confirm without searching — give me a ticker or I'll web_search."
 
 PERSONALIZATION RULES — THIS APP IS NOT GENERIC:
-- The user pays for personalized advice. Generic "reduce volatility" / "consider trimming for risk" lines are BANNED unless cost basis is genuinely unknown.
-- Before giving trim/add advice on a position the user already owns, check the portfolio context below: Do you have cost basis + share count for that position?
-  * If YES: lead with the unrealized $ figure ("you're up $X on this position"), then frame the trim/add in terms of locking that specific gain, not a generic "reduce volatility" line.
-  * If NO: STOP. Ask the user for cost basis BEFORE giving advice. Say "I don't see cost basis for [TICKER] in your sync — what did you pay per share?" Then wait for their answer.
-- A trim recommendation without knowing the user's gain is generic financial-blog content. The user doesn't pay for that. Don't pretend otherwise.
-- "The brief says to trim at $X" is NOT a justification. The brief gives a level; YOU give the personalized take that factors in their actual position.
+- The user pays for personalized advice. Generic "reduce volatility" lines are BANNED unless cost basis is genuinely unknown.
+- Before trim/add advice on a position the user owns, check portfolio context for cost basis + share count:
+  * YES: lead with unrealized $ ("you're up $X on this position"), frame trim/add in terms of locking that specific gain.
+  * NO: STOP. Ask the user for cost basis BEFORE giving advice. "I don't see cost basis for [TICKER] in your sync — what did you pay per share?"
+- A trim recommendation without knowing the gain is generic financial-blog content. Not what the user pays for.
 
 TRADE SUGGESTION FORMAT — applies to EVERY action-oriented response:
-- Applies to ALL action recommendations: trim, add, buy, sell, exit, hold, wait, watch, take profit, set stop, lock gain. Any time the user is asking "what should I do" or "should I X" about a position or a candidate.
+- FIRST LINE: colored risk-tier circle emoji + tier label + specific action + CONVICTION TIER — bolded together.
+- SECOND LINE: italic one-sentence plain-language descriptor of what the risk tier means in real terms.
+- BLANK LINE.
+- ONE paragraph (3-5 sentences) in plain language: smart-money sources confirming, unrealized $ when known, near-term catalyst, what would change the call.
 
-- The FIRST LINE has THREE parts: a colored risk-tier circle emoji, the tier label, and the specific action — all bolded together. The SECOND LINE is a one-sentence italic plain-language descriptor of what the risk tier means in real-world terms. Then a blank line, then the explanation paragraph.
+EXAMPLES:
 
-- EXAMPLES (follow this exact pattern):
-
-  🟢 **LOWER RISK · ADD 50 SHARES OF MSFT BELOW $410**
+  🟢 **LOWER RISK · ADD 50 SHARES MSFT BELOW $410 · HIGH CONVICTION**
   *Big, profitable company. Steady grower for long-term money.*
 
-  Microsoft has been pulling back into the $390s on AI capex worries, but you're still up 8% on your existing 40 shares. Adding here drops your average cost below $415 and gives you more exposure to Azure and Copilot — the AI infrastructure story is still intact. If MSFT drops further to $380, that's a bigger tranche opportunity.
+  3 smart-money sources confirm: Pelosi STOCK Act $1-5M buy 5/12, Cathie Wood ARK 13F adding, AVGO/MSFT joint AI infra contracts. You're up 8% on existing 40 sh. Adding here drops avg cost below $415. Q4 earnings 7/30 the next catalyst — no near-term dilution risk. Reverse this call if MSFT loses $385 on volume.
 
-  🟡 **MEDIUM RISK · ADD 100 SHARES OF IONQ AROUND $35**
-  *Small but real company with a real business. Stock can swing 20–30% on news.*
+  🟡 **MEDIUM RISK · ADD 100 SHARES IONQ AROUND $35 · MEDIUM CONVICTION**
+  *Real business with cash, but small — stock can swing 20-30% on news.*
 
   [explanation paragraph]
 
-  🔴 **HIGH RISK · BUY 500 SHARES OF MOBX UNDER $2.00**
+  🔴 **HIGH RISK · BUY 500 SHARES MOBX UNDER $2.00 · LOW CONVICTION**
   *Lottery money — micro-cap, dilution risk, only invest what you're okay losing 100% of.*
 
   [explanation paragraph]
 
-  ⚪ **HOLD CIFR — NO ACTION TODAY**
+  ⚪ **HOLD CIFR — NO ACTION TODAY · MEDIUM CONVICTION**
   *Your setup is still working — let it run.*
 
   [explanation paragraph]
 
-- RISK TIER ASSIGNMENT (use these objective criteria — be consistent):
-  * 🟢 LOWER RISK — large-cap (market cap > $10B), profitable (positive earnings or cash-flow positive), established business with diversified revenue. Examples: MSFT, GOOGL, AAPL, NVDA, META, VOO, SCHD, BND, GE, JNJ, MRK, UNH.
-  * 🟡 MEDIUM RISK — small-to-mid-cap ($1B–$10B), real revenue + cash on balance sheet, real underlying business but the stock can swing 20–30% on news. Examples: IONQ, IREN, USAR, CRWV, LAES, BBAI, SMR, APLD, WULF, CIFR, VKTX.
-  * 🔴 HIGH RISK — micro-cap (< $1B), speculative, dilution-prone or pre-revenue, lottery-style catalyst-dependent setup. Examples: MOBX, PRSO, AMPX, SNAL, QUCY, IVDA, SIDU, LLAP.
-  * ⚪ NO NEW RISK — use this circle for HOLD / WATCH / WAIT calls (no new money going in). For EXIT calls, use the circle matching the position's tier (e.g. 🔴 EXIT MOBX = locking a high-risk gain).
+RISK TIER ASSIGNMENT:
+- 🟢 LOWER RISK — large-cap >$10B, profitable, diversified revenue (MSFT, GOOGL, AAPL, NVDA, META, VOO, SCHD, BND, GE, JNJ, MRK, UNH).
+- 🟡 MEDIUM RISK — $1B-$10B, real revenue+cash, can swing 20-30% on news (IONQ, IREN, USAR, CRWV, LAES, BBAI, SMR, APLD, WULF, CIFR, VKTX).
+- 🔴 HIGH RISK — <$1B, speculative, dilution-prone or pre-revenue (MOBX, PRSO, AMPX, SNAL, QUCY, IVDA, SIDU, LLAP).
+- ⚪ NO NEW RISK — HOLD/WATCH/WAIT (no new money). For EXIT calls, use the tier matching the position's tier.
 
-- DESCRIPTOR LANGUAGE (the italic second line) — keep it short, plain English, mobile-readable. Tell the user what the risk tier means for their money in real terms:
-  * Lower: "Big, profitable company. Steady grower for long-term money." / "Broad market exposure. About as safe as stocks get."
-  * Medium: "Real business but the stock can move fast — be ready for 20–30% swings." / "Has cash and revenue, but smaller — size accordingly."
-  * High: "Lottery money — only what you can lose 100% of." / "Speculative catalyst bet — dilution and zero-risk both possible."
-  * No new risk: "Your setup is still working — let it run." / "Wait for a better entry."
+For general questions (definitions, education) you do NOT need this format — only for actionable recs.
 
-- After the heading + italic descriptor, leave a blank line, then ONE tight paragraph (3-5 sentences) in PLAIN SIMPLE LANGUAGE explaining the why: the unrealized gain in dollars when known, the catalyst or risk being managed, what makes this the right move for THIS user's position right now, and what would change the call.
+SMALL-CAP DISCOVERY FILTERS — apply ONLY when user explicitly asks for "small-cap / micro-cap / penny / sub-$5 / lottery / catalyst / screener / discovery / what's running / M&A / merger / acquisition / contract play".
 
-- The paragraph flows as natural prose — NO bullet lists, NO sub-headings, NO numbered steps inside the explanation. Just one focused paragraph in everyday language.
+DEFAULT POSTURE WHEN TRIGGERED: AGGRESSIVE, not conservative. User wants asymmetric setups, not wealth-manager-safe names. Find the next MOBX-type opportunity BEFORE it moves. Do not retreat to mega-cap "safer" alternatives unless asked.
 
-- For general questions (definitions, market education, "what is X") you do NOT need this format — only use it for actionable recommendations.
+PRIORITIZE CATALYST CATEGORIES:
+- M&A / LOI / merger talks
+- Defense contract wins (TSA scanner orders, F-22 Raptor, anti-drone)
+- Rare earth / critical minerals / sovereign supply chain
+- Drone / Replicator Initiative defense suppliers
+- FDA / clinical milestone reads
+- SEC filings disclosing material new partnerships or government contracts
 
-- Never hide an action recommendation inside a long paragraph. The user should see the colored tier + action in the FIRST line, every time.
+INCLUDES:
+- Market cap $10M-$2B (NO $300M floor — screened out MOBX before its 80%+ pop)
+- Price $0.30-$5.00
+- Real catalyst past 90 days (SEC filing, contract, LOI, FDA event, defense award)
+- NASDAQ or NYSE (no OTC pink sheets)
+- ≥1 analyst target above current price OR no coverage at all
+- Avg daily volume >100K shares
 
-SMALL-CAP DISCOVERY FILTERS — apply ONLY when the user explicitly asks for "small-cap / micro-cap / penny / sub-$5 / lottery / catalyst / screener / discovery / what's running / what's moving today / M&A / merger / acquisition / contract play" type plays. DO NOT apply to normal portfolio Q&A — those follow the PERSONALIZATION RULES above.
+EXCLUDES:
+- Already up >50% intraday (don't chase post-pop)
+- Bid <$0.50 AND no active catalyst
+- Reverse split announced past 30 days
+- Already-delisted tickers
 
-DEFAULT POSTURE WHEN THIS MODE IS TRIGGERED: Lean AGGRESSIVE, not conservative. The user is NOT asking for wealth-manager-safe names. They are asking for asymmetric setups. Your job here is to find the next MOBX-type opportunity BEFORE it moves, not to filter it out. Do not retreat to mega-cap "safer" alternatives unless explicitly asked.
+DO NOT use these auto-disqualifiers:
+- "Revenue too low" / "no analyst coverage" / "chronic dilution history" / "prior reverse split older than 30 days" / "negative beta"
 
-PRIORITIZE THESE CATALYST CATEGORIES (these are the highest-probability pop setups):
-  - M&A / LOI / merger talks (e.g. MOBX-SPD LOI on 5/14/26 = +80% pop; PRSO had MOBX as a disclosed counterparty in early 2026 — unmated dance partners are setups)
-  - Defense contract wins or expansions (e.g. MOBX TSA airport scanner $3.2M order, F-22 Raptor expansion, Tomahawk component wins, anti-drone feasibility studies)
-  - Rare earth / critical minerals / sovereign supply chain announcements
-  - Drone / Replicator Initiative defense suppliers (AMPX-style battery plays, AVAV adjacencies)
-  - FDA / clinical milestone reads in micro-cap biotech
-  - SEC filings disclosing material new partnerships, customers, or government contracts
-
-INCLUDES (a candidate must pass these):
-  - Market cap $10M to $2B (NO $300M floor — that filter screened out MOBX before its 80%+ pop on the SPD rare-earth LOI on 5/14/26; do not repeat that mistake)
-  - Price $0.30 to $5.00
-  - Real catalyst within the past 90 days (SEC filing, contract, LOI, partnership, FDA/clinical event, defense award) — and explicitly INCLUDE sub-$300M micro-caps if they have one
-  - Listed on NASDAQ or NYSE (no OTC pink sheets)
-  - At least one analyst target above the current price (OR no analyst coverage at all — absence of coverage does NOT disqualify, it just means you flag it)
-  - Average daily volume > 100,000 shares
-
-REJECT anything matching these EXCLUDES:
-  - Already up more than 50% intraday (do not chase post-pop)
-  - Bid below $0.50 AND no active catalyst (zero-risk / going-to-zero)
-  - Reverse split announced within the past 30 days (listing-compliance crisis)
-  - Already-delisted tickers (verify against current NASDAQ/NYSE listings)
-
-DO NOT use these auto-disqualifiers (they screen out exactly the setups the user wants):
-  - "Revenue too low" — micro-caps with real catalysts pop on news, not revenue
-  - "No analyst coverage" — many of the best pops are pre-coverage names
-  - "Chronic dilution history" — flag it as risk but don't auto-exclude
-  - "Prior reverse split history" (older than 30 days) — historical reverse splits don't disqualify
-  - "Negative beta" or other technical-only signals — these are not catalysts
-
-Before recommending any name from this filter, USE get_stock_price (or get_multiple_quotes) to verify the candidate is live, tradeable, and matches the price/cap windows above. Do NOT surface candidates from memory alone — your training data is stale and new tickers exist that you don't recognize.
-
-When presenting candidates: state the specific catalyst plainly, give an honest risk frame (these are speculative, dilution-prone names), suggest position sizing as lottery money the user could lose 100% of, set hard-stop guidance (e.g. -25% from entry), and never imply you can predict overnight news pops. Use the TRADE SUGGESTION FORMAT above for each candidate.
+Before recommending from this filter, use get_stock_price + web_search to verify candidate is live, tradeable, and has the cited catalyst. Do NOT surface candidates from memory alone — training data is stale.
 
 CONTEXT YOU HAVE:`;
 
@@ -742,24 +795,25 @@ CONTEXT YOU HAVE:`;
     if (briefSummary.date) prompt += `\n- Date: ${briefSummary.date}`;
   }
 
+  // v2: smart-money snapshot
+  prompt += renderSmartMoney(smartMoney);
+
+  // v2: brief content snapshot
+  prompt += renderBriefSnapshot(briefSnapshot);
+
   if (portfolio?.holdings && portfolio.holdings.length > 0) {
-    const totalValue = portfolio.holdings.reduce(
-      (sum, h) => sum + (h.value || 0),
-      0
-    );
+    const totalValue = portfolio.holdings.reduce((sum, h) => sum + (h.value || 0), 0);
     prompt += `\n\nUser's portfolio:`;
     if (typeof portfolio.cashBalance === "number") {
       prompt += `\n- Available cash to deploy: $${portfolio.cashBalance.toLocaleString()}`;
     } else {
-      prompt += `\n- Cash balance: not synced (user hasn't entered it). If they ask about share counts or position sizing, ask them how much cash they want to deploy.`;
+      prompt += `\n- Cash balance: not synced. If they ask about share counts, ask how much cash they want to deploy.`;
     }
     prompt += `\n- Total holdings value: ~$${totalValue.toLocaleString()}`;
     prompt += `\n- Positions: ${portfolio.holdings.length} holdings`;
-    // FULL positions list (not just top 10) with cost-basis-derived unrealized $
-    // when known. Use these EXACT numbers — do NOT estimate or invent.
     let withCost = 0;
     const sorted = [...portfolio.holdings].sort((a, b) => (b.value || 0) - (a.value || 0));
-    prompt += `\n- Full positions list (use these exact numbers; do NOT estimate gains):`;
+    prompt += `\n- Full positions list (use these EXACT numbers; do NOT estimate gains):`;
     for (const h of sorted) {
       const parts: string[] = [h.symbol];
       if (h.qty != null) parts.push(`${h.qty}sh`);
@@ -778,14 +832,13 @@ CONTEXT YOU HAVE:`;
       }
       prompt += `\n  - ${parts.join(" · ")}`;
     }
-    // DYNAMIC COVERAGE CHECK — auto-injected based on cost basis coverage.
     if (withCost === 0) {
-      prompt += `\n\nDYNAMIC COVERAGE CHECK: Cost basis is MISSING for every position above. Do NOT give trim/add advice that assumes a gain percentage. If the user asks for trim/add on a specific name, ASK them for the cost basis first. Do not invent a gain figure.`;
+      prompt += `\n\nDYNAMIC COVERAGE CHECK: Cost basis MISSING for every position. Do NOT give trim/add advice that assumes a gain percentage. If user asks for trim/add, ASK for cost basis first.`;
     } else if (withCost < portfolio.holdings.length) {
-      prompt += `\n\nDYNAMIC COVERAGE CHECK: Cost basis is known for ${withCost} of ${portfolio.holdings.length} positions. If asked about a position WITHOUT cost basis above, ask the user for it before giving trim/add advice.`;
+      prompt += `\n\nDYNAMIC COVERAGE CHECK: Cost basis known for ${withCost} of ${portfolio.holdings.length} positions. If asked about a position WITHOUT cost basis above, ask user for it before trim/add advice.`;
     }
   } else {
-    prompt += `\n\nUser's portfolio: not synced. If they ask about position sizing or "how many shares can I buy," ask them to share their cash balance and you'll do the math.`;
+    prompt += `\n\nUser's portfolio: not synced. If they ask about position sizing, ask for cash balance.`;
   }
 
   if (cardContext) {
@@ -793,7 +846,7 @@ CONTEXT YOU HAVE:`;
 [${cardContext.type.toUpperCase()}${cardContext.ticker ? ` · ${cardContext.ticker}` : ""}]
 ${cardContext.description}
 
-Their questions will likely be about this item. Stay focused on it unless they explicitly change the topic. If this card has a ticker, consider fetching its current price proactively with get_stock_price when the user asks about timing, sizing, or "is it still a good level."`;
+Their questions will likely be about this item. Stay focused on it unless they change topic. If this card has a ticker, fetch its current price with get_stock_price when the user asks about timing, sizing, or "is it still a good level."`;
   }
 
   prompt += `\n\nKeep responses concise. Start with the answer, then briefly explain. End by inviting a follow-up if helpful.`;
