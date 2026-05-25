@@ -453,10 +453,22 @@ export async function GET(request: Request) {
     todays_edge: { earnings_alerts: earningsAlerts, binary_catalysts: binaryCatalysts, risk_flags: riskFlags },
     radar_watch: radarFiltered,
   };
+  // Object.assign light/conviction FIRST, but strip authoritative fields to avoid AI overwriting layerA
+  if (lightResult.status === "fulfilled" && lightResult.value) {
+    const v: any = { ...lightResult.value };
+    delete v.smart_money;
+    delete v.market_pulse;
+    Object.assign(merged, v);
+  }
+  if (convictionResult.status === "fulfilled" && convictionResult.value) {
+    const v: any = { ...convictionResult.value };
+    delete v.smart_money;
+    delete v.market_pulse;
+    Object.assign(merged, v);
+  }
+  // Layer-A wins LAST so nothing overwrites
   if (layerA?.market_pulse) merged.market_pulse = layerA.market_pulse;
   if (layerA?.smart_money) merged.smart_money = layerA.smart_money;
-  if (lightResult.status === "fulfilled" && lightResult.value) Object.assign(merged, lightResult.value);
-  if (convictionResult.status === "fulfilled" && convictionResult.value) Object.assign(merged, convictionResult.value);
 
   const hHash = holdingsHash(holdings);
   if (hasMarketPulseContent(merged.market_pulse)) {
