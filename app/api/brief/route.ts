@@ -1021,7 +1021,7 @@ async function quiverFetch(path: string): Promise<any[] | null> {
   try {
     const res = await fetch(url, {
       headers: {
-        "Authorization": `Bearer ${key}`,
+        "Authorization": `Token ${key}`,
         "Accept": "application/json",
       },
       signal: controller.signal,
