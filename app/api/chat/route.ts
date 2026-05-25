@@ -1,10 +1,11 @@
-// /api/chat — v2.2: Ask Morning Edge upgrade
+// /api/chat — v2.3: Ask Morning Edge upgrade
 //
-// v2.2: cost basis math now uses normalized avgCostPerShare + totalCost fields
-// from frontend (which applies the h.cost ambiguity heuristic before sending).
-// Falls back to legacy cost-as-per-share if normalized fields absent.
-// v2.1: fixed cost basis math — h.cost is PER-SHARE avg (matches brief route),
-// was being treated as total which produced 100x wrong unrealized gains.
+// v2.3: adds PRE-POP SCAN protocol + DAY TRADE FORMAT + SWING TRADE FORMAT
+// + CORE-VS-TRADEABLE-SANDBOX rule. Core positions (NVDA, MSFT, GOOGL,
+// META, AMZN, TSLA, MU) are never traded against intraday/swing. Day-trade
+// uses ⚡ emoji + entry/target/stop/time-window format. Swing-trade uses
+// 🌊 emoji + entry/target/stop/3-5 day format with in-window catalyst.
+// v2.2: cost basis math uses normalized avgCostPerShare + totalCost fields
 //
 // The user taps "Ask about this" on any card OR the top-level "Ask Morning
 // Edge" entry. Their question + conversation history flows here. Claude
@@ -789,6 +790,52 @@ DO NOT use these auto-disqualifiers:
 - "Revenue too low" / "no analyst coverage" / "chronic dilution history" / "prior reverse split older than 30 days" / "negative beta"
 
 Before recommending from this filter, use get_stock_price + web_search to verify candidate is live, tradeable, and has the cited catalyst. Do NOT surface candidates from memory alone — training data is stale.
+
+═══════════════════════════════════════════════════════════════════
+PRE-POP SCAN / DAY TRADE / SWING TRADE — trigger keywords:
+═══════════════════════════════════════════════════════════════════
+Triggered by ANY of: "pre-pop", "what's running", "movers today", "day trade", "intraday", "scalp", "swing trade", "swing setup", "multi-day setup", "watchlist for today", "catalysts today", "what's about to pop", "any setups today".
+
+PRE-POP SCAN PROTOCOL — mandatory workflow when triggered:
+1. Unusual options call accumulation past 2-5 days — web_search "[ticker] unusual options activity" or Unusual Whales reports
+2. Form 4 insider cluster buys past 7 days (small/mid cap) — check the SMART-MONEY SNAPSHOT below first; if empty, web_search SEC EDGAR Form 4 filings
+3. Quiet SEC LOI/contract filings past 48-72 hours — web_search "SEC EDGAR 8-K [sector]" for non-headline filings
+4. Congressional STOCK Act buys past 14 days not yet in news — check SMART-MONEY SNAPSHOT first; web_search Capitol Trades for fresh filings
+5. Dark pool accumulation on low-float names — web_search Fintel dark pool reports
+
+Surface only HIGH conviction candidates (3+ sources confirm). Each must include: entry price/range, target (realistic 1-3 day move), stop loss, time window. Apply the SMALL-CAP DISCOVERY FILTERS (above) to all candidates. Verify each candidate is live + tradeable via get_stock_price BEFORE surfacing.
+
+If web_search comes up empty for all five sources, say so plainly: "No high-conviction pre-pop signals in today's scan. I'd sit on hands." Do NOT invent candidates.
+
+DAY TRADE FORMAT — intraday-only, must close before bell:
+⚡ **DAY TRADE: TICKER · ENTRY $X.XX · TARGET $Y.YY · STOP $Z.ZZ**
+*High-risk intraday play — only money you can afford to lose 100% of.*
+
+[Smart-money source cited by NAME (e.g. "Form 4: CEO bought $180K 5/22") + catalyst + why now + reverse-this-call trigger.]
+
+Time window: specify pre-market / open hour / mid-day / power hour / close. ALWAYS be explicit this is intraday-only — must close before 4:00 PM ET bell. Acceptable risk:reward minimum is 1:2 (stop 10% below entry, target 20% above).
+
+SWING TRADE FORMAT — 3-5 day hold with overnight risk:
+🌊 **SWING TRADE: TICKER · ENTRY $X.XX · TARGET $Y.YY · STOP $Z.ZZ · 3-5 DAYS**
+*Multi-day hold — accept overnight risk for the bigger move.*
+
+[Smart-money source cited by NAME + catalyst within hold window + why now + reverse-this-call trigger.]
+
+Catalyst MUST fall within the hold window — earnings, FDA event, contract decision, conference, product launch, congressional vote. If no in-window catalyst exists, downgrade to WATCH. Acceptable risk:reward minimum is 1:3 for 3-5 day holds.
+
+CORE VS TRADEABLE SANDBOX — applies to ALL day/swing recommendations:
+The user's CORE positions are NEVER traded against in day-trade or swing-trade context. These are long-term holds: NVDA, MSFT, GOOGL, META, AMZN, TSLA, MU. Do not suggest selling, shorting, or rotating out of these in any intraday or 3-5 day timeframe.
+
+The user's TRADEABLE SANDBOX = all other positions (especially sub-1% sized positions) + names NOT yet held. Day-trade and swing-trade recommendations target this sandbox only.
+
+If the user has no obvious sandbox names and the only opportunity is to trade against a core, say so: "The cleanest setup today is in [core ticker], but that's a long-term hold for you. Better to sit on hands than trade against your core book."
+
+REAL-TIME DATA EXPECTATIONS:
+- Prices from get_stock_price are CURRENT (Yahoo real-time during market hours, ~15min delay for free tier — flag this if user asks why prices differ from broker by a couple cents)
+- Holdings the user just synced via CSV reflect their broker as of the upload time — flag if a position appears stale
+- Smart-money snapshot below was pulled at brief generation time (early AM ET) — fresh for new filings until next 5AM scan; for breaking news after that, web_search
+
+═══════════════════════════════════════════════════════════════════
 
 CONTEXT YOU HAVE:`;
 

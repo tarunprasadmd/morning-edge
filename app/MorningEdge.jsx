@@ -1274,6 +1274,7 @@ export default function MorningEdge() {
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [chatError, setChatError] = useState(null);
+  const [heroInput, setHeroInput] = useState(""); // Phase B: input on the Ask Morning Edge hero card
   const [cashBalance, setCashBalance] = useState(null); // optional user-entered cash to deploy
 
   // ─── Reading page state ──────────────────────────────────────────
@@ -1295,11 +1296,11 @@ export default function MorningEdge() {
 
   // Open the chat sheet with a specific card's context. Restores previous
   // conversation from localStorage if one exists for this card.
-  const openChat = (ctx) => {
+  const openChat = (ctx, prefill) => {
     if (!ctx || !ctx.id) return;
     setChatContext(ctx);
     setChatError(null);
-    setChatInput("");
+    setChatInput(typeof prefill === "string" ? prefill : "");
     // Try to restore prior conversation for this card (encrypted at rest)
     (async () => {
       try {
@@ -3109,63 +3110,46 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         </div>
       </div>
 
-      {/* Two royal twin buttons — Generate Brief + Sync Portfolio.
-          Always visible so users can re-generate or re-sync at any time
-          without going back. Step 2 of the flow after picking a pillar. */}
-      <div className="relative px-4 pb-4">
-        <div className="grid grid-cols-2 gap-3">
-          {/* GENERATE BRIEF — CANDY CRUSH glossy */}
+      {/* Compact action row — Generate/Regenerate Brief + Sync Portfolio.
+          Shrunk in Phase B to make room for the Ask Morning Edge hero card
+          below. Same gradients, smaller footprint. */}
+      <div className="relative px-4 pb-3">
+        <div className="grid grid-cols-2 gap-2">
+          {/* GENERATE BRIEF — compact */}
           <button
             onClick={generateBrief}
             disabled={loading}
-            className="relative rounded-3xl overflow-hidden text-left active:scale-[0.97] active:translate-y-0.5 transition disabled:opacity-60"
+            className="relative rounded-2xl overflow-hidden text-left active:scale-[0.97] active:translate-y-0.5 transition disabled:opacity-60"
             style={{
               background: "linear-gradient(180deg, #4338CA 0%, #312E81 50%, #1E1B4B 100%)",
-              border: "2px solid #D4A574",
+              border: "1.5px solid #D4A574",
               boxShadow:
-                "0 6px 18px rgba(67, 56, 202, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.40), inset 0 -6px 14px rgba(0, 0, 0, 0.45)",
+                "0 3px 10px rgba(67, 56, 202, 0.40), inset 0 1.5px 3px rgba(255, 255, 255, 0.35), inset 0 -3px 8px rgba(0, 0, 0, 0.40)",
             }}
           >
-            {/* Top specular — big bright reflection */}
-            <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+            <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
               style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 50%, rgba(255,255,255,0) 100%)",
-                borderRadius: "1.5rem 1.5rem 50% 50%",
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1rem 1rem 50% 50%",
               }} />
-            {/* Bottom small shine */}
-            <span className="absolute bottom-2 left-[30%] right-[30%] h-[15%] pointer-events-none"
-              style={{
-                background: "linear-gradient(to top, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 100%)",
-                borderRadius: "9999px",
-              }} />
-            {/* Gold accent line on top */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
+            <div className="absolute top-0 left-0 right-0 h-[1.5px] z-10"
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-40 pointer-events-none"
-              style={{ background: "radial-gradient(circle, #818CF8 0%, transparent 60%)" }} />
-            <div className="relative z-10 px-3 py-3 flex flex-col items-start gap-1 min-h-[78px]">
-              <div className="flex items-center gap-2 w-full">
-                <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center relative overflow-hidden"
-                  style={{
-                    background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
-                    boxShadow: "0 2px 0 #92400E, inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -2px 3px rgba(146,64,14,0.30)",
-                  }}>
-                  <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
-                    style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
-                  <Sparkles className="w-3.5 h-3.5 relative" style={{ color: "#451A03" }} />
-                </div>
-                <p className="text-[14px] leading-tight truncate flex-1"
-                  style={{ fontFamily: SERIF, fontWeight: 600, color: "#FFFFFF", textShadow: "0 1px 2px rgba(0,0,0,0.55)" }}>
-                  {brief ? "Regenerate" : "Generate Brief"}
-                </p>
+            <div className="relative z-10 px-3 py-2 flex items-center gap-2 min-h-[44px]">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center relative overflow-hidden"
+                style={{
+                  background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
+                  boxShadow: "0 1px 0 #92400E, inset 0 1px 1.5px rgba(255,255,255,0.85)",
+                }}>
+                <Sparkles className="w-3 h-3 relative" style={{ color: "#451A03" }} strokeWidth={2.5} />
               </div>
-              <p className="text-[10px] leading-snug truncate w-full" style={{ color: "rgba(248,250,252,0.85)", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
-                {loading ? "Reading the tape…" : brief ? "Pull fresh data" : "See today's tape"}
+              <p className="text-[13px] leading-tight truncate flex-1"
+                style={{ fontFamily: SERIF, fontWeight: 600, color: "#FFFFFF", textShadow: "0 1px 1.5px rgba(0,0,0,0.55)" }}>
+                {loading ? "Reading…" : brief ? "Regenerate" : "Generate Brief"}
               </p>
             </div>
           </button>
 
-          {/* SYNC PORTFOLIO — CANDY CRUSH glossy */}
+          {/* SYNC PORTFOLIO — compact */}
           <button
             onClick={() => {
               setShowCsvImport(true);
@@ -3176,46 +3160,32 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 }
               }, 50);
             }}
-            className="relative rounded-3xl overflow-hidden text-left active:scale-[0.97] active:translate-y-0.5 transition"
+            className="relative rounded-2xl overflow-hidden text-left active:scale-[0.97] active:translate-y-0.5 transition"
             style={{
               background: "linear-gradient(180deg, #334155 0%, #1E293B 50%, #020617 100%)",
-              border: "2px solid #D4A574",
+              border: "1.5px solid #D4A574",
               boxShadow:
-                "0 6px 18px rgba(2, 6, 23, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.30), inset 0 -6px 14px rgba(0, 0, 0, 0.45)",
+                "0 3px 10px rgba(2, 6, 23, 0.40), inset 0 1.5px 3px rgba(255, 255, 255, 0.25), inset 0 -3px 8px rgba(0, 0, 0, 0.40)",
             }}
           >
-            <span className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+            <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
               style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0) 100%)",
-                borderRadius: "1.5rem 1.5rem 50% 50%",
+                background: "linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0) 100%)",
+                borderRadius: "1rem 1rem 50% 50%",
               }} />
-            <span className="absolute bottom-2 left-[30%] right-[30%] h-[15%] pointer-events-none"
-              style={{
-                background: "linear-gradient(to top, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%)",
-                borderRadius: "9999px",
-              }} />
-            <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
+            <div className="absolute top-0 left-0 right-0 h-[1.5px] z-10"
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full opacity-40 pointer-events-none"
-              style={{ background: "radial-gradient(circle, #D4A574 0%, transparent 60%)" }} />
-            <div className="relative z-10 px-3 py-3 flex flex-col items-start gap-1 min-h-[78px]">
-              <div className="flex items-center gap-2 w-full">
-                <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center relative overflow-hidden"
-                  style={{
-                    background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
-                    boxShadow: "0 2px 0 #92400E, inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -2px 3px rgba(146,64,14,0.30)",
-                  }}>
-                  <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
-                    style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
-                  <Briefcase className="w-3.5 h-3.5 relative" style={{ color: "#451A03" }} />
-                </div>
-                <p className="text-[14px] leading-tight truncate flex-1"
-                  style={{ fontFamily: SERIF, fontWeight: 600, color: "#FFFFFF", textShadow: "0 1px 2px rgba(0,0,0,0.55)" }}>
-                  Sync Portfolio
-                </p>
+            <div className="relative z-10 px-3 py-2 flex items-center gap-2 min-h-[44px]">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center relative overflow-hidden"
+                style={{
+                  background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
+                  boxShadow: "0 1px 0 #92400E, inset 0 1px 1.5px rgba(255,255,255,0.85)",
+                }}>
+                <Briefcase className="w-3 h-3 relative" style={{ color: "#451A03" }} strokeWidth={2.5} />
               </div>
-              <p className="text-[10px] leading-snug truncate w-full" style={{ color: "rgba(248,250,252,0.85)", textShadow: "0 1px 1px rgba(0,0,0,0.40)" }}>
-                {holdings.length > 0 ? `${holdings.length} positions` : "Connect holdings"}
+              <p className="text-[13px] leading-tight truncate flex-1"
+                style={{ fontFamily: SERIF, fontWeight: 600, color: "#FFFFFF", textShadow: "0 1px 1.5px rgba(0,0,0,0.55)" }}>
+                {holdings.length > 0 ? `Sync · ${holdings.length}` : "Sync Portfolio"}
               </p>
             </div>
           </button>
@@ -3674,56 +3644,265 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
           {/* Sync Portfolio block is now rendered persistently via the twin
               buttons section near the top — no need to render it here too. */}
 
-          {/* Ask Anything — top-level entry point for general questions about
-              the user's portfolio, today's market, or anything investing-
-              related. Differs from the per-card "Ask about this" buttons in
-              that it has no specific card context — Claude has access to
-              the full brief and full portfolio. The user types whatever
-              they want. */}
-          <button
-            onClick={() => {
-              openChat({
-                id: `general-${todayKey}`,
-                type: "general",
-                description: "General question about today's brief or your portfolio. The user has the full brief in front of them and may reference any section.",
-              });
-            }}
-            className="relative w-full rounded-2xl px-4 py-3.5 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5 flex items-center gap-3 text-left"
-            style={{
-              background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 50%, #C4B5FD 100%)",
-              border: "1.5px solid #8B5CF6",
-              boxShadow: "0 3px 0 #6D28D9, 0 5px 12px rgba(139,92,246,0.35), 0 0 18px rgba(196,181,253,0.30), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -2px 4px rgba(91,33,182,0.15)",
-            }}
-          >
-            <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
-              style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
-                borderRadius: "1rem 1rem 50% 50%",
-              }} />
-            <span className="absolute bottom-1 left-[30%] right-[30%] h-[15%] pointer-events-none"
-              style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
-            <div
-              className="relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
-              style={{
-                background: "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
-                border: "1.5px solid #4C1D95",
-                boxShadow: "0 1.5px 0 #4C1D95, inset 0 1.5px 2px rgba(255,255,255,0.55)",
-              }}
-            >
-              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
-                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)" }} />
-              <Sparkles className="w-5 h-5 text-white relative" strokeWidth={2.5} />
-            </div>
-            <div className="relative flex-1 min-w-0">
-              <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-violet-800 leading-none mb-1">
-                Ask Morning Edge
-              </p>
-              <p className="text-[15px] text-slate-800 leading-snug truncate">
-                Anything about your portfolio or today's brief…
-              </p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-violet-400 flex-shrink-0" strokeWidth={2.5} />
-          </button>
+          {/* ─── ASK MORNING EDGE HERO ──────────────────────────────────
+              Phase B (5/25/26): The chat is the centerpiece. Hero card with:
+                - prominent input bar (typing + Enter pre-fills chat)
+                - 4 portfolio-aware suggested questions as tappable chips
+                - persistent "informational, not investment advice" disclaimer
+              Questions pull from today's brief state (conviction_watch,
+              smart_money, risk_flags) so they reference YOUR positions and
+              today's signals — never cold "pick a stock" prompts. Chips
+              pre-fill the chat input so the user reviews before sending. */}
+          {(() => {
+            // Compute up to 4 suggested questions from current brief + portfolio.
+            // Each question is portfolio-aware: about a position you hold or a
+            // signal in today's brief. Falls back to safe generic prompts if
+            // brief isn't loaded yet.
+            const suggestions = [];
+            const seenTickers = new Set();
+
+            const pushIfNew = (ticker, text, prefill) => {
+              if (!ticker || seenTickers.has(ticker)) return;
+              if (suggestions.length >= 4) return;
+              seenTickers.add(ticker);
+              suggestions.push({ text, prefill });
+            };
+
+            // [1] Top conviction watch position — "should I add/hold?"
+            if (Array.isArray(brief?.conviction_watch) && brief.conviction_watch.length > 0) {
+              const top = brief.conviction_watch[0];
+              if (top?.ticker) {
+                const signal = (top.signal || "").toLowerCase();
+                const verb = signal.includes("add") ? "add to" : signal.includes("trim") || signal.includes("sell") ? "trim" : "hold";
+                pushIfNew(
+                  top.ticker,
+                  `Should I ${verb} ${top.ticker}?`,
+                  `Should I ${verb} my ${top.ticker} position today? Use my cost basis and today's smart-money signals.`
+                );
+              }
+            }
+
+            // [2] Top smart-money whale move on a ticker user holds
+            const userTickers = new Set((holdings || []).map((h) => h?.symbol).filter(Boolean));
+            if (Array.isArray(brief?.smart_money?.whale_moves)) {
+              for (const m of brief.smart_money.whale_moves) {
+                if (m?.ticker && userTickers.has(m.ticker)) {
+                  pushIfNew(
+                    m.ticker,
+                    `Whale just bought ${m.ticker} — follow?`,
+                    `An insider just filed a Form 4 buy on ${m.ticker}, which I already hold. Walk me through whether to add given my cost basis.`
+                  );
+                  break;
+                }
+              }
+            }
+
+            // [3] Top congressional move
+            if (Array.isArray(brief?.smart_money?.congress_moves)) {
+              for (const m of brief.smart_money.congress_moves) {
+                if (m?.ticker) {
+                  pushIfNew(
+                    m.ticker,
+                    `Why is Congress buying ${m.ticker}?`,
+                    `Congressional traders filed a recent buy on ${m.ticker}. What's the thesis and should I look at it?`
+                  );
+                  break;
+                }
+              }
+            }
+
+            // [4] Risk flag on a held position
+            if (Array.isArray(brief?.todays_edge?.risk_flags)) {
+              for (const r of brief.todays_edge.risk_flags) {
+                if (r?.ticker && userTickers.has(r.ticker)) {
+                  pushIfNew(
+                    r.ticker,
+                    `Is ${r.ticker} still safe to hold?`,
+                    `There's a risk flag on ${r.ticker} in today's brief and I hold it. Should I exit, trim, or hold?`
+                  );
+                  break;
+                }
+              }
+            }
+
+            // Safe generic fallbacks if brief is empty / not loaded yet.
+            // These fill the portfolio-aware section ONLY (slots 1-2).
+            const fallbacks = [
+              {
+                text: "What's today's smart-money read?",
+                prefill: "Summarize today's smart-money signals across my portfolio. Which positions have the strongest confirmation?",
+              },
+              {
+                text: "Biggest gainer in my book?",
+                prefill: "Which of my positions has the largest unrealized gain right now, and what would you do with it?",
+              },
+              {
+                text: "What should I watch this week?",
+                prefill: "What are the near-term catalysts I should be watching across my positions this week?",
+              },
+              {
+                text: "Any new opportunities today?",
+                prefill: "Which name in today's Opportunity Watch has the strongest smart-money confirmation and a near-term catalyst?",
+              },
+            ];
+            // First, cap portfolio-aware suggestions at 2 slots (slots 1-2)
+            const portfolioPicks = suggestions.slice(0, 2);
+            // Fill slot 2 from fallbacks if portfolio gave us fewer than 2
+            for (const fb of fallbacks) {
+              if (portfolioPicks.length >= 2) break;
+              if (!portfolioPicks.some((s) => s.text === fb.text)) portfolioPicks.push(fb);
+            }
+
+            // ALWAYS-PRESENT day-trade + swing-trade chips (slots 3-4).
+            // These are core to the Ask Morning Edge value prop — pre-pop
+            // scan and swing setup discovery. They route into the chat
+            // backend which has dedicated PRE-POP SCAN + DAY TRADE FORMAT
+            // + SWING TRADE FORMAT system prompt sections to handle them.
+            const tradingChips = [
+              {
+                text: "⚡ Pre-pop candidates today?",
+                prefill: "Run a pre-pop scan for today. Check unusual options call accumulation past 2-5 days, Form 4 insider cluster buys past 7 days on small/mid caps, quiet SEC LOI or contract filings past 48-72 hours, and Congressional STOCK Act buys past 14 days not yet in news. Surface HIGH conviction candidates only with entry, target, stop, and time window. Never recommend trading against my core positions (NVDA, MSFT, GOOGL, META, AMZN, TSLA, MU).",
+              },
+              {
+                text: "🌊 Best swing trade setup?",
+                prefill: "Give me one swing trade setup for the next 3-5 days. Smart-money confirmed (3+ sources), catalyst within the hold window, specific entry + target + stop levels. Target the tradeable sandbox — not my core positions (NVDA, MSFT, GOOGL, META, AMZN, TSLA, MU). Cite the confirming filings by name.",
+              },
+            ];
+
+            // Final composition: 2 portfolio-aware + 2 trading chips = 4 total
+            const finalSuggestions = [...portfolioPicks, ...tradingChips].slice(0, 4);
+            // Replace the suggestions array with the final composed list
+            suggestions.length = 0;
+            for (const s of finalSuggestions) suggestions.push(s);
+
+            const openAskChat = (prefill) => {
+              openChat(
+                {
+                  id: `general-${todayKey}`,
+                  type: "general",
+                  description:
+                    "General question about today's brief or your portfolio. The user has the full brief in front of them and may reference any section.",
+                },
+                prefill
+              );
+            };
+
+            const submitHeroInput = (e) => {
+              if (e && e.preventDefault) e.preventDefault();
+              const text = (heroInput || "").trim();
+              openAskChat(text);
+              setHeroInput("");
+            };
+
+            return (
+              <div
+                className="relative rounded-2xl overflow-hidden"
+                style={{
+                  background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 45%, #DDD6FE 100%)",
+                  border: "1.5px solid #8B5CF6",
+                  boxShadow:
+                    "0 4px 16px rgba(139,92,246,0.30), 0 0 22px rgba(196,181,253,0.30), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -2px 4px rgba(91,33,182,0.12)",
+                }}
+              >
+                {/* Top specular shine */}
+                <span
+                  className="absolute top-0.5 left-2 right-2 h-[40%] pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "1rem 1rem 50% 50%",
+                  }}
+                />
+
+                <div className="relative px-4 pt-3.5 pb-3">
+                  {/* Header row — orb + title */}
+                  <div className="flex items-center gap-2.5 mb-2.5">
+                    <div
+                      className="relative flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center overflow-hidden"
+                      style={{
+                        background: "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
+                        border: "1.5px solid #4C1D95",
+                        boxShadow:
+                          "0 1.5px 0 #4C1D95, inset 0 1.5px 2px rgba(255,255,255,0.55)",
+                      }}
+                    >
+                      <span
+                        className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                        style={{
+                          background:
+                            "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)",
+                        }}
+                      />
+                      <Sparkles className="w-4 h-4 text-white relative" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] uppercase tracking-[0.2em] font-bold text-violet-800 leading-none mb-1">
+                        Ask Morning Edge
+                      </p>
+                      <p className="text-[11px] text-violet-700/85 leading-tight">
+                        Personalized to your positions and today's signals
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Input bar — typing + tapping send pre-fills the chat */}
+                  <form onSubmit={submitHeroInput} className="flex items-stretch gap-2 mb-2.5">
+                    <input
+                      type="text"
+                      value={heroInput}
+                      onChange={(e) => setHeroInput(e.target.value)}
+                      placeholder="Ask anything about today…"
+                      className="flex-1 rounded-xl px-3.5 py-2.5 text-[14px] text-slate-800 outline-none"
+                      style={{
+                        background: "rgba(255,255,255,0.92)",
+                        border: "1.5px solid #C4B5FD",
+                        boxShadow: "inset 0 1px 2px rgba(91,33,182,0.10)",
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      aria-label="Open Ask Morning Edge"
+                      className="flex-shrink-0 w-11 h-auto rounded-xl flex items-center justify-center active:scale-95 transition"
+                      style={{
+                        background: "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
+                        border: "1.5px solid #4C1D95",
+                        boxShadow:
+                          "0 2px 0 #4C1D95, inset 0 1.5px 2px rgba(255,255,255,0.50)",
+                      }}
+                    >
+                      <ArrowRight className="w-5 h-5 text-white" strokeWidth={2.75} />
+                    </button>
+                  </form>
+
+                  {/* Suggested question chips */}
+                  {suggestions.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-2.5">
+                      {suggestions.map((q, i) => (
+                        <button
+                          key={i}
+                          onClick={() => openAskChat(q.prefill)}
+                          className="text-[12px] font-medium text-violet-900 rounded-full px-2.5 py-1.5 active:scale-95 transition leading-tight"
+                          style={{
+                            background: "rgba(255,255,255,0.85)",
+                            border: "1px solid #C4B5FD",
+                            boxShadow:
+                              "0 1px 2px rgba(91,33,182,0.10), inset 0 1px 1px rgba(255,255,255,0.95)",
+                          }}
+                        >
+                          {q.text}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Persistent disclaimer */}
+                  <p className="text-[10px] text-violet-700/75 leading-tight">
+                    Informational, not investment advice. You decide. Verify with your broker.
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
 
           {visible.market_pulse && brief && brief.market_pulse && (() => {
             // Tone drives the hero color treatment so the card feels alive
