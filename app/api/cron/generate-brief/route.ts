@@ -232,26 +232,32 @@ async function buildInsiderMoves(): Promise<any[]> {
   return out;
 }
 
-// MAX PERMISSIVE: accept any row with ticker. ONE entry per filer (diversity).
+// MAX PERMISSIVE: accept any row with ticker.
+// Diversity: cap to 2 entries per filer, dedupe by (filer+ticker).
+// Iterate ALL ranked rows (not just top 500) so we can find unique filers
+// even when one big fund dominates the top of the list.
 async function buildHedgeFundMoves(): Promise<any[]> {
   const raw = await quiverFetch("/live/sec13fchanges");
   if (!raw || raw.length === 0) return [];
-  // First pass: sort by absolute value change descending so biggest moves win
-  const ranked = raw.slice(0, 500).map((row: any) => ({
+  // Rank by absolute change size so biggest moves bubble up
+  const ranked = raw.map((row: any) => ({
     row,
     score: Math.abs(pickNum(row, "Value", "DollarChange", "ValueChange", "value", "Change_Value") || 0) ||
            Math.abs(pickNum(row, "Change", "SharesChange", "shares_change", "ChangeInShares", "change", "Shares") || 0),
   })).sort((a, b) => b.score - a.score);
   const out: any[] = [];
-  const filersUsed = new Set<string>();
-  const tickersUsed = new Set<string>();
+  const filerCount: Record<string, number> = {};
+  const seenPair = new Set<string>();
+  const MAX_PER_FILER = 2;
   for (const { row } of ranked) {
     if (out.length >= 5) break;
     const ticker = pickStr(row, "Ticker", "ticker", "Symbol").toUpperCase();
-    if (!ticker || tickersUsed.has(ticker)) continue;
+    if (!ticker) continue;
     const filer = pickStr(row, "Filer", "OwnerName", "Owner", "filer", "owner", "Reporter", "Name", "Fund", "fund") || "Hedge fund";
     const filerKey = filer.toLowerCase();
-    if (filersUsed.has(filerKey)) continue; // one entry per filer
+    const pairKey = `${filerKey}|${ticker}`;
+    if (seenPair.has(pairKey)) continue; // exact (filer, ticker) dedupe
+    if ((filerCount[filerKey] || 0) >= MAX_PER_FILER) continue; // cap per filer
     const valueChange = pickNum(row, "Value", "DollarChange", "ValueChange", "value", "Change_Value");
     const shareChange = pickNum(row, "Change", "SharesChange", "shares_change", "ChangeInShares", "change", "Shares");
     let verb: string = "ADDED";
@@ -267,8 +273,8 @@ async function buildHedgeFundMoves(): Promise<any[]> {
       if (Number.isFinite(value) && value > 0) { verb = "HOLDS"; sizeStr = fmtMoney(value); }
       else { verb = "FILED"; sizeStr = ""; }
     }
-    filersUsed.add(filerKey);
-    tickersUsed.add(ticker);
+    filerCount[filerKey] = (filerCount[filerKey] || 0) + 1;
+    seenPair.add(pairKey);
     out.push({
       text: `${filer} ${verb} ${sizeStr} ${ticker}`.replace(/\s+/g, " ").trim(),
       ticker,
