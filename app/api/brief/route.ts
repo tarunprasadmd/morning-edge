@@ -1,7 +1,6 @@
-// /api/brief — Quiver-backed smart money. v3: permissive parsers + raw logging.
-// 5/24/26: previous version's parsers were too strict (date filters + verb gates
-// dropped all rows). This version logs the raw first row of every Quiver
-// endpoint and takes top 5 without filtering, accepting any field name variant.
+// /api/brief — Quiver-backed smart money. v4: matched to cron route v3.
+// Identical hedge-fund logic: MAX_PER_FILER=2, dedup by (filer+ticker),
+// iterate ALL ranked rows. Mirrors /api/cron/generate-brief/route.ts.
 
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
@@ -166,18 +165,11 @@ async function callWithRetry<T>(fn: () => Promise<T>, label: string): Promise<T>
 const COMMON_PREAMBLE = (name: string, date: string) =>
   `You are a JSON generator. Output ONLY a single valid JSON object — no prose, no markdown, no code fences. Start with { and end with }.
 
-Generate part of a morning briefing for ${name || "the user"} on ${date}. The reader is a sophisticated multi-account swing trader who knows technical analysis, smart-money signals (13F, STOCK Act, Form 4s), and macro catalysts. They invest in: AI infrastructure, semiconductors, quantum computing, crypto-mining-to-HPC, nuclear, rare earths, and speculative biotech. CRITICAL TICKER ACCURACY: Never guess company names from tickers. SMMT = Summit Therapeutics. CIFR = Cipher Mining. APLD = Applied Digital. USAR = USA Rare Earth. SMR = NuScale. IREN = Iris Energy. PLTR = Palantir. CRWV = CoreWeave.
+Generate part of a morning briefing for ${name || "the user"} on ${date}. Sophisticated multi-account swing trader. AI infra, semis, quantum, crypto-mining-to-HPC, nuclear, rare earths, biotech. SMMT=Summit Therapeutics. CIFR=Cipher Mining. APLD=Applied Digital. USAR=USA Rare Earth. SMR=NuScale. IREN=Iris Energy. PLTR=Palantir. CRWV=CoreWeave.
 
-CRITICAL — NO CONDITIONAL ADVICE / NO HOMEWORK:
-- This app does the research FOR the user. NEVER write "if X then do A, else do B" — pick one path and commit.
-- NEVER tell the user to "check Form 4s," "verify with broker," etc. They pay you to look it up.
-- Every action field must be a single concrete trade with size.
-
-RISK TIER: LOWER (MSFT/GOOGL/VOO) / MEDIUM (IONQ/IREN/USAR) / HIGHER (MOBX/PRSO/AMPX).
-
+NO CONDITIONAL ADVICE: Every action = single concrete trade.
+RISK TIERS: LOWER (MSFT/GOOGL/VOO), MEDIUM (IONQ/IREN/USAR), HIGHER (MOBX/PRSO/AMPX).
 AGGRESSIVE DISCOVERY: include sub-$300M micro-caps with real catalysts. $300M cap floor BANNED.
-
-ALLOWED VERBS: BOUGHT, SOLD, ADDED, EXITED, HELD, AVOID. Always include a specific number.
 `;
 
 async function callJsonChunk(prompt: string, opts: { search?: boolean; maxTokens?: number; maxSearches?: number; model?: string; label?: string } = {}) {
@@ -203,10 +195,7 @@ function stripCiteTags<T>(value: T): T {
   return value;
 }
 
-// ─── QUIVER QUANTITATIVE — v3 permissive parsers ─────────────────────
-// Uses "Token <key>" auth (confirmed via Python wrapper source).
-// No date filters. Logs raw first row. Accepts any reasonable field shape.
-
+// ─── QUIVER ─────────────────────────────────────────────────────────
 const QUIVER_BASE = "https://api.quiverquant.com/beta";
 const QUIVER_TIMEOUT_MS = 25000;
 
@@ -221,18 +210,18 @@ async function quiverFetch(path: string): Promise<any[] | null> {
     clearTimeout(timer);
     const rawText = await res.text();
     if (!res.ok) {
-      console.warn(`Quiver ${path}: HTTP ${res.status} ${res.statusText} | body: ${rawText.slice(0, 300)}`);
+      console.warn(`Quiver ${path}: HTTP ${res.status} | body: ${rawText.slice(0, 300)}`);
       return null;
     }
     let data: any;
     try { data = JSON.parse(rawText); }
     catch (e) { console.warn(`Quiver ${path}: JSON parse failed | body: ${rawText.slice(0, 300)}`); return null; }
     if (Array.isArray(data)) {
-      console.log(`Quiver ${path}: ${data.length} rows | first row: ${JSON.stringify(data[0] || {}).slice(0, 400)}`);
+      console.log(`Quiver ${path}: ${data.length} rows | first row: ${JSON.stringify(data[0] || {}).slice(0, 500)}`);
       return data;
     }
     if (Array.isArray(data?.data)) {
-      console.log(`Quiver ${path}: ${data.data.length} rows (wrapped) | first row: ${JSON.stringify(data.data[0] || {}).slice(0, 400)}`);
+      console.log(`Quiver ${path}: ${data.data.length} rows (wrapped) | first row: ${JSON.stringify(data.data[0] || {}).slice(0, 500)}`);
       return data.data;
     }
     console.warn(`Quiver ${path}: unexpected shape | data: ${JSON.stringify(data).slice(0, 300)}`);
@@ -273,9 +262,7 @@ function pickNum(row: any, ...keys: string[]): number {
   }
   return NaN;
 }
-
-// Detect buy vs sell from any plausible field
-function detectVerb(row: any): "BOUGHT" | "SOLD" | "ADDED" | null {
+function detectVerb(row: any): "BOUGHT" | "SOLD" | null {
   const t = (pickStr(row, "Transaction", "TransactionType", "TransactionCode", "AcquiredDisposed", "transaction") || "").toUpperCase();
   if (!t) return null;
   if (t === "P" || t.includes("PURCHASE") || t.includes("BUY") || t.includes("BOUGHT") || t.includes("ACQUI")) return "BOUGHT";
@@ -287,13 +274,17 @@ async function buildCongressMoves(): Promise<any[]> {
   const raw = await quiverFetch("/live/congresstrading");
   if (!raw || raw.length === 0) return [];
   const out: any[] = [];
-  for (const row of raw.slice(0, 30)) {
+  const seen = new Set<string>();
+  for (const row of raw.slice(0, 60)) {
     const ticker = pickStr(row, "Ticker", "ticker").toUpperCase();
     const rep = pickStr(row, "Representative", "representative", "Name", "name").replace(/^(sen\.?|rep\.?|senator|representative)\s+/i, "").trim();
     if (!ticker || !rep) continue;
     const verb = detectVerb(row) || "BOUGHT";
     const amountRaw = pickStr(row, "Range", "Amount", "range", "amount");
     const amount = amountRaw || fmtMoney(pickNum(row, "Amount", "Value"));
+    const dedupKey = `${rep}|${ticker}|${verb}|${amount}`.toLowerCase();
+    if (seen.has(dedupKey)) continue;
+    seen.add(dedupKey);
     const house = pickStr(row, "House", "house").toLowerCase();
     const prefix = house.includes("senate") ? "Sen " : house.includes("house") ? "Rep " : "";
     const text = `${prefix}${rep} ${verb} ${amount} ${ticker}`.replace(/\s+/g, " ").trim();
@@ -301,7 +292,7 @@ async function buildCongressMoves(): Promise<any[]> {
     out.push({
       text, ticker,
       source_url: `https://www.capitoltrades.com/politicians?search=${encodeURIComponent(rep)}`,
-      why_matters: `${rep} ${verb.toLowerCase()} ${amount || "a position in"} ${ticker}${dateStr ? ` on ${dateStr}` : ""}. Congressional STOCK Act filings carry a 45-day reporting delay. Cluster trades by multiple members on the same ticker have historically preceded notable moves.`,
+      why_matters: `${rep} ${verb.toLowerCase()} ${amount || "a position in"} ${ticker}${dateStr ? ` on ${dateStr}` : ""}. Congressional STOCK Act filings carry a 45-day reporting delay.`,
     });
     if (out.length >= 5) break;
   }
@@ -312,10 +303,14 @@ async function buildInsiderMoves(): Promise<any[]> {
   const raw = await quiverFetch("/live/insiders");
   if (!raw || raw.length === 0) return [];
   const out: any[] = [];
-  for (const row of raw.slice(0, 30)) {
+  const seen = new Set<string>();
+  for (const row of raw.slice(0, 60)) {
     const ticker = pickStr(row, "Ticker", "ticker").toUpperCase();
     const name = pickStr(row, "Name", "Insider", "ReporterName", "name");
     if (!ticker || !name) continue;
+    const dedupKey = `${name}|${ticker}`.toLowerCase();
+    if (seen.has(dedupKey)) continue;
+    seen.add(dedupKey);
     const verb = detectVerb(row) || "BOUGHT";
     const shares = pickNum(row, "Shares", "shares", "SharesTransacted");
     const price = pickNum(row, "PricePerShare", "Price", "price_per_share");
@@ -327,24 +322,38 @@ async function buildInsiderMoves(): Promise<any[]> {
     out.push({
       text, ticker,
       source_url: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=&type=4&dateb=&owner=include&count=40&company=${encodeURIComponent(ticker)}`,
-      why_matters: `${name} ${verb.toLowerCase()} ${sizeStr || "shares"} of ${ticker} via SEC Form 4. Insider purchases by executives and directors using personal cash are among the strongest conviction signals — they have material non-public information about the business.`,
+      why_matters: `${name} ${verb.toLowerCase()} ${sizeStr || "shares"} of ${ticker} via SEC Form 4. Insider purchases by executives and directors using personal cash are among the strongest conviction signals.`,
     });
     if (out.length >= 5) break;
   }
   return out;
 }
 
+// Same MAX_PER_FILER=2 logic as cron file
 async function buildHedgeFundMoves(): Promise<any[]> {
   const raw = await quiverFetch("/live/sec13fchanges");
   if (!raw || raw.length === 0) return [];
+  const ranked = raw.map((row: any) => ({
+    row,
+    score: Math.abs(pickNum(row, "Value", "DollarChange", "ValueChange", "value", "Change_Value") || 0) ||
+           Math.abs(pickNum(row, "Change", "SharesChange", "shares_change", "ChangeInShares", "change", "Shares") || 0),
+  })).sort((a, b) => b.score - a.score);
   const out: any[] = [];
-  for (const row of raw.slice(0, 50)) {
-    const ticker = pickStr(row, "Ticker", "ticker").toUpperCase();
-    const filer = pickStr(row, "Filer", "OwnerName", "Owner", "filer");
-    if (!ticker || !filer) continue;
-    const valueChange = pickNum(row, "Value", "DollarChange", "ValueChange");
-    const shareChange = pickNum(row, "Change", "SharesChange", "shares_change");
-    let verb: "ADDED" | "SOLD" = "ADDED";
+  const filerCount: Record<string, number> = {};
+  const seenPair = new Set<string>();
+  const MAX_PER_FILER = 2;
+  for (const { row } of ranked) {
+    if (out.length >= 5) break;
+    const ticker = pickStr(row, "Ticker", "ticker", "Symbol").toUpperCase();
+    if (!ticker) continue;
+    const filer = pickStr(row, "Filer", "OwnerName", "Owner", "filer", "owner", "Reporter", "Name", "Fund", "fund") || "Hedge fund";
+    const filerKey = filer.toLowerCase();
+    const pairKey = `${filerKey}|${ticker}`;
+    if (seenPair.has(pairKey)) continue;
+    if ((filerCount[filerKey] || 0) >= MAX_PER_FILER) continue;
+    const valueChange = pickNum(row, "Value", "DollarChange", "ValueChange", "value", "Change_Value");
+    const shareChange = pickNum(row, "Change", "SharesChange", "shares_change", "ChangeInShares", "change", "Shares");
+    let verb: string = "ADDED";
     let sizeStr = "";
     if (Number.isFinite(valueChange) && valueChange !== 0) {
       verb = valueChange > 0 ? "ADDED" : "SOLD";
@@ -352,14 +361,19 @@ async function buildHedgeFundMoves(): Promise<any[]> {
     } else if (Number.isFinite(shareChange) && shareChange !== 0) {
       verb = shareChange > 0 ? "ADDED" : "SOLD";
       sizeStr = fmtShares(Math.abs(shareChange));
-    } else { continue; }
+    } else {
+      const value = pickNum(row, "Value", "PositionValue", "MarketValue");
+      if (Number.isFinite(value) && value > 0) { verb = "HOLDS"; sizeStr = fmtMoney(value); }
+      else { verb = "FILED"; sizeStr = ""; }
+    }
+    filerCount[filerKey] = (filerCount[filerKey] || 0) + 1;
+    seenPair.add(pairKey);
     out.push({
-      text: `${filer} ${verb} ${sizeStr} ${ticker}`,
+      text: `${filer} ${verb} ${sizeStr} ${ticker}`.replace(/\s+/g, " ").trim(),
       ticker,
       source_url: `https://efts.sec.gov/LATEST/search-index?q=%22${encodeURIComponent(filer)}%22&forms=13F-HR`,
-      why_matters: `${filer} ${verb.toLowerCase()} ${sizeStr} of ${ticker} in their latest 13F filing. Quarterly 13F filings carry a 45-day reporting lag — useful as thematic confirmation rather than real-time signal. Watch for cluster moves across multiple top funds.`,
+      why_matters: `${filer} ${verb.toLowerCase()} ${sizeStr || "position in"} ${ticker} in their latest 13F filing. Quarterly 13F filings carry a 45-day reporting lag.`,
     });
-    if (out.length >= 5) break;
   }
   return out;
 }
@@ -373,13 +387,11 @@ async function buildLobbyingMoves(): Promise<any[]> {
     const client = pickStr(row, "Client", "Registrant", "client");
     const amount = pickNum(row, "Amount", "amount");
     if (!ticker || !client || !Number.isFinite(amount) || amount <= 0) continue;
-    const sizeStr = fmtMoney(amount);
-    const issue = pickStr(row, "Issue", "SpecificIssues", "issue").slice(0, 60);
     out.push({
-      text: `${client} SPENT ${sizeStr} lobbying ${ticker}`,
+      text: `${client} SPENT ${fmtMoney(amount)} lobbying ${ticker}`,
       ticker,
       source_url: `https://www.opensecrets.org/orgs/lookup?text=${encodeURIComponent(client)}&type=lobbyer`,
-      why_matters: `${client} spent ${sizeStr} on federal lobbying${issue ? ` covering ${issue}` : ""}. Heavy lobbying spend signals policy tailwinds or risks the company is actively trying to shape.`,
+      why_matters: `${client} spent ${fmtMoney(amount)} on federal lobbying. Heavy lobbying spend signals policy tailwinds or risks.`,
     });
     if (out.length >= 5) break;
   }
@@ -419,22 +431,14 @@ async function generateSmartMoneyOnly(name: string, date: string) {
   };
 }
 
-// ─── Layer A / Layer B AI chunks (unchanged from prior) ─────────────
 async function generateLayerAMarket(name: string, tickers: string, date: string): Promise<any> {
   const prompt = `${COMMON_PREAMBLE(name, date)}
-Use web_search up to 3 times to fetch TODAY's premarket movement, headlines, macro events, earnings/FDA/catalysts next 1-2 weeks. Watchlist: ${tickers}.
-
+Use web_search up to 2 times. Watchlist: ${tickers}.
 Return ONLY this JSON:
-{
-  "market_pulse": { "tone": "bullish or cautious or bearish", "summary": "max 14 words", "key_levels": [ { "text": "max 14 words with NUMBER + CONTEXT", "deep_context": "60-90 word explanation" } ] },
-  "todays_edge_market": { "binary_catalysts": [ { "ticker": "X", "event": "date", "context": "max 12 words" } ], "risk_flags": [ { "ticker": "X", "flag": "max 12 words", "suggested_action": "max 12 words" } ] },
-  "radar_candidates": [ { "ticker": "X", "theme": "tag", "headline": "max 14 words", "why_now": "max 18 words", "deep_reasoning": "130-180 words for someone new to trading" } ]
-}
-key_levels: 6-8 bullets, each MUST have a specific number. radar_candidates: 8-10 thematic stocks.`;
+{ "market_pulse": { "tone": "X", "summary": "max 14 words", "key_levels": [ { "text": "max 14 words with NUMBER", "deep_context": "60-90 words" } ] }, "todays_edge_market": { "binary_catalysts": [], "risk_flags": [] }, "radar_candidates": [ { "ticker": "X", "theme": "tag", "headline": "max 14 words", "why_now": "max 18 words", "deep_reasoning": "130-180 words" } ] }
+key_levels 6-8 bullets each with specific number. radar 8-10.`;
   return callJsonChunk(prompt, { search: true, maxTokens: 4500, maxSearches: 2, label: "layerA-market" });
 }
-
-async function generateLayerASmartMoney(name: string, date: string): Promise<any> { return generateSmartMoneyOnly(name, date); }
 
 async function generateUserAwareEdge(name: string, date: string, layerA: any, holdings: any[]): Promise<any> {
   const ownedSet = new Set((holdings || []).map((h: any) => (h.symbol || "").toUpperCase()));
@@ -466,12 +470,12 @@ async function generateConvictionFromContext(name: string, date: string, layerA:
   const contextSlice = { market_pulse: layerA?.market_pulse || null, smart_money_summary: layerA?.smart_money?.summary || null };
   const convictionPrompt = `${COMMON_PREAMBLE(name, date)}
 MARKET CONTEXT: ${JSON.stringify(contextSlice, null, 2)}${ownedNote}${tickerNote}
-Return ONLY: { "conviction_watch": [ { "ticker": "X", "signal": "add or hold or trim", "why_now": "max 25 words", "note": "max 8 words", "action": "OPTIONAL trade max 12 words", "deep_reasoning": "130-180 words" } ] }
-NO web_search. 8-10 entries. Empty arrays fine.`;
+Return ONLY: { "conviction_watch": [ { "ticker": "X", "signal": "add/hold/trim", "why_now": "max 25 words", "note": "max 8 words", "action": "OPTIONAL max 12 words", "deep_reasoning": "130-180 words" } ] }
+NO web_search. 8-10 entries.`;
   const opportunityPrompt = `${COMMON_PREAMBLE(name, date)}
 MARKET CONTEXT: ${JSON.stringify(contextSlice, null, 2)}${ownedNote}
-Return ONLY: { "opportunity_watch": [ { "ticker": "X NOT held", "theme": "tag", "fits_gap": "max 14 words", "headline": "max 14 words", "deep_reasoning": "180-220 word personalized buy thesis" } ] }
-NO web_search. 6-8 ideas NOT held. Pick from diverse sectors.`;
+Return ONLY: { "opportunity_watch": [ { "ticker": "NOT held", "theme": "tag", "fits_gap": "max 14 words", "headline": "max 14 words", "deep_reasoning": "180-220 words" } ] }
+NO web_search. 6-8 NOT held.`;
   const [convResult, oppResult] = await Promise.allSettled([
     callJsonChunk(convictionPrompt, { search: false, maxTokens: 4500, model: "claude-haiku-4-5", label: "conviction-only" }),
     callJsonChunk(opportunityPrompt, { search: false, maxTokens: 4500, model: "claude-haiku-4-5", label: "opportunity-only" }),
@@ -505,36 +509,12 @@ async function generateLayerB(opts: any): Promise<any> {
 async function generateLightChunk(name: string, holdings: any[], accounts: any[] | undefined, holdingsAgeDays: number | null, date: string) {
   const holdingsBlock = formatHoldingsBlock(holdings, accounts, holdingsAgeDays);
   const multiAccount = Array.isArray(accounts) && accounts.length > 1;
-  const accountRule = multiAccount ? `\nMULTI-ACCOUNT: Every decision MUST name the specific account.` : "";
-  const dayOfYear = (() => { try { const d = new Date(date); if (Number.isNaN(d.getTime())) return 0; const start = new Date(d.getFullYear(), 0, 0); return Math.floor((d.getTime() - start.getTime()) / 86400000); } catch { return 0; } })();
-  const PROTEINS = ["chicken thigh", "cod or branzino", "lentils", "lamb", "turkey breast", "rainbow trout", "shrimp", "extra-firm tofu", "ground bison or lean beef", "bay scallops", "chickpeas with halloumi", "duck breast", "albacore tuna", "salmon", "eggs with feta and greens"];
-  const CUISINES = ["Mediterranean", "Japanese", "Indian", "Mexican", "Thai", "Italian", "Greek", "Korean", "Middle Eastern", "Vietnamese", "French Provençal", "Moroccan", "Chinese-inspired", "California fresh", "Peruvian"];
-  const todayProtein = PROTEINS[dayOfYear % PROTEINS.length];
-  const todayCuisine = CUISINES[(dayOfYear + 3) % CUISINES.length];
+  const accountRule = multiAccount ? `\nMULTI-ACCOUNT: Every decision MUST name account.` : "";
   const prompt = `${COMMON_PREAMBLE(name, date)}${holdingsBlock}
-POWER PLATE: protein MUST be ${todayProtein}, cuisine MUST be ${todayCuisine}.
-
-Return ONLY this JSON:
-{
-  "affirmation": "max 12 words",
-  "mindset": { "gratitude": "max 18 words Stoic/athlete voice", "fuel": { "headline": "max 14 words", "total_min": 10, "blocks": [ { "name": "Mobility (2 min)", "moves": ["3-4 specific movements"], "why": "1 sentence" }, { "name": "Breathwork (3 min)", "moves": ["2-3 patterns"], "why": "1 sentence" }, { "name": "Strength (3 min)", "moves": ["3-4 bodyweight"], "why": "1 sentence" }, { "name": "Cooldown (2 min)", "moves": ["2-3 stretches"], "why": "1 sentence" } ], "tip": "1-2 sentences" }, "focus": "max 10 words" },
-  "clarity": { "contemplation": "max 22 words", "eastern_wisdom": { "quote": "real attributed", "source": "attribution" }, "breath_practice": { "name": "X", "pattern": "timing", "description": "max 24 words", "rounds": "X" } },
-  "power_plate": { "name": "max 6 words", "style": "${todayCuisine}", "protein_g": 30, "prep_min": 25, "description": "4-5 sentences", "why_this_meal": "120-170 words", "groceries": ["7-10 items"], "prep_steps": ["7-9 steps 25-40 words each"], "swap_options": ["3-4 swaps"], "pairing": "2-3 sentences" },
-  "decisions": ["8-10 PERSONALIZED trades referencing actual holdings"],
-  "decisions_reasoning": ["For EACH decision, 130-180 word explanation"]
-}
+Return ONLY: { "affirmation": "max 12 words", "mindset": { "gratitude": "max 18 words Stoic voice", "fuel": { "headline": "max 14 words", "total_min": 10, "blocks": [ { "name": "Mobility (2 min)", "moves": ["3-4"], "why": "1 sentence" }, { "name": "Breathwork (3 min)", "moves": ["2-3"], "why": "1 sentence" }, { "name": "Strength (3 min)", "moves": ["3-4"], "why": "1 sentence" }, { "name": "Cooldown (2 min)", "moves": ["2-3"], "why": "1 sentence" } ], "tip": "1-2 sentences" }, "focus": "max 10 words" }, "clarity": { "contemplation": "max 22 words", "eastern_wisdom": { "quote": "real", "source": "X" }, "breath_practice": { "name": "X", "pattern": "timing", "description": "max 24 words", "rounds": "X" } }, "power_plate": { "name": "max 6 words", "style": "Mediterranean", "protein_g": 30, "prep_min": 25, "description": "4-5 sentences", "why_this_meal": "120-170 words", "groceries": ["7-10"], "prep_steps": ["7-9 steps"], "swap_options": ["3-4"], "pairing": "2-3 sentences" }, "decisions": ["8-10"], "decisions_reasoning": ["each 130-180 words"] }
 ${accountRule}
-CRITICAL: holdings 'cost' is PER-SHARE avg. Multiply by qty for total $.
-PLAIN ENGLISH in decision field. No "sh"/"SH". No trader slang. ONE concrete trade per decision. NO conditionals, NO homework.
-PARITY: decisions and decisions_reasoning MUST be same length.`;
-  const result = await callJsonChunk(prompt, { maxTokens: 5000, model: "claude-haiku-4-5", label: "light" });
-  if (result && Array.isArray(result.decisions)) {
-    if (!Array.isArray(result.decisions_reasoning)) result.decisions_reasoning = [];
-    const decCount = result.decisions.length;
-    while (result.decisions_reasoning.length < decCount) result.decisions_reasoning.push("Full reasoning unavailable.");
-    if (result.decisions_reasoning.length > decCount) result.decisions_reasoning = result.decisions_reasoning.slice(0, decCount);
-  }
-  return result;
+'cost' is PER-SHARE avg.`;
+  return callJsonChunk(prompt, { maxTokens: 5000, model: "claude-haiku-4-5", label: "light" });
 }
 
 async function generatePulseAndEdge(name: string, watchlist: string[], holdings: any[], date: string) {
@@ -542,9 +522,9 @@ async function generatePulseAndEdge(name: string, watchlist: string[], holdings:
   const ownedSet = new Set((holdings || []).map((h: any) => (h.symbol || "").toUpperCase()));
   const ownedNote = ownedSet.size > 0 ? `\nUser's holdings: ${Array.from(ownedSet).join(", ")}.` : "";
   const prompt = `${COMMON_PREAMBLE(name, date)}
-Use web_search up to 3 times. Watchlist: ${tickers}.${ownedNote}
+Use web_search up to 2 times. Watchlist: ${tickers}.${ownedNote}
 Return ONLY: { "market_pulse": { "tone": "X", "summary": "max 14 words", "key_levels": [ { "text": "max 14 words", "deep_context": "60-90 words" } ] }, "todays_edge": { "earnings_alerts": [], "binary_catalysts": [], "risk_flags": [] }, "radar_watch": [ { "ticker": "X", "theme": "tag", "headline": "max 14 words", "why_now": "max 18 words", "deep_reasoning": "130-180 words" } ] }
-4-6 radar items NOT in holdings.`;
+4-6 radar NOT in holdings.`;
   return callJsonChunk(prompt, { search: true, maxTokens: 2800, maxSearches: 2, label: "pulse" });
 }
 
@@ -555,7 +535,7 @@ async function generateConvictionAndOpportunity(name: string, watchlist: string[
   const prompt = `${COMMON_PREAMBLE(name, date)}
 Use web_search up to 2 times.${ownedNote}\nFocus: ${focusTickers.join(", ")}.
 Return ONLY: { "conviction_watch": [ { "ticker": "X", "signal": "add/hold/trim", "why_now": "max 25 words", "note": "max 8 words", "action": "OPTIONAL max 12 words", "deep_reasoning": "130-180 words" } ], "opportunity_watch": [ { "ticker": "NOT held", "theme": "tag", "fits_gap": "max 14 words", "headline": "max 14 words", "deep_reasoning": "180-220 words" } ] }
-conviction: 8-10. opportunity: 6-8 NOT held, diverse sectors.`;
+conviction 8-10. opportunity 6-8 NOT held.`;
   return callJsonChunk(prompt, { search: true, maxTokens: 8000, maxSearches: 2, label: "conv-opp" });
 }
 
@@ -569,7 +549,6 @@ function formatHoldingsBlock(holdings: any[], accounts: any[] | undefined, holdi
     const parts = [`${h.symbol}`];
     if (h.qty != null) parts.push(`${h.qty} sh`);
     if (h.cost != null) parts.push(`@ $${h.cost.toFixed(2)}/share avg cost`);
-    if (h.cost != null && h.qty != null && h.value != null) { const tg = h.value - (h.cost * h.qty); parts.push((tg >= 0 ? "+" : "-") + "$" + Math.abs(tg).toFixed(0) + " total gain"); }
     if (h.gainPct != null) { const sign = h.gainPct >= 0 ? "+" : ""; parts.push(`${sign}${h.gainPct.toFixed(1)}% total return`); }
     return "    • " + parts.join(", ");
   };
