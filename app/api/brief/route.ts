@@ -1,5 +1,5 @@
-// /api/brief — Quiver-backed smart money. v5.1: streaming paths strip hallucinated
-// smart_money/market_pulse + buildHedgeFundMoves skips empty-filer rows (was capping at 2).
+// /api/brief — Quiver-backed smart money. v5.2: streaming paths strip hallucinated smart_money/market_pulse;
+// buildHedgeFundMoves skips empty-filer rows AND uses correct Quiver fields (Change=$, Change_Share=count).
 // Identical hedge-fund logic: MAX_PER_FILER=2, dedup by (filer+ticker),
 // iterate ALL ranked rows. Mirrors /api/cron/generate-brief/route.ts.
 
@@ -336,8 +336,8 @@ async function buildHedgeFundMoves(): Promise<any[]> {
   if (!raw || raw.length === 0) return [];
   const ranked = raw.map((row: any) => ({
     row,
-    score: Math.abs(pickNum(row, "Value", "DollarChange", "ValueChange", "value", "Change_Value") || 0) ||
-           Math.abs(pickNum(row, "Change", "SharesChange", "shares_change", "ChangeInShares", "change", "Shares") || 0),
+    score: Math.abs(pickNum(row, "Change", "Value", "DollarChange", "ValueChange", "value", "change") || 0) ||
+           Math.abs(pickNum(row, "Change_Share", "Change_Shares", "SharesChange", "shares_change", "ChangeInShares", "Shares", "shares") || 0),
   })).sort((a, b) => b.score - a.score);
   const out: any[] = [];
   const filerCount: Record<string, number> = {};
@@ -356,8 +356,10 @@ async function buildHedgeFundMoves(): Promise<any[]> {
     const pairKey = `${filerKey}|${ticker}`;
     if (seenPair.has(pairKey)) continue;
     if ((filerCount[filerKey] || 0) >= MAX_PER_FILER) continue;
-    const valueChange = pickNum(row, "Value", "DollarChange", "ValueChange", "value", "Change_Value");
-    const shareChange = pickNum(row, "Change", "SharesChange", "shares_change", "ChangeInShares", "change", "Shares");
+    // v5.2 FIX: Quiver 13F field spec — "Change" is DOLLAR value, "Change_Share" is SHARE count.
+    // Prior code had "Change" in shareChange lookup, causing $89B BRK.A value to display as "89003.4M shares".
+    const valueChange = pickNum(row, "Change", "Value", "DollarChange", "ValueChange", "value", "change");
+    const shareChange = pickNum(row, "Change_Share", "Change_Shares", "SharesChange", "shares_change", "ChangeInShares", "Shares", "shares");
     let verb: string = "ADDED";
     let sizeStr = "";
     if (Number.isFinite(valueChange) && valueChange !== 0) {
