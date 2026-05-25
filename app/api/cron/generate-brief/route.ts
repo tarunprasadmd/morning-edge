@@ -176,13 +176,18 @@ async function buildCongressMoves(): Promise<any[]> {
   const raw = await quiverFetch("/live/congresstrading");
   if (!raw || raw.length === 0) return [];
   const out: any[] = [];
-  for (const row of raw.slice(0, 30)) {
+  const seen = new Set<string>();
+  for (const row of raw.slice(0, 60)) {
     const ticker = pickStr(row, "Ticker", "ticker").toUpperCase();
     const rep = pickStr(row, "Representative", "representative", "Name", "name").replace(/^(sen\.?|rep\.?|senator|representative)\s+/i, "").trim();
     if (!ticker || !rep) continue;
     const verb = detectVerb(row) || "BOUGHT";
     const amountRaw = pickStr(row, "Range", "Amount", "range", "amount");
     const amount = amountRaw || fmtMoney(pickNum(row, "Amount", "Value"));
+    // Dedup by rep + ticker + verb + amount
+    const dedupKey = `${rep}|${ticker}|${verb}|${amount}`.toLowerCase();
+    if (seen.has(dedupKey)) continue;
+    seen.add(dedupKey);
     const house = pickStr(row, "House", "house").toLowerCase();
     const prefix = house.includes("senate") ? "Sen " : house.includes("house") ? "Rep " : "";
     const text = `${prefix}${rep} ${verb} ${amount} ${ticker}`.replace(/\s+/g, " ").trim();
@@ -201,10 +206,14 @@ async function buildInsiderMoves(): Promise<any[]> {
   const raw = await quiverFetch("/live/insiders");
   if (!raw || raw.length === 0) return [];
   const out: any[] = [];
-  for (const row of raw.slice(0, 30)) {
+  const seen = new Set<string>();
+  for (const row of raw.slice(0, 60)) {
     const ticker = pickStr(row, "Ticker", "ticker").toUpperCase();
     const name = pickStr(row, "Name", "Insider", "ReporterName", "name");
     if (!ticker || !name) continue;
+    const dedupKey = `${name}|${ticker}`.toLowerCase();
+    if (seen.has(dedupKey)) continue;
+    seen.add(dedupKey);
     const verb = detectVerb(row) || "BOUGHT";
     const shares = pickNum(row, "Shares", "shares", "SharesTransacted");
     const price = pickNum(row, "PricePerShare", "Price", "price_per_share");
@@ -223,15 +232,26 @@ async function buildInsiderMoves(): Promise<any[]> {
   return out;
 }
 
-// MAX PERMISSIVE: accept any row with ticker. Anything else best-effort.
+// MAX PERMISSIVE: accept any row with ticker. ONE entry per filer (diversity).
 async function buildHedgeFundMoves(): Promise<any[]> {
   const raw = await quiverFetch("/live/sec13fchanges");
   if (!raw || raw.length === 0) return [];
+  // First pass: sort by absolute value change descending so biggest moves win
+  const ranked = raw.slice(0, 500).map((row: any) => ({
+    row,
+    score: Math.abs(pickNum(row, "Value", "DollarChange", "ValueChange", "value", "Change_Value") || 0) ||
+           Math.abs(pickNum(row, "Change", "SharesChange", "shares_change", "ChangeInShares", "change", "Shares") || 0),
+  })).sort((a, b) => b.score - a.score);
   const out: any[] = [];
-  for (const row of raw.slice(0, 100)) {
+  const filersUsed = new Set<string>();
+  const tickersUsed = new Set<string>();
+  for (const { row } of ranked) {
+    if (out.length >= 5) break;
     const ticker = pickStr(row, "Ticker", "ticker", "Symbol").toUpperCase();
-    if (!ticker) continue;
+    if (!ticker || tickersUsed.has(ticker)) continue;
     const filer = pickStr(row, "Filer", "OwnerName", "Owner", "filer", "owner", "Reporter", "Name", "Fund", "fund") || "Hedge fund";
+    const filerKey = filer.toLowerCase();
+    if (filersUsed.has(filerKey)) continue; // one entry per filer
     const valueChange = pickNum(row, "Value", "DollarChange", "ValueChange", "value", "Change_Value");
     const shareChange = pickNum(row, "Change", "SharesChange", "shares_change", "ChangeInShares", "change", "Shares");
     let verb: string = "ADDED";
@@ -243,18 +263,18 @@ async function buildHedgeFundMoves(): Promise<any[]> {
       verb = shareChange > 0 ? "ADDED" : "SOLD";
       sizeStr = fmtShares(Math.abs(shareChange));
     } else {
-      // Last resort — show position size or just the ticker
       const value = pickNum(row, "Value", "PositionValue", "MarketValue");
       if (Number.isFinite(value) && value > 0) { verb = "HOLDS"; sizeStr = fmtMoney(value); }
       else { verb = "FILED"; sizeStr = ""; }
     }
+    filersUsed.add(filerKey);
+    tickersUsed.add(ticker);
     out.push({
       text: `${filer} ${verb} ${sizeStr} ${ticker}`.replace(/\s+/g, " ").trim(),
       ticker,
       source_url: `https://efts.sec.gov/LATEST/search-index?q=%22${encodeURIComponent(filer)}%22&forms=13F-HR`,
       why_matters: `${filer} ${verb.toLowerCase()} ${sizeStr || "position in"} ${ticker} in their latest 13F filing. Quarterly 13F filings carry a 45-day reporting lag.`,
     });
-    if (out.length >= 5) break;
   }
   return out;
 }
