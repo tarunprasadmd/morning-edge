@@ -1,4 +1,5 @@
-// /api/brief — Quiver-backed smart money. v4: matched to cron route v3.
+// /api/brief — Quiver-backed smart money. v5: streaming paths now strip
+// hallucinated smart_money/market_pulse before merge (matches non-stream paths).
 // Identical hedge-fund logic: MAX_PER_FILER=2, dedup by (filer+ticker),
 // iterate ALL ranked rows. Mirrors /api/cron/generate-brief/route.ts.
 
@@ -634,7 +635,8 @@ export async function POST(request: Request) {
                 { name: "edge", promise: Promise.resolve(generateUserAwareEdge(name, date, layerA, holdings)) },
                 { name: "radar", promise: Promise.resolve(generateRadarFromCandidates(layerA, holdings)) },
               ];
-              const wired = tasks.map((t) => t.promise.then((val) => { if (val) { Object.assign(accumulated, val); send("chunk", { chunkName: t.name, fields: val }); } }, (err) => send("error", { chunkName: t.name, message: err?.message })));
+              // v5 FIX: strip hallucinated smart_money/market_pulse from streamed chunks so layer-A wins
+              const wired = tasks.map((t) => t.promise.then((val) => { if (val) { const v: any = { ...val }; delete v.smart_money; delete v.market_pulse; Object.assign(accumulated, v); send("chunk", { chunkName: t.name, fields: v }); } }, (err) => send("error", { chunkName: t.name, message: err?.message })));
               await Promise.all(wired);
               if (Array.isArray(accumulated.opportunity_watch) && Array.isArray(accumulated.radar_watch)) {
                 const oppT = new Set(accumulated.opportunity_watch.map((o: any) => (o.symbol || o.ticker || "").toUpperCase()));
@@ -727,7 +729,8 @@ function streamFreshBrief(opts: any): Response {
         { name: "smart_money", promise: generateSmartMoneyOnly(name, date) },
         { name: "conviction", promise: generateConvictionAndOpportunity(name, watchlist, holdings, date) },
       ];
-      const wired = tasks.map((t) => t.promise.then((val) => { if (val) { Object.assign(merged, val); send("chunk", { chunkName: t.name, fields: val }); } }, (err) => { failures.push(`${t.name}: ${err?.message}`); send("error", { chunkName: t.name, message: err?.message }); }));
+      // v5 FIX: smart_money/market_pulse fields can only be set by their authoritative task
+      const wired = tasks.map((t) => t.promise.then((val) => { if (val) { const v: any = { ...val }; if (t.name !== "smart_money") delete v.smart_money; if (t.name !== "pulse") delete v.market_pulse; Object.assign(merged, v); send("chunk", { chunkName: t.name, fields: v }); } }, (err) => { failures.push(`${t.name}: ${err?.message}`); send("error", { chunkName: t.name, message: err?.message }); }));
       await Promise.all(wired);
       if (Object.keys(merged).length === 0) { send("error", { fatal: true, message: `All chunks failed: ${failures.join("; ")}` }); }
       else {
