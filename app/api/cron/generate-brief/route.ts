@@ -1,7 +1,7 @@
-// /api/cron/generate-brief — v3 permissive Quiver parsers
+// /api/cron/generate-brief — v3.2 permissive Quiver parsers
 // Daily 9 UTC (5 AM ET). Reads latest user state, regenerates brief, caches.
-// 5/24/26: matched to brief route v3 Quiver code. Added raw-row logging.
-// Super-permissive hedge fund parser: any row with a ticker counts.
+// 5/25/26: Applied v5.1 (skip empty-filer 13F rows) + v5.2 (correct Quiver
+// field mapping — Change=$, Change_Share=count) to mirror brief route.
 
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
@@ -97,7 +97,7 @@ key_levels 6-8 bullets each with specific number. radar 8-10 thematic.`;
   return callJsonChunk(prompt, { search: true, maxTokens: 5000, maxSearches: 2, label: "layerA-market" });
 }
 
-// ─── QUIVER QUANTITATIVE — v3 permissive ─────────────────────────
+// ─── QUIVER QUANTITATIVE — v3.2 permissive ─────────────────────────
 const QUIVER_BASE = "https://api.quiverquant.com/beta";
 const QUIVER_TIMEOUT_MS = 25000;
 
@@ -184,7 +184,6 @@ async function buildCongressMoves(): Promise<any[]> {
     const verb = detectVerb(row) || "BOUGHT";
     const amountRaw = pickStr(row, "Range", "Amount", "range", "amount");
     const amount = amountRaw || fmtMoney(pickNum(row, "Amount", "Value"));
-    // Dedup by rep + ticker + verb + amount
     const dedupKey = `${rep}|${ticker}|${verb}|${amount}`.toLowerCase();
     if (seen.has(dedupKey)) continue;
     seen.add(dedupKey);
@@ -232,18 +231,14 @@ async function buildInsiderMoves(): Promise<any[]> {
   return out;
 }
 
-// MAX PERMISSIVE: accept any row with ticker.
-// Diversity: cap to 2 entries per filer, dedupe by (filer+ticker).
-// Iterate ALL ranked rows (not just top 500) so we can find unique filers
-// even when one big fund dominates the top of the list.
+// v5.1 + v5.2: skip empty-filer rows; correct field mapping (Change=$, Change_Share=count).
 async function buildHedgeFundMoves(): Promise<any[]> {
   const raw = await quiverFetch("/live/sec13fchanges");
   if (!raw || raw.length === 0) return [];
-  // Rank by absolute change size so biggest moves bubble up
   const ranked = raw.map((row: any) => ({
     row,
-    score: Math.abs(pickNum(row, "Value", "DollarChange", "ValueChange", "value", "Change_Value") || 0) ||
-           Math.abs(pickNum(row, "Change", "SharesChange", "shares_change", "ChangeInShares", "change", "Shares") || 0),
+    score: Math.abs(pickNum(row, "Change", "Value", "DollarChange", "ValueChange", "value", "change") || 0) ||
+           Math.abs(pickNum(row, "Change_Share", "Change_Shares", "SharesChange", "shares_change", "ChangeInShares", "Shares", "shares") || 0),
   })).sort((a, b) => b.score - a.score);
   const out: any[] = [];
   const filerCount: Record<string, number> = {};
@@ -253,13 +248,17 @@ async function buildHedgeFundMoves(): Promise<any[]> {
     if (out.length >= 5) break;
     const ticker = pickStr(row, "Ticker", "ticker", "Symbol").toUpperCase();
     if (!ticker) continue;
-    const filer = pickStr(row, "Filer", "OwnerName", "Owner", "filer", "owner", "Reporter", "Name", "Fund", "fund") || "Hedge fund";
+    // v5.1 FIX: Quiver 13F primary field is "Fund". Skip rows with no identifiable filer
+    // rather than bucketing them under "Hedge fund" default which gets cap-blocked at MAX_PER_FILER=2.
+    const filer = pickStr(row, "Fund", "Filer", "OwnerName", "Owner", "fund", "filer", "owner", "Reporter", "Name");
+    if (!filer) continue;
     const filerKey = filer.toLowerCase();
     const pairKey = `${filerKey}|${ticker}`;
-    if (seenPair.has(pairKey)) continue; // exact (filer, ticker) dedupe
-    if ((filerCount[filerKey] || 0) >= MAX_PER_FILER) continue; // cap per filer
-    const valueChange = pickNum(row, "Value", "DollarChange", "ValueChange", "value", "Change_Value");
-    const shareChange = pickNum(row, "Change", "SharesChange", "shares_change", "ChangeInShares", "change", "Shares");
+    if (seenPair.has(pairKey)) continue;
+    if ((filerCount[filerKey] || 0) >= MAX_PER_FILER) continue;
+    // v5.2 FIX: Quiver 13F field spec — "Change" is DOLLAR value, "Change_Share" is SHARE count.
+    const valueChange = pickNum(row, "Change", "Value", "DollarChange", "ValueChange", "value", "change");
+    const shareChange = pickNum(row, "Change_Share", "Change_Shares", "SharesChange", "shares_change", "ChangeInShares", "Shares", "shares");
     let verb: string = "ADDED";
     let sizeStr = "";
     if (Number.isFinite(valueChange) && valueChange !== 0) {
@@ -453,7 +452,6 @@ export async function GET(request: Request) {
     todays_edge: { earnings_alerts: earningsAlerts, binary_catalysts: binaryCatalysts, risk_flags: riskFlags },
     radar_watch: radarFiltered,
   };
-  // Object.assign light/conviction FIRST, but strip authoritative fields to avoid AI overwriting layerA
   if (lightResult.status === "fulfilled" && lightResult.value) {
     const v: any = { ...lightResult.value };
     delete v.smart_money;
@@ -466,7 +464,6 @@ export async function GET(request: Request) {
     delete v.market_pulse;
     Object.assign(merged, v);
   }
-  // Layer-A wins LAST so nothing overwrites
   if (layerA?.market_pulse) merged.market_pulse = layerA.market_pulse;
   if (layerA?.smart_money) merged.smart_money = layerA.smart_money;
 
