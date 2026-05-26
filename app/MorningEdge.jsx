@@ -9056,31 +9056,53 @@ function ChatSheet({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header — slim compact row */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)" }}>
-              <Sparkles className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+        {/* Header — crystal aesthetic matching the hero card */}
+        <div className="relative flex items-center justify-between px-3 py-2.5 overflow-hidden"
+          style={{
+            background:
+              "radial-gradient(ellipse 100% 80% at 25% 20%, rgba(255,255,255,0.95) 0%, rgba(245,243,255,0.65) 30%, transparent 60%), " +
+              "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 50%, #DDD6FE 100%)",
+            borderBottom: "1px solid rgba(167,139,250,0.40)",
+            boxShadow: "0 1px 6px rgba(139,92,246,0.18), inset 0 1px 2px rgba(255,255,255,0.85)",
+          }}>
+          {/* Iridescent prism top edge */}
+          <span className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(196,181,253,0.9) 15%, rgba(255,255,255,1) 32%, rgba(244,114,182,0.7) 50%, rgba(255,255,255,1) 68%, rgba(125,211,252,0.6) 82%, rgba(167,139,250,0.9) 100%)",
+            }}
+          />
+          <div className="relative flex items-center gap-2.5 min-w-0 flex-1">
+            <div
+              className="relative w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
+              style={{
+                background: "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
+                border: "1.5px solid #4C1D95",
+                boxShadow: "0 2px 0 #4C1D95, 0 0 14px rgba(167,139,250,0.55), inset 0 1.5px 2px rgba(255,255,255,0.60)",
+              }}
+            >
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
+              <Sparkles className="w-4 h-4 text-white relative" strokeWidth={2.5} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-bold text-slate-900 truncate leading-tight" style={{ fontFamily: SERIF }}>
+              <p className="text-[14px] font-bold text-violet-900 truncate leading-tight" style={{ fontFamily: SERIF }}>
                 Ask Morning Edge
               </p>
-              <p className="text-[10px] text-slate-600 truncate uppercase tracking-wider leading-tight">
+              <p className="text-[10px] text-violet-700/85 truncate uppercase tracking-[0.18em] leading-tight font-medium">
                 {context.type === "general" ? "Anything goes" : context.type}{context.ticker ? ` · ${context.ticker}` : ""}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
+          <div className="relative flex items-center gap-1 flex-shrink-0">
             {messages && messages.length > 0 && (
               <button
                 onClick={onClearChat}
-                className="relative px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider text-slate-800 transition active:scale-[0.96] active:translate-y-0.5 overflow-hidden"
+                className="relative px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider text-violet-900 transition active:scale-[0.96] active:translate-y-0.5 overflow-hidden"
                 style={{
-                  background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
-                  border: "1.5px solid #64748B",
-                  boxShadow: "0 2px 0 #475569, 0 3px 5px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.10)",
+                  background: "linear-gradient(180deg, #FFFFFF 0%, #F5F3FF 50%, #DDD6FE 100%)",
+                  border: "1.5px solid #8B5CF6",
+                  boxShadow: "0 2px 0 #6D28D9, 0 3px 5px rgba(139,92,246,0.20), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(91,33,182,0.10)",
                 }}
                 aria-label="Clear conversation"
                 title="Clear this conversation"
@@ -9097,9 +9119,9 @@ function ChatSheet({
               onClick={onClose}
               className="relative w-9 h-9 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 overflow-hidden"
               style={{
-                background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
-                border: "1.5px solid #64748B",
-                boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.18), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.15)",
+                background: "linear-gradient(180deg, #FFFFFF 0%, #F5F3FF 50%, #DDD6FE 100%)",
+                border: "1.5px solid #8B5CF6",
+                boxShadow: "0 2px 0 #6D28D9, 0 3px 6px rgba(139,92,246,0.22), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(91,33,182,0.10)",
               }}
               aria-label="Close chat"
             >
@@ -9108,7 +9130,7 @@ function ChatSheet({
                   background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
                   borderRadius: "9999px 9999px 50% 50%",
                 }} />
-              <X className="w-4 h-4 text-slate-700 relative" strokeWidth={2.5} />
+              <X className="w-4 h-4 text-violet-800 relative" strokeWidth={2.5} />
             </button>
           </div>
         </div>
@@ -9201,9 +9223,17 @@ function ChatSheet({
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3"
-                style={{ background: "linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%)" }}>
-                <Sparkles className="w-6 h-6 text-violet-700" strokeWidth={2} />
+              <div
+                className="relative w-14 h-14 rounded-full flex items-center justify-center mb-3 overflow-hidden"
+                style={{
+                  background: "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
+                  border: "1.5px solid #4C1D95",
+                  boxShadow: "0 4px 14px rgba(139,92,246,0.45), 0 0 28px rgba(196,181,253,0.45), inset 0 2px 3px rgba(255,255,255,0.65)",
+                }}
+              >
+                <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none rounded-t-full"
+                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0) 100%)" }} />
+                <Sparkles className="w-6 h-6 text-white relative" strokeWidth={2.25} />
               </div>
               <p className="text-[16px] text-slate-800 mb-4 max-w-xs leading-relaxed" style={{ fontFamily: SERIF }}>
                 {context.type === "general"
@@ -9262,8 +9292,9 @@ function ChatSheet({
           )}
         </div>
 
-        {/* Input */}
-        <div className="px-3 py-2.5 border-t border-slate-200 bg-white">
+        {/* Input — bigger, crystal-edged */}
+        <div className="px-3 py-3 border-t bg-white"
+          style={{ borderTopColor: "rgba(167,139,250,0.25)" }}>
           <div className="flex items-end gap-2">
             <textarea
               ref={inputRef}
@@ -9276,39 +9307,51 @@ function ChatSheet({
                 }
               }}
               placeholder={loading ? "Waiting…" : "Type your question…"}
-              rows={1}
+              rows={4}
               disabled={loading}
-              className="flex-1 px-3.5 py-2.5 text-[16px] border border-slate-300 rounded-xl outline-none focus:border-violet-500 resize-none max-h-32"
-              style={{ minHeight: 44 }}
+              className="flex-1 px-3.5 py-2.5 text-[16px] rounded-xl outline-none resize-none max-h-56 leading-snug transition-all"
+              style={{
+                minHeight: 100,
+                background: "rgba(255,255,255,0.95)",
+                border: "1.5px solid #C4B5FD",
+                boxShadow: "inset 0 1px 2px rgba(91,33,182,0.08), 0 1px 3px rgba(139,92,246,0.06)",
+                color: "#1E293B",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.border = "1.5px solid #8B5CF6";
+                e.currentTarget.style.boxShadow = "inset 0 1px 2px rgba(91,33,182,0.10), 0 0 0 3px rgba(167,139,250,0.20), 0 2px 6px rgba(139,92,246,0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.border = "1.5px solid #C4B5FD";
+                e.currentTarget.style.boxShadow = "inset 0 1px 2px rgba(91,33,182,0.08), 0 1px 3px rgba(139,92,246,0.06)";
+              }}
             />
             <button
               onClick={() => { if (input.trim()) onSend(input); }}
               disabled={loading || !input.trim()}
-              className="relative flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 disabled:opacity-50 overflow-hidden"
+              className="relative flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 disabled:opacity-50 overflow-hidden"
               style={input.trim() && !loading ? {
-                background: "linear-gradient(180deg, #818CF8 0%, #6366F1 50%, #4338CA 100%)",
-                border: "2px solid #312E81",
-                boxShadow: "0 3px 0 #312E81, 0 5px 12px rgba(99,102,241,0.45), 0 0 14px rgba(129,140,248,0.30), inset 0 1.5px 2px rgba(255,255,255,0.50), inset 0 -2px 4px rgba(0,0,0,0.30)",
+                background: "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
+                border: "2px solid #4C1D95",
+                boxShadow: "0 3px 0 #4C1D95, 0 5px 14px rgba(139,92,246,0.50), 0 0 18px rgba(196,181,253,0.45), inset 0 1.5px 2px rgba(255,255,255,0.60), inset 0 -2px 4px rgba(0,0,0,0.20)",
               } : {
-                background: "linear-gradient(180deg, #F1F5F9 0%, #E2E8F0 50%, #CBD5E1 100%)",
-                border: "1.5px solid #94A3B8",
-                boxShadow: "0 2px 0 #64748B, inset 0 1.5px 2px rgba(255,255,255,1)",
+                background: "linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 50%, #DDD6FE 100%)",
+                border: "1.5px solid #C4B5FD",
+                boxShadow: "0 2px 0 #A78BFA, inset 0 1.5px 2px rgba(255,255,255,1)",
               }}
               aria-label="Send message"
             >
               {input.trim() && !loading && (
-                <>
-                  <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
-                    style={{
-                      background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
-                      borderRadius: "9999px 9999px 50% 50%",
-                    }} />
-                </>
+                <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
+                  style={{
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "9999px 9999px 50% 50%",
+                  }} />
               )}
               <ArrowRight className="w-5 h-5 text-white relative" strokeWidth={3} />
             </button>
           </div>
-          <p className="text-[12px] text-slate-600 italic mt-2 text-center">
+          <p className="text-[11px] text-violet-700/70 italic mt-2 text-center">
             Informational only. Not financial advice.
           </p>
         </div>
