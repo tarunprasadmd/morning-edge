@@ -1295,12 +1295,19 @@ export default function MorningEdge() {
   // Auto-detect cash from cash-sweep money market positions in holdings.
   // If user hasn't manually entered a cashBalance, this becomes the
   // "available to deploy" amount shown on the hero card and sent to chat.
+  // Multi-field fallback covers brokers that use different column names:
+  // Fidelity → h.value, Schwab → h.marketValue, others → h.qty * h.currentPrice.
   const autoCash = useMemo(() => {
     if (!holdings || holdings.length === 0) return 0;
     return holdings.reduce((sum, h) => {
       if (!h || !h.symbol) return sum;
       if (!CASH_SWEEP_TICKERS.has(h.symbol.toUpperCase())) return sum;
-      const v = typeof h.value === "number" ? h.value : null;
+      let v = null;
+      if (typeof h.value === "number" && h.value > 0) v = h.value;
+      else if (typeof h.marketValue === "number" && h.marketValue > 0) v = h.marketValue;
+      else if (typeof h.currentValue === "number" && h.currentValue > 0) v = h.currentValue;
+      else if (typeof h.qty === "number" && typeof h.currentPrice === "number") v = h.qty * h.currentPrice;
+      else if (typeof h.qty === "number") v = h.qty; // money market funds trade at $1, qty = $
       return sum + (v || 0);
     }, 0);
   }, [holdings]);
@@ -1686,10 +1693,33 @@ export default function MorningEdge() {
     return () => clearInterval(id);
   }, [loading]);
 
-  // Helpers for daily key
-  const todayKey = useMemo(() => {
+  // Helpers for daily key — uses useState + interval so the key rolls over at
+  // midnight if the user keeps the app open. Prior useMemo with empty deps
+  // computed once on mount, causing yesterday's decisions to persist past
+  // midnight. Now re-checks every minute + on visibility change.
+  const computeTodayKey = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+  const [todayKey, setTodayKey] = useState(computeTodayKey);
+  useEffect(() => {
+    const tick = () => {
+      const fresh = computeTodayKey();
+      setTodayKey((prev) => (prev !== fresh ? fresh : prev));
+    };
+    const interval = setInterval(tick, 60_000); // check every minute
+    const onVisibility = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") tick();
+    };
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisibility);
+    }
+    return () => {
+      clearInterval(interval);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisibility);
+      }
+    };
   }, []);
 
   const toggleDecision = (idx) => {
@@ -8154,7 +8184,13 @@ function DiscoverySection({ radar, opportunity, defaultTab, holdings, todayKey, 
     let cancelled = false;
     const fetchPrices = async () => {
       try {
-        const res = await fetch(`/api/prices?symbols=${symbols.join(",")}`);
+        // POST with JSON body matches the main holdings price polling pattern.
+        // GET with query string was a separate path that may not be supported.
+        const res = await fetch("/api/prices", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ symbols }),
+        });
         if (!res.ok) return;
         const data = await res.json();
         if (!cancelled && data && data.prices) setLivePrices(data.prices);
