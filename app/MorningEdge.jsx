@@ -9311,11 +9311,11 @@ function ChatSheet({
                 }
               }}
               placeholder={loading ? "Working…" : "What would you like to know?"}
-              rows={10}
+              rows={3}
               disabled={loading}
-              className="w-full px-4 pt-4 pb-14 text-[15px] rounded-2xl outline-none resize-none leading-relaxed transition-all"
+              className="w-full px-4 pt-3.5 pb-12 text-[15px] rounded-2xl outline-none resize-none max-h-60 leading-relaxed transition-all"
               style={{
-                minHeight: 320,
+                minHeight: 96,
                 background: "rgba(255,255,255,0.98)",
                 border: "1.5px solid #D4A574",
                 boxShadow:
