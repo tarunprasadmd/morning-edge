@@ -9230,43 +9230,29 @@ function ChatSheet({
           }}
         >
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center py-3">
-              {/* Subtle orb — small, refined, no animation */}
+            <div className="flex flex-col items-center justify-center text-center py-4">
+              {/* Subtle refined orb */}
               <div
-                className="relative w-12 h-12 rounded-full flex items-center justify-center mb-4 overflow-hidden"
+                className="relative w-14 h-14 rounded-full flex items-center justify-center mb-3 overflow-hidden"
                 style={{
                   background:
                     "radial-gradient(ellipse 70% 60% at 30% 25%, rgba(255,255,255,0.85) 0%, rgba(221,214,254,0.35) 35%, transparent 65%), " +
                     "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
                   border: "1.5px solid rgba(255,255,255,0.45)",
                   boxShadow:
-                    "0 4px 14px rgba(139,92,246,0.40), 0 0 24px rgba(196,181,253,0.40), inset 0 1.5px 3px rgba(255,255,255,0.55)",
+                    "0 4px 14px rgba(139,92,246,0.40), 0 0 28px rgba(196,181,253,0.40), inset 0 1.5px 3px rgba(255,255,255,0.55)",
                 }}
               >
-                <Sparkles className="w-5 h-5 text-white relative" strokeWidth={2.25} />
+                <Sparkles className="w-6 h-6 text-white relative" strokeWidth={2.25} />
               </div>
-
-              {/* Compact 2-col chip grid — Warren-Buffett-level restraint */}
-              <div className="grid grid-cols-2 gap-2 w-full max-w-[360px]">
-                {starterPrompts.map((q, i) => (
-                  <button
-                    key={i}
-                    onClick={() => onSend(q)}
-                    className="relative text-left text-[13px] px-3 py-2.5 rounded-xl text-violet-950 overflow-hidden transition active:scale-[0.97] leading-snug"
-                    style={{
-                      background:
-                        "linear-gradient(180deg, #FFFFFF 0%, #F5F3FF 70%, #EDE9FE 100%)",
-                      border: "1px solid rgba(139,92,246,0.55)",
-                      boxShadow:
-                        "0 1px 0 rgba(109,40,217,0.50), 0 2px 6px rgba(139,92,246,0.18), inset 0 1px 1.5px rgba(255,255,255,1)",
-                      fontFamily: SERIF,
-                      fontWeight: 500,
-                    }}
-                  >
-                    <span className="relative">{q}</span>
-                  </button>
-                ))}
-              </div>
+              <p
+                className="text-[14px] text-violet-800/80 italic max-w-[280px] leading-relaxed"
+                style={{ fontFamily: SERIF }}
+              >
+                {context.type === "general"
+                  ? "Ready when you are."
+                  : "Ask anything about this card."}
+              </p>
             </div>
           ) : (
             messages.map((m, i) => (
@@ -9296,7 +9282,7 @@ function ChatSheet({
           )}
         </div>
 
-        {/* Input — full-width textarea, triangular send button at bottom-right */}
+        {/* Input — large, gold-edged, refined SVG triangle send */}
         <div
           className="px-3 py-3 border-t"
           style={{
@@ -9306,6 +9292,14 @@ function ChatSheet({
           }}
         >
           <div className="relative">
+            {/* Gold accent line on top edge */}
+            <span
+              className="absolute top-0 left-3 right-3 h-[2px] pointer-events-none z-10 rounded-full"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent 0%, #D4A574 25%, #F5D08C 50%, #D4A574 75%, transparent 100%)",
+              }}
+            />
             <textarea
               ref={inputRef}
               value={input}
@@ -9317,49 +9311,88 @@ function ChatSheet({
                 }
               }}
               placeholder={loading ? "Working…" : "What would you like to know?"}
-              rows={4}
+              rows={10}
               disabled={loading}
-              className="w-full px-4 pt-3 pb-12 text-[15px] rounded-2xl outline-none resize-none max-h-60 leading-relaxed transition-all"
+              className="w-full px-4 pt-4 pb-14 text-[15px] rounded-2xl outline-none resize-none leading-relaxed transition-all"
               style={{
-                minHeight: 130,
+                minHeight: 320,
                 background: "rgba(255,255,255,0.98)",
-                border: "1.5px solid #C4B5FD",
+                border: "1.5px solid #D4A574",
                 boxShadow:
-                  "inset 0 1.5px 3px rgba(91,33,182,0.10), 0 2px 8px rgba(139,92,246,0.10)",
+                  "inset 0 1.5px 3px rgba(91,33,182,0.08), 0 4px 14px rgba(212,165,116,0.18), 0 0 22px rgba(196,181,253,0.20)",
                 color: "#1E1B4B",
                 fontFamily: SERIF,
               }}
               onFocus={(e) => {
-                e.currentTarget.style.border = "1.5px solid #8B5CF6";
+                e.currentTarget.style.border = "1.5px solid #C9A66B";
                 e.currentTarget.style.boxShadow =
-                  "inset 0 1.5px 3px rgba(91,33,182,0.12), 0 0 0 4px rgba(167,139,250,0.20), 0 4px 14px rgba(139,92,246,0.20)";
+                  "inset 0 1.5px 3px rgba(91,33,182,0.10), 0 0 0 4px rgba(212,165,116,0.22), 0 6px 18px rgba(212,165,116,0.28), 0 0 30px rgba(196,181,253,0.30)";
               }}
               onBlur={(e) => {
-                e.currentTarget.style.border = "1.5px solid #C4B5FD";
+                e.currentTarget.style.border = "1.5px solid #D4A574";
                 e.currentTarget.style.boxShadow =
-                  "inset 0 1.5px 3px rgba(91,33,182,0.10), 0 2px 8px rgba(139,92,246,0.10)";
+                  "inset 0 1.5px 3px rgba(91,33,182,0.08), 0 4px 14px rgba(212,165,116,0.18), 0 0 22px rgba(196,181,253,0.20)";
               }}
             />
-            {/* Triangular send button — bottom-right inside input frame */}
+            {/* Refined SVG triangle send button — bottom-right inside input */}
             <button
               onClick={() => { if (input.trim()) onSend(input); }}
               disabled={loading || !input.trim()}
               aria-label="Send"
-              className="absolute bottom-2.5 right-2.5 transition active:scale-[0.93] disabled:opacity-40"
+              className="absolute bottom-3 right-3 transition active:scale-[0.93] disabled:opacity-40"
               style={{
-                width: 56,
-                height: 40,
-                clipPath: "polygon(0% 0%, 100% 50%, 0% 100%)",
-                background:
-                  input.trim() && !loading
-                    ? "linear-gradient(135deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)"
-                    : "linear-gradient(135deg, #DDD6FE 0%, #C4B5FD 100%)",
-                filter:
-                  input.trim() && !loading
-                    ? "drop-shadow(0 4px 10px rgba(139,92,246,0.50)) drop-shadow(0 0 14px rgba(196,181,253,0.40))"
-                    : "drop-shadow(0 2px 4px rgba(139,92,246,0.15))",
+                width: 48,
+                height: 38,
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                cursor: input.trim() && !loading ? "pointer" : "default",
+                filter: input.trim() && !loading
+                  ? "drop-shadow(0 4px 10px rgba(139,92,246,0.45)) drop-shadow(0 0 14px rgba(196,181,253,0.35))"
+                  : "drop-shadow(0 2px 4px rgba(139,92,246,0.15))",
               }}
-            />
+            >
+              <svg width="48" height="38" viewBox="0 0 48 38" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="triFillActive" x1="0%" y1="0%" x2="100%" y2="60%">
+                    <stop offset="0%" stopColor="#C4B5FD" />
+                    <stop offset="35%" stopColor="#A78BFA" />
+                    <stop offset="75%" stopColor="#8B5CF6" />
+                    <stop offset="100%" stopColor="#5B21B6" />
+                  </linearGradient>
+                  <linearGradient id="triFillIdle" x1="0%" y1="0%" x2="100%" y2="60%">
+                    <stop offset="0%" stopColor="#F5F3FF" />
+                    <stop offset="100%" stopColor="#DDD6FE" />
+                  </linearGradient>
+                </defs>
+                {/* Main triangle */}
+                <polygon
+                  points="3,3 44,19 3,35"
+                  fill={input.trim() && !loading ? "url(#triFillActive)" : "url(#triFillIdle)"}
+                  stroke={input.trim() && !loading ? "#D4A574" : "#C4B5FD"}
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+                {/* Inner gold highlight stroke for premium feel when active */}
+                {input.trim() && !loading && (
+                  <polygon
+                    points="6,6 38,19 6,32"
+                    fill="none"
+                    stroke="rgba(245,208,140,0.55)"
+                    strokeWidth="0.8"
+                    strokeLinejoin="round"
+                  />
+                )}
+                {/* Top specular highlight */}
+                {input.trim() && !loading && (
+                  <polygon
+                    points="5,5 18,11 5,17"
+                    fill="rgba(255,255,255,0.45)"
+                    strokeLinejoin="round"
+                  />
+                )}
+              </svg>
+            </button>
           </div>
           <p
             className="text-[11px] text-violet-700/70 italic mt-2.5 text-center"
