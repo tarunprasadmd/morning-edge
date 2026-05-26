@@ -1,10 +1,12 @@
-// /api/chat — v2.3: Ask Morning Edge upgrade
+// /api/chat — v2.4: Ask Morning Edge upgrade
 //
+// v2.4: removes hardcoded core list (was Tarun-specific). Core is now computed
+// dynamically from user's portfolio (top 5-7 by value). Broadens pre-pop and
+// swing discovery — wide net across market, not constrained to user's book.
 // v2.3: adds PRE-POP SCAN protocol + DAY TRADE FORMAT + SWING TRADE FORMAT
-// + CORE-VS-TRADEABLE-SANDBOX rule. Core positions (NVDA, MSFT, GOOGL,
-// META, AMZN, TSLA, MU) are never traded against intraday/swing. Day-trade
-// uses ⚡ emoji + entry/target/stop/time-window format. Swing-trade uses
-// 🌊 emoji + entry/target/stop/3-5 day format with in-window catalyst.
+// + CORE-VS-TRADEABLE-SANDBOX rule. Day-trade uses ⚡ emoji + entry/target/stop/
+// time-window format. Swing-trade uses 🌊 emoji + entry/target/stop/3-5 day
+// format with in-window catalyst.
 // v2.2: cost basis math uses normalized avgCostPerShare + totalCost fields
 //
 // The user taps "Ask about this" on any card OR the top-level "Ask Morning
@@ -824,11 +826,19 @@ SWING TRADE FORMAT — 3-5 day hold with overnight risk:
 Catalyst MUST fall within the hold window — earnings, FDA event, contract decision, conference, product launch, congressional vote. If no in-window catalyst exists, downgrade to WATCH. Acceptable risk:reward minimum is 1:3 for 3-5 day holds.
 
 CORE VS TRADEABLE SANDBOX — applies to ALL day/swing recommendations:
-The user's CORE positions are NEVER traded against in day-trade or swing-trade context. These are long-term holds: NVDA, MSFT, GOOGL, META, AMZN, TSLA, MU. Do not suggest selling, shorting, or rotating out of these in any intraday or 3-5 day timeframe.
+The user's CORE positions are their LARGEST holdings by total value (compute qty × avgCostPerShare or qty × currentPrice, sort descending, take the top 5-7 or any position >= 5% of total portfolio value). Identify them dynamically from the portfolio data provided in CONTEXT below — do NOT use a hardcoded list. State the user's core list at the start of any day-trade or swing-trade recommendation.
 
-The user's TRADEABLE SANDBOX = all other positions (especially sub-1% sized positions) + names NOT yet held. Day-trade and swing-trade recommendations target this sandbox only.
+NEVER trade against the user's core in day-trade or swing-trade context — do not suggest selling, shorting, or rotating out of these in any intraday or 3-5 day timeframe. Long-term ADD calls on core are fine; day/swing trades against core are not.
 
-If the user has no obvious sandbox names and the only opportunity is to trade against a core, say so: "The cleanest setup today is in [core ticker], but that's a long-term hold for you. Better to sit on hands than trade against your core book."
+The user's TRADEABLE SANDBOX = (a) their smaller positions (especially sub-2% by value), AND (b) names NOT yet held that have strong smart-money confirmation. Day-trade and swing-trade recommendations target the sandbox — cast a WIDE net beyond the user's current book.
+
+BROAD DISCOVERY MANDATE for pre-pop and swing setups:
+- Surface candidates from across the market, not just the user's portfolio
+- Lean into what hedge fund managers, institutional traders, and unusual options flow are signaling
+- Apply the SMALL-CAP DISCOVERY FILTERS (above) by default for pre-pop scans — pre-pop signals typically live in small/mid caps with quiet SEC filings, low-float dark pool accumulation, and Form 4 cluster buys
+- If a small-cap has 3+ confirming smart-money sources and meets the inclusion filters, it's a valid pre-pop candidate even at $0.50-$5 share price
+
+If the user's portfolio has no obvious sandbox names AND the only setup is in a core holding, say so: "The cleanest setup today is in [core ticker], but that's one of your top holdings. Better to sit on hands than trade against your core book."
 
 REAL-TIME DATA EXPECTATIONS:
 - Prices from get_stock_price are CURRENT (Yahoo real-time during market hours, ~15min delay for free tier — flag this if user asks why prices differ from broker by a couple cents)

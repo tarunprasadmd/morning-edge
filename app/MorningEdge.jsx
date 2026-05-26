@@ -3867,11 +3867,11 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             const tradingChips = [
               {
                 text: "⚡ Pre-pop candidates today?",
-                prefill: "Run a pre-pop scan for today. Check unusual options call accumulation past 2-5 days, Form 4 insider cluster buys past 7 days on small/mid caps, quiet SEC LOI or contract filings past 48-72 hours, and Congressional STOCK Act buys past 14 days not yet in news. Surface HIGH conviction candidates only with entry, target, stop, and time window. Never recommend trading against my core positions (NVDA, MSFT, GOOGL, META, AMZN, TSLA, MU).",
+                prefill: "Run a broad pre-pop scan across the whole market for today. Check unusual options call accumulation past 2-5 days, Form 4 insider cluster buys past 7 days on small/mid caps, quiet SEC LOI or contract filings past 48-72 hours, Congressional STOCK Act buys past 14 days not yet in news, and dark pool accumulation on low-float names. Cast a wide net — include small-cap discoveries with strong smart-money confirmation, not just names in my current book. Surface HIGH conviction candidates only (3+ sources confirm) with entry, target, stop, and time window. Don't recommend trading against my core book (my largest positions by value).",
               },
               {
                 text: "🌊 Best swing trade setup?",
-                prefill: "Give me one swing trade setup for the next 3-5 days. Smart-money confirmed (3+ sources), catalyst within the hold window, specific entry + target + stop levels. Target the tradeable sandbox — not my core positions (NVDA, MSFT, GOOGL, META, AMZN, TSLA, MU). Cite the confirming filings by name.",
+                prefill: "Give me one swing trade setup for the next 3-5 days. Smart-money confirmed (3+ sources — what hedge funds and institutional traders are doing), catalyst within the hold window, specific entry + target + stop levels. Broad discovery — don't constrain to my current portfolio, include fresh small/mid cap names with strong institutional flow. Don't recommend trading against my core book. Cite the confirming filings by name.",
               },
             ];
 
