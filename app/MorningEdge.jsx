@@ -3798,62 +3798,84 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               <div
                 className="relative rounded-2xl overflow-hidden"
                 style={{
-                  // Crystal ball: layered radial gradients create the "sphere inside the card" feel.
-                  // Bright top-left highlight, deeper violet core, soft bottom-right glow.
+                  // Crystal ball v2: deeper saturation for more drama while keeping top
+                  // light enough for text readability. Triple-radial creates the sphere
+                  // illusion — bright top-left highlight, saturated violet body, soft
+                  // pink-violet glow bottom-right (refraction).
                   background:
-                    "radial-gradient(ellipse 110% 80% at 25% 15%, rgba(255,255,255,0.85) 0%, rgba(237,233,254,0.55) 20%, transparent 50%), " +
-                    "radial-gradient(ellipse 90% 70% at 75% 85%, rgba(196,181,253,0.65) 0%, rgba(167,139,250,0.25) 35%, transparent 65%), " +
-                    "radial-gradient(ellipse 140% 100% at 50% 50%, rgba(221,214,254,0.95) 0%, rgba(196,181,253,0.85) 40%, rgba(167,139,250,0.75) 100%)",
-                  border: "1px solid rgba(255,255,255,0.7)",
-                  // Multi-layer shadows = iridescent halo + crystal depth.
-                  // Outer: violet glow + soft pink-purple corona + deeper purple ambient.
-                  // Inset: bright white inner rim + edge tints (left/right) for prism feel + dark bottom for weight.
+                    "radial-gradient(ellipse 100% 70% at 28% 18%, rgba(255,255,255,1) 0%, rgba(245,243,255,0.75) 22%, transparent 55%), " +
+                    "radial-gradient(ellipse 80% 65% at 78% 82%, rgba(167,139,250,0.85) 0%, rgba(139,92,246,0.45) 35%, transparent 68%), " +
+                    "radial-gradient(ellipse 145% 115% at 50% 55%, rgba(233,213,255,0.98) 0%, rgba(196,181,253,0.95) 38%, rgba(167,139,250,0.88) 78%, rgba(139,92,246,0.78) 100%)",
+                  border: "1px solid rgba(255,255,255,0.85)",
+                  // Halo: 4-tier outer glow extending to 96px for "magical aura" feel.
+                  // Inset: bright top rim + edge tints (white left, violet right) +
+                  // deeper bottom for weight.
                   boxShadow:
-                    "0 0 0 1.5px rgba(167,139,250,0.55), " +
-                    "0 8px 28px rgba(139,92,246,0.40), " +
-                    "0 0 36px rgba(196,181,253,0.55), " +
-                    "0 0 72px rgba(167,139,250,0.30), " +
-                    "inset 0 2px 4px rgba(255,255,255,1), " +
-                    "inset 0 -3px 8px rgba(91,33,182,0.20), " +
-                    "inset 2px 0 10px rgba(255,255,255,0.40), " +
-                    "inset -2px 0 10px rgba(196,181,253,0.30)",
+                    "0 0 0 1.5px rgba(167,139,250,0.65), " +
+                    "0 10px 32px rgba(139,92,246,0.50), " +
+                    "0 0 48px rgba(196,181,253,0.65), " +
+                    "0 0 96px rgba(167,139,250,0.40), " +
+                    "inset 0 3px 6px rgba(255,255,255,1), " +
+                    "inset 0 -3px 10px rgba(91,33,182,0.28), " +
+                    "inset 3px 0 12px rgba(255,255,255,0.50), " +
+                    "inset -3px 0 12px rgba(196,181,253,0.35)",
                 }}
               >
-                {/* Primary specular — large bright top-left reflection (the "main light") */}
+                {/* Primary specular — large bright top-left reflection (main light source) */}
                 <span
-                  className="absolute top-0.5 left-2 right-2 h-[45%] pointer-events-none"
+                  className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
                   style={{
                     background:
-                      "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.45) 40%, rgba(255,255,255,0.10) 75%, rgba(255,255,255,0) 100%)",
+                      "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.55) 35%, rgba(255,255,255,0.15) 70%, rgba(255,255,255,0) 100%)",
                     borderRadius: "1rem 1rem 50% 50%",
                   }}
                 />
 
-                {/* Iridescent top edge — prismatic rainbow line for "crystal" feel */}
+                {/* Iridescent prism edge — rainbow accent line for crystal feel */}
                 <span
-                  className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none"
+                  className="absolute top-0 left-0 right-0 h-[3px] pointer-events-none"
                   style={{
                     background:
-                      "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(196,181,253,0.8) 15%, rgba(255,255,255,1) 30%, rgba(244,114,182,0.6) 50%, rgba(255,255,255,1) 70%, rgba(167,139,250,0.8) 85%, rgba(255,255,255,0) 100%)",
+                      "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(196,181,253,0.9) 12%, rgba(255,255,255,1) 28%, rgba(244,114,182,0.75) 45%, rgba(255,255,255,1) 60%, rgba(125,211,252,0.65) 75%, rgba(255,255,255,1) 88%, rgba(167,139,250,0.9) 100%)",
                   }}
                 />
 
-                {/* Secondary diagonal shine — gives the "rotating sphere" effect */}
+                {/* Secondary diagonal shine — rotating sphere illusion */}
                 <span
-                  className="absolute top-[20%] left-[5%] w-[35%] h-[30%] pointer-events-none opacity-60"
+                  className="absolute top-[20%] left-[5%] w-[35%] h-[30%] pointer-events-none opacity-70"
                   style={{
                     background:
-                      "radial-gradient(ellipse, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.20) 50%, rgba(255,255,255,0) 100%)",
+                      "radial-gradient(ellipse, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.20) 50%, rgba(255,255,255,0) 100%)",
                     transform: "rotate(-15deg)",
                   }}
                 />
 
                 {/* Bottom-right inner glow — refraction passing through the sphere */}
                 <span
-                  className="absolute bottom-0 right-0 w-[40%] h-[35%] pointer-events-none"
+                  className="absolute bottom-0 right-0 w-[45%] h-[40%] pointer-events-none"
                   style={{
                     background:
-                      "radial-gradient(ellipse at bottom right, rgba(196,181,253,0.45) 0%, rgba(167,139,250,0.20) 40%, rgba(167,139,250,0) 70%)",
+                      "radial-gradient(ellipse at bottom right, rgba(244,114,182,0.30) 0%, rgba(167,139,250,0.25) 35%, rgba(167,139,250,0) 70%)",
+                  }}
+                />
+
+                {/* Trapped light sparkle #1 — upper area */}
+                <span
+                  className="absolute top-[15%] left-[12%] w-1.5 h-1.5 pointer-events-none rounded-full"
+                  style={{
+                    background: "rgba(255,255,255,1)",
+                    boxShadow:
+                      "0 0 6px rgba(255,255,255,0.95), 0 0 12px rgba(255,255,255,0.55)",
+                  }}
+                />
+
+                {/* Trapped light sparkle #2 — mid right */}
+                <span
+                  className="absolute top-[42%] right-[18%] w-1 h-1 pointer-events-none rounded-full"
+                  style={{
+                    background: "rgba(255,255,255,0.95)",
+                    boxShadow:
+                      "0 0 4px rgba(255,255,255,0.85), 0 0 8px rgba(244,114,182,0.40)",
                   }}
                 />
 
