@@ -644,6 +644,21 @@ const KNOWN_ACCOUNT_HINTS = [
   "TOD", "IRA", "401K", "401(k)", "529",
 ];
 
+// Cash-sweep money market tickers — when one of these appears as a holding
+// in the user's CSV, its `value` is treated as deployable cash. Covers the
+// three major brokerages plus generic labels. Used to auto-populate the
+// "cash available" indicator on the Ask Morning Edge hero card.
+const CASH_SWEEP_TICKERS = new Set([
+  // Fidelity
+  "FCASH", "SPAXX", "FDRXX", "FZFXX", "FMPXX", "FZDXX", "FZIPX",
+  // Schwab
+  "SWVXX", "SNVXX", "SNAXX", "SWGXX",
+  // Vanguard
+  "VMFXX", "VMRXX", "VUSXX",
+  // Generic
+  "CASH", "$CASH$",
+]);
+
 // colorizePercents — wraps any percentage value in the text with a
 // green or red span based on sign. Used in Market Pulse "What's moving"
 // rows so positive/negative moves render in color instead of muted text.
@@ -1277,6 +1292,22 @@ export default function MorningEdge() {
   const [heroInput, setHeroInput] = useState(""); // Phase B: input on the Ask Morning Edge hero card
   const [cashBalance, setCashBalance] = useState(null); // optional user-entered cash to deploy
 
+  // Auto-detect cash from cash-sweep money market positions in holdings.
+  // If user hasn't manually entered a cashBalance, this becomes the
+  // "available to deploy" amount shown on the hero card and sent to chat.
+  const autoCash = useMemo(() => {
+    if (!holdings || holdings.length === 0) return 0;
+    return holdings.reduce((sum, h) => {
+      if (!h || !h.symbol) return sum;
+      if (!CASH_SWEEP_TICKERS.has(h.symbol.toUpperCase())) return sum;
+      const v = typeof h.value === "number" ? h.value : null;
+      return sum + (v || 0);
+    }, 0);
+  }, [holdings]);
+
+  // Effective cash = user-set if they entered one, else auto-detected from CSV
+  const effectiveCash = cashBalance != null ? cashBalance : autoCash;
+
   // ─── Reading page state ──────────────────────────────────────────
   // The reading page is the deep "why" view that opens when the user
   // taps any card (Playbook, Conviction, Radar). Shows the full
@@ -1401,7 +1432,7 @@ export default function MorningEdge() {
           cardContext: chatContext,
           portfolio: {
             holdings: (holdings || []).map(normalizeHoldingForChat).filter(Boolean),
-            cashBalance: cashBalance,
+            cashBalance: effectiveCash > 0 ? effectiveCash : null,
           },
           briefSummary: brief?.market_pulse ? {
             tone: brief.market_pulse.tone,
@@ -3964,6 +3995,24 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   <p className="text-[10px] text-violet-700/75 leading-tight">
                     Informational, not investment advice. You decide. Verify with your broker.
                   </p>
+
+                  {/* Auto-detected cash available — pulled from FCASH/SPAXX/etc.
+                      Tappable: opens the chat where user can override the deploy
+                      amount via the existing Cash to deploy pill. */}
+                  {effectiveCash > 0 && (
+                    <button
+                      onClick={() => openAskChat("")}
+                      className="mt-2 pt-2 w-full flex items-center justify-between text-[11px] leading-tight border-t border-violet-300/40 hover:opacity-80 transition"
+                      aria-label="Available cash — tap to set deploy amount in chat"
+                    >
+                      <span className="text-violet-800 font-medium">
+                        💰 ${Math.round(effectiveCash).toLocaleString()} available to deploy
+                      </span>
+                      <span className="text-violet-600/80 text-[10px]">
+                        {cashBalance != null ? "set in chat" : "auto from cash sweep"}
+                      </span>
+                    </button>
+                  )}
                 </div>
               </div>
             );
