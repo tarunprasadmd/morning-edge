@@ -6469,6 +6469,26 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
           0%   { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
+        @keyframes crystalPulse {
+          0%, 100% {
+            box-shadow:
+              0 0 0 1.5px rgba(167,139,250,0.65),
+              0 10px 30px rgba(139,92,246,0.50),
+              0 0 50px rgba(196,181,253,0.65),
+              0 0 100px rgba(167,139,250,0.40),
+              inset 0 3px 8px rgba(255,255,255,0.65),
+              inset 0 -4px 10px rgba(76,29,149,0.40);
+          }
+          50% {
+            box-shadow:
+              0 0 0 1.5px rgba(167,139,250,0.85),
+              0 10px 36px rgba(139,92,246,0.65),
+              0 0 70px rgba(196,181,253,0.85),
+              0 0 130px rgba(167,139,250,0.55),
+              inset 0 3px 8px rgba(255,255,255,0.75),
+              inset 0 -4px 10px rgba(76,29,149,0.45);
+          }
+        }
       `}</style>
     </div>
   );
@@ -9220,45 +9240,104 @@ function ChatSheet({
         </div>
 
         {/* Message list */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto px-4 py-3 space-y-3"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 50% at 50% 25%, rgba(245,243,255,0.6) 0%, rgba(237,233,254,0.25) 40%, transparent 70%), " +
+              "linear-gradient(180deg, #FEFEFF 0%, #FAF8FF 100%)",
+          }}
+        >
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="flex flex-col items-center justify-center h-full text-center py-6">
+              {/* Large crystal ball orb — pulsing halo, multi-layer specular */}
               <div
-                className="relative w-14 h-14 rounded-full flex items-center justify-center mb-3 overflow-hidden"
+                className="relative w-24 h-24 rounded-full flex items-center justify-center mb-5 overflow-hidden"
                 style={{
-                  background: "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
-                  border: "1.5px solid #4C1D95",
-                  boxShadow: "0 4px 14px rgba(139,92,246,0.45), 0 0 28px rgba(196,181,253,0.45), inset 0 2px 3px rgba(255,255,255,0.65)",
+                  background:
+                    "radial-gradient(ellipse 70% 60% at 30% 25%, rgba(255,255,255,0.95) 0%, rgba(221,214,254,0.45) 35%, transparent 65%), " +
+                    "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 45%, #5B21B6 100%)",
+                  border: "2px solid rgba(255,255,255,0.5)",
+                  boxShadow:
+                    "0 0 0 1.5px rgba(167,139,250,0.65), " +
+                    "0 10px 30px rgba(139,92,246,0.50), " +
+                    "0 0 50px rgba(196,181,253,0.65), " +
+                    "0 0 100px rgba(167,139,250,0.40), " +
+                    "inset 0 3px 8px rgba(255,255,255,0.65), " +
+                    "inset 0 -4px 10px rgba(76,29,149,0.40)",
+                  animation: "crystalPulse 3s ease-in-out infinite",
                 }}
               >
-                <span className="absolute top-0.5 left-1.5 right-1.5 h-[50%] pointer-events-none rounded-t-full"
-                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0) 100%)" }} />
-                <Sparkles className="w-6 h-6 text-white relative" strokeWidth={2.25} />
+                {/* Primary top-left specular highlight */}
+                <span
+                  className="absolute top-1 left-3 right-3 h-[50%] pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 45%, rgba(255,255,255,0) 100%)",
+                    borderRadius: "50% 50% 50% 50%",
+                  }}
+                />
+                {/* Trapped light sparkle */}
+                <span
+                  className="absolute top-[20%] left-[22%] w-2 h-2 rounded-full pointer-events-none"
+                  style={{
+                    background: "rgba(255,255,255,1)",
+                    boxShadow: "0 0 8px rgba(255,255,255,0.95), 0 0 16px rgba(244,114,182,0.5)",
+                  }}
+                />
+                <Sparkles className="w-10 h-10 text-white relative" strokeWidth={2.25} />
               </div>
-              <p className="text-[16px] text-slate-800 mb-4 max-w-xs leading-relaxed" style={{ fontFamily: SERIF }}>
-                {context.type === "general"
-                  ? "Ask me anything about your portfolio, today's market, or the brief."
-                  : "Ask anything about this. I know your portfolio and today's market read."}
+
+              {/* Oracle headline + decorative subtitle */}
+              <p
+                className="text-[22px] text-violet-950 mb-1.5 leading-tight"
+                style={{ fontFamily: SERIF, fontWeight: 700, letterSpacing: "-0.01em" }}
+              >
+                {context.type === "general" ? "Consult the Crystal" : "Ask the Crystal"}
               </p>
-              <div className="flex flex-col gap-2 w-full max-w-xs">
+              <p
+                className="text-[14px] text-violet-700/85 mb-6 max-w-[280px] leading-relaxed italic"
+                style={{ fontFamily: SERIF }}
+              >
+                {context.type === "general"
+                  ? "I see your positions, today's smart-money, and what the tape is doing. Ask anything."
+                  : "I know this card, your book, and what the market is saying. Ask anything."}
+              </p>
+
+              {/* Premium chips */}
+              <div className="flex flex-col gap-2.5 w-full max-w-[300px]">
                 {starterPrompts.map((q, i) => (
                   <button
                     key={i}
                     onClick={() => onSend(q)}
-                    className="relative text-left text-[15px] px-3.5 py-2.5 rounded-2xl text-slate-900 overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
+                    className="relative text-left text-[15px] px-4 py-3 rounded-2xl text-violet-950 overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
                     style={{
-                      background: "linear-gradient(180deg, #FAF5FF 0%, #EDE9FE 50%, #DDD6FE 100%)",
+                      background:
+                        "linear-gradient(180deg, #FFFFFF 0%, #F5F3FF 50%, #E9D5FF 100%)",
                       border: "1.5px solid #8B5CF6",
-                      boxShadow: "0 2.5px 0 #6D28D9, 0 4px 8px rgba(139,92,246,0.30), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(91,33,182,0.15)",
+                      boxShadow:
+                        "0 2.5px 0 #6D28D9, 0 4px 10px rgba(139,92,246,0.30), 0 0 14px rgba(196,181,253,0.25), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(91,33,182,0.12)",
+                      fontFamily: SERIF,
+                      fontWeight: 500,
                     }}
                   >
-                    <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    {/* Iridescent top edge */}
+                    <span
+                      className="absolute top-0 left-1 right-1 h-[2px] pointer-events-none"
                       style={{
-                        background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                        background:
+                          "linear-gradient(90deg, transparent 0%, rgba(196,181,253,0.9) 25%, rgba(244,114,182,0.6) 50%, rgba(196,181,253,0.9) 75%, transparent 100%)",
+                      }}
+                    />
+                    <span
+                      className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                      style={{
+                        background:
+                          "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
                         borderRadius: "1rem 1rem 50% 50%",
-                      }} />
-                    <span className="absolute bottom-0.5 left-[30%] right-[30%] h-[15%] pointer-events-none"
-                      style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                      }}
+                    />
                     <span className="relative">{q}</span>
                   </button>
                 ))}
@@ -9270,9 +9349,9 @@ function ChatSheet({
             ))
           )}
           {loading && (
-            <div className="flex items-center gap-2 text-[14px] text-slate-600 italic px-1">
-              <span className="inline-block w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-              Thinking…
+            <div className="flex items-center gap-2 text-[14px] text-violet-700 italic px-1">
+              <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+              The crystal is gathering signals…
             </div>
           )}
           {error && (
@@ -9292,66 +9371,97 @@ function ChatSheet({
           )}
         </div>
 
-        {/* Input — bigger, crystal-edged */}
-        <div className="px-3 py-3 border-t bg-white"
-          style={{ borderTopColor: "rgba(167,139,250,0.25)" }}>
-          <div className="flex items-end gap-2">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  if (input.trim()) onSend(input);
-                }
-              }}
-              placeholder={loading ? "Waiting…" : "Type your question…"}
-              rows={4}
-              disabled={loading}
-              className="flex-1 px-3.5 py-2.5 text-[16px] rounded-xl outline-none resize-none max-h-56 leading-snug transition-all"
-              style={{
-                minHeight: 100,
-                background: "rgba(255,255,255,0.95)",
-                border: "1.5px solid #C4B5FD",
-                boxShadow: "inset 0 1px 2px rgba(91,33,182,0.08), 0 1px 3px rgba(139,92,246,0.06)",
-                color: "#1E293B",
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.border = "1.5px solid #8B5CF6";
-                e.currentTarget.style.boxShadow = "inset 0 1px 2px rgba(91,33,182,0.10), 0 0 0 3px rgba(167,139,250,0.20), 0 2px 6px rgba(139,92,246,0.15)";
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.border = "1.5px solid #C4B5FD";
-                e.currentTarget.style.boxShadow = "inset 0 1px 2px rgba(91,33,182,0.08), 0 1px 3px rgba(139,92,246,0.06)";
-              }}
-            />
+        {/* Oracle input console */}
+        <div
+          className="px-3 py-3.5 border-t"
+          style={{
+            borderTopColor: "rgba(167,139,250,0.30)",
+            background:
+              "linear-gradient(180deg, rgba(245,243,255,0.65) 0%, #FFFFFF 100%)",
+          }}
+        >
+          <div className="flex items-end gap-2.5">
+            <div className="flex-1 relative">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    if (input.trim()) onSend(input);
+                  }
+                }}
+                placeholder={loading ? "Channeling…" : "Whisper your question to the crystal…"}
+                rows={6}
+                disabled={loading}
+                className="w-full px-4 py-3 text-[16px] rounded-2xl outline-none resize-none max-h-72 leading-relaxed transition-all"
+                style={{
+                  minHeight: 150,
+                  background: "rgba(255,255,255,0.98)",
+                  border: "1.5px solid #C4B5FD",
+                  boxShadow:
+                    "inset 0 1.5px 3px rgba(91,33,182,0.10), 0 2px 8px rgba(139,92,246,0.10), 0 0 20px rgba(196,181,253,0.18)",
+                  color: "#1E1B4B",
+                  fontFamily: SERIF,
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.border = "1.5px solid #8B5CF6";
+                  e.currentTarget.style.boxShadow =
+                    "inset 0 1.5px 3px rgba(91,33,182,0.12), 0 0 0 4px rgba(167,139,250,0.22), 0 4px 14px rgba(139,92,246,0.25), 0 0 28px rgba(196,181,253,0.30)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.border = "1.5px solid #C4B5FD";
+                  e.currentTarget.style.boxShadow =
+                    "inset 0 1.5px 3px rgba(91,33,182,0.10), 0 2px 8px rgba(139,92,246,0.10), 0 0 20px rgba(196,181,253,0.18)";
+                }}
+              />
+              {/* Iridescent prism top edge on the textarea */}
+              <span
+                className="absolute top-0 left-2 right-2 h-[2px] pointer-events-none rounded-full"
+                style={{
+                  background:
+                    "linear-gradient(90deg, transparent 0%, rgba(196,181,253,0.85) 20%, rgba(244,114,182,0.55) 50%, rgba(196,181,253,0.85) 80%, transparent 100%)",
+                }}
+              />
+            </div>
             <button
               onClick={() => { if (input.trim()) onSend(input); }}
               disabled={loading || !input.trim()}
-              className="relative flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 disabled:opacity-50 overflow-hidden"
+              className="relative flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center transition active:scale-[0.92] active:translate-y-0.5 disabled:opacity-50 overflow-hidden"
               style={input.trim() && !loading ? {
-                background: "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
+                background:
+                  "radial-gradient(ellipse 70% 60% at 30% 25%, rgba(255,255,255,0.55) 0%, rgba(196,181,253,0.20) 40%, transparent 60%), " +
+                  "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
                 border: "2px solid #4C1D95",
-                boxShadow: "0 3px 0 #4C1D95, 0 5px 14px rgba(139,92,246,0.50), 0 0 18px rgba(196,181,253,0.45), inset 0 1.5px 2px rgba(255,255,255,0.60), inset 0 -2px 4px rgba(0,0,0,0.20)",
+                boxShadow:
+                  "0 3px 0 #4C1D95, 0 6px 18px rgba(139,92,246,0.55), 0 0 24px rgba(196,181,253,0.55), 0 0 48px rgba(167,139,250,0.30), inset 0 1.5px 2px rgba(255,255,255,0.65), inset 0 -2px 4px rgba(0,0,0,0.20)",
               } : {
                 background: "linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 50%, #DDD6FE 100%)",
                 border: "1.5px solid #C4B5FD",
                 boxShadow: "0 2px 0 #A78BFA, inset 0 1.5px 2px rgba(255,255,255,1)",
               }}
-              aria-label="Send message"
+              aria-label="Send to the crystal"
             >
               {input.trim() && !loading && (
-                <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
-                  style={{
-                    background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
-                    borderRadius: "9999px 9999px 50% 50%",
-                  }} />
+                <>
+                  <span className="absolute top-1 left-2 right-2 h-[45%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "9999px 9999px 50% 50%",
+                    }} />
+                  {/* Tiny sparkle on the send orb */}
+                  <span className="absolute top-[18%] left-[26%] w-1 h-1 rounded-full pointer-events-none"
+                    style={{ background: "rgba(255,255,255,1)", boxShadow: "0 0 4px rgba(255,255,255,0.9)" }} />
+                </>
               )}
-              <ArrowRight className="w-5 h-5 text-white relative" strokeWidth={3} />
+              <ArrowRight className="w-6 h-6 text-white relative" strokeWidth={2.75} />
             </button>
           </div>
-          <p className="text-[11px] text-violet-700/70 italic mt-2 text-center">
+          <p
+            className="text-[11px] text-violet-700/70 italic mt-2.5 text-center"
+            style={{ fontFamily: SERIF }}
+          >
             Informational only. Not financial advice.
           </p>
         </div>
