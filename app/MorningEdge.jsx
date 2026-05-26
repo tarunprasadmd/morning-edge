@@ -3699,6 +3699,21 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               suggestions.push({ text, prefill });
             };
 
+            // Detect direction (buy/sell/unknown) from a smart-money move's text.
+            // Brief route writes moves as "Pelosi bought $50K NVDA" or
+            // "Senator sold ETOR" or summary-style "most sold ETOR". Parse rather
+            // than assume — assumption caused the "Congress buying ETOR" mismatch
+            // when ETOR was actually most sold.
+            const getMoveDirection = (text) => {
+              if (!text || typeof text !== "string") return "unknown";
+              const t = text.toLowerCase();
+              const sellWords = [" sold ", " sells ", " sell ", " disposed", " exited", " exit ", " trim", " reduced", "most sold", "selling", "sale of"];
+              const buyWords = [" bought ", " buys ", " buy ", " purchased", " added", " adds ", " acquired", " established", "most bought", "buying", "purchase of"];
+              for (const w of sellWords) if (t.includes(w)) return "sell";
+              for (const w of buyWords) if (t.includes(w)) return "buy";
+              return "unknown";
+            };
+
             // [1] Top conviction watch position — "should I add/hold?"
             if (Array.isArray(brief?.conviction_watch) && brief.conviction_watch.length > 0) {
               const top = brief.conviction_watch[0];
@@ -3718,11 +3733,26 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             if (Array.isArray(brief?.smart_money?.whale_moves)) {
               for (const m of brief.smart_money.whale_moves) {
                 if (m?.ticker && userTickers.has(m.ticker)) {
-                  pushIfNew(
-                    m.ticker,
-                    `Whale just bought ${m.ticker} — follow?`,
-                    `An insider just filed a Form 4 buy on ${m.ticker}, which I already hold. Walk me through whether to add given my cost basis.`
-                  );
+                  const dir = getMoveDirection(m.text);
+                  if (dir === "sell") {
+                    pushIfNew(
+                      m.ticker,
+                      `Insider sold ${m.ticker} — worry?`,
+                      `An insider just filed a Form 4 SALE on ${m.ticker}, which I already hold. Walk me through the implications and whether I should be concerned.`
+                    );
+                  } else if (dir === "buy") {
+                    pushIfNew(
+                      m.ticker,
+                      `Whale just bought ${m.ticker} — follow?`,
+                      `An insider just filed a Form 4 buy on ${m.ticker}, which I already hold. Walk me through whether to add given my cost basis.`
+                    );
+                  } else {
+                    pushIfNew(
+                      m.ticker,
+                      `Insider activity on ${m.ticker}?`,
+                      `There's recent insider activity on ${m.ticker} which I hold. Walk me through what happened and what it means.`
+                    );
+                  }
                   break;
                 }
               }
@@ -3732,11 +3762,26 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             if (Array.isArray(brief?.smart_money?.congress_moves)) {
               for (const m of brief.smart_money.congress_moves) {
                 if (m?.ticker) {
-                  pushIfNew(
-                    m.ticker,
-                    `Why is Congress buying ${m.ticker}?`,
-                    `Congressional traders filed a recent buy on ${m.ticker}. What's the thesis and should I look at it?`
-                  );
+                  const dir = getMoveDirection(m.text);
+                  if (dir === "sell") {
+                    pushIfNew(
+                      m.ticker,
+                      `Why is Congress selling ${m.ticker}?`,
+                      `Congressional traders filed a recent SALE on ${m.ticker}. What's behind it and what does it imply for the name?`
+                    );
+                  } else if (dir === "buy") {
+                    pushIfNew(
+                      m.ticker,
+                      `Why is Congress buying ${m.ticker}?`,
+                      `Congressional traders filed a recent buy on ${m.ticker}. What's the thesis and should I look at it?`
+                    );
+                  } else {
+                    pushIfNew(
+                      m.ticker,
+                      `Congress activity on ${m.ticker}?`,
+                      `There's recent Congressional STOCK Act activity on ${m.ticker}. Walk me through what they did and the implications.`
+                    );
+                  }
                   break;
                 }
               }
