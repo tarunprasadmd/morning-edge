@@ -1093,6 +1093,13 @@ export default function MorningEdge() {
   const [playbookSortDir, setPlaybookSortDir] = useState("desc");
   // For Action column 3-way sort: which action group shows first (TRIM/ADD/HOLD)
   const [actionLeadType, setActionLeadType] = useState("TRIM");
+  // Filter pill inside the Ticker header — cycles ALL → HOLD → TRIM → ADD → WATCH.
+  // When active (not ALL), table shows only matching positions sorted by urgency:
+  //   TRIM → biggest unrealized profit first (lock gains)
+  //   ADD  → biggest dip / lowest gain first (best entries)
+  //   HOLD → biggest position value first
+  //   WATCH → biggest absolute today move first
+  const [playbookActionFilter, setPlaybookActionFilter] = useState("ALL");
   // Asset-class filter for Playbook + Discovery: "all" | "stocks" | "crypto"
   const [playbookAssetType, setPlaybookAssetType] = useState("all");
   // User overrides for AI action recommendations — tap chip to cycle TRIM/ADD/HOLD.
@@ -4716,6 +4723,33 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     return dirMult * (av - bv);
                   });
 
+                  // Apply action filter + urgency sort. When filter !== "ALL"
+                  // we override the user's chosen sort with an urgency rank
+                  // specific to the action (most actionable first).
+                  let displayedEntries = entries;
+                  if (playbookActionFilter !== "ALL") {
+                    displayedEntries = entries
+                      .filter((e) => (e.action || "HOLD") === playbookActionFilter)
+                      .sort((a, b) => {
+                        if (playbookActionFilter === "TRIM") {
+                          // biggest unrealized $ profit first — most gain to lock
+                          return (b.totalDollar || 0) - (a.totalDollar || 0);
+                        }
+                        if (playbookActionFilter === "ADD") {
+                          // biggest dip first (lowest todayPct) — best entries
+                          return (a.todayPct ?? 999) - (b.todayPct ?? 999);
+                        }
+                        if (playbookActionFilter === "HOLD") {
+                          // biggest position value first
+                          const av = (a.qty || 0) * (a.currentPrice || 0);
+                          const bv = (b.qty || 0) * (b.currentPrice || 0);
+                          return bv - av;
+                        }
+                        // WATCH: biggest absolute today move first
+                        return Math.abs(b.todayPct || 0) - Math.abs(a.todayPct || 0);
+                      });
+                  }
+
                   // Helper for sort button styling — CANDY CRUSH glossy
                   const SortBtn = ({ id, label }) => {
                     const active = playbookSortBy === id;
@@ -4864,36 +4898,77 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                 style={{
                                   background: "linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0) 100%)",
                                 }} />
-                              {/* Sticky-left: Ticker (sortable alphabetically) — width 140 matches compacted data row */}
+                              {/* Sticky-left: Ticker (sort) + action filter pill — width 120 */}
                               {(() => {
                                 const active = playbookSortBy === "ticker";
+                                // Cycle: ALL → HOLD → TRIM → ADD → WATCH → ALL
+                                const cycleOrder = ["ALL", "HOLD", "TRIM", "ADD", "WATCH"];
+                                const nextFilter = () => {
+                                  const idx = cycleOrder.indexOf(playbookActionFilter);
+                                  const next = cycleOrder[(idx + 1) % cycleOrder.length];
+                                  setPlaybookActionFilter(next);
+                                };
+                                // Match row badge palette
+                                const pillStyle = {
+                                  ALL:   { bg: "rgba(255,255,255,0.95)", fg: "#1E3A8A", border: "rgba(255,255,255,0.65)" },
+                                  TRIM:  { bg: "#FEE2E2", fg: "#7F1D1D", border: "#F87171" },
+                                  ADD:   { bg: "#DCFCE7", fg: "#064E3B", border: "#4ADE80" },
+                                  HOLD:  { bg: "#FEF3C7", fg: "#78350F", border: "#FBBF24" },
+                                  WATCH: { bg: "#FEF3C7", fg: "#78350F", border: "#FBBF24" },
+                                }[playbookActionFilter] || { bg: "rgba(255,255,255,0.95)", fg: "#1E3A8A", border: "rgba(255,255,255,0.65)" };
                                 return (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      if (active) {
-                                        setPlaybookSortDir(playbookSortDir === "desc" ? "asc" : "desc");
-                                      } else {
-                                        setPlaybookSortBy("ticker");
-                                        setPlaybookSortDir("asc");
-                                      }
-                                    }}
-                                    className="px-3 py-2 flex items-center justify-start gap-0.5 sticky left-0 z-[2] flex-shrink-0 transition active:scale-[0.96] cursor-pointer overflow-hidden relative"
+                                  <div
+                                    className="sticky left-0 z-[2] flex-shrink-0 flex items-center gap-1 px-2 py-2 relative overflow-hidden"
                                     style={{
                                       width: 120,
                                       background: active ? headerStripActiveHighlight : headerStripBg,
                                       borderRight: `1px solid ${headerStripBorder}`,
-                                      color: active ? headerStripActiveText : "#FFFFFF",
-                                      fontWeight: 800,
-                                      textShadow: active ? "0 1px 0 rgba(255,255,255,0.65)" : "0 1px 2px rgba(0,0,0,0.55)",
-                                    }}>
+                                    }}
+                                  >
                                     {active && (
                                       <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
                                         style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)", borderRadius: "0.4rem 0.4rem 50% 50%" }} />
                                     )}
-                                    <span className="relative">Ticker</span>
-                                    {active && <span className="relative text-[10px]">{playbookSortDir === "desc" ? "▼" : "▲"}</span>}
-                                  </button>
+                                    {/* Ticker label — tappable to sort by symbol */}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (active) {
+                                          setPlaybookSortDir(playbookSortDir === "desc" ? "asc" : "desc");
+                                        } else {
+                                          setPlaybookSortBy("ticker");
+                                          setPlaybookSortDir("asc");
+                                        }
+                                      }}
+                                      className="relative flex items-center gap-0.5 transition active:scale-[0.96] cursor-pointer"
+                                      style={{
+                                        color: active ? headerStripActiveText : "#FFFFFF",
+                                        fontWeight: 800,
+                                        textShadow: active ? "0 1px 0 rgba(255,255,255,0.65)" : "0 1px 2px rgba(0,0,0,0.55)",
+                                        background: "transparent",
+                                        padding: 0,
+                                      }}
+                                    >
+                                      <span>Ticker</span>
+                                      {active && <span className="text-[10px]">{playbookSortDir === "desc" ? "▼" : "▲"}</span>}
+                                    </button>
+                                    {/* Action filter pill — cycles ALL → HOLD → TRIM → ADD → WATCH */}
+                                    <button
+                                      type="button"
+                                      onClick={(ev) => { ev.stopPropagation(); nextFilter(); }}
+                                      className="relative ml-auto text-[9px] font-extrabold uppercase tracking-wider rounded-full px-1.5 py-0.5 transition active:scale-[0.94] flex-shrink-0"
+                                      style={{
+                                        background: pillStyle.bg,
+                                        color: pillStyle.fg,
+                                        border: `1px solid ${pillStyle.border}`,
+                                        boxShadow: "0 1px 2px rgba(0,0,0,0.20), inset 0 1px 1px rgba(255,255,255,0.65)",
+                                      }}
+                                      aria-label={`Filter by action — currently ${playbookActionFilter}. Tap to cycle.`}
+                                      title="Filter by action"
+                                    >
+                                      {playbookActionFilter}
+                                    </button>
+                                  </div>
                                 );
                               })()}
                               <ColHead id="qty"         label="Qty"     width={56} />
@@ -4906,7 +4981,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               <ColHead id="totalPct"    label="Total %" width={74} />
                             </div>
                             {/* DATA ROWS */}
-                            {entries.map((entry, i) => (
+                            {displayedEntries.map((entry, i) => (
                               <PlaybookColumnRow
                                 key={`pb-${entry.symbol}-${i}`}
                                 entry={entry}
