@@ -612,6 +612,111 @@ const ROUTINES = [
 // Pick today's routine deterministically by day of week
 const todayRoutine = () => ROUTINES[new Date().getDay() % ROUTINES.length];
 
+// Exercise slug map — maps an exercise name in ROUTINES to an image slug.
+// Multiple names can share a slug (e.g. the 4 box-breathing sub-steps all
+// point to "box-breathing"). Used by WorkoutExerciseImage to find the right
+// PNG in /public/exercises/{slug}.png. Files Tarun generates via ChatGPT
+// must be saved with these exact filenames so the app picks them up.
+const EXERCISE_SLUG_MAP = {
+  // Sunday
+  "Slow neck rolls": "slow-neck-rolls",
+  "Shoulder shrugs": "shoulder-shrugs",
+  "Seated waist twist": "seated-waist-twist",
+  "In through the nose, 4 counts": "box-breathing",
+  "Hold gently, 4 counts": "box-breathing",
+  "Out through the mouth, 4 counts": "box-breathing",
+  "Hold empty, 4 counts": "box-breathing",
+  "Chair sit-to-stand": "chair-sit-to-stand",
+  "Heel raises at the counter": "heel-raises",
+  "Standing forward fold (gentle)": "standing-forward-fold",
+  "Standing forward fold": "standing-forward-fold",
+  "Doorway chest opener": "doorway-chest-opener",
+  "Doorway chest stretch": "doorway-chest-opener",
+  // Monday
+  "Marching in place": "marching-in-place",
+  "Ankle circles": "ankle-circles",
+  "Inhale 4, exhale 6": "long-exhale-breathing",
+  "Continue for 2–3 minutes": "long-exhale-breathing",
+  "Wall sit (short)": "wall-sit",
+  "Step-ups on the bottom stair": "step-ups",
+  "Seated figure-4 stretch": "seated-figure-4",
+  "Seated figure-4": "seated-figure-4",
+  "Standing hamstring stretch": "standing-hamstring-stretch",
+  // Tuesday
+  "Cat-cow (standing or seated)": "cat-cow-standing",
+  "Standing cat-cow": "cat-cow-standing",
+  "Arm reaches across the body": "cross-body-arm-reach",
+  "Breathe in, 4 counts (nose)": "4-7-8-breath",
+  "Hold, 7 counts": "4-7-8-breath",
+  "Out through the mouth, 8 counts": "4-7-8-breath",
+  "One-foot stand (near a counter)": "one-foot-stand",
+  "Standing knee lifts": "standing-knee-lifts",
+  "Neck side stretch": "neck-side-stretch",
+  // Wednesday
+  "Shoulder rolls": "shoulder-rolls",
+  "Side bends": "side-bends",
+  "Inhale 5, exhale 5": "coherent-breathing",
+  "Continue for 3 minutes": "coherent-breathing",
+  "Hip hinge with chair behind you": "hip-hinge",
+  "Standing leg lift to the back": "standing-back-leg-lift",
+  "Seated forward fold": "seated-forward-fold",
+  "Seated spinal twist": "seated-spinal-twist",
+  // Thursday
+  "Heel-to-toe walking": "heel-to-toe-walking",
+  "Big arm circles": "big-arm-circles",
+  "Three quick inhales, one long exhale": "energizing-breath",
+  "Wall push-ups": "wall-push-up",
+  "Standing quad stretch (with support)": "standing-quad-stretch",
+  // Friday
+  "Hip circles": "hip-circles",
+  "Right thumb closes right nostril": "alternate-nostril-breathing",
+  "Switch": "alternate-nostril-breathing",
+  "Continue alternating": "alternate-nostril-breathing",
+  "Seated dead bug (gentle)": "seated-dead-bug",
+  "Wall plank": "wall-plank",
+  // Saturday
+  "Reach up, fold down": "reach-up-fold-down",
+  "Side-to-side gentle lunges": "side-lunge",
+  "Hand on belly, hand on chest": "belly-breathing",
+  "Make the exhale twice as long": "belly-breathing",
+  "Sit-to-stand × wall push-up × heel raise": "chair-sit-to-stand",
+  "Legs up the wall (or on a chair seat)": "legs-up-the-wall",
+  "Reclined butterfly (or seated wide-knee)": "reclined-butterfly",
+};
+
+const slugForExercise = (e) => (e && EXERCISE_SLUG_MAP[e.name]) || null;
+
+// WorkoutExerciseImage — fills tile edge-to-edge from /exercises/{slug}.png.
+// Same border-clean pattern as YogaPoseImage: image is absolute inset-0,
+// objectFit cover, parent has overflow-hidden so the rounded corners clip
+// the image. Falls back to clean amber text card if image fails.
+function WorkoutExerciseImage({ exercise, className = "", style = {} }) {
+  const slug = slugForExercise(exercise);
+  const [failed, setFailed] = React.useState(!slug);
+  if (failed) {
+    return (
+      <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-2 ${className}`}
+        style={{
+          background: "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)",
+          ...style,
+        }}>
+        <p className="text-[10.5px] font-bold leading-tight" style={{ color: "#78350F" }}>
+          {exercise && exercise.name}
+        </p>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={`/exercises/${slug}.png`}
+      alt={exercise.name}
+      className={`absolute inset-0 w-full h-full ${className}`}
+      style={{ objectFit: "cover", objectPosition: "center center", ...style }}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 // ─── Decision parser ────────────────────────────────────────────────
 // Decisions come from the model as free-form strings like:
 //   "Trim NVDA in Fidelity TOD: 30 of 75 sh before earnings"
@@ -5851,6 +5956,39 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           <p className="text-[13px] text-amber-900 italic leading-snug mb-3 font-medium">
                             {headline} · {totalMin} min total
                           </p>
+                          {/* Exercise image grid — dedup by slug, today's unique moves.
+                              Borders match yoga grid (overflow-hidden + aspectRatio 1/1
+                              + objectFit cover) — clipped to rounded corners, no inner
+                              frame. Labels baked into images, no overlay needed. */}
+                          {(() => {
+                            const allExercises = todayRoutine().segments.flatMap((s) => s.exercises || []);
+                            const seen = new Set();
+                            const uniqueExercises = [];
+                            for (const ex of allExercises) {
+                              const slug = slugForExercise(ex);
+                              if (!slug || seen.has(slug)) continue;
+                              seen.add(slug);
+                              uniqueExercises.push(ex);
+                            }
+                            if (uniqueExercises.length === 0) return null;
+                            return (
+                              <div className="grid grid-cols-3 gap-2 mb-3">
+                                {uniqueExercises.map((ex, i) => (
+                                  <div
+                                    key={slugForExercise(ex) || `ex-${i}`}
+                                    className="relative rounded-xl overflow-hidden"
+                                    style={{
+                                      aspectRatio: "1 / 1",
+                                      background: "#FFFFFF",
+                                      border: "1.5px solid #FBBF24",
+                                      boxShadow: "0 1.5px 0 #D97706, 0 2px 4px rgba(245,158,11,0.20)",
+                                    }}>
+                                    <WorkoutExerciseImage exercise={ex} />
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })()}
                           {/* Block list — what's in today's routine */}
                           {blocks.length > 0 && (
                             <div className="space-y-1.5 mb-3">
