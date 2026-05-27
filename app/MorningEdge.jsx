@@ -750,133 +750,42 @@ const DECISION_THEMES = {
 const buildDemoBrief = (name, portfolio, holdings = []) => ({
   affirmation: "Steady hands. Clear eyes. The plan beats the impulse.",
   market_pulse: {
-    tone: "cautious",
-    summary: "Futures mixed into a heavy week with central banks on deck. Energy firm; semis stretched. Patient setups beat aggressive ones.",
+    tone: "neutral",
+    summary: "Sample brief — connect your portfolio and a live brief will appear here, personalized to your positions and the day's smart-money flow.",
     key_levels: [
-      "S&P futures roughly flat",
-      "VIX climbing toward 19",
-      "Crude near $96",
-      "Megacap earnings on deck",
+      "Live data will populate when the brief refreshes",
+      "Tap Generate Brief above to pull a fresh read",
     ],
   },
+  // Smart money arrays are EMPTY in the demo brief — fake whale / congressional /
+  // institutional data could mislead a user. Live values populate from Quiver
+  // when the real brief route runs.
   smart_money: {
     summary: {
-      most_bought: ["NVDA", "MSFT"],
-      most_sold: ["AAPL", "TSLA"],
-      net_bullish_sectors: ["AI Infrastructure", "Nuclear / Power", "Critical Minerals"],
-      net_bearish_sectors: ["Consumer Discretionary"],
+      most_bought: [],
+      most_sold: [],
+      net_bullish_sectors: [],
+      net_bearish_sectors: [],
     },
-    sector_heatmap: [
-      { sector: "AI Infrastructure", direction: "buying", intensity: 5 },
-      { sector: "Semiconductors", direction: "buying", intensity: 4 },
-      { sector: "Nuclear / Power", direction: "buying", intensity: 4 },
-      { sector: "Critical Minerals", direction: "buying", intensity: 3 },
-      { sector: "Biotech (Oncology)", direction: "buying", intensity: 2 },
-      { sector: "Financials", direction: "neutral", intensity: 1 },
-      { sector: "Consumer Discretionary", direction: "selling", intensity: 3 },
-      { sector: "Real Estate", direction: "selling", intensity: 2 },
-    ],
-    whale_moves: [
-      {
-        text: "Berkshire Hathaway trimmed AAPL ~13% (Q1 13F)",
-        ticker: "AAPL",
-        source_url: "https://stockcircle.com/portfolio/warren-buffett",
-      },
-      {
-        text: "Bridgewater added 2.3M NVDA shares last quarter",
-        ticker: "NVDA",
-        source_url: "https://whalewisdom.com/filer/bridgewater-associates-lp",
-      },
-      {
-        text: "Pershing Square initiated 1.2M GOOGL position",
-        ticker: "GOOGL",
-        source_url: "https://stockcircle.com/portfolio/bill-ackman",
-      },
-      {
-        text: "Tepper added 800K AMZN, doubled META stake",
-        ticker: "META",
-        source_url: "https://stockcircle.com/portfolio/david-tepper",
-      },
-      {
-        text: "Druckenmiller built new 2.1M position in TSM",
-        ticker: "TSM",
-        source_url: "https://stockcircle.com/portfolio/stanley-druckenmiller",
-      },
-    ],
-    congress_moves: [
-      {
-        text: "Pelosi disclosed $1-5M META calls (4/12)",
-        ticker: "META",
-        source_url: "https://www.capitoltrades.com/politicians/P000197",
-      },
-      {
-        text: "Sen. Tuberville bought MSFT $50-100K (3/28)",
-        ticker: "MSFT",
-        source_url: "https://www.capitoltrades.com/trades?txType=buy&assetType=stock",
-      },
-      {
-        text: "Rep. Crenshaw added LMT $15-50K (4/05)",
-        ticker: "LMT",
-        source_url: "https://www.quiverquant.com/congresstrading/",
-      },
-      {
-        text: "Sen. Whitehouse disclosed CEG buy $50-100K (4/08)",
-        ticker: "CEG",
-        source_url: "https://www.capitoltrades.com/trades",
-      },
-      {
-        text: "Rep. Greene added NVDA $15-50K (4/10)",
-        ticker: "NVDA",
-        source_url: "https://www.quiverquant.com/congresstrading/",
-      },
-    ],
-    hedge_fund_moves: [
-      {
-        text: "Citadel rotating into nuclear: VST, CEG, OKLO",
-        ticker: "OKLO",
-        source_url: "https://hedgefollow.com/funds/Citadel+Advisors+LLC",
-      },
-      {
-        text: "Renaissance added 4M VRT shares (data center play)",
-        ticker: "VRT",
-        source_url: "https://whalewisdom.com/filer/renaissance-technologies-llc",
-      },
-      {
-        text: "Two Sigma initiated 1.5M IONQ stake last quarter",
-        ticker: "IONQ",
-        source_url: "https://whalewisdom.com/filer/two-sigma-investments-lp",
-      },
-      {
-        text: "Millennium accumulated 3.2M MP shares (rare earths)",
-        ticker: "MP",
-        source_url: "https://whalewisdom.com/filer/millennium-management-llc",
-      },
-      {
-        text: "Coatue rotated out of TSLA, added GOOGL + META",
-        ticker: "GOOGL",
-        source_url: "https://hedgefollow.com/funds/Coatue+Management",
-      },
-    ],
+    sector_heatmap: [],
+    whale_moves: [],
+    congress_moves: [],
+    hedge_fund_moves: [],
+    lobbying_moves: [],
   },
-  // ─── Today's Edge — Tier 1 alerts ────────────────────────────────────────
+  // Todays edge is portfolio-aware — empty in the demo so it does not reference
+  // tickers the user does not own.
   todays_edge: {
-    earnings_alerts: [
-      { ticker: "AAPL", when: "today after close", your_shares: 35 },
-    ],
-    binary_catalysts: [
-      { ticker: "IONQ", event: "earnings 5/6", context: "after 41% run-up — consider trim" },
-      { ticker: "MP", event: "earnings 5/7", context: "rare earths thesis check-in" },
-    ],
-    risk_flags: [
-      { ticker: "GE", flag: "44% of Roth IRA — concentration risk", suggested_action: "trim toward 20 shares" },
-    ],
+    earnings_alerts: [],
+    binary_catalysts: [],
+    risk_flags: [],
   },
   conviction_watch: (portfolio.slice(0, 5).length ? portfolio.slice(0, 5) : ["SPY", "QQQ", "AAPL"]).map((t, i) => ({
     ticker: t,
     signal: ["hold", "add", "hold", "trim", "hold"][i] || "hold",
     why_now: [
       "Earnings cycle near. Implied move ~4-6%. Position size already meaningful.",
-      "Multiple compressed after recent pullback; thematic tailwinds intact for AI infra spend.",
+      "Multiple compressed after recent pullback; thematic tailwinds intact.",
       "Thesis unchanged: cash flow growth + share buyback. No catalyst to act.",
       "Up 30%+ over six weeks. Take some off into strength — keep core position.",
       "Slow consolidation. Wait for breakout volume before adding.",
@@ -884,27 +793,9 @@ const buildDemoBrief = (name, portfolio, holdings = []) => ({
     note: ["Hold through earnings.", "Add on weakness.", "Thesis intact.", "Lock in gains.", "Steady core."][i] || "Steady core.",
     action: i === 1 ? "Add 10 shares on dip below recent support." : i === 3 ? "Trim 25% — lock partial gain into strength." : undefined,
   })),
-  // ─── On Your Radar — thematic stocks user does not own but should watch ───
-  radar_watch: [
-    {
-      ticker: "TSM",
-      theme: "Semiconductors · AI infra",
-      headline: "TSMC capex guidance raised — accelerating fab buildout",
-      why_now: "Picks-and-shovels play for the entire AI chip cycle. Whale accumulation visible.",
-    },
-    {
-      ticker: "CEG",
-      theme: "Nuclear · AI energy",
-      headline: "Constellation tightening data-center power deals",
-      why_now: "Nuclear-AI thesis is your conviction zone. Watch for entry on any pullback.",
-    },
-    {
-      ticker: "MP",
-      theme: "Rare earths · Critical minerals",
-      headline: "Mountain Pass volumes ramping; pricing firm",
-      why_now: "China export restrictions tighten supply. You already track this on watchlist.",
-    },
-  ],
+  // Radar watch is curated thematic discovery — empty in demo so it does not
+  // suggest tickers / themes that may not match the user's interests.
+  radar_watch: [],
   mindset: {
     gratitude: (() => {
       // Rotates daily through three voices: Stoic warrior, Quiet power, Athlete mindset
@@ -1633,11 +1524,15 @@ export default function MorningEdge() {
           prev.map((h) => {
             const p = prices[h.symbol];
             if (!p) return h;
+            // Store intraday data SEPARATELY. Do NOT overwrite h.gainPct —
+            // that's the broker's reported total gain from CSV and overwriting
+            // it with Yahoo's intraday changePct made the Playbook show
+            // unrealized-since-cost where "Today %" was supposed to be.
             return {
               ...h,
               currentPrice: p.price,
-              gainPct: p.changePct,
-              dayChange: p.change,
+              dayChange: p.change,         // intraday $ change per share
+              intradayPct: p.changePct,    // intraday % change (separate from h.gainPct)
             };
           })
         );
@@ -4093,6 +3988,131 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
             );
           })()}
 
+          {/* ─── PRE-POP SCAN CARD ──────────────────────────────────────
+              Renders when the brief route populates brief.pre_pop_candidates.
+              Expected shape:
+                pre_pop_candidates: [
+                  { ticker, conviction: "HIGH"|"MEDIUM"|"LOW",
+                    signal: "10x revenue Q1, Needham $23 target, call volume 3x",
+                    entry: 9.72, target: 15, stop: 8.80 }
+                ]
+              The card slots above Market Pulse so the day's highest-conviction
+              setups land first in the user's eyes. Backward-compatible — if the
+              field is missing, nothing renders. */}
+          {Array.isArray(brief?.pre_pop_candidates) && brief.pre_pop_candidates.length > 0 && (
+            <div
+              className="relative rounded-2xl overflow-hidden"
+              style={{
+                background:
+                  "radial-gradient(ellipse 90% 60% at 25% 20%, rgba(255,255,255,0.85) 0%, rgba(254,243,199,0.45) 35%, transparent 70%), " +
+                  "linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 60%, #FCD34D 100%)",
+                border: "1.5px solid #D97706",
+                boxShadow:
+                  "0 4px 18px rgba(217,119,6,0.25), 0 0 28px rgba(252,211,77,0.40), inset 0 1.5px 3px rgba(255,255,255,0.85)",
+              }}
+            >
+              <span className="absolute top-0 left-2 right-2 h-[2px] pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(90deg, transparent 0%, #D97706 25%, #F59E0B 50%, #D97706 75%, transparent 100%)",
+                }}
+              />
+              <div className="relative px-4 pt-3.5 pb-3">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[18px]">🔍</span>
+                    <p className="text-[12px] uppercase tracking-[0.18em] font-bold text-amber-900 leading-none">
+                      Pre-Pop Scan · {todayKey}
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-amber-800/75 uppercase tracking-wider font-bold">
+                    {brief.pre_pop_candidates.length} setup{brief.pre_pop_candidates.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {brief.pre_pop_candidates.slice(0, 6).map((c, i) => {
+                    const conviction = (c?.conviction || "LOW").toString().toUpperCase();
+                    const tier =
+                      conviction === "HIGH" ? { dot: "#059669", bg: "rgba(5,150,105,0.10)", border: "#10B981", label: "HIGH" }
+                      : conviction === "MEDIUM" ? { dot: "#D97706", bg: "rgba(217,119,6,0.10)", border: "#F59E0B", label: "MEDIUM" }
+                      : { dot: "#64748B", bg: "rgba(100,116,139,0.10)", border: "#94A3B8", label: "LOW" };
+                    const heldSet = new Set((holdings || []).map((h) => h?.symbol).filter(Boolean));
+                    const isHeld = c?.ticker && heldSet.has(c.ticker);
+                    return (
+                      <button
+                        key={`prepop-${c?.ticker || i}`}
+                        onClick={() => {
+                          openChat(
+                            {
+                              id: `prepop-${c?.ticker || i}-${todayKey}`,
+                              type: "pre_pop",
+                              ticker: c?.ticker || null,
+                              description: `Pre-pop scan candidate. Conviction ${tier.label}. Signal: ${c?.signal || "n/a"}. Entry $${c?.entry ?? "?"} · Target $${c?.target ?? "?"} · Stop $${c?.stop ?? "?"}.`,
+                            },
+                            `Walk me through the ${c?.ticker || "this"} pre-pop setup. Confirm the smart-money sources, verify the live price, and tell me whether the entry zone still works right now.`
+                          );
+                        }}
+                        className="w-full text-left rounded-xl px-3 py-2.5 transition active:scale-[0.98] overflow-hidden"
+                        style={{
+                          background: tier.bg,
+                          border: `1px solid ${tier.border}`,
+                          boxShadow: "inset 0 1px 2px rgba(255,255,255,0.85), 0 1px 2px rgba(0,0,0,0.04)",
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: tier.dot }} />
+                            <span className="text-[10px] uppercase tracking-wider font-bold flex-shrink-0" style={{ color: tier.dot }}>
+                              {tier.label}
+                            </span>
+                            <span className="text-[14px] font-extrabold text-slate-900 truncate">
+                              {c?.ticker || "—"}
+                            </span>
+                            {c?.entry != null && (
+                              <span className="text-[12px] text-slate-700 font-medium flex-shrink-0">
+                                @ ${typeof c.entry === "number" ? c.entry.toFixed(2) : c.entry}
+                              </span>
+                            )}
+                            {isHeld && (
+                              <span className="text-[9px] uppercase font-bold rounded px-1 py-px ml-1 flex-shrink-0"
+                                style={{ background: "rgba(139,92,246,0.15)", color: "#5B21B6" }}>
+                                HELD
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {c?.signal && (
+                          <p className="text-[12px] text-slate-700 leading-snug mb-1 line-clamp-2">
+                            {c.signal}
+                          </p>
+                        )}
+                        {(c?.target != null || c?.stop != null) && (
+                          <div className="flex items-center gap-3 text-[11px] font-medium">
+                            {c?.target != null && (
+                              <span style={{ color: "#059669" }}>
+                                Target ${typeof c.target === "number" ? c.target.toFixed(2) : c.target}
+                              </span>
+                            )}
+                            {c?.stop != null && (
+                              <span style={{ color: "#DC2626" }}>
+                                Stop ${typeof c.stop === "number" ? c.stop.toFixed(2) : c.stop}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <p className="text-[10px] text-amber-800/70 italic mt-2.5 leading-tight">
+                  Pre-pop signals — verify the entry zone at the open. Tap any setup for full reasoning.
+                </p>
+              </div>
+            </div>
+          )}
+
           {visible.market_pulse && brief && brief.market_pulse && (() => {
             // Tone drives the hero color treatment so the card feels alive
             // rather than dry. Bullish = teal energy, cautious = amber care,
@@ -4441,7 +4461,19 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     // Live price data is already merged into the holding object by
                     // the parent /api/prices polling effect — read directly.
                     const currentPrice = typeof h.currentPrice === "number" ? h.currentPrice : null;
-                    const changePct = typeof h.gainPct === "number" ? h.gainPct : null;
+                    // changePct = TRUE intraday % — derived from dayChange + currentPrice
+                    // so the "% today" label is never a cost-basis-since-purchase number.
+                    // Falls back to h.intradayPct (set by polling) then null.
+                    let changePct = null;
+                    if (
+                      typeof h.dayChange === "number" &&
+                      typeof h.currentPrice === "number" &&
+                      h.currentPrice - h.dayChange !== 0
+                    ) {
+                      changePct = (h.dayChange / (h.currentPrice - h.dayChange)) * 100;
+                    } else if (typeof h.intradayPct === "number") {
+                      changePct = h.intradayPct;
+                    }
                     // Cost basis resolution — prefer explicit columns when broker
                     // provided them (set during CSV import), avoid the lossy heuristic.
                     let costBasis = 0;
@@ -4600,11 +4632,32 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   // const heldSymbols = new Set(holdings.map((h) => h.symbol));
                   // opportunities.forEach((o) => { ... });
 
-                  // Add today's $ change per holding (for sorting)
+                  // Add today's $ change per holding (for sorting and display).
+                  // todayDollar = intraday $ change per share × qty
+                  // todayPct    = derived from dayChange and currentPrice so it is
+                  //               always TRUE intraday, never mixed with cost-basis
+                  //               unrealized totals. If polling has not run yet for a
+                  //               symbol, both stay null and the column shows "—".
                   entries.forEach((e) => {
                     const h = holdings.find((hh) => hh.symbol === e.symbol);
-                    e.todayDollar = h && typeof h.dayChange === "number" ? h.dayChange * (h.qty || 0) : null;
-                    e.todayPct = e.changePct;
+                    if (h && typeof h.dayChange === "number" && (h.qty || 0) > 0) {
+                      e.todayDollar = h.dayChange * h.qty;
+                    } else {
+                      e.todayDollar = null;
+                    }
+                    if (
+                      h &&
+                      typeof h.dayChange === "number" &&
+                      typeof h.currentPrice === "number" &&
+                      h.currentPrice - h.dayChange !== 0
+                    ) {
+                      const prevClose = h.currentPrice - h.dayChange;
+                      e.todayPct = prevClose !== 0 ? (h.dayChange / prevClose) * 100 : null;
+                    } else if (h && typeof h.intradayPct === "number") {
+                      e.todayPct = h.intradayPct;
+                    } else {
+                      e.todayPct = null;
+                    }
                     e.totalDollar = e.pnl;
                     e.totalPct = e.pnlPct;
                   });
