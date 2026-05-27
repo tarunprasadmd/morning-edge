@@ -2162,6 +2162,11 @@ export default function MorningEdge() {
           : -1;
         const valCol = findCol(/current.*value|market.*value|^value$|^total.*value|usd.*value/);
 const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct)|gain.*(%|percent|pct)|return.*(%|percent|pct)/);
+        // Today's intraday P&L — Fidelity-specific columns. Broker-reported truth:
+        // for same-day buys, broker measures from actual fill price rather than
+        // Yahoo's "previous close" frame. App prefers these when present.
+        const todayDollarCol = findCol(/today.*gain.*(\$|dollar)/, /today.*\$/);
+        const todayPctCol = findCol(/today.*gain.*(%|percent|pct)/, /today.*(%|percent|pct)/);
         if (symCol === -1) {
           setCsvImportMessage({ type: "error", text: "Couldn't find a Symbol or Ticker column." });
           return;
@@ -2232,6 +2237,12 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 : null,
             value: valCol !== -1 ? parseNum(cells[valCol]) : null,
             gainPct: gainCol !== -1 ? parseNum(cells[gainCol]) : null,
+            // Today's intraday P&L straight from the broker — preferred over
+            // Yahoo dayChange × qty because broker measures same-day buys from
+            // actual fill price, not "previous close" (matters on day-of-buy
+            // and on first session after a holiday weekend).
+            csvTodayDollar: todayDollarCol !== -1 ? parseNum(cells[todayDollarCol]) : null,
+            csvTodayPct: todayPctCol !== -1 ? parseNum(cells[todayPctCol]) : null,
           });
         }
 
@@ -4461,11 +4472,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                     // Live price data is already merged into the holding object by
                     // the parent /api/prices polling effect — read directly.
                     const currentPrice = typeof h.currentPrice === "number" ? h.currentPrice : null;
-                    // changePct = TRUE intraday % — derived from dayChange + currentPrice
-                    // so the "% today" label is never a cost-basis-since-purchase number.
-                    // Falls back to h.intradayPct (set by polling) then null.
+                    // changePct = TRUE intraday % — prefer broker's CSV today %
+                    // over Yahoo-derived (broker uses fill-price baseline for
+                    // same-day buys). Falls back to dayChange-derived, then
+                    // h.intradayPct, then null.
                     let changePct = null;
-                    if (
+                    if (typeof h.csvTodayPct === "number") {
+                      changePct = h.csvTodayPct;
+                    } else if (
                       typeof h.dayChange === "number" &&
                       typeof h.currentPrice === "number" &&
                       h.currentPrice - h.dayChange !== 0
@@ -4632,20 +4646,26 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   // const heldSymbols = new Set(holdings.map((h) => h.symbol));
                   // opportunities.forEach((o) => { ... });
 
-                  // Add today's $ change per holding (for sorting and display).
-                  // todayDollar = intraday $ change per share × qty
-                  // todayPct    = derived from dayChange and currentPrice so it is
-                  //               always TRUE intraday, never mixed with cost-basis
-                  //               unrealized totals. If polling has not run yet for a
-                  //               symbol, both stay null and the column shows "—".
+                  // Today's $ and % per holding — prefer the broker's CSV
+                  // reported "Today's Gain/Loss" over our Yahoo-derived calc.
+                  // Broker uses ACTUAL fill price for same-day buys; Yahoo
+                  // uses previous trading day's close. The two disagree on
+                  // any day-of-buy and on first session after a holiday.
+                  // Broker truth wins. Fallback to Yahoo when CSV is silent.
                   entries.forEach((e) => {
                     const h = holdings.find((hh) => hh.symbol === e.symbol);
-                    if (h && typeof h.dayChange === "number" && (h.qty || 0) > 0) {
+                    // todayDollar
+                    if (h && typeof h.csvTodayDollar === "number") {
+                      e.todayDollar = h.csvTodayDollar;
+                    } else if (h && typeof h.dayChange === "number" && (h.qty || 0) > 0) {
                       e.todayDollar = h.dayChange * h.qty;
                     } else {
                       e.todayDollar = null;
                     }
-                    if (
+                    // todayPct
+                    if (h && typeof h.csvTodayPct === "number") {
+                      e.todayPct = h.csvTodayPct;
+                    } else if (
                       h &&
                       typeof h.dayChange === "number" &&
                       typeof h.currentPrice === "number" &&
