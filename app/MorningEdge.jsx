@@ -5830,7 +5830,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       boxShadow: "inset 0 1.5px 2px rgba(255,255,255,0.85)",
                     }}>
                     {(() => {
-                      const f = brief.mindset.fuel;
+                      const f = brief?.mindset?.fuel;
                       const headline = (typeof f === "string") ? f : (f && f.headline) || "10-min activation: mobility, breath, strength, cooldown";
                       const totalMin = (f && typeof f === "object" && f.total_min) || 10;
                       // Block breakdown: prefer brief's structured blocks, fall back to today's routine segments
@@ -7728,6 +7728,67 @@ function PositionDetailModal({ entry, onClose, onAsk }) {
   );
 }
 
+// ─── Exercise image map ───────────────────────────────────────────────────────
+const EXERCISE_IMAGE_MAP = {
+  "Breathe in, 4 counts (nose)": "box-breathing",
+  "Hold gently, 4 counts": "box-breathing",
+  "Out through the mouth, 4 counts": "box-breathing",
+  "Continue for 2–3 minutes": "coherent-breathing",
+  "Inhale 5, exhale 5": "coherent-breathing",
+  "Inhale 4, exhale 6": "extended-exhale-breathing",
+  "Make the exhale twice as long": "extended-exhale-breathing",
+  "Continue for 3 minutes": "resonant-breathing",
+  "Hold, 7 counts": "box-breathing",
+  "Out through the mouth, 8 counts": "box-breathing",
+  "Three quick inhales, one long exhale": "extended-exhale-breathing",
+  "Hand on belly, hand on chest": "diaphragmatic-breathing",
+  "Continue alternating": "resonant-breathing",
+  "Right thumb closes right nostril": "coherent-breathing",
+  "Switch": "coherent-breathing",
+  "In through the nose, 4 counts": "diaphragmatic-breathing",
+  "Shoulder rolls": "shoulder-rolls",
+  "Shoulder shrugs": "shoulder-shrugs",
+  "Slow neck rolls": "neck-rolls",
+  "Neck side stretch": "neck-tilts",
+  "Side bends": "standing-side-bend",
+  "Big arm circles": "arm-cross-stretch",
+  "Arm reaches across the body": "arm-cross-stretch",
+  "Hip circles": "torso-twist",
+  "Hip hinge with chair behind you": "standing-forward-fold",
+  "Marching in place": "balance-hold",
+  "Standing knee lifts": "balance-hold",
+  "One-foot stand (near a counter)": "balance-hold",
+  "Heel raises at the counter": "calf-raises",
+  "Heel-to-toe walking": "balance-hold",
+  "Step-ups on the bottom stair": "squat",
+  "Chair sit-to-stand": "squat",
+  "Sit-to-stand × wall push-up × heel raise": "wall-sit",
+  "Wall plank": "wall-sit",
+  "Wall push-ups": "wall-sit",
+  "Wall sit (short)": "wall-sit",
+  "Cat-cow (standing or seated)": "cat-cow",
+  "Standing cat-cow": "cat-cow",
+  "Standing forward fold": "standing-forward-fold",
+  "Standing forward fold (gentle)": "standing-forward-fold",
+  "Standing leg lift to the back": "balance-hold",
+  "Standing quad stretch (with support)": "high-lunge-stretch",
+  "Standing hamstring stretch": "half-lift",
+  "Doorway chest opener": "chest-opener",
+  "Doorway chest stretch": "chest-opener",
+  "Reach up, fold down": "full-body-stretch",
+  "Side-to-side gentle lunges": "low-lunge-stretch",
+  "Legs up the wall (or on a chair seat)": "supine-hamstring-stretch",
+  "Reclined butterfly (or seated wide-knee)": "butterfly-stretch",
+  "Seated forward fold": "seated-forward-fold",
+  "Seated spinal twist": "spinal-twist",
+  "Seated waist twist": "spinal-twist",
+  "Seated figure-4": "figure-4-stretch",
+  "Seated figure-4 stretch": "figure-4-stretch",
+  "Seated dead bug (gentle)": "seated-knee-pull",
+  "Ankle circles": "ankle-circles",
+  "Hold empty, 4 counts": "box-breathing",
+};
+
 function RoutineFlow({ routine, onClose, onComplete }) {
   const [segIdx, setSegIdx] = React.useState(0);
   const [secondsLeft, setSecondsLeft] = React.useState(routine.segments[0].durationSec);
@@ -7791,37 +7852,31 @@ function RoutineFlow({ routine, onClose, onComplete }) {
   const segColor = segColors[segIdx % segColors.length];
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-stretch justify-center p-0 sm:p-4">
-      <div className="w-full max-w-md bg-white sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-0 sm:p-4">
+      <div className="w-full max-w-md sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden" style={{ background: "#0F172A" }}>
         {/* Header */}
-        <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100">
+        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
           <div>
-            <p className="text-[12px] tracking-[0.2em] uppercase font-semibold text-slate-800">
+            <p className="text-[11px] tracking-[0.22em] uppercase font-bold" style={{ color: segColor }}>
               {routine.name} · Step {segIdx + 1} of {routine.segments.length}
             </p>
-            <p className="text-base font-bold text-slate-900 mt-0.5">{segment.kicker}</p>
+            <p className="text-base font-bold mt-0.5" style={{ color: "rgba(255,255,255,0.90)" }}>{segment.kicker}</p>
           </div>
           <button onClick={onClose}
             className="relative w-9 h-9 rounded-full flex items-center justify-center overflow-hidden transition active:scale-[0.92] active:translate-y-0.5"
             style={{
-              background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
-              border: "1.5px solid #64748B",
-              boxShadow: "0 2px 0 #475569, 0 3px 6px rgba(15,23,42,0.18), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(71,85,105,0.15)",
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.15)",
             }}
             aria-label="Close">
-            <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
-              style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
-                borderRadius: "9999px 9999px 50% 50%",
-              }} />
-            <X className="w-5 h-5 text-slate-800 relative" />
+            <X className="w-5 h-5 relative" style={{ color: "rgba(255,255,255,0.70)" }} />
           </button>
         </div>
 
         {/* Progress dots */}
         <div className="px-5 py-3 flex gap-1.5">
           {routine.segments.map((_, i) => (
-            <div key={i} className="flex-1 h-1 rounded-full overflow-hidden bg-slate-100">
+            <div key={i} className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.10)" }}>
               <div
                 className="h-full transition-all"
                 style={{
@@ -7834,116 +7889,154 @@ function RoutineFlow({ routine, onClose, onComplete }) {
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-6">
-          <p className="text-[12px] tracking-[0.25em] uppercase font-semibold mb-1" style={{ color: segColor }}>
-            {segment.kicker}
-          </p>
-          <h2 className="text-3xl text-slate-900 mb-4" style={{ fontFamily: SERIF, fontWeight: 500 }}>
-            {segment.title}
-          </h2>
+        <div className="flex-1 overflow-y-auto">
 
-          {/* Visual schematic for this segment */}
-          <div className="flex items-center justify-center my-4">
-            <div className="w-32 h-32 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
-              <WorkoutSchematic kicker={segment.kicker} color={segColor} size={104} />
+          {/* Segment header with icon */}
+          <div className="px-5 pt-5 pb-4 flex items-center gap-3">
+            <WorkoutSchematic kicker={segment.kicker} color={segColor} size={52} />
+            <div>
+              <p className="text-[11px] tracking-[0.28em] uppercase font-bold" style={{ color: segColor }}>
+                {segment.kicker}
+              </p>
+              <h2 className="text-[22px] font-semibold leading-tight" style={{ fontFamily: SERIF, color: "rgba(255,255,255,0.97)" }}>
+                {segment.title}
+              </h2>
             </div>
           </div>
 
-          {/* Breath rhythm visualizer for breathwork segments */}
+          {/* Breath rhythm visualizer */}
           {segment.kicker.toLowerCase().includes("breath") && (() => {
-            // Try to extract a rhythm pattern from the first exercise's name (e.g., "4-4-4-4", "4-7-8")
             const ex = segment.exercises[0];
             const match = ex && ex.name && ex.name.match(/(\d+)[\s\-·]+(\d+)(?:[\s\-·]+(\d+))?(?:[\s\-·]+(\d+))?/);
             if (!match) return null;
             const pattern = match.slice(1).filter(Boolean).join("-");
-            return <BreathRhythm pattern={pattern} color={segColor} />;
+            return <div className="px-5 mb-2"><BreathRhythm pattern={pattern} color={segColor} /></div>;
           })()}
 
-          {/* Big timer */}
-          <div className="text-center my-6">
-            <p className="text-7xl font-light tabular-nums text-slate-900" style={{ fontFamily: SERIF }}>
-              {String(minutes).padStart(1, "0")}:{String(seconds).padStart(2, "0")}
-            </p>
-            <button
-              onClick={() => setRunning(!running)}
-              className="relative mt-4 px-5 py-2.5 rounded-full text-[16px] font-bold uppercase tracking-wider transition active:scale-[0.96] active:translate-y-0.5 overflow-hidden"
-              style={{
-                background: running
-                  ? "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)"
-                  : `linear-gradient(180deg, ${segColor}DD 0%, ${segColor} 50%, ${segColor}99 100%)`,
-                border: running ? "1.5px solid #64748B" : `2px solid ${segColor}`,
-                color: running ? "#0F172A" : "#fff",
-                boxShadow: running
-                  ? "0 3px 0 #475569, 0 5px 10px rgba(15,23,42,0.20), inset 0 1.5px 2px rgba(255,255,255,1)"
-                  : `0 3px 0 ${segColor}99, 0 5px 12px ${segColor}55, inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.25)`,
-                textShadow: running ? "none" : "0 1px 1px rgba(0,0,0,0.30)",
-              }}
-            >
-              <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
-                style={{
-                  background: running
-                    ? "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)"
-                    : "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
-                  borderRadius: "9999px 9999px 50% 50%",
-                }} />
-              <span className="relative">{running ? "Pause" : secondsLeft === segment.durationSec ? "Start" : "Resume"}</span>
-            </button>
-          </div>
+          {/* Exercise cards */}
+          <div className="px-4 pb-4 space-y-4">
+            {segment.exercises.map((ex, i) => {
+              const imgSlug = EXERCISE_IMAGE_MAP[ex.name];
+              const cardAccents = [
+                { from: "#0891B2", to: "#164E63", border: "#0891B288" },
+                { from: "#7C3AED", to: "#4C1D95", border: "#7C3AED88" },
+                { from: "#D97706", to: "#78350F", border: "#D9770688" },
+                { from: "#059669", to: "#064E3B", border: "#05966988" },
+              ];
+              const accent = cardAccents[i % cardAccents.length];
+              return (
+                <div key={i} className="rounded-2xl overflow-hidden"
+                  style={{
+                    background: `linear-gradient(145deg, ${accent.from}18 0%, ${accent.to}30 100%)`,
+                    border: `1.5px solid ${accent.border}`,
+                  }}>
 
-          {/* Exercise list */}
-          <div className="mt-8 space-y-3">
-            {segment.exercises.map((ex, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[14px] font-bold text-white"
-                  style={{ backgroundColor: segColor }}>
-                  {i + 1}
-                </span>
-                <div className="flex-1">
-                  <p className="text-[16px] font-semibold text-slate-900">{ex.name}</p>
-                  <p className="text-[15px] text-slate-800 mt-0.5">{ex.cue}</p>
+                  {/* Large portrait image */}
+                  <div className="relative w-full overflow-hidden" style={{ background: "#0B1120" }}>
+                    {imgSlug ? (
+                      <img
+                        src={`/${imgSlug}.png`}
+                        alt={ex.name}
+                        className="w-full block"
+                        style={{ display: "block", maxHeight: "340px", objectFit: "contain", objectPosition: "center top" }}
+                        loading="lazy"
+                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      />
+                    ) : (
+                      <div className="w-full flex items-center justify-center" style={{ height: "200px" }}>
+                        <WorkoutSchematic kicker={segment.kicker} color={accent.from} size={80} />
+                      </div>
+                    )}
+                    {/* Gradient overlay — bottom fade for text */}
+                    <div className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
+                      style={{ background: `linear-gradient(to top, ${accent.to}EE 0%, transparent 100%)` }} />
+                    {/* Number badge */}
+                    <span className="absolute top-3 left-3 w-7 h-7 rounded-full flex items-center justify-center text-[13px] font-black text-white"
+                      style={{ background: accent.from, boxShadow: `0 2px 8px ${accent.from}99` }}>
+                      {i + 1}
+                    </span>
+                  </div>
+
+                  {/* Exercise info */}
+                  <div className="px-4 pt-3 pb-4">
+                    <p className="text-[17px] font-black leading-tight" style={{ color: accent.from }}>
+                      {ex.name}
+                    </p>
+                    <p className="text-[13px] mt-1.5 leading-relaxed" style={{ color: "rgba(255,255,255,0.70)" }}>
+                      {ex.cue}
+                    </p>
+                    {/* Audio button */}
+                    <button
+                      onClick={() => {
+                        if ('speechSynthesis' in window) {
+                          window.speechSynthesis.cancel();
+                          const u = new SpeechSynthesisUtterance(`${ex.name}. ${ex.cue}`);
+                          u.rate = 0.85;
+                          u.pitch = 1.05;
+                          window.speechSynthesis.speak(u);
+                        }
+                      }}
+                      className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold transition active:scale-[0.96]"
+                      style={{
+                        background: `${accent.from}22`,
+                        border: `1px solid ${accent.from}55`,
+                        color: accent.from,
+                      }}>
+                      <span>🔊</span>
+                      <span>Hear instructions</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
-        {/* Footer nav */}
-        <div className="px-5 py-4 border-t border-slate-100 flex items-center gap-3">
-          <button
-            onClick={back}
-            disabled={segIdx === 0}
-            className="relative px-4 py-2.5 rounded-2xl text-[16px] font-bold overflow-hidden transition active:scale-[0.97] active:translate-y-0.5 disabled:opacity-40"
-            style={{
-              background: "linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #CBD5E1 100%)",
-              border: "1.5px solid #64748B",
-              color: "#0F172A",
-              boxShadow: "0 2.5px 0 #475569, 0 4px 8px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1)",
-            }}
-          >
-            <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+        {/* Footer — timer + 3 buttons */}
+        <div className="px-5 pt-3 pb-5" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+          {/* Timer */}
+          <p className="text-center tabular-nums font-light mb-3"
+            style={{ fontFamily: SERIF, fontSize: "52px", lineHeight: 1, color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em" }}>
+            {String(minutes).padStart(1, "0")}:{String(seconds).padStart(2, "0")}
+          </p>
+          {/* 3 buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={back}
+              disabled={segIdx === 0}
+              className="px-4 py-3 rounded-2xl text-[14px] font-bold transition active:scale-[0.97] disabled:opacity-30"
               style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
-                borderRadius: "1rem 1rem 50% 50%",
-              }} />
-            <span className="relative">Back</span>
-          </button>
-          <button
-            onClick={next}
-            className="relative flex-1 px-4 py-2.5 rounded-2xl text-[16px] font-bold text-white overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
-            style={{
-              background: `linear-gradient(180deg, ${segColor}DD 0%, ${segColor} 50%, ${segColor}99 100%)`,
-              border: `2px solid ${segColor}`,
-              boxShadow: `0 3px 0 ${segColor}99, 0 5px 12px ${segColor}55, inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -2px 4px rgba(0,0,0,0.25)`,
-              textShadow: "0 1px 1px rgba(0,0,0,0.30)",
-            }}
-          >
-            <span className="absolute top-0.5 left-3 right-3 h-[50%] pointer-events-none"
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                color: "rgba(255,255,255,0.75)",
+                minWidth: "72px",
+              }}>
+              ← Back
+            </button>
+            <button
+              onClick={() => setRunning(!running)}
+              className="flex-1 py-3 rounded-2xl text-[15px] font-black text-white transition active:scale-[0.97]"
               style={{
-                background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)",
-                borderRadius: "1rem 1rem 50% 50%",
-              }} />
-            <span className="relative">{isLast ? "Complete routine" : "Next segment →"}</span>
-          </button>
+                background: running
+                  ? "rgba(255,255,255,0.12)"
+                  : `linear-gradient(135deg, ${segColor} 0%, ${segColor}CC 100%)`,
+                border: `2px solid ${segColor}`,
+                boxShadow: running ? "none" : `0 0 28px ${segColor}55`,
+                letterSpacing: "0.06em",
+              }}>
+              {running ? "⏸ PAUSE" : secondsLeft === segment.durationSec ? "▶ START" : "▶ RESUME"}
+            </button>
+            <button
+              onClick={next}
+              className="px-4 py-3 rounded-2xl text-[14px] font-bold text-white transition active:scale-[0.97]"
+              style={{
+                background: segColor,
+                border: `2px solid ${segColor}`,
+                minWidth: "72px",
+              }}>
+              {isLast ? "Done ✓" : "Next →"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -8051,7 +8144,7 @@ function BreathRhythm({ pattern = "4-4-4-4", color = "#7C3AED" }) {
   const total = parts.reduce((a, b) => a + b, 0);
   return (
     <div className="mt-3">
-      <div className="flex w-full h-6 rounded-full overflow-hidden bg-slate-100 border border-slate-200">
+      <div className="flex w-full h-6 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.10)" }}>
         {parts.map((p, i) => (
           <div
             key={i}
@@ -8067,7 +8160,7 @@ function BreathRhythm({ pattern = "4-4-4-4", color = "#7C3AED" }) {
       </div>
       <div className="flex w-full mt-1 px-0.5">
         {parts.map((p, i) => (
-          <div key={i} className="text-[12px] text-center text-slate-800 font-semibold tabular-nums" style={{ width: `${(p / total) * 100}%` }}>
+          <div key={i} className="text-[12px] text-center font-semibold tabular-nums" style={{ width: `${(p / total) * 100}%`, color: "rgba(255,255,255,0.55)" }}>
             {p}s
           </div>
         ))}
