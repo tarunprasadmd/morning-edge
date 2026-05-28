@@ -7791,15 +7791,20 @@ const EXERCISE_IMAGE_MAP = {
 
 function RoutineFlow({ routine, onClose, onComplete }) {
   const [segIdx, setSegIdx] = React.useState(0);
+  const [exIdx, setExIdx] = React.useState(0);
   const [secondsLeft, setSecondsLeft] = React.useState(routine.segments[0].durationSec);
   const [running, setRunning] = React.useState(false);
 
   const segment = routine.segments[segIdx];
-  const isLast = segIdx === routine.segments.length - 1;
+  const exercises = segment.exercises || [];
+  const ex = exercises[exIdx] || exercises[0];
+  const isLastSeg = segIdx === routine.segments.length - 1;
+  const isLastEx = exIdx === exercises.length - 1;
 
-  // Reset timer when segment changes
+  // Reset timer + exercise index when segment changes
   React.useEffect(() => {
     setSecondsLeft(routine.segments[segIdx].durationSec);
+    setExIdx(0);
     setRunning(false);
   }, [segIdx, routine]);
 
@@ -7811,10 +7816,9 @@ function RoutineFlow({ routine, onClose, onComplete }) {
     return () => clearTimeout(t);
   }, [running, secondsLeft]);
 
-  // When timer hits zero, gentle audio cue + auto-advance
+  // Beep + stop when timer hits zero
   React.useEffect(() => {
     if (running && secondsLeft === 0) {
-      // Soft beep using Web Audio API (no asset needed)
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const o = ctx.createOscillator();
@@ -7831,218 +7835,171 @@ function RoutineFlow({ routine, onClose, onComplete }) {
     }
   }, [running, secondsLeft]);
 
-  const next = () => {
-    if (isLast) {
-      onComplete();
-    } else {
+  const goNext = () => {
+    if (!isLastEx) {
+      setExIdx(exIdx + 1);
+    } else if (!isLastSeg) {
       setSegIdx(segIdx + 1);
+    } else {
+      onComplete();
     }
   };
-  const back = () => {
-    if (segIdx > 0) setSegIdx(segIdx - 1);
+  const goBack = () => {
+    if (exIdx > 0) {
+      setExIdx(exIdx - 1);
+    } else if (segIdx > 0) {
+      setSegIdx(segIdx - 1);
+    }
   };
 
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
   const totalSec = segment.durationSec;
   const progress = ((totalSec - secondsLeft) / totalSec) * 100;
-
-  // Segment colors
   const segColors = ["#0E7490", "#7C3AED", "#DC2626", "#059669"];
   const segColor = segColors[segIdx % segColors.length];
+  const imgSlug = EXERCISE_IMAGE_MAP[ex.name];
+
+  const speakEx = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(`${ex.name}. ${ex.cue}`);
+      u.rate = 0.85;
+      window.speechSynthesis.speak(u);
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-0 sm:p-4">
-      <div className="w-full max-w-md sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden" style={{ background: "#0F172A" }}>
+    <div className="fixed inset-0 z-50 flex items-stretch justify-center" style={{ background: "#0B1120" }}>
+      <div className="w-full max-w-md flex flex-col" style={{ background: "#0B1120" }}>
+
         {/* Header */}
-        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        <div className="flex-shrink-0 px-4 pt-4 pb-2 flex items-center justify-between">
           <div>
             <p className="text-[11px] tracking-[0.22em] uppercase font-bold" style={{ color: segColor }}>
-              {routine.name} · Step {segIdx + 1} of {routine.segments.length}
+              {routine.name} · {segIdx + 1}/{routine.segments.length}
             </p>
-            <p className="text-base font-bold mt-0.5" style={{ color: "rgba(255,255,255,0.90)" }}>{segment.kicker}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <WorkoutSchematic kicker={segment.kicker} color={segColor} size={28} />
+              <p className="text-[17px] font-semibold" style={{ color: "rgba(255,255,255,0.95)", fontFamily: SERIF }}>
+                {segment.title}
+              </p>
+            </div>
           </div>
           <button onClick={onClose}
-            className="relative w-9 h-9 rounded-full flex items-center justify-center overflow-hidden transition active:scale-[0.92] active:translate-y-0.5"
-            style={{
-              background: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.15)",
-            }}
-            aria-label="Close">
-            <X className="w-5 h-5 relative" style={{ color: "rgba(255,255,255,0.70)" }} />
+            className="w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}>
+            <X className="w-5 h-5" style={{ color: "rgba(255,255,255,0.70)" }} />
           </button>
         </div>
 
-        {/* Progress dots */}
-        <div className="px-5 py-3 flex gap-1.5">
-          {routine.segments.map((_, i) => (
+        {/* Progress bar */}
+        <div className="flex-shrink-0 px-4 pb-2 flex gap-1.5">
+          {routine.segments.map((seg, i) => (
             <div key={i} className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.10)" }}>
-              <div
-                className="h-full transition-all"
-                style={{
-                  width: i < segIdx ? "100%" : i === segIdx ? `${progress}%` : "0%",
-                  backgroundColor: segColors[i % segColors.length],
-                }}
-              />
+              <div className="h-full transition-all" style={{
+                width: i < segIdx ? "100%" : i === segIdx ? `${progress}%` : "0%",
+                backgroundColor: segColors[i % segColors.length],
+              }} />
             </div>
           ))}
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto">
-
-          {/* Segment header with icon */}
-          <div className="px-5 pt-5 pb-4 flex items-center gap-3">
-            <WorkoutSchematic kicker={segment.kicker} color={segColor} size={52} />
-            <div>
-              <p className="text-[11px] tracking-[0.28em] uppercase font-bold" style={{ color: segColor }}>
-                {segment.kicker}
-              </p>
-              <h2 className="text-[22px] font-semibold leading-tight" style={{ fontFamily: SERIF, color: "rgba(255,255,255,0.97)" }}>
-                {segment.title}
-              </h2>
-            </div>
+        {/* Exercise dots — show which exercise in segment */}
+        {exercises.length > 1 && (
+          <div className="flex-shrink-0 flex justify-center gap-1.5 pb-2">
+            {exercises.map((_, i) => (
+              <div key={i} className="w-1.5 h-1.5 rounded-full transition-all"
+                style={{ background: i === exIdx ? segColor : "rgba(255,255,255,0.20)" }} />
+            ))}
           </div>
+        )}
 
-          {/* Breath rhythm visualizer */}
-          {segment.kicker.toLowerCase().includes("breath") && (() => {
-            const ex = segment.exercises[0];
-            const match = ex && ex.name && ex.name.match(/(\d+)[\s\-·]+(\d+)(?:[\s\-·]+(\d+))?(?:[\s\-·]+(\d+))?/);
-            if (!match) return null;
-            const pattern = match.slice(1).filter(Boolean).join("-");
-            return <div className="px-5 mb-2"><BreathRhythm pattern={pattern} color={segColor} /></div>;
-          })()}
-
-          {/* Exercise cards */}
-          <div className="px-4 pb-4 space-y-4">
-            {segment.exercises.map((ex, i) => {
-              const imgSlug = EXERCISE_IMAGE_MAP[ex.name];
-              const cardAccents = [
-                { from: "#0891B2", to: "#164E63", border: "#0891B288" },
-                { from: "#7C3AED", to: "#4C1D95", border: "#7C3AED88" },
-                { from: "#D97706", to: "#78350F", border: "#D9770688" },
-                { from: "#059669", to: "#064E3B", border: "#05966988" },
-              ];
-              const accent = cardAccents[i % cardAccents.length];
-              return (
-                <div key={i} className="rounded-2xl overflow-hidden"
-                  style={{
-                    background: `linear-gradient(145deg, ${accent.from}18 0%, ${accent.to}30 100%)`,
-                    border: `1.5px solid ${accent.border}`,
-                  }}>
-
-                  {/* Large portrait image */}
-                  <div className="relative w-full overflow-hidden" style={{ background: "#0B1120" }}>
-                    {imgSlug ? (
-                      <img
-                        src={`/${imgSlug}.png`}
-                        alt={ex.name}
-                        className="w-full block"
-                        style={{ display: "block", maxHeight: "340px", objectFit: "contain", objectPosition: "center top" }}
-                        loading="lazy"
-                        onError={(e) => { e.currentTarget.style.display = "none"; }}
-                      />
-                    ) : (
-                      <div className="w-full flex items-center justify-center" style={{ height: "200px" }}>
-                        <WorkoutSchematic kicker={segment.kicker} color={accent.from} size={80} />
-                      </div>
-                    )}
-                    {/* Gradient overlay — bottom fade for text */}
-                    <div className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
-                      style={{ background: `linear-gradient(to top, ${accent.to}EE 0%, transparent 100%)` }} />
-                    {/* Number badge */}
-                    <span className="absolute top-3 left-3 w-7 h-7 rounded-full flex items-center justify-center text-[13px] font-black text-white"
-                      style={{ background: accent.from, boxShadow: `0 2px 8px ${accent.from}99` }}>
-                      {i + 1}
-                    </span>
-                  </div>
-
-                  {/* Exercise info */}
-                  <div className="px-4 pt-3 pb-4">
-                    <p className="text-[17px] font-black leading-tight" style={{ color: accent.from }}>
-                      {ex.name}
-                    </p>
-                    <p className="text-[13px] mt-1.5 leading-relaxed" style={{ color: "rgba(255,255,255,0.70)" }}>
-                      {ex.cue}
-                    </p>
-                    {/* Audio button */}
-                    <button
-                      onClick={() => {
-                        if ('speechSynthesis' in window) {
-                          window.speechSynthesis.cancel();
-                          const u = new SpeechSynthesisUtterance(`${ex.name}. ${ex.cue}`);
-                          u.rate = 0.85;
-                          u.pitch = 1.05;
-                          window.speechSynthesis.speak(u);
-                        }
-                      }}
-                      className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold transition active:scale-[0.96]"
-                      style={{
-                        background: `${accent.from}22`,
-                        border: `1px solid ${accent.from}55`,
-                        color: accent.from,
-                      }}>
-                      <span>🔊</span>
-                      <span>Hear instructions</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+        {/* FULL IMAGE — fills all available space, no cropping, no borders */}
+        <div className="flex-1 relative" style={{ background: "#0B1120", minHeight: 0 }}>
+          {imgSlug ? (
+            <img
+              src={`/${imgSlug}.png`}
+              alt={ex.name}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                objectPosition: "center center",
+                display: "block",
+              }}
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <WorkoutSchematic kicker={segment.kicker} color={segColor} size={120} />
+            </div>
+          )}
+          {/* Exercise number badge */}
+          <div className="absolute top-3 left-3 w-7 h-7 rounded-full flex items-center justify-center text-[13px] font-black text-white"
+            style={{ background: segColor, boxShadow: `0 2px 8px ${segColor}99` }}>
+            {exIdx + 1}
           </div>
         </div>
+
+        {/* Exercise info */}
+        <div className="flex-shrink-0 px-4 pt-3 pb-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1">
+              <p className="text-[18px] font-black leading-tight" style={{ color: segColor }}>{ex.name}</p>
+              <p className="text-[13px] mt-1 leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>{ex.cue}</p>
+            </div>
+            <button onClick={speakEx}
+              className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center mt-0.5"
+              style={{ background: `${segColor}22`, border: `1px solid ${segColor}55` }}>
+              <span style={{ fontSize: "16px" }}>🔊</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Breath rhythm (breathing segments only) */}
+        {segment.kicker.toLowerCase().includes("breath") && (() => {
+          const match = ex.name && ex.name.match(/(\d+)[\s\-·]+(\d+)(?:[\s\-·]+(\d+))?(?:[\s\-·]+(\d+))?/);
+          if (!match) return null;
+          return <div className="flex-shrink-0 px-4 pb-1"><BreathRhythm pattern={match.slice(1).filter(Boolean).join("-")} color={segColor} /></div>;
+        })()}
 
         {/* Footer — timer + 3 buttons */}
-        <div className="px-5 pt-3 pb-5" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          {/* Timer */}
+        <div className="flex-shrink-0 px-4 pt-2 pb-5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           <p className="text-center tabular-nums font-light mb-3"
-            style={{ fontFamily: SERIF, fontSize: "52px", lineHeight: 1, color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em" }}>
+            style={{ fontFamily: SERIF, fontSize: "48px", lineHeight: 1, color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em" }}>
             {String(minutes).padStart(1, "0")}:{String(seconds).padStart(2, "0")}
           </p>
-          {/* 3 buttons */}
           <div className="flex gap-2">
-            <button
-              onClick={back}
-              disabled={segIdx === 0}
+            <button onClick={goBack}
+              disabled={segIdx === 0 && exIdx === 0}
               className="px-4 py-3 rounded-2xl text-[14px] font-bold transition active:scale-[0.97] disabled:opacity-30"
-              style={{
-                background: "rgba(255,255,255,0.08)",
-                border: "1px solid rgba(255,255,255,0.15)",
-                color: "rgba(255,255,255,0.75)",
-                minWidth: "72px",
-              }}>
-              ← Back
+              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.75)", minWidth: "72px" }}>
+              Back
             </button>
-            <button
-              onClick={() => setRunning(!running)}
+            <button onClick={() => setRunning(!running)}
               className="flex-1 py-3 rounded-2xl text-[15px] font-black text-white transition active:scale-[0.97]"
               style={{
-                background: running
-                  ? "rgba(255,255,255,0.12)"
-                  : `linear-gradient(135deg, ${segColor} 0%, ${segColor}CC 100%)`,
+                background: running ? "rgba(255,255,255,0.12)" : segColor,
                 border: `2px solid ${segColor}`,
-                boxShadow: running ? "none" : `0 0 28px ${segColor}55`,
-                letterSpacing: "0.06em",
+                boxShadow: running ? "none" : `0 0 24px ${segColor}55`,
               }}>
-              {running ? "⏸ PAUSE" : secondsLeft === segment.durationSec ? "▶ START" : "▶ RESUME"}
+              {running ? "Pause" : secondsLeft === totalSec ? "Start" : "Resume"}
             </button>
-            <button
-              onClick={next}
+            <button onClick={goNext}
               className="px-4 py-3 rounded-2xl text-[14px] font-bold text-white transition active:scale-[0.97]"
-              style={{
-                background: segColor,
-                border: `2px solid ${segColor}`,
-                minWidth: "72px",
-              }}>
-              {isLast ? "Done ✓" : "Next →"}
+              style={{ background: segColor, border: `2px solid ${segColor}`, minWidth: "72px" }}>
+              {isLastSeg && isLastEx ? "Done" : "Next"}
             </button>
           </div>
         </div>
+
       </div>
     </div>
   );
 }
-
 // ────────────────────────────────────────────────────────────────────
 // Workout schematics — minimalist SVG illustrations for each segment
 // kicker (Mobility, Breathwork, Strength, Stretch), plus a breath
