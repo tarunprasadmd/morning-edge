@@ -7911,23 +7911,21 @@ function RoutineFlow({ routine, onClose, onComplete }) {
     <div className="fixed inset-0 z-50 flex items-stretch justify-center" style={{ background: "#0B1120" }}>
       <div className="w-full max-w-md flex flex-col" style={{ background: "#0B1120" }}>
 
-        {/* Header */}
-        <div className="flex-shrink-0 px-4 pt-3 pb-1 flex items-center justify-between">
-          <div>
-            <p className="text-[11px] tracking-[0.22em] uppercase font-bold" style={{ color: segColor }}>
-              {routine.name} · {segIdx + 1}/{routine.segments.length}
+        {/* Header — single compact line */}
+        <div className="flex-shrink-0 px-4 pt-2 pb-1 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <WorkoutSchematic kicker={segment.kicker} color={segColor} size={22} />
+            <p className="text-[13px] font-bold" style={{ color: "rgba(255,255,255,0.90)", fontFamily: SERIF }}>
+              {segment.title}
             </p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <WorkoutSchematic kicker={segment.kicker} color={segColor} size={28} />
-              <p className="text-[15px] font-semibold" style={{ color: "rgba(255,255,255,0.95)", fontFamily: SERIF }}>
-                {segment.title}
-              </p>
-            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: segColor }}>
+              {segIdx + 1}/{routine.segments.length}
+            </span>
           </div>
           <button onClick={onClose}
-            className="w-9 h-9 rounded-full flex items-center justify-center"
+            className="w-8 h-8 rounded-full flex items-center justify-center"
             style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}>
-            <X className="w-5 h-5" style={{ color: "rgba(255,255,255,0.70)" }} />
+            <X className="w-4 h-4" style={{ color: "rgba(255,255,255,0.70)" }} />
           </button>
         </div>
 
