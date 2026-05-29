@@ -5858,6 +5858,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           name: s.kicker,
                           minutes: Math.round((s.durationSec || 0) / 60) || (s.durationSec ? +(s.durationSec / 60).toFixed(1) : 0),
                           cue: s.title,
+                          exerciseCount: s.exercises ? s.exercises.length : 0,
+                          imgSlug: s.exercises && s.exercises.length > 0 ? EXERCISE_IMAGE_MAP[s.exercises[0].name] : null,
                         }));
                       }
                       const tip = f && typeof f === "object" ? f.tip : null;
@@ -5899,7 +5901,18 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                         {b.cue}
                                       </p>
                                     )}
+                                    {b.exerciseCount > 0 && (
+                                      <p className="text-[11px] text-amber-600 font-medium mt-0.5">
+                                        {b.exerciseCount} exercise{b.exerciseCount > 1 ? "s" : ""}
+                                      </p>
+                                    )}
                                   </div>
+                                  {/* Thumbnail */}
+                                  {b.imgSlug && (
+                                    <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden ml-2" style={{ background: "#0B1120" }}>
+                                      <img src={`/${b.imgSlug}.png`} alt={b.name} className="w-full h-full object-contain" />
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
