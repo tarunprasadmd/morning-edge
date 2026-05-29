@@ -7930,22 +7930,23 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           ))}
         </div>
 
-        {/* Exercise dots */}
-        {exercises.length > 1 && (
-          <div className="flex-shrink-0 flex justify-center gap-1.5 pb-1">
-            {exercises.map((_, i) => (
-              <div key={i} className="w-1.5 h-1.5 rounded-full transition-all"
-                style={{ background: i === exIdx ? segColor : "rgba(255,255,255,0.20)" }} />
-            ))}
-          </div>
-        )}
-
         {/* HERO — image fills all remaining space, text overlaid at bottom */}
         <div className="flex-1 relative" style={{ minHeight: 0 }}>
+
+          {/* Exercise dots — inside image, top center */}
+          {exercises.length > 1 && (
+            <div className="absolute top-3 left-0 right-0 flex justify-center gap-1.5 z-10">
+              {exercises.map((_, i) => (
+                <div key={i} className="w-1.5 h-1.5 rounded-full transition-all"
+                  style={{ background: i === exIdx ? segColor : "rgba(255,255,255,0.40)" }} />
+              ))}
+            </div>
+          )}
 
           {/* Full bleed image */}
           {imgSlug ? (
             <img
+              key={imgSlug}
               src={`/${imgSlug}.png`}
               alt={ex.name}
               style={{
@@ -8020,7 +8021,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
               style={{ background: "linear-gradient(180deg,rgba(255,255,255,0.15)0%,rgba(255,255,255,0.05)100%)", border: "1px solid rgba(255,255,255,0.20)", color: "rgba(255,255,255,0.80)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15),0 2px 8px rgba(0,0,0,0.3)", minWidth: "72px" }}>
               Back
             </button>
-            <button onClick={() => setRunning(!running)}
+            <button onClick={() => { if (running) { setRunning(false); } else { setRunning(true); speakEx(ex); } }}
               className="flex-1 py-3 rounded-2xl text-[15px] font-black text-white transition active:scale-[0.97]"
               style={{
                 background: running ? "rgba(255,255,255,0.12)" : segColor,
