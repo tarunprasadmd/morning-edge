@@ -194,7 +194,7 @@ function YogaPoseImage({ pose, className = "", style = {} }) {
       src={urls[urlIdx]}
       alt={pose.english}
       className={`absolute inset-0 w-full h-full ${className}`}
-      style={{ objectFit: "cover", ...style }}
+      style={{ objectFit: `contain`, ...style }}
       onError={() => {
         if (urlIdx < urls.length - 1) {
           setUrlIdx(urlIdx + 1);
@@ -5455,7 +5455,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         top: 0,
                         width: "100%",
                         height: "100%",
-                        objectFit: "cover",
+                        objectFit: `contain`,
                         objectPosition: "center",
                         opacity: 0.75,
                         pointerEvents: "none",
@@ -5546,7 +5546,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         top: 0,
                         width: "100%",
                         height: "100%",
-                        objectFit: "cover",
+                        objectFit: `contain`,
                         objectPosition: "center",
                         opacity: 0.75,
                         pointerEvents: "none",
@@ -5627,7 +5627,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         top: 0,
                         width: "100%",
                         height: "100%",
-                        objectFit: "cover",
+                        objectFit: `contain`,
                         objectPosition: "center bottom",
                         opacity: 0.60,
                         pointerEvents: "none",
@@ -5989,7 +5989,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             boxShadow: "0 1.5px 0 #8B5CF6, 0 2px 4px rgba(139,92,246,0.20)",
                           }}>
                           {/* The actual yoga pose image — fills the tile edge-to-edge so no inner frame is visible */}
-                          <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center top" }} />
+                          <YogaPoseImage pose={pose} style={{ objectFit: `contain`, objectPosition: "center top" }} />
                           {/* Pose name labels are baked into the image — no overlay needed */}
                         </button>
                       ))}
@@ -6557,7 +6557,7 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
               height: 28,
               borderRadius: 6,
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 3px rgba(0,0,0,0.25)",
-              objectFit: "cover",
+              objectFit: `contain`,
             }}
           />
         </div>
@@ -6655,7 +6655,7 @@ function MountainScene() {
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <img src={WATER_PAINTING} alt=""
         className="w-full h-full"
-        style={{ objectFit: "cover", objectPosition: "center", opacity: 0.55 }} />
+        style={{ objectFit: `contain`, objectPosition: "center", opacity: 0.55 }} />
       <div className="absolute inset-0" style={{
         background: "linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.15) 40%, rgba(255,255,255,0.05) 70%, rgba(255,255,255,0.25) 100%)",
       }} />
@@ -7385,7 +7385,7 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           height: "min(42vh, 360px)",
           background: "#F8F4ED",
         }}>
-          <YogaPoseImage pose={currentPose} style={{ objectFit: "cover", objectPosition: "center top" }} />
+          <YogaPoseImage pose={currentPose} style={{ objectFit: `contain`, objectPosition: "center top" }} />
         </div>
 
         {/* Pose name */}
@@ -7523,7 +7523,7 @@ function YogaPoseModal({ pose, onClose }) {
           style={{
             aspectRatio: "1 / 1",
           }}>
-          <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center top" }} />
+          <YogaPoseImage pose={pose} style={{ objectFit: `contain`, objectPosition: "center top" }} />
         </div>
 
         {/* ── HEADER — Sanskrit + English name ── */}
@@ -7914,6 +7914,24 @@ function RoutineFlow({ routine, onClose, onComplete }) {
         {/* HERO — image fills ENTIRE remaining space */}
         <div className="flex-1 relative" style={{ minHeight: 0 }}>
 
+          {/* Header */}
+          <div className="absolute top-0 inset-x-0 z-20 px-4 pt-3 pb-2 flex items-center justify-between"
+            style={{ background: "linear-gradient(to bottom, rgba(11,17,32,0.92) 0%, transparent 100%)" }}>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: segColor }}>
+                {routine.name} · {segIdx + 1}/{routine.segments.length}
+              </p>
+              <p className="text-[15px] font-bold leading-tight" style={{ color: "rgba(255,255,255,0.95)" }}>
+                {segment.title}
+              </p>
+            </div>
+            <button onClick={onClose}
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.20)" }}>
+              <X className="w-5 h-5" style={{ color: "rgba(255,255,255,0.85)" }} />
+            </button>
+          </div>
+
           {/* Progress bar overlaid — just below header */}
           <div className="absolute top-10 inset-x-3 z-20 flex gap-1">
             {routine.segments.map((seg, i) => (
@@ -7947,7 +7965,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
                 inset: 0,
                 width: "100%",
                 height: "100%",
-                objectFit: "cover",
+                objectFit: `contain`,
                 objectPosition: "center top",
                 display: "block",
               }}
@@ -7969,7 +7987,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
 
           {/* Mute toggle — top right */}
           <button onClick={() => { if (muted) { setMuted(false); setTimeout(() => speakEx(ex), 100); } else { setMuted(true); window.speechSynthesis?.cancel(); } }}
-            className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center"
+            className="absolute bottom-28 right-3 w-9 h-9 rounded-full flex items-center justify-center"
             style={{ background: "rgba(0,0,0,0.55)", border: `1px solid ${muted ? 'rgba(255,255,255,0.2)' : segColor}`, backdropFilter: "blur(4px)" }}>
             <span style={{ fontSize: "15px" }}>{muted ? "🔇" : "🔊"}</span>
           </button>
@@ -8830,7 +8848,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
                   height={22}
                   loading="lazy"
                   decoding="async"
-                  style={{ width: 22, height: 22, objectFit: "cover", display: "block" }}
+                  style={{ width: 22, height: 22, objectFit: `contain`, display: "block" }}
                   onError={(e) => {
                     const parent = e.currentTarget.parentElement;
                     if (parent) {
