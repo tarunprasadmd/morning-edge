@@ -7744,7 +7744,7 @@ function PositionDetailModal({ entry, onClose, onAsk }) {
 }
 
 // ─── Exercise image map — 35 verified images, zero duplicates ────────
-const EXERCISE_IMAGE_MAP: Record<string, string> = {
+const EXERCISE_IMAGE_MAP = {
   // Neck & Shoulders
   "Shoulder rolls":              "shoulder-rolls",
   "Slow neck rolls":             "slow-neck-rolls",
