@@ -7903,9 +7903,9 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           ))}
         </div>
 
-        {/* Exercise dots — show which exercise in segment */}
+        {/* Exercise dots */}
         {exercises.length > 1 && (
-          <div className="flex-shrink-0 flex justify-center gap-1.5 pb-2">
+          <div className="flex-shrink-0 flex justify-center gap-1.5 pb-1">
             {exercises.map((_, i) => (
               <div key={i} className="w-1.5 h-1.5 rounded-full transition-all"
                 style={{ background: i === exIdx ? segColor : "rgba(255,255,255,0.20)" }} />
@@ -7913,8 +7913,10 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           </div>
         )}
 
-        {/* FULL IMAGE — fills all available space, no cropping, no borders */}
-        <div className="flex-1 relative" style={{ background: "#0B1120", minHeight: 0 }}>
+        {/* HERO — image fills all remaining space, text overlaid at bottom */}
+        <div className="flex-1 relative" style={{ minHeight: 0 }}>
+
+          {/* Full bleed image */}
           {imgSlug ? (
             <img
               src={`/${imgSlug}.png`}
@@ -7932,37 +7934,49 @@ function RoutineFlow({ routine, onClose, onComplete }) {
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <WorkoutSchematic kicker={segment.kicker} color={segColor} size={120} />
+              <WorkoutSchematic kicker={segment.kicker} color={segColor} size={140} />
             </div>
           )}
-          {/* Exercise number badge */}
+
+          {/* Exercise number badge — top left */}
           <div className="absolute top-3 left-3 w-7 h-7 rounded-full flex items-center justify-center text-[13px] font-black text-white"
             style={{ background: segColor, boxShadow: `0 2px 8px ${segColor}99` }}>
             {exIdx + 1}
           </div>
-        </div>
 
-        {/* Exercise info */}
-        <div className="flex-shrink-0 px-4 pt-3 pb-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1">
-              <p className="text-[18px] font-black leading-tight" style={{ color: segColor }}>{ex.name}</p>
-              <p className="text-[13px] mt-1 leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>{ex.cue}</p>
-            </div>
-            <button onClick={speakEx}
-              className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center mt-0.5"
-              style={{ background: `${segColor}22`, border: `1px solid ${segColor}55` }}>
-              <span style={{ fontSize: "16px" }}>🔊</span>
-            </button>
+          {/* Sound button — top right */}
+          <button onClick={speakEx}
+            className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.45)", border: `1px solid ${segColor}55`, backdropFilter: "blur(4px)" }}>
+            <span style={{ fontSize: "15px" }}>🔊</span>
+          </button>
+
+          {/* Gradient overlay — bottom third */}
+          <div className="absolute inset-x-0 bottom-0 pointer-events-none"
+            style={{
+              height: "52%",
+              background: "linear-gradient(to top, #0B1120 0%, #0B1120 30%, rgba(11,17,32,0.85) 60%, transparent 100%)",
+            }} />
+
+          {/* Exercise name + cue overlaid on gradient */}
+          <div className="absolute inset-x-0 bottom-0 px-5 pb-4">
+            <p className="text-[20px] font-black leading-tight"
+              style={{ color: segColor, textShadow: "0 1px 8px rgba(0,0,0,0.8)" }}>
+              {ex.name}
+            </p>
+            <p className="text-[13px] mt-1.5 leading-relaxed"
+              style={{ color: "rgba(255,255,255,0.80)", textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}>
+              {ex.cue}
+            </p>
+            {/* Breath rhythm if applicable */}
+            {segment.kicker.toLowerCase().includes("breath") && (() => {
+              const match = ex.name && ex.name.match(/(\d+)[\s\-·]+(\d+)(?:[\s\-·]+(\d+))?(?:[\s\-·]+(\d+))?/);
+              if (!match) return null;
+              return <div className="mt-2"><BreathRhythm pattern={match.slice(1).filter(Boolean).join("-")} color={segColor} /></div>;
+            })()}
           </div>
-        </div>
 
-        {/* Breath rhythm (breathing segments only) */}
-        {segment.kicker.toLowerCase().includes("breath") && (() => {
-          const match = ex.name && ex.name.match(/(\d+)[\s\-·]+(\d+)(?:[\s\-·]+(\d+))?(?:[\s\-·]+(\d+))?/);
-          if (!match) return null;
-          return <div className="flex-shrink-0 px-4 pb-1"><BreathRhythm pattern={match.slice(1).filter(Boolean).join("-")} color={segColor} /></div>;
-        })()}
+        </div>
 
         {/* Footer — timer + 3 buttons */}
         <div className="flex-shrink-0 px-4 pt-2 pb-5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
