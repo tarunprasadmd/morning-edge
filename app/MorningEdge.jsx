@@ -7939,7 +7939,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           )}
 
           {/* Exercise number badge — top left */}
-          <div className="absolute top-3 left-3 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+          <div className="absolute top-3 left-3 px-2 py-1 rounded-full text-[11px] font-bold"
             style={{ background: segColor, boxShadow: `0 2px 8px ${segColor}99` }}>
             {exIdx + 1}
           </div>
@@ -11424,6 +11424,7 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
 
 
 
