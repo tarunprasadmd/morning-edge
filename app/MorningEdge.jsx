@@ -5989,7 +5989,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             boxShadow: "0 1.5px 0 #8B5CF6, 0 2px 4px rgba(139,92,246,0.20)",
                           }}>
                           {/* The actual yoga pose image — fills the tile edge-to-edge so no inner frame is visible */}
-                          <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center center" }} />
+                          <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center top" }} />
                           {/* Pose name labels are baked into the image — no overlay needed */}
                         </button>
                       ))}
@@ -7385,7 +7385,7 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           height: "min(42vh, 360px)",
           background: "#F8F4ED",
         }}>
-          <YogaPoseImage pose={currentPose} style={{ objectFit: "contain", objectPosition: "center center" }} />
+          <YogaPoseImage pose={currentPose} style={{ objectFit: "cover", objectPosition: "center top" }} />
         </div>
 
         {/* Pose name */}
@@ -7523,7 +7523,7 @@ function YogaPoseModal({ pose, onClose }) {
           style={{
             aspectRatio: "1 / 1",
           }}>
-          <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center center" }} />
+          <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center top" }} />
         </div>
 
         {/* ── HEADER — Sanskrit + English name ── */}
@@ -7966,8 +7966,8 @@ function RoutineFlow({ routine, onClose, onComplete }) {
                 inset: 0,
                 width: "100%",
                 height: "100%",
-                objectFit: "contain",
-                objectPosition: "center center",
+                objectFit: "cover",
+                objectPosition: "center top",
                 display: "block",
               }}
               onError={(e) => { e.currentTarget.style.display = "none"; }}
@@ -8849,7 +8849,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
                   height={22}
                   loading="lazy"
                   decoding="async"
-                  style={{ width: 22, height: 22, objectFit: "contain", display: "block" }}
+                  style={{ width: 22, height: 22, objectFit: "cover", display: "block" }}
                   onError={(e) => {
                     const parent = e.currentTarget.parentElement;
                     if (parent) {
@@ -11466,3 +11466,4 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
