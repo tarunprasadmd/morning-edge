@@ -7975,7 +7975,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           )}
 
           {/* Mute toggle — top right */}
-          <button onClick={() => { setMuted(!muted); window.speechSynthesis?.cancel(); }}
+          <button onClick={() => { if (muted) { setMuted(false); setTimeout(() => speakEx(ex), 100); } else { setMuted(true); window.speechSynthesis?.cancel(); } }}
             className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center"
             style={{ background: "rgba(0,0,0,0.55)", border: `1px solid ${muted ? 'rgba(255,255,255,0.2)' : segColor}`, backdropFilter: "blur(4px)" }}>
             <span style={{ fontSize: "15px" }}>{muted ? "🔇" : "🔊"}</span>
