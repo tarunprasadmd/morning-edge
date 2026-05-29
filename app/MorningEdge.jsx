@@ -7914,25 +7914,6 @@ function RoutineFlow({ routine, onClose, onComplete }) {
         {/* HERO — image fills ENTIRE remaining space */}
         <div className="flex-1 relative" style={{ minHeight: 0 }}>
 
-          {/* Header overlaid on image — top */}
-          <div className="absolute top-0 inset-x-0 z-20 px-3 pt-2 pb-1 flex items-center justify-between"
-            style={{ background: "linear-gradient(to bottom, rgba(11,17,32,0.85) 0%, transparent 100%)" }}>
-            <div className="flex items-center gap-2">
-              <WorkoutSchematic kicker={segment.kicker} color={segColor} size={18} />
-              <p className="text-[12px] font-bold" style={{ color: "rgba(255,255,255,0.90)" }}>
-                {segment.title}
-              </p>
-              <span className="text-[10px] font-bold uppercase" style={{ color: segColor }}>
-                {segIdx + 1}/{routine.segments.length}
-              </span>
-            </div>
-            <button onClick={onClose}
-              className="w-7 h-7 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(0,0,0,0.50)", border: "1px solid rgba(255,255,255,0.15)" }}>
-              <X className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.80)" }} />
-            </button>
-          </div>
-
           {/* Progress bar overlaid — just below header */}
           <div className="absolute top-10 inset-x-3 z-20 flex gap-1">
             {routine.segments.map((seg, i) => (
@@ -11466,6 +11447,7 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
 
 
 
