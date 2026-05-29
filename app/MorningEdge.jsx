@@ -194,7 +194,7 @@ function YogaPoseImage({ pose, className = "", style = {} }) {
       src={urls[urlIdx]}
       alt={pose.english}
       className={`absolute inset-0 w-full h-full ${className}`}
-      style={{ objectFit: `contain`, ...style }}
+      style={{ objectFit: "contain", ...style }}
       onError={() => {
         if (urlIdx < urls.length - 1) {
           setUrlIdx(urlIdx + 1);
@@ -5455,7 +5455,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         top: 0,
                         width: "100%",
                         height: "100%",
-                        objectFit: `contain`,
+                        objectFit: "contain",
                         objectPosition: "center",
                         opacity: 0.75,
                         pointerEvents: "none",
@@ -5546,7 +5546,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         top: 0,
                         width: "100%",
                         height: "100%",
-                        objectFit: `contain`,
+                        objectFit: "contain",
                         objectPosition: "center",
                         opacity: 0.75,
                         pointerEvents: "none",
@@ -5627,7 +5627,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         top: 0,
                         width: "100%",
                         height: "100%",
-                        objectFit: `contain`,
+                        objectFit: "contain",
                         objectPosition: "center bottom",
                         opacity: 0.60,
                         pointerEvents: "none",
@@ -5989,7 +5989,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             boxShadow: "0 1.5px 0 #8B5CF6, 0 2px 4px rgba(139,92,246,0.20)",
                           }}>
                           {/* The actual yoga pose image — fills the tile edge-to-edge so no inner frame is visible */}
-                          <YogaPoseImage pose={pose} style={{ objectFit: `contain`, objectPosition: "center top" }} />
+                          <YogaPoseImage pose={pose} style={{ objectFit: "contain", objectPosition: "center top" }} />
                           {/* Pose name labels are baked into the image — no overlay needed */}
                         </button>
                       ))}
@@ -6557,7 +6557,7 @@ function TickerTape({ userHoldings = [], brief = null, accounts = [] }) {
               height: 28,
               borderRadius: 6,
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 3px rgba(0,0,0,0.25)",
-              objectFit: `contain`,
+              objectFit: "contain",
             }}
           />
         </div>
@@ -6655,7 +6655,7 @@ function MountainScene() {
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <img src={WATER_PAINTING} alt=""
         className="w-full h-full"
-        style={{ objectFit: `contain`, objectPosition: "center", opacity: 0.55 }} />
+        style={{ objectFit: "contain", objectPosition: "center", opacity: 0.55 }} />
       <div className="absolute inset-0" style={{
         background: "linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.15) 40%, rgba(255,255,255,0.05) 70%, rgba(255,255,255,0.25) 100%)",
       }} />
@@ -7385,7 +7385,7 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           height: "min(42vh, 360px)",
           background: "#F8F4ED",
         }}>
-          <YogaPoseImage pose={currentPose} style={{ objectFit: `contain`, objectPosition: "center top" }} />
+          <YogaPoseImage pose={currentPose} style={{ objectFit: "contain", objectPosition: "center top" }} />
         </div>
 
         {/* Pose name */}
@@ -7523,7 +7523,7 @@ function YogaPoseModal({ pose, onClose }) {
           style={{
             aspectRatio: "1 / 1",
           }}>
-          <YogaPoseImage pose={pose} style={{ objectFit: `contain`, objectPosition: "center top" }} />
+          <YogaPoseImage pose={pose} style={{ objectFit: "contain", objectPosition: "center top" }} />
         </div>
 
         {/* ── HEADER — Sanskrit + English name ── */}
@@ -7806,39 +7806,46 @@ function RoutineFlow({ routine, onClose, onComplete }) {
   const [exIdx, setExIdx] = React.useState(0);
   const [secondsLeft, setSecondsLeft] = React.useState(routine.segments[0].durationSec);
   const [running, setRunning] = React.useState(false);
+  const [muted, setMuted] = React.useState(false);
+  const [voice, setVoice] = React.useState(null);
 
   const segment = routine.segments[segIdx];
   const exercises = segment.exercises || [];
   const ex = exercises[exIdx] || exercises[0];
   const isLastSeg = segIdx === routine.segments.length - 1;
   const isLastEx = exIdx === exercises.length - 1;
+  const minutes = Math.floor(secondsLeft / 60);
+  const seconds = secondsLeft % 60;
+  const totalSec = segment.durationSec;
+  const progress = ((totalSec - secondsLeft) / totalSec) * 100;
+  const segColors = ["#0E7490", "#7C3AED", "#DC2626", "#059669"];
+  const segColor = segColors[segIdx % segColors.length];
+  const imgSlug = EXERCISE_IMAGE_MAP[ex ? ex.name : ""];
 
-  // Reset timer + exercise index when segment changes
+  // Reset when segment changes
   React.useEffect(() => {
     setSecondsLeft(routine.segments[segIdx].durationSec);
     setExIdx(0);
     setRunning(false);
-  }, [segIdx, routine]);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+  }, [segIdx]);
 
-  // Tick when running
+  // Timer tick
   React.useEffect(() => {
-    if (!running) return;
-    if (secondsLeft <= 0) return;
-    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    if (!running || secondsLeft <= 0) return;
+    const t = setTimeout(() => setSecondsLeft(s => s - 1), 1000);
     return () => clearTimeout(t);
   }, [running, secondsLeft]);
 
-  // Beep + stop when timer hits zero
+  // Beep on zero
   React.useEffect(() => {
     if (running && secondsLeft === 0) {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const o = ctx.createOscillator();
         const g = ctx.createGain();
-        o.frequency.value = 660;
-        g.gain.value = 0.15;
-        o.connect(g);
-        g.connect(ctx.destination);
+        o.frequency.value = 660; g.gain.value = 0.15;
+        o.connect(g); g.connect(ctx.destination);
         o.start();
         g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
         o.stop(ctx.currentTime + 0.4);
@@ -7847,209 +7854,156 @@ function RoutineFlow({ routine, onClose, onComplete }) {
     }
   }, [running, secondsLeft]);
 
-  const goNext = () => {
-    if (!isLastEx) {
-      setExIdx(exIdx + 1);
-    } else if (!isLastSeg) {
-      setSegIdx(segIdx + 1);
-    } else {
-      onComplete();
-    }
-  };
-  const goBack = () => {
-    if (exIdx > 0) {
-      setExIdx(exIdx - 1);
-    } else if (segIdx > 0) {
-      setSegIdx(segIdx - 1);
-    }
-  };
-
-  const minutes = Math.floor(secondsLeft / 60);
-  const seconds = secondsLeft % 60;
-  const totalSec = segment.durationSec;
-  const progress = ((totalSec - secondsLeft) / totalSec) * 100;
-  const segColors = ["#0E7490", "#7C3AED", "#DC2626", "#059669"];
-  const segColor = segColors[segIdx % segColors.length];
-  const imgSlug = EXERCISE_IMAGE_MAP[ex.name];
-
-  const [muted, setMuted] = React.useState(false);
-  const [voice, setVoice] = React.useState(null);
-
+  // Load best female voice
   React.useEffect(() => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
-    const pickVoice = () => {
-      const voices = window.speechSynthesis.getVoices();
-      if (!voices.length) return null;
-      const priorities = [/Samantha/i,/Ava/i,/Karen/i,/Allison/i,/Moira/i,/Google.*UK English Female/i,/Microsoft.*Aria/i,/Microsoft.*Jenny/i,/female/i];
-      for (const pat of priorities) {
-        const m = voices.find(v => pat.test(v.name) && /en/i.test(v.lang));
-        if (m) return m;
-      }
-      return voices.find(v => /^en/i.test(v.lang)) || voices[0] || null;
+    const pick = () => {
+      const vv = window.speechSynthesis.getVoices();
+      if (!vv.length) return null;
+      const pats = [/Samantha/i,/Ava/i,/Karen/i,/Allison/i,/Moira/i,/Google.*UK English Female/i,/Microsoft.*Aria/i,/Microsoft.*Jenny/i,/female/i];
+      for (const p of pats) { const m = vv.find(v => p.test(v.name) && /en/i.test(v.lang)); if (m) return m; }
+      return vv.find(v => /^en/i.test(v.lang)) || vv[0] || null;
     };
-    const v = pickVoice();
-    if (v) setVoice(v);
-    const h = () => { const p = pickVoice(); if (p) setVoice(p); };
+    const v = pick(); if (v) setVoice(v);
+    const h = () => { const p = pick(); if (p) setVoice(p); };
     window.speechSynthesis.onvoiceschanged = h;
     return () => { try { window.speechSynthesis.onvoiceschanged = null; } catch(e) {} };
   }, []);
 
   const speakEx = React.useCallback((exercise) => {
-    if (muted || typeof window === "undefined" || !window.speechSynthesis) return;
+    if (muted || !exercise || typeof window === "undefined" || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(`${exercise.name}. ${exercise.cue}`);
-    u.rate = 0.80; u.pitch = 1.1;
+    const u = new SpeechSynthesisUtterance(exercise.name + ". " + exercise.cue);
+    u.rate = 0.82; u.pitch = 1.05;
     if (voice) u.voice = voice;
     setTimeout(() => { window.speechSynthesis.speak(u); }, 80);
   }, [muted, voice]);
 
-  React.useEffect(() => {
-    if (ex && voice) speakEx(ex);
-  }, [exIdx, segIdx, voice]);
+  const goNext = () => {
+    if (!isLastEx) { setExIdx(exIdx + 1); }
+    else if (!isLastSeg) { setSegIdx(segIdx + 1); }
+    else { onComplete(); }
+  };
+  const goBack = () => {
+    if (exIdx > 0) { setExIdx(exIdx - 1); }
+    else if (segIdx > 0) { setSegIdx(segIdx - 1); }
+  };
+
+  const handleStartPause = () => {
+    if (running) {
+      setRunning(false);
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    } else {
+      setRunning(true);
+      speakEx(ex);
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-stretch justify-center" style={{ background: "#0B1120" }}>
-      <div className="w-full max-w-md flex flex-col" style={{ background: "#0B1120" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, background: "#0B1120", display: "flex", flexDirection: "column" }}>
 
-        {/* HERO — image fills ENTIRE remaining space */}
-        <div className="flex-1 relative" style={{ minHeight: 0 }}>
-
-          {/* Header */}
-          <div className="absolute top-0 inset-x-0 z-20 px-4 pt-3 pb-2 flex items-center justify-between"
-            style={{ background: "linear-gradient(to bottom, rgba(11,17,32,0.92) 0%, transparent 100%)" }}>
-            <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: segColor }}>
-                {routine.name} · {segIdx + 1}/{routine.segments.length}
-              </p>
-              <p className="text-[15px] font-bold leading-tight" style={{ color: "rgba(255,255,255,0.95)" }}>
-                {segment.title}
-              </p>
-            </div>
-            <button onClick={onClose}
-              className="w-9 h-9 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.20)" }}>
-              <X className="w-5 h-5" style={{ color: "rgba(255,255,255,0.85)" }} />
-            </button>
-          </div>
-
-          {/* Progress bar overlaid — just below header */}
-          <div className="absolute top-10 inset-x-3 z-20 flex gap-1">
-            {routine.segments.map((seg, i) => (
-              <div key={i} className="flex-1 h-0.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.20)" }}>
-                <div className="h-full transition-all" style={{
-                  width: i < segIdx ? "100%" : i === segIdx ? `${progress}%` : "0%",
-                  backgroundColor: segColors[i % segColors.length],
-                }} />
-              </div>
-            ))}
-          </div>
-
-          {/* Exercise dots — inside image, top center */}
-          {exercises.length > 1 && (
-            <div className="absolute top-3 left-0 right-0 flex justify-center gap-1.5 z-10">
-              {exercises.map((_, i) => (
-                <div key={i} className="w-1.5 h-1.5 rounded-full transition-all"
-                  style={{ background: i === exIdx ? segColor : "rgba(255,255,255,0.40)" }} />
-              ))}
-            </div>
-          )}
-
-          {/* Full bleed image */}
-          {imgSlug ? (
-            <img
-              key={imgSlug}
-              src={`/${imgSlug}.png`}
-              alt={ex.name}
-              style={{
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "100%",
-                objectFit: `contain`,
-                objectPosition: "center top",
-                display: "block",
-              }}
-              onError={(e) => { e.currentTarget.style.display = "none"; }}
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <WorkoutSchematic kicker={segment.kicker} color={segColor} size={140} />
-            </div>
-          )}
-
-          {/* Exercise counter 1/3 — top left */}
-          {exercises.length > 1 && (
-            <div className="absolute top-3 left-3 px-2 py-1 rounded-full text-[11px] font-bold"
-              style={{ background: "rgba(0,0,0,0.55)", color: segColor, border: `1px solid ${segColor}55`, backdropFilter: "blur(4px)" }}>
-              {exIdx + 1}/{exercises.length}
-            </div>
-          )}
-
-          {/* Mute toggle — top right */}
-          <button onClick={() => { if (muted) { setMuted(false); setTimeout(() => speakEx(ex), 100); } else { setMuted(true); window.speechSynthesis?.cancel(); } }}
-            className="absolute bottom-28 right-3 w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.55)", border: `1px solid ${muted ? 'rgba(255,255,255,0.2)' : segColor}`, backdropFilter: "blur(4px)" }}>
-            <span style={{ fontSize: "15px" }}>{muted ? "🔇" : "🔊"}</span>
-          </button>
-
-          {/* Gradient overlay — bottom third */}
-          <div className="absolute inset-x-0 bottom-0 pointer-events-none"
-            style={{
-              height: "35%",
-              background: "linear-gradient(to top, #0B1120 0%, #0B1120 30%, rgba(11,17,32,0.85) 60%, transparent 100%)",
-            }} />
-
-          {/* Exercise name + cue overlaid on gradient */}
-          <div className="absolute inset-x-0 bottom-0 px-5 pb-4">
-            <p className="text-[20px] font-black leading-tight"
-              style={{ color: segColor, textShadow: "0 1px 8px rgba(0,0,0,0.8)" }}>
-              {ex.name}
-            </p>
-            <p className="text-[13px] mt-1.5 leading-relaxed"
-              style={{ color: "rgba(255,255,255,0.80)", textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}>
-              {ex.cue}
-            </p>
-            {/* Breath rhythm if applicable */}
-            {segment.kicker.toLowerCase().includes("breath") && (() => {
-              const match = ex.name && ex.name.match(/(\d+)[\s\-·]+(\d+)(?:[\s\-·]+(\d+))?(?:[\s\-·]+(\d+))?/);
-              if (!match) return null;
-              return <div className="mt-2"><BreathRhythm pattern={match.slice(1).filter(Boolean).join("-")} color={segColor} /></div>;
-            })()}
-          </div>
-
-        </div>
-
-        {/* Footer — timer + 3 buttons */}
-        <div className="flex-shrink-0 px-4 pt-1 pb-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <p className="text-center tabular-nums font-light mb-2"
-            style={{ fontFamily: SERIF, fontSize: "38px", lineHeight: 1, color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em" }}>
-            {String(minutes).padStart(1, "0")}:{String(seconds).padStart(2, "0")}
+      {/* HEADER — clean, outside image */}
+      <div style={{ flexShrink: 0, padding: "12px 16px 8px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0B1120" }}>
+        <div>
+          <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 700, color: segColor, margin: 0 }}>
+            {routine.name} · Segment {segIdx + 1}/{routine.segments.length}
           </p>
-          <div className="flex gap-2">
-            <button onClick={goBack}
-              disabled={segIdx === 0 && exIdx === 0}
-              className="px-4 py-3 rounded-2xl text-[14px] font-bold transition active:scale-[0.97] disabled:opacity-30"
-              style={{ background: "linear-gradient(180deg,rgba(255,255,255,0.15)0%,rgba(255,255,255,0.05)100%)", border: "1px solid rgba(255,255,255,0.20)", color: "rgba(255,255,255,0.80)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15),0 2px 8px rgba(0,0,0,0.3)", minWidth: "72px" }}>
-              Back
-            </button>
-            <button onClick={() => { setRunning(r => { if (!r) speakEx(ex); return !r; }) }}
-              className="flex-1 py-3 rounded-2xl text-[15px] font-black text-white transition active:scale-[0.97]"
-              style={{
-                background: running ? "rgba(255,255,255,0.12)" : segColor,
-                border: `2px solid ${segColor}`,
-                boxShadow: running ? "none" : `0 0 24px ${segColor}55`,
-              }}>
-              {running ? "Pause" : secondsLeft === totalSec ? "Start" : "Resume"}
-            </button>
-            <button onClick={goNext}
-              className="px-4 py-3 rounded-2xl text-[14px] font-bold text-white transition active:scale-[0.97]"
-              style={{ background: segColor, border: `2px solid ${segColor}`, minWidth: "72px" }}>
-              {isLastSeg && isLastEx ? "Done" : "Next"}
-            </button>
+          <p style={{ fontSize: "16px", fontWeight: 800, color: "rgba(255,255,255,0.95)", margin: "2px 0 0" }}>
+            {segment.title}
+          </p>
+        </div>
+        <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+          <X style={{ width: 18, height: 18, color: "rgba(255,255,255,0.80)" }} />
+        </button>
+      </div>
+
+      {/* PROGRESS BAR */}
+      <div style={{ flexShrink: 0, display: "flex", gap: 4, padding: "0 16px 8px" }}>
+        {routine.segments.map((_, i) => (
+          <div key={i} style={{ flex: 1, height: 3, borderRadius: 99, overflow: "hidden", background: "rgba(255,255,255,0.12)" }}>
+            <div style={{ height: "100%", transition: "width 0.3s", width: i < segIdx ? "100%" : i === segIdx ? `${progress}%` : "0%", background: segColors[i % segColors.length] }} />
           </div>
+        ))}
+      </div>
+
+      {/* IMAGE AREA — fills all available space */}
+      <div style={{ flex: 1, position: "relative", minHeight: 0, background: "#0B1120" }}>
+
+        {/* Exercise image — centered, no cropping */}
+        {imgSlug ? (
+          <img
+            key={imgSlug}
+            src={"/" + imgSlug + ".png"}
+            alt={ex ? ex.name : ""}
+            draggable={false}
+            onContextMenu={e => e.preventDefault()}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -48%)",
+              width: "90%",
+              height: "90%",
+              objectFit: "contain",
+              objectPosition: "center center",
+              userSelect: "none",
+              WebkitUserSelect: "none",
+            }}
+            onError={e => { e.currentTarget.style.display = "none"; }}
+          />
+        ) : (
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <WorkoutSchematic kicker={segment.kicker} color={segColor} size={120} />
+          </div>
+        )}
+
+        {/* Exercise counter */}
+        {exercises.length > 1 && (
+          <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.60)", border: `1px solid ${segColor}66`, borderRadius: 99, padding: "2px 8px", fontSize: 11, fontWeight: 700, color: segColor, backdropFilter: "blur(4px)" }}>
+            {exIdx + 1}/{exercises.length}
+          </div>
+        )}
+
+        {/* Mute button — right side, vertically centered */}
+        <button
+          onClick={() => { if (muted) { setMuted(false); setTimeout(() => speakEx(ex), 100); } else { setMuted(true); window.speechSynthesis?.cancel(); } }}
+          style={{ position: "absolute", bottom: 80, right: 12, width: 36, height: 36, borderRadius: "50%", background: "rgba(0,0,0,0.60)", border: `1px solid ${muted ? "rgba(255,255,255,0.20)" : segColor}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", backdropFilter: "blur(4px)" }}>
+          <span style={{ fontSize: 16 }}>{muted ? "🔇" : "🔊"}</span>
+        </button>
+
+        {/* Gradient + exercise text at bottom */}
+        <div style={{ position: "absolute", inset: "auto 0 0 0", background: "linear-gradient(to top, #0B1120 0%, #0B1120 25%, rgba(11,17,32,0.80) 60%, transparent 100%)", padding: "48px 20px 16px" }}>
+          {ex && (
+            <>
+              <p style={{ fontSize: 20, fontWeight: 900, color: segColor, margin: 0, textShadow: "0 1px 8px rgba(0,0,0,0.9)" }}>{ex.name}</p>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.78)", margin: "6px 0 0", lineHeight: 1.5, textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}>{ex.cue}</p>
+            </>
+          )}
         </div>
 
       </div>
+
+      {/* FOOTER — timer + buttons */}
+      <div style={{ flexShrink: 0, padding: "8px 16px 20px", borderTop: "1px solid rgba(255,255,255,0.07)", background: "#0B1120" }}>
+        <p style={{ textAlign: "center", fontSize: 42, fontWeight: 300, fontFamily: SERIF, color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em", margin: "0 0 8px" }}>
+          {String(minutes).padStart(1, "0")}:{String(seconds).padStart(2, "0")}
+        </p>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={goBack} disabled={segIdx === 0 && exIdx === 0}
+            style={{ minWidth: 72, padding: "12px 16px", borderRadius: 16, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.78)", fontSize: 14, fontWeight: 700, cursor: "pointer", opacity: (segIdx === 0 && exIdx === 0) ? 0.3 : 1 }}>
+            Back
+          </button>
+          <button onClick={handleStartPause}
+            style={{ flex: 1, padding: "12px 16px", borderRadius: 16, background: running ? "rgba(255,255,255,0.10)" : segColor, border: `2px solid ${segColor}`, color: "#fff", fontSize: 15, fontWeight: 900, cursor: "pointer", boxShadow: running ? "none" : `0 0 20px ${segColor}55` }}>
+            {running ? "Pause" : secondsLeft === totalSec ? "Start" : "Resume"}
+          </button>
+          <button onClick={goNext}
+            style={{ minWidth: 72, padding: "12px 16px", borderRadius: 16, background: segColor, border: `2px solid ${segColor}`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            {isLastSeg && isLastEx ? "Done" : "Next"}
+          </button>
+        </div>
+      </div>
+
     </div>
   );
 }
@@ -8848,7 +8802,7 @@ function PlaybookColumnRow({ entry, onOpen }) {
                   height={22}
                   loading="lazy"
                   decoding="async"
-                  style={{ width: 22, height: 22, objectFit: `contain`, display: "block" }}
+                  style={{ width: 22, height: 22, objectFit: "contain", display: "block" }}
                   onError={(e) => {
                     const parent = e.currentTarget.parentElement;
                     if (parent) {
@@ -11465,6 +11419,7 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
 
 
 
