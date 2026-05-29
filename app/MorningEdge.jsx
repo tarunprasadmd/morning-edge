@@ -5910,7 +5910,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                   {/* Thumbnail */}
                                   {b.imgSlug && (
                                     <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden ml-2" style={{ background: "#0B1120" }}>
-                                      <img src={`/${b.imgSlug}.png`} alt={b.name} className="w-full h-full object-contain" />
+                                      <img src={`/${b.imgSlug}.png`} alt={b.name} className="w-full h-full object-cover" />
                                     </div>
                                   )}
                                 </div>
@@ -7380,7 +7380,7 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           </div>
         </div>
 
-        {/* Pose image — cream container matches modal top so there's NO visible frame */}
+        {/* Pose image — cream coverer matches modal top so there's NO visible frame */}
         <div className="relative w-full" style={{
           height: "min(42vh, 360px)",
           background: "#F8F4ED",
@@ -11466,4 +11466,5 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
 
