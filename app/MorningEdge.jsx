@@ -5855,9 +5855,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       } else {
                         const r = todayRoutine();
                         blocks = (r.segments || []).map((s) => ({
-                          name: s.name,
+                          name: s.kicker,
                           minutes: Math.round((s.durationSec || 0) / 60) || (s.durationSec ? +(s.durationSec / 60).toFixed(1) : 0),
-                          cue: s.cue,
+                          cue: s.title,
                         }));
                       }
                       const tip = f && typeof f === "object" ? f.tip : null;
