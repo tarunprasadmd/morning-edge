@@ -7268,7 +7268,7 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
       utterance.rate = 0.82;   // Slower for calm guidance
       utterance.pitch = 0.95;  // Slightly lower for warmth
       utterance.volume = 0.95;
-      setTimeout(() => { window.speechSynthesis.speak(utterance); }, 80);
+      setTimeout(() => { setTimeout(function(){ window.speechSynthesis.speak(utterance); }, 80); }, 80);
     } catch (e) {
       // Silently fail if speech is not supported
     }
@@ -11424,3 +11424,4 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
