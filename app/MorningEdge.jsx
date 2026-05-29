@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 // ════════════════════════════════════════════════════════════════════
 //  MORNING EDGE  ·  by T-SPOT
@@ -11466,5 +11466,6 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
 
 
