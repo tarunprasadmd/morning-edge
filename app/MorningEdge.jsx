@@ -7924,12 +7924,22 @@ function RoutineFlow({ routine, onClose, onComplete }) {
     if (window.speechSynthesis) window.speechSynthesis.cancel();
   }, [segIdx]);
 
-  // Reset prep + work timers when exercise changes
+  // Track running in a ref so effects can read latest value without stale closure
+  const runningRef = React.useRef(false);
+  React.useEffect(() => { runningRef.current = running; }, [running]);
+
+  // Reset prep + work timers when exercise changes (and re-narrate if mid-routine)
   React.useEffect(() => {
     setPhase("prep");
     setPrepSecondsLeft(15);
     setSecondsLeft(exerciseDurationSec);
     if (window.speechSynthesis) window.speechSynthesis.cancel();
+    // If routine is in progress (auto-advance from previous exercise),
+    // speak the new exercise's cue during its 15-sec prep window.
+    if (runningRef.current) {
+      setTimeout(() => speakEx(ex), 120);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [segIdx, exIdx, exerciseDurationSec]);
 
   // Prep phase tick (15-second countdown before exercise starts)
