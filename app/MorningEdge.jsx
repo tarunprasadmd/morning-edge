@@ -5872,7 +5872,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           {blocks.length > 0 && (
                             <div className="space-y-1.5 mb-3">
                               {blocks.map((b, i) => (
-                                <div key={i} className="flex items-start gap-2 rounded-xl px-2.5 py-2"
+ <button key={i} onClick={() => setRoutineFlowOpen(true)} className=w-full text-left active:scale-[0.98] transition"
                                   style={{
                                     background: "linear-gradient(180deg, #FFFFFF 0%, #FEFCE8 100%)",
                                     border: "1px solid rgba(217,119,6,0.20)",
@@ -11419,6 +11419,8 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
+
 
 
 
