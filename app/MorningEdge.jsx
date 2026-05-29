@@ -7911,38 +7911,39 @@ function RoutineFlow({ routine, onClose, onComplete }) {
     <div className="fixed inset-0 z-50 flex items-stretch justify-center" style={{ background: "#0B1120" }}>
       <div className="w-full max-w-md flex flex-col" style={{ background: "#0B1120" }}>
 
-        {/* Header — single compact line */}
-        <div className="flex-shrink-0 px-4 pt-2 pb-1 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <WorkoutSchematic kicker={segment.kicker} color={segColor} size={22} />
-            <p className="text-[13px] font-bold" style={{ color: "rgba(255,255,255,0.90)", fontFamily: SERIF }}>
-              {segment.title}
-            </p>
-            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: segColor }}>
-              {segIdx + 1}/{routine.segments.length}
-            </span>
-          </div>
-          <button onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}>
-            <X className="w-4 h-4" style={{ color: "rgba(255,255,255,0.70)" }} />
-          </button>
-        </div>
-
-        {/* Progress bar */}
-        <div className="flex-shrink-0 px-4 pb-1 flex gap-1.5">
-          {routine.segments.map((seg, i) => (
-            <div key={i} className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.10)" }}>
-              <div className="h-full transition-all" style={{
-                width: i < segIdx ? "100%" : i === segIdx ? `${progress}%` : "0%",
-                backgroundColor: segColors[i % segColors.length],
-              }} />
-            </div>
-          ))}
-        </div>
-
-        {/* HERO — image fills all remaining space, text overlaid at bottom */}
+        {/* HERO — image fills ENTIRE remaining space */}
         <div className="flex-1 relative" style={{ minHeight: 0 }}>
+
+          {/* Header overlaid on image — top */}
+          <div className="absolute top-0 inset-x-0 z-20 px-3 pt-2 pb-1 flex items-center justify-between"
+            style={{ background: "linear-gradient(to bottom, rgba(11,17,32,0.85) 0%, transparent 100%)" }}>
+            <div className="flex items-center gap-2">
+              <WorkoutSchematic kicker={segment.kicker} color={segColor} size={18} />
+              <p className="text-[12px] font-bold" style={{ color: "rgba(255,255,255,0.90)" }}>
+                {segment.title}
+              </p>
+              <span className="text-[10px] font-bold uppercase" style={{ color: segColor }}>
+                {segIdx + 1}/{routine.segments.length}
+              </span>
+            </div>
+            <button onClick={onClose}
+              className="w-7 h-7 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(0,0,0,0.50)", border: "1px solid rgba(255,255,255,0.15)" }}>
+              <X className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.80)" }} />
+            </button>
+          </div>
+
+          {/* Progress bar overlaid — just below header */}
+          <div className="absolute top-10 inset-x-3 z-20 flex gap-1">
+            {routine.segments.map((seg, i) => (
+              <div key={i} className="flex-1 h-0.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.20)" }}>
+                <div className="h-full transition-all" style={{
+                  width: i < segIdx ? "100%" : i === segIdx ? `${progress}%` : "0%",
+                  backgroundColor: segColors[i % segColors.length],
+                }} />
+              </div>
+            ))}
+          </div>
 
           {/* Exercise dots — inside image, top center */}
           {exercises.length > 1 && (
@@ -8032,7 +8033,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
               style={{ background: "linear-gradient(180deg,rgba(255,255,255,0.15)0%,rgba(255,255,255,0.05)100%)", border: "1px solid rgba(255,255,255,0.20)", color: "rgba(255,255,255,0.80)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15),0 2px 8px rgba(0,0,0,0.3)", minWidth: "72px" }}>
               Back
             </button>
-            <button onClick={() => { if (running) { setRunning(false); } else { setRunning(true); speakEx(ex); } }}
+            <button onClick={() => { setRunning(r => { if (!r) speakEx(ex); return !r; }) }}
               className="flex-1 py-3 rounded-2xl text-[15px] font-black text-white transition active:scale-[0.97]"
               style={{
                 background: running ? "rgba(255,255,255,0.12)" : segColor,
