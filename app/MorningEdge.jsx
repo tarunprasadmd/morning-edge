@@ -1,4 +1,4 @@
-﻿﻿"use client";
+﻿"use client";
 
 // ════════════════════════════════════════════════════════════════════
 //  MORNING EDGE  ·  by T-SPOT
@@ -2290,7 +2290,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
 
         setAccountsState((prev) => [...prev, newAccount]);
         setHoldings((prev) => [...prev, ...tagged]);
-        setHoldingsRefreshedAt(Date.now());`n        setPortfolio((prev) => Array.from(new Set([...prev, ...Array.from(tickers)])));`n        setCashBalance(null);
+        setHoldingsRefreshedAt(Date.now());
+        setPortfolio((prev) => Array.from(new Set([...prev, ...Array.from(tickers)])));
+        setCashBalance(null);
         setCsvImportMessage({
           type: "ok",
           text: `Added ${newHoldings.length} position${newHoldings.length === 1 ? "" : "s"} under "${label}"${withQty ? ` · ${withQty} with shares` : ""}.`,
@@ -5871,7 +5873,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           {blocks.length > 0 && (
                             <div className="space-y-1.5 mb-3">
                               {blocks.map((b, i) => (
-                                <button key={i} onClick={() => setRoutineFlowOpen(true)} className="w-full text-left active:scale-[0.98] transition
+                                <button key={i} onClick={() => setRoutineFlowOpen(true)} className="w-full text-left active:scale-[0.98] transition"
                                   style={{
                                     background: "linear-gradient(180deg, #FFFFFF 0%, #FEFCE8 100%)",
                                     border: "1px solid rgba(217,119,6,0.20)",
