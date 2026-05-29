@@ -5911,18 +5911,19 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                       )}
                                     </div>
                                   </div>
-                                  {/* Middle: BIG minute badge - fills the wasted center space */}
+                                  {/* Middle: BIG rectangular minute badge - sits central */}
                                   {b.minutes != null && (
-                                    <div className="flex-shrink-0 flex flex-col items-center justify-center w-[68px] h-[68px] rounded-2xl"
+                                    <div className="flex-shrink-0 flex flex-col items-center justify-center w-[92px] h-[56px] rounded-2xl"
                                       style={{
+                                        marginRight: 6,
                                         background: "linear-gradient(180deg, #FEF3C7 0%, #FDE68A 50%, #F59E0B 100%)",
                                         border: "1.5px solid rgba(217,119,6,0.50)",
                                         boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.90), inset 0 -2px 5px rgba(120,53,15,0.18), 0 2px 5px rgba(120,53,15,0.22)",
                                       }}>
-                                      <span className="leading-none" style={{ fontSize: 30, fontWeight: 900, color: "#7C2D12", fontFamily: SERIF, letterSpacing: "-0.03em" }}>
+                                      <span className="leading-none" style={{ fontSize: 26, fontWeight: 900, color: "#7C2D12", fontFamily: SERIF, letterSpacing: "-0.03em" }}>
                                         {b.minutes}
                                       </span>
-                                      <span className="leading-none mt-1" style={{ fontSize: 10, fontWeight: 800, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                                      <span className="leading-none mt-0.5" style={{ fontSize: 9, fontWeight: 800, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.10em" }}>
                                         min
                                       </span>
                                     </div>
