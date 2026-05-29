@@ -7268,7 +7268,7 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
       utterance.rate = 0.82;   // Slower for calm guidance
       utterance.pitch = 0.95;  // Slightly lower for warmth
       utterance.volume = 0.95;
-      setTimeout(() => { setTimeout(function(){ window.speechSynthesis.speak(utterance); }, 80); }, 80);
+      setTimeout(function(){ window.speechSynthesis.speak(utterance); }, 80);
     } catch (e) {
       // Silently fail if speech is not supported
     }
@@ -7939,7 +7939,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           )}
 
           {/* Exercise number badge — top left */}
-          <div className="absolute top-3 left-3 w-7 h-7 rounded-full flex items-center justify-center text-[13px] font-black text-white"
+          <div className="absolute top-3 left-3 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
             style={{ background: segColor, boxShadow: `0 2px 8px ${segColor}99` }}>
             {exIdx + 1}
           </div>
@@ -7954,7 +7954,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
           {/* Gradient overlay — bottom third */}
           <div className="absolute inset-x-0 bottom-0 pointer-events-none"
             style={{
-              height: "52%",
+              height: "35%",
               background: "linear-gradient(to top, #0B1120 0%, #0B1120 30%, rgba(11,17,32,0.85) 60%, transparent 100%)",
             }} />
 
@@ -11424,4 +11424,6 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
+
+
 
