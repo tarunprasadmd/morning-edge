@@ -6985,17 +6985,18 @@ function MindsetRowExpandable({ icon, emoji, kicker, body, color, expanded, onTo
           {detail.segments && (
             <div className="space-y-2 mb-3">
               {detail.segments.map((seg, i) => (
-                <div key={i} className="flex items-center gap-3 text-[15px]">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">
-                    <WorkoutSchematic kicker={seg.kicker} color="#0F766E" size={32} />
+                <button key={i} onClick={() => setRoutineFlowOpen(true)}
+                  className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition active:scale-[0.98] text-left"
+                  style={{ background: "rgba(15,118,110,0.07)", border: "1px solid rgba(15,118,110,0.15)" }}>
+                  <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center">
+                    <WorkoutSchematic kicker={seg.kicker} color="#0F766E" size={28} />
                   </div>
-                  <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-white text-slate-800 border border-slate-200">
-                    {Math.round(seg.durationSec / 60)}m
-                  </span>
-                  <span className="text-slate-800">
-                    <span className="font-semibold">{seg.kicker}</span> · {seg.title}
-                  </span>
-                </div>
+                  <div className="flex-1">
+                    <span className="font-bold text-slate-900 text-[14px]">{seg.kicker}</span>
+                    <span className="text-slate-500 text-[13px]"> · {seg.title}</span>
+                  </div>
+                  <span className="text-[12px] font-bold text-teal-700">{Math.round(seg.durationSec / 60)}m</span>
+                </button>
               ))}
             </div>
           )}
@@ -7858,14 +7859,40 @@ function RoutineFlow({ routine, onClose, onComplete }) {
   const segColor = segColors[segIdx % segColors.length];
   const imgSlug = EXERCISE_IMAGE_MAP[ex.name];
 
-  const speakEx = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(`${ex.name}. ${ex.cue}`);
-      u.rate = 0.85;
-      window.speechSynthesis.speak(u);
-    }
-  };
+  const [muted, setMuted] = React.useState(false);
+  const [voice, setVoice] = React.useState(null);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    const pickVoice = () => {
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices.length) return null;
+      const priorities = [/Samantha/i,/Ava/i,/Karen/i,/Allison/i,/Moira/i,/Google.*UK English Female/i,/Microsoft.*Aria/i,/Microsoft.*Jenny/i,/female/i];
+      for (const pat of priorities) {
+        const m = voices.find(v => pat.test(v.name) && /en/i.test(v.lang));
+        if (m) return m;
+      }
+      return voices.find(v => /^en/i.test(v.lang)) || voices[0] || null;
+    };
+    const v = pickVoice();
+    if (v) setVoice(v);
+    const h = () => { const p = pickVoice(); if (p) setVoice(p); };
+    window.speechSynthesis.onvoiceschanged = h;
+    return () => { try { window.speechSynthesis.onvoiceschanged = null; } catch(e) {} };
+  }, []);
+
+  const speakEx = React.useCallback((exercise) => {
+    if (muted || typeof window === "undefined" || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(`${exercise.name}. ${exercise.cue}`);
+    u.rate = 0.80; u.pitch = 1.1;
+    if (voice) u.voice = voice;
+    setTimeout(() => { window.speechSynthesis.speak(u); }, 80);
+  }, [muted, voice]);
+
+  React.useEffect(() => {
+    if (ex && voice) speakEx(ex);
+  }, [exIdx, segIdx, voice]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-stretch justify-center" style={{ background: "#0B1120" }}>
@@ -7938,17 +7965,19 @@ function RoutineFlow({ routine, onClose, onComplete }) {
             </div>
           )}
 
-          {/* Exercise number badge — top left */}
-          <div className="absolute top-3 left-3 px-2 py-1 rounded-full text-[11px] font-bold"
-            style={{ background: segColor, boxShadow: `0 2px 8px ${segColor}99` }}>
-            {exIdx + 1}
-          </div>
+          {/* Exercise counter 1/3 — top left */}
+          {exercises.length > 1 && (
+            <div className="absolute top-3 left-3 px-2 py-1 rounded-full text-[11px] font-bold"
+              style={{ background: "rgba(0,0,0,0.55)", color: segColor, border: `1px solid ${segColor}55`, backdropFilter: "blur(4px)" }}>
+              {exIdx + 1}/{exercises.length}
+            </div>
+          )}
 
-          {/* Sound button — top right */}
-          <button onClick={speakEx}
+          {/* Mute toggle — top right */}
+          <button onClick={() => { setMuted(!muted); window.speechSynthesis?.cancel(); }}
             className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.45)", border: `1px solid ${segColor}55`, backdropFilter: "blur(4px)" }}>
-            <span style={{ fontSize: "15px" }}>🔊</span>
+            style={{ background: "rgba(0,0,0,0.55)", border: `1px solid ${muted ? 'rgba(255,255,255,0.2)' : segColor}`, backdropFilter: "blur(4px)" }}>
+            <span style={{ fontSize: "15px" }}>{muted ? "🔇" : "🔊"}</span>
           </button>
 
           {/* Gradient overlay — bottom third */}
@@ -7988,7 +8017,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
             <button onClick={goBack}
               disabled={segIdx === 0 && exIdx === 0}
               className="px-4 py-3 rounded-2xl text-[14px] font-bold transition active:scale-[0.97] disabled:opacity-30"
-              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.75)", minWidth: "72px" }}>
+              style={{ background: "linear-gradient(180deg,rgba(255,255,255,0.15)0%,rgba(255,255,255,0.05)100%)", border: "1px solid rgba(255,255,255,0.20)", color: "rgba(255,255,255,0.80)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15),0 2px 8px rgba(0,0,0,0.3)", minWidth: "72px" }}>
               Back
             </button>
             <button onClick={() => setRunning(!running)}
@@ -11424,8 +11453,3 @@ function BrokerageGuide({ onClose, onOpenLink, isMobile = false }) {
     </div>
   );
 }
-
-
-
-
-
