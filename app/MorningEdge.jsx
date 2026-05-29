@@ -7824,7 +7824,9 @@ const EXERCISE_IMAGE_MAP = {
 function RoutineFlow({ routine, onClose, onComplete }) {
   const [segIdx, setSegIdx] = React.useState(0);
   const [exIdx, setExIdx] = React.useState(0);
-  const [secondsLeft, setSecondsLeft] = React.useState(routine.segments[0].durationSec);
+  const [phase, setPhase] = React.useState("prep"); // "prep" (15s ready) or "work" (exercise countdown)
+  const [prepSecondsLeft, setPrepSecondsLeft] = React.useState(15);
+  const [secondsLeft, setSecondsLeft] = React.useState(45);
   const [running, setRunning] = React.useState(false);
   const [muted, setMuted] = React.useState(false);
   const [voice, setVoice] = React.useState(null);
@@ -7834,32 +7836,77 @@ function RoutineFlow({ routine, onClose, onComplete }) {
   const ex = exercises[exIdx] || exercises[0];
   const isLastSeg = segIdx === routine.segments.length - 1;
   const isLastEx = exIdx === exercises.length - 1;
-  const minutes = Math.floor(secondsLeft / 60);
-  const seconds = secondsLeft % 60;
+
+  // Per-exercise duration: parse "X seconds" from cue, fallback to segment-split
+  const exerciseDurationSec = React.useMemo(() => {
+    if (!ex || !ex.cue) return Math.floor(segment.durationSec / Math.max(1, exercises.length));
+    const secMatch = ex.cue.match(/(\d+)\s*seconds?/i);
+    if (secMatch) return parseInt(secMatch[1], 10);
+    const minMatch = ex.cue.match(/(\d+)\s*minutes?/i);
+    if (minMatch) return parseInt(minMatch[1], 10) * 60;
+    return Math.floor(segment.durationSec / Math.max(1, exercises.length));
+  }, [ex, segment.durationSec, exercises.length]);
+
+  // Display timer: prep phase shows prep countdown, work phase shows exercise countdown
+  const displaySec = phase === "prep" ? prepSecondsLeft : secondsLeft;
+  const minutes = Math.floor(displaySec / 60);
+  const seconds = displaySec % 60;
   const totalSec = segment.durationSec;
-  const progress = ((totalSec - secondsLeft) / totalSec) * 100;
+  // Segment progress: completed exercises + current exercise progress, scaled to segment
+  const completedFraction = exIdx / Math.max(1, exercises.length);
+  const currentFraction = phase === "work" && exerciseDurationSec > 0
+    ? ((exerciseDurationSec - secondsLeft) / exerciseDurationSec) / Math.max(1, exercises.length)
+    : 0;
+  const progress = (completedFraction + currentFraction) * 100;
   const segColors = ["#0E7490", "#7C3AED", "#DC2626", "#059669"];
   const segColor = segColors[segIdx % segColors.length];
   const imgSlug = EXERCISE_IMAGE_MAP[ex ? ex.name : ""];
 
   // Reset when segment changes
   React.useEffect(() => {
-    setSecondsLeft(routine.segments[segIdx].durationSec);
     setExIdx(0);
     setRunning(false);
     if (window.speechSynthesis) window.speechSynthesis.cancel();
   }, [segIdx]);
 
-  // Timer tick
+  // Reset prep + work timers when exercise changes
   React.useEffect(() => {
-    if (!running || secondsLeft <= 0) return;
+    setPhase("prep");
+    setPrepSecondsLeft(15);
+    setSecondsLeft(exerciseDurationSec);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+  }, [segIdx, exIdx, exerciseDurationSec]);
+
+  // Prep phase tick (15-second countdown before exercise starts)
+  React.useEffect(() => {
+    if (phase !== "prep" || !running) return;
+    if (prepSecondsLeft <= 0) {
+      // Transition to work phase: start exercise + speak the cue
+      setPhase("work");
+      return;
+    }
+    const t = setTimeout(() => setPrepSecondsLeft(s => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [phase, running, prepSecondsLeft]);
+
+  // Work phase tick (exercise countdown)
+  React.useEffect(() => {
+    if (phase !== "work" || !running || secondsLeft <= 0) return;
     const t = setTimeout(() => setSecondsLeft(s => s - 1), 1000);
     return () => clearTimeout(t);
-  }, [running, secondsLeft]);
+  }, [phase, running, secondsLeft]);
 
-  // Beep on zero
+  // Speak the cue when entering work phase
   React.useEffect(() => {
-    if (running && secondsLeft === 0) {
+    if (phase === "work" && running) {
+      speakEx(ex);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
+  // Beep + auto-advance when work phase timer hits zero
+  React.useEffect(() => {
+    if (phase === "work" && running && secondsLeft === 0) {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const o = ctx.createOscillator();
@@ -7870,9 +7917,19 @@ function RoutineFlow({ routine, onClose, onComplete }) {
         g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
         o.stop(ctx.currentTime + 0.4);
       } catch {}
-      setRunning(false);
+      // Auto-advance to next exercise (or segment, or complete)
+      setTimeout(() => {
+        if (!isLastEx) {
+          setExIdx(i => i + 1);
+        } else if (!isLastSeg) {
+          setSegIdx(i => i + 1);
+        } else {
+          setRunning(false);
+          onComplete();
+        }
+      }, 600);
     }
-  }, [running, secondsLeft]);
+  }, [phase, running, secondsLeft, isLastEx, isLastSeg, onComplete]);
 
   // Load best female voice
   React.useEffect(() => {
@@ -7915,8 +7972,18 @@ function RoutineFlow({ routine, onClose, onComplete }) {
       if (window.speechSynthesis) window.speechSynthesis.cancel();
     } else {
       setRunning(true);
-      speakEx(ex);
+      // Speak the exercise cue at start of prep so user knows what's coming
+      if (phase === "prep" && prepSecondsLeft === 15) speakEx(ex);
     }
+  };
+
+  // Reset: restart current exercise (back to 15s prep) and re-speak cue
+  const handleReset = () => {
+    setPhase("prep");
+    setPrepSecondsLeft(15);
+    setSecondsLeft(exerciseDurationSec);
+    setRunning(false);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
   };
 
   return (
@@ -8008,14 +8075,21 @@ function RoutineFlow({ routine, onClose, onComplete }) {
         <p style={{ textAlign: "center", fontSize: 42, fontWeight: 300, fontFamily: SERIF, color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em", margin: "0 0 8px" }}>
           {String(minutes).padStart(1, "0")}:{String(seconds).padStart(2, "0")}
         </p>
+        <p style={{ textAlign: "center", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: phase === "prep" ? "#FCD34D" : segColor, margin: "0 0 10px", opacity: running ? 1 : 0.6 }}>
+          {phase === "prep" ? "Get ready" : "Go"}
+        </p>
         <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={handleReset} title="Restart this exercise"
+            style={{ width: 44, padding: "12px 0", borderRadius: 16, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.78)", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            ↻
+          </button>
           <button onClick={goBack} disabled={segIdx === 0 && exIdx === 0}
-            style={{ minWidth: 72, padding: "12px 16px", borderRadius: 16, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.78)", fontSize: 14, fontWeight: 700, cursor: "pointer", opacity: (segIdx === 0 && exIdx === 0) ? 0.3 : 1 }}>
+            style={{ minWidth: 60, padding: "12px 14px", borderRadius: 16, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.78)", fontSize: 14, fontWeight: 700, cursor: "pointer", opacity: (segIdx === 0 && exIdx === 0) ? 0.3 : 1 }}>
             Back
           </button>
           <button onClick={handleStartPause}
             style={{ flex: 1, padding: "12px 16px", borderRadius: 16, background: running ? "rgba(255,255,255,0.10)" : segColor, border: `2px solid ${segColor}`, color: "#fff", fontSize: 15, fontWeight: 900, cursor: "pointer", boxShadow: running ? "none" : `0 0 20px ${segColor}55` }}>
-            {running ? "Pause" : secondsLeft === totalSec ? "Start" : "Resume"}
+            {running ? "Pause" : (phase === "prep" && prepSecondsLeft === 15 ? "Start" : "Resume")}
           </button>
           <button onClick={goNext}
             style={{ minWidth: 72, padding: "12px 16px", borderRadius: 16, background: segColor, border: `2px solid ${segColor}`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
