@@ -5912,7 +5912,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                       <img src={`/${b.imgSlug}.png`} alt={b.name} className="w-full h-full object-cover" />
                                     </div>
                                   )}
-                                </div>
+                                </button>
                               ))}
                             </div>
                           )}
