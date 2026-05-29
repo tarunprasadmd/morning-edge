@@ -454,7 +454,7 @@ const ROUTINES = [
   {
     name: "Sunday Recovery",
     segments: [
-      { kicker: "Loosen up", title: "Neck & shoulder release", durationSec: 120, exercises: [
+      { kicker: "Loosen up", title: "Neck & shoulder release", durationSec: 180, exercises: [
         { name: "Slow neck rolls", cue: "Drop chin to chest. Roll slowly ear to shoulder, back to center, other side. 4 each direction. Never force." },
         { name: "Shoulder rolls", cue: "Roll shoulders backward in full circles. 10 slow reps. Then forward 10. Let the chest open." },
         { name: "Neck side stretch (left)", cue: "Sit tall. Drop left ear toward left shoulder. Right arm hangs heavy. Hold 20 seconds. Switch." },
@@ -467,7 +467,7 @@ const ROUTINES = [
         { name: "Calf raises", cue: "Hold counter lightly. Rise onto toes, lower with control. Pause 1 second at top. 15 reps." },
         { name: "Standing back leg lift", cue: "Hold counter. Lift one leg straight behind you, squeeze glute at top. 10 each side. Keep spine neutral." },
       ]},
-      { kicker: "Stretch", title: "Full body lengthen", durationSec: 120, exercises: [
+      { kicker: "Stretch", title: "Full body lengthen", durationSec: 180, exercises: [
         { name: "Standing forward fold", cue: "Soft knees. Hinge from hips, arms hang heavy. Sway gently side to side. 30 seconds. Decompress the spine." },
         { name: "Side bends", cue: "Reach one arm overhead, lean to opposite side. Feel the full lateral chain open. 5 each side, hold 5 seconds." },
       ]},
@@ -478,7 +478,7 @@ const ROUTINES = [
   {
     name: "Monday Lower Body",
     segments: [
-      { kicker: "Loosen up", title: "Hip & leg warm-up", durationSec: 120, exercises: [
+      { kicker: "Loosen up", title: "Hip & leg warm-up", durationSec: 180, exercises: [
         { name: "Marching in place", cue: "Lift knees high, swing arms naturally. 45 seconds. Wake up the hips and get blood flowing." },
         { name: "Hip hinge", cue: "Feet hip-width, slight bend in knees. Push hips back, hinge forward keeping back flat. Return to standing. 10 slow reps." },
         { name: "High knees", cue: "Drive knees up toward chest, alternating. 20 reps each leg. Stay light and controlled." },
@@ -492,7 +492,7 @@ const ROUTINES = [
         { name: "Lunge (right leg)", cue: "Step right foot forward. Slow and controlled. Feel the quad and glute work. 10 reps." },
         { name: "Wall sit", cue: "Back flat on wall, slide down to 90 degrees. Hold 20-30 seconds. Rest. 3 rounds. Builds quad strength safely." },
       ]},
-      { kicker: "Stretch", title: "Lower body recovery", durationSec: 120, exercises: [
+      { kicker: "Stretch", title: "Lower body recovery", durationSec: 180, exercises: [
         { name: "Quad stretch", cue: "Stand near wall. Bend knee, hold ankle behind you. Keep knees together. 25 seconds each side." },
         { name: "Standing forward fold", cue: "Hinge and hang. Bend knees slightly. Let gravity decompress the lumbar spine. 30 seconds." },
       ]},
@@ -503,7 +503,7 @@ const ROUTINES = [
   {
     name: "Tuesday Upper Body",
     segments: [
-      { kicker: "Loosen up", title: "Shoulder & arm warm-up", durationSec: 120, exercises: [
+      { kicker: "Loosen up", title: "Shoulder & arm warm-up", durationSec: 180, exercises: [
         { name: "Shoulder rolls", cue: "Big backward circles, 10 reps. Then forward 10. Open the chest and wake the rotator cuffs." },
         { name: "Arm stretch", cue: "Reach both arms overhead, interlace fingers, press palms up. Hold 8 seconds. Lower. 5 reps." },
         { name: "Cross-body arm stretch", cue: "Right arm across chest, left hand gently hugs it. 20 seconds. Switch. Essential shoulder warm-up." },
@@ -517,7 +517,7 @@ const ROUTINES = [
         { name: "Side plank (core focus)", cue: "Forearm on floor, body straight. Add a hip dip and raise. 10 reps each side. Builds lateral core." },
         { name: "X-ray plank", cue: "Full plank, arms straight. Hold body rigid. 20 seconds. 3 rounds. Full core activation." },
       ]},
-      { kicker: "Stretch", title: "Upper body release", durationSec: 120, exercises: [
+      { kicker: "Stretch", title: "Upper body release", durationSec: 180, exercises: [
         { name: "Neck side stretch (right)", cue: "Drop right ear to right shoulder. Hold 20 seconds. Switch. Release neck tension after upper work." },
         { name: "Torso twist", cue: "Hands on hips. Slow rotation left and right. 8 each side. Decompress the spine." },
       ]},
@@ -528,7 +528,7 @@ const ROUTINES = [
   {
     name: "Wednesday Restore",
     segments: [
-      { kicker: "Loosen up", title: "Gentle full body flow", durationSec: 120, exercises: [
+      { kicker: "Loosen up", title: "Gentle full body flow", durationSec: 180, exercises: [
         { name: "Slow neck rolls", cue: "Slow half circles, chin to chest. 4 each side. This is your only full rest day movement." },
         { name: "Side bends", cue: "Arm overhead, lean to opposite side. 5 each side. Open the intercostals and obliques." },
         { name: "Neck side stretch", cue: "Ear to shoulder. Weight of hand only. 20 seconds each side." },
@@ -553,7 +553,7 @@ const ROUTINES = [
   {
     name: "Thursday Core & Glutes",
     segments: [
-      { kicker: "Loosen up", title: "Dynamic warm-up", durationSec: 120, exercises: [
+      { kicker: "Loosen up", title: "Dynamic warm-up", durationSec: 180, exercises: [
         { name: "High knee calf lifts", cue: "Drive knee up then rise onto opposite toe. Alternating. 20 total. Coordination and balance in one move." },
         { name: "Hip hinge", cue: "10 slow reps. Feel the hamstrings and glutes wake up. This is your deadlift pattern." },
         { name: "Marching in place", cue: "45 seconds. Get the heart rate up before core work." },
@@ -567,7 +567,7 @@ const ROUTINES = [
         { name: "Bicycle crunch sequence", cue: "Full controlled sequence — right, center, left. 10 complete cycles. Keep lower back pressed to floor." },
         { name: "Side plank", cue: "Forearm on floor, body straight. Hold 20 seconds each side. 2 rounds. Essential for spine stability." },
       ]},
-      { kicker: "Stretch", title: "Glute & hip release", durationSec: 120, exercises: [
+      { kicker: "Stretch", title: "Glute & hip release", durationSec: 180, exercises: [
         { name: "Standing back leg lift", cue: "Hold counter. Lift and hold 3 seconds at top. 10 each side. Finish strong." },
         { name: "Side bends", cue: "5 each side, hold 8 seconds. Release the obliques after core work." },
       ]},
@@ -578,7 +578,7 @@ const ROUTINES = [
   {
     name: "Friday Full Body",
     segments: [
-      { kicker: "Loosen up", title: "Full activation", durationSec: 120, exercises: [
+      { kicker: "Loosen up", title: "Full activation", durationSec: 180, exercises: [
         { name: "Marching in place", cue: "High knees, arms pumping. 45 seconds. This is your only cardio moment — make it count." },
         { name: "Shoulder rolls", cue: "10 backward, 10 forward. Open everything up." },
         { name: "Torso twist", cue: "8 each side. Spine rotation to prep the whole system." },
@@ -604,7 +604,7 @@ const ROUTINES = [
   {
     name: "Saturday Mobility",
     segments: [
-      { kicker: "Loosen up", title: "Joint mobility flow", durationSec: 120, exercises: [
+      { kicker: "Loosen up", title: "Joint mobility flow", durationSec: 180, exercises: [
         { name: "Slow neck rolls", cue: "4 each direction. Weekend pace — slow and intentional." },
         { name: "Shoulder rolls", cue: "10 backward, 10 forward. No rush today." },
         { name: "Arm stretch", cue: "Reach overhead 5 times. Feel the full thoracic extension." },
@@ -5886,24 +5886,24 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                     {i + 1}
                                   </span>
                                   <div className="flex-1 min-w-0">
-                                    <div className="flex items-baseline gap-1.5">
-                                      <p className="text-[13.5px] font-bold leading-tight" style={{ color: "#451A03" }}>
+                                    <div className="flex items-center justify-between gap-1.5">
+                                      <p className="text-[14px] font-black leading-tight" style={{ color: "#451A03" }}>
                                         {b.name}
                                       </p>
                                       {b.minutes != null && (
-                                        <p className="text-[10.5px] text-amber-700 font-semibold">
+                                        <span className="flex-shrink-0 text-[11px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">
                                           {b.minutes} min
-                                        </p>
+                                        </span>
                                       )}
                                     </div>
                                     {b.cue && (
-                                      <p className="text-[12px] text-slate-700 leading-snug mt-0.5">
+                                      <p className="text-[12.5px] text-slate-700 leading-snug mt-0.5 font-medium">
                                         {b.cue}
                                       </p>
                                     )}
                                     {b.exerciseCount > 0 && (
                                       <p className="text-[11px] text-amber-600 font-medium mt-0.5">
-                                        {b.exerciseCount} exercise{b.exerciseCount > 1 ? "s" : ""}
+                                        {b.exerciseCount} exercise{b.exerciseCount > 1 ? "s" : ""} · tap to begin
                                       </p>
                                     )}
                                   </div>
