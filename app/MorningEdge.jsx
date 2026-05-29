@@ -7901,13 +7901,8 @@ function RoutineFlow({ routine, onClose, onComplete }) {
     return () => clearTimeout(t);
   }, [phase, running, secondsLeft]);
 
-  // Speak the cue when entering work phase
-  React.useEffect(() => {
-    if (phase === "work" && running) {
-      speakEx(ex);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase]);
+  // Voice plays at start of prep phase (via handleStartPause), not again at work.
+  // This keeps narration in the 15-sec prep window where it primes the user.
 
   // Beep + auto-advance when work phase timer hits zero
   React.useEffect(() => {
@@ -8089,15 +8084,42 @@ function RoutineFlow({ routine, onClose, onComplete }) {
             Reset
           </button>
           <button onClick={goBack} disabled={segIdx === 0 && exIdx === 0}
-            style={{ minWidth: 72, padding: "12px 10px", borderRadius: 16, background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.25)", color: "rgba(255,255,255,0.92)", fontSize: 13, fontWeight: 800, cursor: "pointer", opacity: (segIdx === 0 && exIdx === 0) ? 0.3 : 1 }}>
+            style={{
+              minWidth: 72, padding: "12px 10px", borderRadius: 16,
+              background: "linear-gradient(180deg, #475569 0%, #1E293B 45%, #020617 100%)",
+              border: "1.5px solid #0F172A",
+              color: "#F1F5F9",
+              fontSize: 13, fontWeight: 800, cursor: "pointer",
+              boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.30), inset 0 -2px 5px rgba(0,0,0,0.40), 0 2px 5px rgba(0,0,0,0.40)",
+              textShadow: "0 1px 1px rgba(0,0,0,0.40)",
+              opacity: (segIdx === 0 && exIdx === 0) ? 0.35 : 1
+            }}>
             Back
           </button>
           <button onClick={handleStartPause}
-            style={{ flex: 1, padding: "12px 10px", borderRadius: 16, background: running ? "rgba(255,255,255,0.10)" : segColor, border: `2px solid ${segColor}`, color: "#fff", fontSize: 14, fontWeight: 900, cursor: "pointer", boxShadow: running ? "none" : `0 0 18px ${segColor}55` }}>
+            style={{
+              flex: 1, padding: "12px 10px", borderRadius: 16,
+              background: running
+                ? "linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.08) 100%)"
+                : `linear-gradient(180deg, rgba(255,255,255,0.30) 0%, transparent 45%, rgba(0,0,0,0.22) 100%), ${segColor}`,
+              border: `2px solid ${segColor}`,
+              color: "#fff", fontSize: 14, fontWeight: 900, cursor: "pointer",
+              boxShadow: running
+                ? "inset 0 1.5px 0 rgba(255,255,255,0.20)"
+                : `inset 0 1.5px 0 rgba(255,255,255,0.45), inset 0 -2px 5px rgba(0,0,0,0.20), 0 2px 6px rgba(0,0,0,0.30), 0 0 16px ${segColor}55`,
+              textShadow: "0 1px 2px rgba(0,0,0,0.30)"
+            }}>
             {running ? "Pause" : (phase === "prep" && prepSecondsLeft === 15 ? "Start" : "Resume")}
           </button>
           <button onClick={goNext}
-            style={{ minWidth: 72, padding: "12px 10px", borderRadius: 16, background: segColor, border: `2px solid ${segColor}`, color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer" }}>
+            style={{
+              minWidth: 72, padding: "12px 10px", borderRadius: 16,
+              background: `linear-gradient(180deg, rgba(255,255,255,0.30) 0%, transparent 45%, rgba(0,0,0,0.22) 100%), ${segColor}`,
+              border: `2px solid ${segColor}`,
+              color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer",
+              boxShadow: `inset 0 1.5px 0 rgba(255,255,255,0.45), inset 0 -2px 5px rgba(0,0,0,0.20), 0 2px 5px rgba(0,0,0,0.30)`,
+              textShadow: "0 1px 1px rgba(0,0,0,0.30)"
+            }}>
             {isLastSeg && isLastEx ? "Done" : "Next"}
           </button>
         </div>
