@@ -5896,21 +5896,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                       {i + 1}
                                     </span>
                                     <div className="flex-1 min-w-0">
-                                      <div className="flex items-center justify-between gap-1.5 mb-0.5">
-                                        <p className="text-[15px] font-black leading-tight" style={{ color: "#451A03" }}>
-                                          {b.name}
-                                        </p>
-                                        {b.minutes != null && (
-                                          <span className="flex-shrink-0 text-[11px] font-bold text-amber-800 px-2 py-0.5 rounded-full"
-                                            style={{
-                                              background: "linear-gradient(180deg, #FEF3C7 0%, #FDE68A 100%)",
-                                              border: "1px solid rgba(217,119,6,0.35)",
-                                              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
-                                            }}>
-                                            {b.minutes} min
-                                          </span>
-                                        )}
-                                      </div>
+                                      <p className="text-[15px] font-black leading-tight mb-0.5" style={{ color: "#451A03" }}>
+                                        {b.name}
+                                      </p>
                                       {b.cue && (
                                         <p className="text-[12.5px] text-slate-700 leading-snug font-medium">
                                           {b.cue}
@@ -5923,9 +5911,25 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                       )}
                                     </div>
                                   </div>
-                                  {/* Right: bigger glossy thumbnail */}
+                                  {/* Middle: BIG minute badge - fills the wasted center space */}
+                                  {b.minutes != null && (
+                                    <div className="flex-shrink-0 flex flex-col items-center justify-center w-[68px] h-[68px] rounded-2xl"
+                                      style={{
+                                        background: "linear-gradient(180deg, #FEF3C7 0%, #FDE68A 50%, #F59E0B 100%)",
+                                        border: "1.5px solid rgba(217,119,6,0.50)",
+                                        boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.90), inset 0 -2px 5px rgba(120,53,15,0.18), 0 2px 5px rgba(120,53,15,0.22)",
+                                      }}>
+                                      <span className="leading-none" style={{ fontSize: 30, fontWeight: 900, color: "#7C2D12", fontFamily: SERIF, letterSpacing: "-0.03em" }}>
+                                        {b.minutes}
+                                      </span>
+                                      <span className="leading-none mt-1" style={{ fontSize: 10, fontWeight: 800, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                                        min
+                                      </span>
+                                    </div>
+                                  )}
+                                  {/* Right: glossy thumbnail */}
                                   {b.imgSlug && (
-                                    <div className="flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden"
+                                    <div className="flex-shrink-0 w-[68px] h-[68px] rounded-2xl overflow-hidden"
                                       style={{
                                         background: "#0B1120",
                                         boxShadow: "inset 0 0 0 1.5px rgba(217,119,6,0.50), 0 2px 6px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.10)",
@@ -8078,21 +8082,21 @@ function RoutineFlow({ routine, onClose, onComplete }) {
         <p style={{ textAlign: "center", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: phase === "prep" ? "#FCD34D" : segColor, margin: "0 0 10px", opacity: running ? 1 : 0.6 }}>
           {phase === "prep" ? "Get ready" : "Go"}
         </p>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 6 }}>
           <button onClick={handleReset} title="Restart this exercise"
-            style={{ width: 44, padding: "12px 0", borderRadius: 16, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.78)", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            ↻
+            style={{ minWidth: 72, padding: "12px 10px", borderRadius: 16, background: "linear-gradient(180deg, #F87171 0%, #DC2626 50%, #991B1B 100%)", border: "1.5px solid #7F1D1D", color: "#FFFFFF", fontSize: 13, fontWeight: 800, cursor: "pointer", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.30), 0 2px 5px rgba(127,29,29,0.40)", textShadow: "0 1px 1px rgba(0,0,0,0.30)" }}>
+            Reset
           </button>
           <button onClick={goBack} disabled={segIdx === 0 && exIdx === 0}
-            style={{ minWidth: 60, padding: "12px 14px", borderRadius: 16, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.78)", fontSize: 14, fontWeight: 700, cursor: "pointer", opacity: (segIdx === 0 && exIdx === 0) ? 0.3 : 1 }}>
+            style={{ minWidth: 72, padding: "12px 10px", borderRadius: 16, background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.25)", color: "rgba(255,255,255,0.92)", fontSize: 13, fontWeight: 800, cursor: "pointer", opacity: (segIdx === 0 && exIdx === 0) ? 0.3 : 1 }}>
             Back
           </button>
           <button onClick={handleStartPause}
-            style={{ flex: 1, padding: "12px 16px", borderRadius: 16, background: running ? "rgba(255,255,255,0.10)" : segColor, border: `2px solid ${segColor}`, color: "#fff", fontSize: 15, fontWeight: 900, cursor: "pointer", boxShadow: running ? "none" : `0 0 20px ${segColor}55` }}>
+            style={{ flex: 1, padding: "12px 10px", borderRadius: 16, background: running ? "rgba(255,255,255,0.10)" : segColor, border: `2px solid ${segColor}`, color: "#fff", fontSize: 14, fontWeight: 900, cursor: "pointer", boxShadow: running ? "none" : `0 0 18px ${segColor}55` }}>
             {running ? "Pause" : (phase === "prep" && prepSecondsLeft === 15 ? "Start" : "Resume")}
           </button>
           <button onClick={goNext}
-            style={{ minWidth: 72, padding: "12px 16px", borderRadius: 16, background: segColor, border: `2px solid ${segColor}`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            style={{ minWidth: 72, padding: "12px 10px", borderRadius: 16, background: segColor, border: `2px solid ${segColor}`, color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer" }}>
             {isLastSeg && isLastEx ? "Done" : "Next"}
           </button>
         </div>
