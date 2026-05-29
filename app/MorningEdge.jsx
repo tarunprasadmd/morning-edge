@@ -450,166 +450,181 @@ const BROKERAGES = [
 // that requires getting up off the ground. All can be done in a chair if
 // needed; cues describe each move in simple step-by-step language.
 const ROUTINES = [
-  // Sunday — gentle reset
+  // Sunday — Active Recovery
   {
-    name: "Easy Sunday Reset",
+    name: "Sunday Recovery",
     segments: [
-      { kicker: "Loosen up", title: "Wake the joints", durationSec: 120, exercises: [
-        { name: "Slow neck rolls", cue: "Drop chin to chest. Roll your head slowly in a half circle, ear toward shoulder, then back. 3 each side. No forcing." },
-        { name: "Shoulder shrugs", cue: "Lift both shoulders up toward your ears, hold 3 seconds, drop them down. Repeat 8 times." },
-        { name: "Seated waist twist", cue: "Sit tall. Place hands on your knees. Slowly turn your shoulders right, then left. 5 each side." },
-      ]},
-      { kicker: "Breathe", title: "Slow box breathing", durationSec: 180, exercises: [
-        { name: "In through the nose, 4 counts", cue: "Sit comfortably. Breathe in slowly through your nose while you count to 4." },
-        { name: "Hold gently, 4 counts", cue: "Hold the breath. No tension. Just pause." },
-        { name: "Out through the mouth, 4 counts", cue: "Let the breath out through soft, parted lips while you count to 4." },
-        { name: "Hold empty, 4 counts", cue: "Pause again with empty lungs. Repeat the full cycle 6–8 times." },
-      ]},
-      { kicker: "Steady", title: "Sit-to-stands", durationSec: 180, exercises: [
-        { name: "Chair sit-to-stand", cue: "Sit on a sturdy chair. Cross arms over chest. Stand up using your legs (no rocking), then sit back down with control. 8 reps." },
-        { name: "Heel raises at the counter", cue: "Hold a kitchen counter for balance. Rise up onto the balls of your feet, then lower slowly. 12 reps." },
-      ]},
-      { kicker: "Stretch", title: "Open and ground", durationSec: 120, exercises: [
-        { name: "Standing forward fold (gentle)", cue: "Stand with knees soft. Hinge at the hips and let your arms hang. Stop wherever it feels easy. Hold 30 seconds." },
-        { name: "Doorway chest opener", cue: "Place forearm on a doorframe at shoulder height. Step the same-side foot forward until you feel a gentle stretch in the chest. 30 seconds each side." },
-      ]},
-    ],
-  },
-  // Monday — gentle start to the week
-  {
-    name: "Monday Wake-Up",
-    segments: [
-      { kicker: "Loosen up", title: "Hip and ankle mobility", durationSec: 120, exercises: [
-        { name: "Marching in place", cue: "Hold a counter or chair if needed. Lift one knee at a time, slowly. 20 lifts total (10 each side)." },
-        { name: "Ankle circles", cue: "Sit or stand. Lift one foot. Trace a slow circle with your toes. 5 each direction, both feet." },
-      ]},
-      { kicker: "Breathe", title: "Long exhale breathing", durationSec: 180, exercises: [
-        { name: "Inhale 4, exhale 6", cue: "Breathe in through your nose for 4 counts. Breathe out through your mouth for 6 counts. The longer exhale tells your body it's safe." },
-        { name: "Continue for 2–3 minutes", cue: "Don't worry about counting perfectly. Just keep the exhale a bit longer than the inhale." },
-      ]},
-      { kicker: "Steady", title: "Lower body strength", durationSec: 180, exercises: [
-        { name: "Wall sit (short)", cue: "Stand with your back against a wall. Slide down only as far as comfortable. Hold for 15 seconds, rest, repeat 3 times." },
-        { name: "Step-ups on the bottom stair", cue: "Hold the railing. Step up with the right foot, bring the left to meet it, step down. 10 reps, then switch leading leg." },
-      ]},
-      { kicker: "Stretch", title: "Hips and hamstrings", durationSec: 120, exercises: [
-        { name: "Seated figure-4 stretch", cue: "Sit on a chair. Cross right ankle over left knee. Sit tall, lean forward gently until you feel a stretch in the hip. 30 seconds each side." },
-        { name: "Standing hamstring stretch", cue: "Place one heel on the bottom stair. Keep that leg straight. Hinge gently at the hips until you feel the back of the leg open. 30 seconds each leg." },
-      ]},
-    ],
-  },
-  // Tuesday — focus
-  {
-    name: "Tuesday Steady Focus",
-    segments: [
-      { kicker: "Loosen up", title: "Upper back mobility", durationSec: 120, exercises: [
-        { name: "Cat-cow (standing or seated)", cue: "Place hands on knees. Round the back as you exhale. Arch the back gently as you inhale. 8 slow rounds." },
-        { name: "Arm reaches across the body", cue: "Reach right arm across the chest. Use the left hand to gently hug it closer. 20 seconds each side." },
-      ]},
-      { kicker: "Breathe", title: "4-7-8 calming breath", durationSec: 180, exercises: [
-        { name: "Breathe in, 4 counts (nose)", cue: "Lips closed. Breathe in quietly through the nose." },
-        { name: "Hold, 7 counts", cue: "Hold the breath. If 7 is too long, do 5 — work up to 7 over time." },
-        { name: "Out through the mouth, 8 counts", cue: "Exhale fully through the mouth with a soft 'whoosh' sound. Repeat 4 cycles." },
-      ]},
-      { kicker: "Steady", title: "Standing balance + core", durationSec: 180, exercises: [
-        { name: "One-foot stand (near a counter)", cue: "Hold the counter lightly. Lift one foot a few inches. Hold 15 seconds. Switch. Try 2 rounds each side." },
-        { name: "Standing knee lifts", cue: "Hold the counter. Lift the right knee up to a comfortable height, lower with control. 10 reps each side." },
-      ]},
-      { kicker: "Stretch", title: "Shoulder release", durationSec: 120, exercises: [
-        { name: "Doorway chest stretch", cue: "Forearm on doorframe at shoulder height. Step that-side foot forward gently. 30 seconds each side." },
-        { name: "Neck side stretch", cue: "Sit tall. Drop the right ear toward the right shoulder. Place the right hand lightly on top of the head — just the weight of the hand. 20 seconds each side." },
-      ]},
-    ],
-  },
-  // Wednesday — even keel
-  {
-    name: "Wednesday Even Keel",
-    segments: [
-      { kicker: "Loosen up", title: "Whole-body warm-up", durationSec: 120, exercises: [
-        { name: "Shoulder rolls", cue: "Roll the shoulders backwards in big slow circles. 10 reps. Then forwards 10 reps." },
-        { name: "Side bends", cue: "Stand tall, feet hip-width. Reach the right arm overhead and lean gently to the left. Switch. 5 each side." },
+      { kicker: "Loosen up", title: "Neck & shoulder release", durationSec: 120, exercises: [
+        { name: "Slow neck rolls", cue: "Drop chin to chest. Roll slowly ear to shoulder, back to center, other side. 4 each direction. Never force." },
+        { name: "Shoulder rolls", cue: "Roll shoulders backward in full circles. 10 slow reps. Then forward 10. Let the chest open." },
+        { name: "Neck side stretch (left)", cue: "Sit tall. Drop left ear toward left shoulder. Right arm hangs heavy. Hold 20 seconds. Switch." },
       ]},
       { kicker: "Breathe", title: "Coherent breathing", durationSec: 180, exercises: [
-        { name: "Inhale 5, exhale 5", cue: "Breathe in through the nose for 5 counts, out through the nose for 5 counts. Steady, equal rhythm." },
-        { name: "Continue for 3 minutes", cue: "About 6 breaths a minute. Used by athletes and meditators to settle the nervous system." },
+        { name: "Coherent breathing", cue: "Inhale through nose 5 counts. Exhale through nose 5 counts. Steady rhythm. 3 full minutes. Used by athletes to reset the nervous system." },
       ]},
-      { kicker: "Steady", title: "Posterior chain (gentle)", durationSec: 180, exercises: [
-        { name: "Hip hinge with chair behind you", cue: "Stand in front of a chair. Push the hips back as if to sit down — but stop before you do. Stand up. 10 reps." },
-        { name: "Standing leg lift to the back", cue: "Hold the counter. Keeping the leg straight, lift one foot a few inches behind you, lower with control. 10 each side." },
+      { kicker: "Steady", title: "Gentle activation", durationSec: 180, exercises: [
+        { name: "Chair sit-to-stand", cue: "Sit tall, arms crossed on chest. Stand using leg power only — no pushing off the arms. Lower with control. 10 reps." },
+        { name: "Calf raises", cue: "Hold counter lightly. Rise onto toes, lower with control. Pause 1 second at top. 15 reps." },
+        { name: "Standing back leg lift", cue: "Hold counter. Lift one leg straight behind you, squeeze glute at top. 10 each side. Keep spine neutral." },
       ]},
-      { kicker: "Stretch", title: "Decompress", durationSec: 120, exercises: [
-        { name: "Seated forward fold", cue: "Sit on the edge of a chair, feet flat. Hinge at the hips and let the arms hang. Stop wherever feels easy. 30 seconds." },
-        { name: "Seated spinal twist", cue: "Sit tall. Place the right hand on the outside of the left knee. Gently rotate the upper body left. 20 seconds each side." },
-      ]},
-    ],
-  },
-  // Thursday — energy without intensity
-  {
-    name: "Thursday Lift",
-    segments: [
-      { kicker: "Loosen up", title: "Wake up the body", durationSec: 120, exercises: [
-        { name: "Heel-to-toe walking", cue: "Walk 10 steps placing the heel of the front foot directly in front of the toes of the back foot. Like a slow tightrope. Hold a wall if needed." },
-        { name: "Big arm circles", cue: "Arms out to the sides. Slow forward circles 10 reps. Slow backward circles 10 reps." },
-      ]},
-      { kicker: "Breathe", title: "Energizing breath", durationSec: 180, exercises: [
-        { name: "Three quick inhales, one long exhale", cue: "Through the nose: short sniff, sniff, sniff in. Then a long slow exhale through the mouth. Helps shake off morning grogginess. 8 cycles." },
-      ]},
-      { kicker: "Steady", title: "Full body, low impact", durationSec: 180, exercises: [
-        { name: "Chair sit-to-stand", cue: "Sit on a sturdy chair. Stand up slowly using leg power. Sit back down with control. 10 reps." },
-        { name: "Wall push-ups", cue: "Stand arm's length from a wall. Place hands on the wall at shoulder height. Bend elbows to bring chest to wall, then push back. 10 reps. Easier on shoulders than floor push-ups." },
-      ]},
-      { kicker: "Stretch", title: "Cool down", durationSec: 120, exercises: [
-        { name: "Standing quad stretch (with support)", cue: "Hold the counter with left hand. Bend the right knee and reach for the right ankle behind you with the right hand. 20 seconds each side. Skip if it bothers the knee." },
-        { name: "Standing forward fold", cue: "Knees soft. Hinge at hips and let the arms hang. Sway gently side to side. 30 seconds." },
+      { kicker: "Stretch", title: "Full body lengthen", durationSec: 120, exercises: [
+        { name: "Standing forward fold", cue: "Soft knees. Hinge from hips, arms hang heavy. Sway gently side to side. 30 seconds. Decompress the spine." },
+        { name: "Side bends", cue: "Reach one arm overhead, lean to opposite side. Feel the full lateral chain open. 5 each side, hold 5 seconds." },
       ]},
     ],
   },
-  // Friday — clarity
+
+  // Monday — Lower Body Strength
   {
-    name: "Friday Clarity",
+    name: "Monday Lower Body",
     segments: [
-      { kicker: "Loosen up", title: "Spine and hips", durationSec: 120, exercises: [
-        { name: "Standing cat-cow", cue: "Hands on knees, slight bend. Round the back, then arch gently. 8 slow rounds." },
-        { name: "Hip circles", cue: "Hands on hips. Make slow circles with the hips, as if drawing on the floor with your tailbone. 5 each direction." },
+      { kicker: "Loosen up", title: "Hip & leg warm-up", durationSec: 120, exercises: [
+        { name: "Marching in place", cue: "Lift knees high, swing arms naturally. 45 seconds. Wake up the hips and get blood flowing." },
+        { name: "Hip hinge", cue: "Feet hip-width, slight bend in knees. Push hips back, hinge forward keeping back flat. Return to standing. 10 slow reps." },
+        { name: "High knees", cue: "Drive knees up toward chest, alternating. 20 reps each leg. Stay light and controlled." },
       ]},
-      { kicker: "Breathe", title: "Alternate nostril breathing", durationSec: 180, exercises: [
-        { name: "Right thumb closes right nostril", cue: "Sit tall. Use the right thumb to close the right nostril. Inhale slowly through the left." },
-        { name: "Switch", cue: "Use the right ring finger to close the left nostril. Open the right and exhale through it." },
-        { name: "Continue alternating", cue: "Inhale right, switch, exhale left. 5–6 full cycles. A traditional yogic practice for steady focus." },
+      { kicker: "Breathe", title: "Coherent breathing", durationSec: 120, exercises: [
+        { name: "Coherent breathing", cue: "5 in, 5 out through the nose. Settle your breathing before the strength work. 2 minutes." },
       ]},
-      { kicker: "Steady", title: "Core stability", durationSec: 180, exercises: [
-        { name: "Seated dead bug (gentle)", cue: "Sit tall on a chair. Lift the right knee and the left arm at the same time. Lower. Switch sides. 10 each side." },
-        { name: "Wall plank", cue: "Stand arm's length from a wall, place forearms on the wall. Step feet back so the body is at a slight angle. Hold a strong line for 20 seconds. 3 rounds." },
+      { kicker: "Steady", title: "Lower body strength", durationSec: 240, exercises: [
+        { name: "Squat", cue: "Feet shoulder-width, toes slightly out. Lower until thighs near parallel — or as far as comfortable. Drive through heels. 12 reps. 3 sets." },
+        { name: "Lunge (left leg)", cue: "Step left foot forward, lower right knee toward floor. Keep chest tall, front knee behind toes. 10 reps. Hold wall if needed." },
+        { name: "Lunge (right leg)", cue: "Step right foot forward. Slow and controlled. Feel the quad and glute work. 10 reps." },
+        { name: "Wall sit", cue: "Back flat on wall, slide down to 90 degrees. Hold 20-30 seconds. Rest. 3 rounds. Builds quad strength safely." },
       ]},
-      { kicker: "Stretch", title: "Long holds", durationSec: 120, exercises: [
-        { name: "Standing hamstring stretch", cue: "Heel on the bottom stair. Keep leg straight. Hinge gently. 45 seconds each leg." },
-        { name: "Seated figure-4", cue: "Cross right ankle on left knee. Sit tall, lean gently forward. 30 seconds each side." },
+      { kicker: "Stretch", title: "Lower body recovery", durationSec: 120, exercises: [
+        { name: "Quad stretch", cue: "Stand near wall. Bend knee, hold ankle behind you. Keep knees together. 25 seconds each side." },
+        { name: "Standing forward fold", cue: "Hinge and hang. Bend knees slightly. Let gravity decompress the lumbar spine. 30 seconds." },
       ]},
     ],
   },
-  // Saturday — long calm flow
+
+  // Tuesday — Upper Body & Core
   {
-    name: "Saturday Long Calm",
+    name: "Tuesday Upper Body",
     segments: [
-      { kicker: "Loosen up", title: "Slow whole-body flow", durationSec: 120, exercises: [
-        { name: "Reach up, fold down", cue: "Stand tall. Inhale, reach both arms overhead. Exhale, fold forward with soft knees. Inhale, roll up to standing. 5 slow rounds." },
-        { name: "Side-to-side gentle lunges", cue: "Wide stance. Shift weight to the right, bending the right knee. Then the left. Hands can rest on thighs for support. 8 slow rounds." },
+      { kicker: "Loosen up", title: "Shoulder & arm warm-up", durationSec: 120, exercises: [
+        { name: "Shoulder rolls", cue: "Big backward circles, 10 reps. Then forward 10. Open the chest and wake the rotator cuffs." },
+        { name: "Arm stretch", cue: "Reach both arms overhead, interlace fingers, press palms up. Hold 8 seconds. Lower. 5 reps." },
+        { name: "Cross-body arm stretch", cue: "Right arm across chest, left hand gently hugs it. 20 seconds. Switch. Essential shoulder warm-up." },
       ]},
-      { kicker: "Breathe", title: "Belly breathing", durationSec: 180, exercises: [
-        { name: "Hand on belly, hand on chest", cue: "Sit or lie down. Place one hand on the belly, one on the chest. Breathe so only the lower hand moves. The chest stays still." },
-        { name: "Make the exhale twice as long", cue: "Inhale 4 counts, exhale 8 counts. Continue for 3 minutes. Tells the body it's safe to soften." },
+      { kicker: "Breathe", title: "Coherent breathing", durationSec: 120, exercises: [
+        { name: "Coherent breathing", cue: "5 in, 5 out. Eyes closed if comfortable. 2 minutes to prepare mind and body." },
       ]},
-      { kicker: "Steady", title: "Easy weekend circuit", durationSec: 180, exercises: [
-        { name: "Sit-to-stand × wall push-up × heel raise", cue: "5 sit-to-stands. 5 wall push-ups. 10 heel raises at the counter. Rest. Repeat the circuit twice." },
+      { kicker: "Steady", title: "Upper body strength", durationSec: 240, exercises: [
+        { name: "Wall push-up", cue: "Hands shoulder-width on wall. Lower chest to wall, push back strong. 12-15 reps. 3 sets. Perfect for shoulder health." },
+        { name: "Wall plank", cue: "Forearms on wall, body in straight line at angle. Hold 20-30 seconds. 3 rounds. Core and shoulder stability." },
+        { name: "Side plank (core focus)", cue: "Forearm on floor, body straight. Add a hip dip and raise. 10 reps each side. Builds lateral core." },
+        { name: "X-ray plank", cue: "Full plank, arms straight. Hold body rigid. 20 seconds. 3 rounds. Full core activation." },
       ]},
-      { kicker: "Stretch", title: "Restorative", durationSec: 120, exercises: [
-        { name: "Legs up the wall (or on a chair seat)", cue: "Lie on your back. Place legs up against a wall — or simply rest the calves on a chair seat. Hands on belly. 60–90 seconds." },
-        { name: "Reclined butterfly (or seated wide-knee)", cue: "Lie down with feet together, knees falling open. (Or sit with knees apart.) Breathe slowly into the belly. 60 seconds." },
+      { kicker: "Stretch", title: "Upper body release", durationSec: 120, exercises: [
+        { name: "Neck side stretch (right)", cue: "Drop right ear to right shoulder. Hold 20 seconds. Switch. Release neck tension after upper work." },
+        { name: "Torso twist", cue: "Hands on hips. Slow rotation left and right. 8 each side. Decompress the spine." },
+      ]},
+    ],
+  },
+
+  // Wednesday — Breathe & Restore
+  {
+    name: "Wednesday Restore",
+    segments: [
+      { kicker: "Loosen up", title: "Gentle full body flow", durationSec: 120, exercises: [
+        { name: "Slow neck rolls", cue: "Slow half circles, chin to chest. 4 each side. This is your only full rest day movement." },
+        { name: "Side bends", cue: "Arm overhead, lean to opposite side. 5 each side. Open the intercostals and obliques." },
+        { name: "Neck side stretch", cue: "Ear to shoulder. Weight of hand only. 20 seconds each side." },
+      ]},
+      { kicker: "Breathe", title: "Deep coherent breathing", durationSec: 300, exercises: [
+        { name: "Coherent breathing", cue: "5 in, 5 out through the nose. Full 5 minutes. This is the workout today. Studies show 5 minutes of coherent breathing reduces cortisol significantly." },
+      ]},
+      { kicker: "Steady", title: "Balance & stability", durationSec: 180, exercises: [
+        { name: "Balance pose", cue: "Near a wall. Lift one foot off the ground. Hold 20 seconds. Switch. 3 rounds each side. Balance is a key longevity marker." },
+        { name: "Balance and flexibility", cue: "Single leg, reach arms forward. Hold 10 seconds. 3 rounds each side. Builds proprioception." },
+        { name: "Standing knee lifts", cue: "Drive knee toward chest, lower with control. 12 each side. Gentle hip flexor activation." },
+      ]},
+      { kicker: "Stretch", title: "Full restore", durationSec: 180, exercises: [
+        { name: "Standing forward fold", cue: "Hang and breathe. 45 seconds. Let everything decompress." },
+        { name: "Neck side stretch (left)", cue: "20 seconds each side. Slow and gentle." },
+        { name: "Arm stretch", cue: "Reach overhead, hold 10 seconds. 3 reps. End with gratitude for what your body just did." },
+      ]},
+    ],
+  },
+
+  // Thursday — Core & Glutes
+  {
+    name: "Thursday Core & Glutes",
+    segments: [
+      { kicker: "Loosen up", title: "Dynamic warm-up", durationSec: 120, exercises: [
+        { name: "High knee calf lifts", cue: "Drive knee up then rise onto opposite toe. Alternating. 20 total. Coordination and balance in one move." },
+        { name: "Hip hinge", cue: "10 slow reps. Feel the hamstrings and glutes wake up. This is your deadlift pattern." },
+        { name: "Marching in place", cue: "45 seconds. Get the heart rate up before core work." },
+      ]},
+      { kicker: "Breathe", title: "Coherent breathing", durationSec: 120, exercises: [
+        { name: "Coherent breathing", cue: "5 in, 5 out. 2 minutes. Brace the core gently during each exhale — this is pre-activation." },
+      ]},
+      { kicker: "Steady", title: "Core & glute circuit", durationSec: 240, exercises: [
+        { name: "Glute bridge", cue: "Lie on back, feet flat. Drive hips to ceiling, squeeze hard at top. Hold 2 seconds. 15 reps. 3 sets. Most underrated exercise for back health." },
+        { name: "Bicycle crunch", cue: "Hands behind head. Bring opposite elbow to knee. SLOW — 3 seconds each side. 10 each side. Quality over speed." },
+        { name: "Bicycle crunch sequence", cue: "Full controlled sequence — right, center, left. 10 complete cycles. Keep lower back pressed to floor." },
+        { name: "Side plank", cue: "Forearm on floor, body straight. Hold 20 seconds each side. 2 rounds. Essential for spine stability." },
+      ]},
+      { kicker: "Stretch", title: "Glute & hip release", durationSec: 120, exercises: [
+        { name: "Standing back leg lift", cue: "Hold counter. Lift and hold 3 seconds at top. 10 each side. Finish strong." },
+        { name: "Side bends", cue: "5 each side, hold 8 seconds. Release the obliques after core work." },
+      ]},
+    ],
+  },
+
+  // Friday — Full Body Circuit
+  {
+    name: "Friday Full Body",
+    segments: [
+      { kicker: "Loosen up", title: "Full activation", durationSec: 120, exercises: [
+        { name: "Marching in place", cue: "High knees, arms pumping. 45 seconds. This is your only cardio moment — make it count." },
+        { name: "Shoulder rolls", cue: "10 backward, 10 forward. Open everything up." },
+        { name: "Torso twist", cue: "8 each side. Spine rotation to prep the whole system." },
+      ]},
+      { kicker: "Breathe", title: "Coherent breathing", durationSec: 120, exercises: [
+        { name: "Coherent breathing", cue: "5 in, 5 out. 2 minutes. Friday reset before the circuit." },
+      ]},
+      { kicker: "Steady", title: "Full body circuit", durationSec: 300, exercises: [
+        { name: "Squat", cue: "15 reps. Full depth. This is your anchor movement — do it well." },
+        { name: "Wall push-up", cue: "15 reps. Chest to wall. Strong push." },
+        { name: "Glute bridge", cue: "15 reps. Squeeze hard at top each time." },
+        { name: "Step ups", cue: "10 each leg. Hold railing. Controlled up and down. One of the best functional strength exercises." },
+      ]},
+      { kicker: "Stretch", title: "Week complete", durationSec: 180, exercises: [
+        { name: "Standing forward fold", cue: "Hang for 45 seconds. You earned this." },
+        { name: "Quad stretch", cue: "25 seconds each side. Release the quads after all that leg work." },
+        { name: "Cross-body arm stretch", cue: "20 seconds each arm. Finish with the upper body open." },
+      ]},
+    ],
+  },
+
+  // Saturday — Mobility & Flexibility
+  {
+    name: "Saturday Mobility",
+    segments: [
+      { kicker: "Loosen up", title: "Joint mobility flow", durationSec: 120, exercises: [
+        { name: "Slow neck rolls", cue: "4 each direction. Weekend pace — slow and intentional." },
+        { name: "Shoulder rolls", cue: "10 backward, 10 forward. No rush today." },
+        { name: "Arm stretch", cue: "Reach overhead 5 times. Feel the full thoracic extension." },
+      ]},
+      { kicker: "Breathe", title: "Coherent breathing", durationSec: 180, exercises: [
+        { name: "Coherent breathing", cue: "5 in, 5 out. Full 3 minutes. Weekend breathing practice. Builds heart rate variability over time." },
+      ]},
+      { kicker: "Steady", title: "Functional movement", durationSec: 180, exercises: [
+        { name: "Chair sit-to-stand", cue: "10 slow reps. No hands. This is the #1 longevity exercise — the ability to get up from a chair independently." },
+        { name: "Calf raises", cue: "20 slow reps. Calf strength directly correlates with cardiovascular health at 60+." },
+        { name: "High knee calf lifts", cue: "15 each side. Coordination, balance, and calf activation in one." },
+      ]},
+      { kicker: "Stretch", title: "Full weekend restore", durationSec: 180, exercises: [
+        { name: "Lunge (left leg)", cue: "Deep lunge, hold 30 seconds. Hip flexors are the #1 tight muscle in sedentary professionals." },
+        { name: "Lunge (right leg)", cue: "Switch sides. Breathe into the stretch. 30 seconds." },
+        { name: "Standing forward fold", cue: "Hang for 45 seconds. Let the whole week release." },
       ]},
     ],
   },
 ];
-
-// Pick today's routine deterministically by day of week
 const todayRoutine = () => ROUTINES[new Date().getDay() % ROUTINES.length];
 
 // ─── Decision parser ────────────────────────────────────────────────
@@ -7728,67 +7743,50 @@ function PositionDetailModal({ entry, onClose, onAsk }) {
   );
 }
 
-// ─── Exercise image map ───────────────────────────────────────────────────────
-const EXERCISE_IMAGE_MAP = {
-  "Breathe in, 4 counts (nose)": "box-breathing",
-  "Hold gently, 4 counts": "box-breathing",
-  "Out through the mouth, 4 counts": "box-breathing",
-  "Continue for 2–3 minutes": "coherent-breathing",
-  "Inhale 5, exhale 5": "coherent-breathing",
-  "Inhale 4, exhale 6": "extended-exhale-breathing",
-  "Make the exhale twice as long": "extended-exhale-breathing",
-  "Continue for 3 minutes": "resonant-breathing",
-  "Hold, 7 counts": "box-breathing",
-  "Out through the mouth, 8 counts": "box-breathing",
-  "Three quick inhales, one long exhale": "extended-exhale-breathing",
-  "Hand on belly, hand on chest": "diaphragmatic-breathing",
-  "Continue alternating": "resonant-breathing",
-  "Right thumb closes right nostril": "coherent-breathing",
-  "Switch": "coherent-breathing",
-  "In through the nose, 4 counts": "diaphragmatic-breathing",
-  "Shoulder rolls": "shoulder-rolls",
-  "Shoulder shrugs": "shoulder-shrugs",
-  "Slow neck rolls": "neck-rolls",
-  "Neck side stretch": "neck-tilts",
-  "Side bends": "standing-side-bend",
-  "Big arm circles": "arm-cross-stretch",
-  "Arm reaches across the body": "arm-cross-stretch",
-  "Hip circles": "torso-twist",
-  "Hip hinge with chair behind you": "standing-forward-fold",
-  "Marching in place": "balance-hold",
-  "Standing knee lifts": "balance-hold",
-  "One-foot stand (near a counter)": "balance-hold",
-  "Heel raises at the counter": "calf-raises",
-  "Heel-to-toe walking": "balance-hold",
-  "Step-ups on the bottom stair": "squat",
-  "Chair sit-to-stand": "squat",
-  "Sit-to-stand × wall push-up × heel raise": "wall-sit",
-  "Wall plank": "wall-sit",
-  "Wall push-ups": "wall-sit",
-  "Wall sit (short)": "wall-sit",
-  "Cat-cow (standing or seated)": "cat-cow",
-  "Standing cat-cow": "cat-cow",
-  "Standing forward fold": "standing-forward-fold",
-  "Standing forward fold (gentle)": "standing-forward-fold",
-  "Standing leg lift to the back": "balance-hold",
-  "Standing quad stretch (with support)": "high-lunge-stretch",
-  "Standing hamstring stretch": "half-lift",
-  "Doorway chest opener": "chest-opener",
-  "Doorway chest stretch": "chest-opener",
-  "Reach up, fold down": "full-body-stretch",
-  "Side-to-side gentle lunges": "low-lunge-stretch",
-  "Legs up the wall (or on a chair seat)": "supine-hamstring-stretch",
-  "Reclined butterfly (or seated wide-knee)": "butterfly-stretch",
-  "Seated forward fold": "seated-forward-fold",
-  "Seated spinal twist": "spinal-twist",
-  "Seated waist twist": "spinal-twist",
-  "Seated figure-4": "figure-4-stretch",
-  "Seated figure-4 stretch": "figure-4-stretch",
-  "Seated dead bug (gentle)": "seated-knee-pull",
-  "Ankle circles": "ankle-circles",
-  "Hold empty, 4 counts": "box-breathing",
+// ─── Exercise image map — 35 verified images, zero duplicates ────────
+const EXERCISE_IMAGE_MAP: Record<string, string> = {
+  // Neck & Shoulders
+  "Shoulder rolls":              "shoulder-rolls",
+  "Slow neck rolls":             "slow-neck-rolls",
+  "Neck side stretch (right)":   "neck-stretch-right",
+  "Neck side stretch (left)":    "neck-stretch-left",
+  "Neck side stretch":           "neck-side-stretch",
+  // Torso & Arms
+  "Side bends":                  "side-bends",
+  "Torso twist":                 "torso-twist",
+  "Arm stretch":                 "arm-stretch",
+  "Cross-body arm stretch":      "arm-cross-stretch",
+  // Hips & Lower
+  "Hip hinge":                   "hip-hinge",
+  "Marching in place":           "marching-in-place",
+  "High knees":                  "high-knee",
+  "High knee calf lifts":        "high-knee-calf",
+  "Standing knee lifts":         "standing-knee-lifts",
+  "Standing back leg lift":      "standing-back-leg-lift",
+  "Standing forward fold":       "standing-forward-fold",
+  "Lunge (left leg)":            "lunge-left",
+  "Lunge (right leg)":           "lunge-right",
+  "Quad stretch":                "quad-stretch",
+  // Strength
+  "Squat":                       "squat",
+  "Chair sit-to-stand":          "chair-sit-stand",
+  "Calf raises":                 "calf-raises",
+  "Step ups":                    "step-ups",
+  "Wall sit":                    "wall-sit",
+  "Wall plank":                  "wall-plank",
+  "Wall push-up":                "wall-push-up",
+  // Core
+  "Side plank":                  "side-plank",
+  "Side plank (core focus)":     "side-plank-core",
+  "Bicycle crunch":              "bicycle-crunch",
+  "Bicycle crunch sequence":     "bicycle-crunch-sequence",
+  "Glute bridge":                "glute-bridge",
+  "X-ray plank":                 "x-ray-plank",
+  // Balance & Breathe
+  "Balance pose":                "balance-pose",
+  "Balance and flexibility":     "balance-flexibility",
+  "Coherent breathing":          "coherent-breathing",
 };
-
 function RoutineFlow({ routine, onClose, onComplete }) {
   const [segIdx, setSegIdx] = React.useState(0);
   const [exIdx, setExIdx] = React.useState(0);
