@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 // ════════════════════════════════════════════════════════════════════
 //  MORNING EDGE  ·  by T-SPOT
@@ -5873,45 +5873,64 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           {blocks.length > 0 && (
                             <div className="space-y-1.5 mb-3">
                               {blocks.map((b, i) => (
-                                <button key={i} onClick={() => setRoutineFlowOpen(true)} className="w-full text-left active:scale-[0.98] transition"
+                                <button key={i} onClick={() => setRoutineFlowOpen(true)}
+                                  className="w-full text-left active:scale-[0.98] transition"
                                   style={{
-                                    background: "linear-gradient(180deg, #FFFFFF 0%, #FEFCE8 100%)",
-                                    border: "1px solid rgba(217,119,6,0.20)",
-                                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.85)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 12,
+                                    padding: "12px 14px",
+                                    borderRadius: 18,
+                                    background: "linear-gradient(180deg, #FFFFFF 0%, #FFFBEB 35%, #FEF3C7 100%)",
+                                    border: "1.5px solid rgba(217,119,6,0.40)",
+                                    boxShadow: "inset 0 1.5px 0 rgba(255,255,255,1), inset 0 -2px 6px rgba(217,119,6,0.10), 0 3px 8px rgba(120,53,15,0.15), 0 1px 0 rgba(120,53,15,0.20)",
+                                    cursor: "pointer",
                                   }}>
-                                  <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
-                                    style={{
-                                      background: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #92400E 100%)",
-                                      boxShadow: "0 1px 0 #78350F, inset 0 1px 1px rgba(255,255,255,0.55)",
-                                    }}>
-                                    {i + 1}
-                                  </span>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between gap-1.5">
-                                      <p className="text-[14px] font-black leading-tight" style={{ color: "#451A03" }}>
-                                        {b.name}
-                                      </p>
-                                      {b.minutes != null && (
-                                        <span className="flex-shrink-0 text-[11px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">
-                                          {b.minutes} min
-                                        </span>
+                                  {/* Left: number + text content */}
+                                  <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                                    <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold text-white mt-0.5"
+                                      style={{
+                                        background: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #92400E 100%)",
+                                        boxShadow: "0 1.5px 0 #78350F, inset 0 1px 1px rgba(255,255,255,0.6)",
+                                      }}>
+                                      {i + 1}
+                                    </span>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center justify-between gap-1.5 mb-0.5">
+                                        <p className="text-[15px] font-black leading-tight" style={{ color: "#451A03" }}>
+                                          {b.name}
+                                        </p>
+                                        {b.minutes != null && (
+                                          <span className="flex-shrink-0 text-[11px] font-bold text-amber-800 px-2 py-0.5 rounded-full"
+                                            style={{
+                                              background: "linear-gradient(180deg, #FEF3C7 0%, #FDE68A 100%)",
+                                              border: "1px solid rgba(217,119,6,0.35)",
+                                              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                                            }}>
+                                            {b.minutes} min
+                                          </span>
+                                        )}
+                                      </div>
+                                      {b.cue && (
+                                        <p className="text-[12.5px] text-slate-700 leading-snug font-medium">
+                                          {b.cue}
+                                        </p>
+                                      )}
+                                      {b.exerciseCount > 0 && (
+                                        <p className="text-[11px] text-amber-700 font-semibold mt-0.5">
+                                          {b.exerciseCount} exercise{b.exerciseCount > 1 ? "s" : ""} · tap to begin
+                                        </p>
                                       )}
                                     </div>
-                                    {b.cue && (
-                                      <p className="text-[12.5px] text-slate-700 leading-snug mt-0.5 font-medium">
-                                        {b.cue}
-                                      </p>
-                                    )}
-                                    {b.exerciseCount > 0 && (
-                                      <p className="text-[11px] text-amber-600 font-medium mt-0.5">
-                                        {b.exerciseCount} exercise{b.exerciseCount > 1 ? "s" : ""} · tap to begin
-                                      </p>
-                                    )}
                                   </div>
-                                  {/* Thumbnail */}
+                                  {/* Right: bigger glossy thumbnail */}
                                   {b.imgSlug && (
-                                    <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden ml-2" style={{ background: "#0B1120" }}>
-                                      <img src={`/${b.imgSlug}.png`} alt={b.name} className="w-full h-full object-cover" />
+                                    <div className="flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden"
+                                      style={{
+                                        background: "#0B1120",
+                                        boxShadow: "inset 0 0 0 1.5px rgba(217,119,6,0.50), 0 2px 6px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.10)",
+                                      }}>
+                                      <img src={`/${b.imgSlug}.png`} alt={b.name} className="w-full h-full object-cover" draggable={false} />
                                     </div>
                                   )}
                                 </button>
