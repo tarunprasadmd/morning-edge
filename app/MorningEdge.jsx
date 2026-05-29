@@ -7912,14 +7912,14 @@ function RoutineFlow({ routine, onClose, onComplete }) {
       <div className="w-full max-w-md flex flex-col" style={{ background: "#0B1120" }}>
 
         {/* Header */}
-        <div className="flex-shrink-0 px-4 pt-4 pb-2 flex items-center justify-between">
+        <div className="flex-shrink-0 px-4 pt-3 pb-1 flex items-center justify-between">
           <div>
             <p className="text-[11px] tracking-[0.22em] uppercase font-bold" style={{ color: segColor }}>
               {routine.name} · {segIdx + 1}/{routine.segments.length}
             </p>
             <div className="flex items-center gap-2 mt-0.5">
               <WorkoutSchematic kicker={segment.kicker} color={segColor} size={28} />
-              <p className="text-[17px] font-semibold" style={{ color: "rgba(255,255,255,0.95)", fontFamily: SERIF }}>
+              <p className="text-[15px] font-semibold" style={{ color: "rgba(255,255,255,0.95)", fontFamily: SERIF }}>
                 {segment.title}
               </p>
             </div>
@@ -7932,7 +7932,7 @@ function RoutineFlow({ routine, onClose, onComplete }) {
         </div>
 
         {/* Progress bar */}
-        <div className="flex-shrink-0 px-4 pb-2 flex gap-1.5">
+        <div className="flex-shrink-0 px-4 pb-1 flex gap-1.5">
           {routine.segments.map((seg, i) => (
             <div key={i} className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.10)" }}>
               <div className="h-full transition-all" style={{
@@ -8022,9 +8022,9 @@ function RoutineFlow({ routine, onClose, onComplete }) {
         </div>
 
         {/* Footer — timer + 3 buttons */}
-        <div className="flex-shrink-0 px-4 pt-2 pb-5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <p className="text-center tabular-nums font-light mb-3"
-            style={{ fontFamily: SERIF, fontSize: "48px", lineHeight: 1, color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em" }}>
+        <div className="flex-shrink-0 px-4 pt-1 pb-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <p className="text-center tabular-nums font-light mb-2"
+            style={{ fontFamily: SERIF, fontSize: "38px", lineHeight: 1, color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em" }}>
             {String(minutes).padStart(1, "0")}:{String(seconds).padStart(2, "0")}
           </p>
           <div className="flex gap-2">
@@ -11298,7 +11298,7 @@ function InAppBrowser({ url, onClose }) {
           <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3">
             <ExternalLink className="w-5 h-5 text-amber-700" />
           </div>
-          <h3 className="text-[17px] font-semibold text-slate-900 mb-2">Opened in your browser</h3>
+          <h3 className="text-[15px] font-semibold text-slate-900 mb-2">Opened in your browser</h3>
           <p className="text-[14px] text-slate-800 leading-relaxed mb-1">
             <span className="font-semibold break-all">{hostname}</span>
           </p>
