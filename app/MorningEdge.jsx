@@ -1169,6 +1169,15 @@ export default function MorningEdge() {
   const [editingAccountId, setEditingAccountId] = useState(null);
   const [editingAccountName, setEditingAccountName] = useState("");
   const [routineDays, setRoutineDays] = useState({}); // { "2026-04-29": true }
+  // Which day-of-week is currently being previewed/selected in the week strip
+  const [selectedDayIdx, setSelectedDayIdx] = useState(() => new Date().getDay());
+  // Compute date key (YYYY-MM-DD) for a given day-of-week within the current week
+  const dateKeyForDay = (dayIdx) => {
+    const now = new Date();
+    const target = new Date(now);
+    target.setDate(now.getDate() + (dayIdx - now.getDay()));
+    return `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, "0")}-${String(target.getDate()).padStart(2, "0")}`;
+  };
   const [routineFlowOpen, setRoutineFlowOpen] = useState(false);
   const [expandedMindset, setExpandedMindset] = useState(null); // 'gratitude' | 'fuel' | 'focus' | null
   // Currently-open yoga pose detail modal (null = closed)
@@ -3190,10 +3199,10 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
       {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
       {routineFlowOpen && (
         <RoutineFlow
-          routine={todayRoutine()}
+          routine={ROUTINES[selectedDayIdx] || ROUTINES[0]}
           onClose={() => setRoutineFlowOpen(false)}
           onComplete={() => {
-            setRoutineDays((prev) => ({ ...prev, [todayKey]: true }));
+            setRoutineDays((prev) => ({ ...prev, [dateKeyForDay(selectedDayIdx)]: true }));
             setRoutineFlowOpen(false);
           }}
         />
@@ -5849,13 +5858,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       const f = brief?.mindset?.fuel;
                       const headline = (typeof f === "string") ? f : (f && f.headline) || "10-min activation: mobility, breath, strength, cooldown";
                       const totalMin = (f && typeof f === "object" && f.total_min) || 10;
-                      // Block breakdown: prefer brief's structured blocks, fall back to today's routine segments
+                      // Block breakdown: use SELECTED day's routine. Only use brief.blocks if viewing today.
+                      const isViewingToday = selectedDayIdx === new Date().getDay();
+                      const selectedRoutine = ROUTINES[selectedDayIdx] || ROUTINES[0];
                       let blocks = [];
-                      if (f && typeof f === "object" && Array.isArray(f.blocks) && f.blocks.length > 0) {
+                      if (isViewingToday && f && typeof f === "object" && Array.isArray(f.blocks) && f.blocks.length > 0) {
                         blocks = f.blocks;
                       } else {
-                        const r = todayRoutine();
-                        blocks = (r.segments || []).map((s) => ({
+                        blocks = (selectedRoutine.segments || []).map((s) => ({
                           name: s.kicker,
                           minutes: Math.round((s.durationSec || 0) / 60) || (s.durationSec ? +(s.durationSec / 60).toFixed(1) : 0),
                           cue: s.title,
@@ -5866,8 +5876,48 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       const tip = f && typeof f === "object" ? f.tip : null;
                       return (
                         <>
+                          {/* WEEK STRIP — preview/start any day's routine */}
+                          <div className="mb-3">
+                            <p className="text-[10px] uppercase tracking-wider font-bold text-amber-800 mb-1.5">This week</p>
+                            <div className="flex gap-1">
+                              {["SUN","MON","TUE","WED","THU","FRI","SAT"].map((label, idx) => {
+                                const todayDow = new Date().getDay();
+                                const isToday = idx === todayDow;
+                                const isSelected = idx === selectedDayIdx;
+                                const isDone = !!routineDays[dateKeyForDay(idx)];
+                                const isFuture = idx > todayDow;
+                                const routineShortNames = ["Recovery","Lower","Upper","Restore","Core","Full","Mobility"];
+                                return (
+                                  <button key={idx} onClick={() => setSelectedDayIdx(idx)}
+                                    className="flex-1 flex flex-col items-center justify-center rounded-xl py-1.5 transition active:scale-[0.95]"
+                                    style={{
+                                      background: isSelected
+                                        ? "linear-gradient(180deg, #FEF3C7 0%, #FDE68A 50%, #F59E0B 100%)"
+                                        : "rgba(255,255,255,0.50)",
+                                      border: isToday ? "2px solid #D97706" : (isSelected ? "1.5px solid rgba(217,119,6,0.50)" : "1px solid rgba(217,119,6,0.20)"),
+                                      boxShadow: isSelected
+                                        ? "inset 0 1.5px 0 rgba(255,255,255,0.85), 0 2px 5px rgba(120,53,15,0.22)"
+                                        : (isToday ? "0 0 10px rgba(217,119,6,0.35)" : "inset 0 1px 0 rgba(255,255,255,0.40)"),
+                                      opacity: isFuture && !isSelected ? 0.62 : 1,
+                                      cursor: "pointer",
+                                      minHeight: 56,
+                                    }}>
+                                    <span className="text-[10px] font-black tracking-wider leading-none" style={{ color: isSelected || isToday ? "#451A03" : "#7C2D12" }}>
+                                      {label}
+                                    </span>
+                                    <span className="text-[8.5px] font-semibold mt-0.5 leading-none" style={{ color: isSelected || isToday ? "#7C2D12" : "#92400E" }}>
+                                      {routineShortNames[idx]}
+                                    </span>
+                                    <span className="text-[10px] font-black mt-0.5 leading-none" style={{ color: isDone ? "#059669" : (isToday ? "#D97706" : "transparent") }}>
+                                      {isDone ? "✓" : (isToday ? "●" : "·")}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
                           <p className="text-[13px] text-amber-900 italic leading-snug mb-3 font-medium">
-                            {headline} · {totalMin} min total
+                            {selectedDayIdx === new Date().getDay() ? `${headline} · ${totalMin} min total` : `${selectedRoutine.name} · ${Math.round((selectedRoutine.segments || []).reduce((s, seg) => s + (seg.durationSec || 0), 0) / 60)} min total`}
                           </p>
                           {/* Block list — what's in today's routine */}
                           {blocks.length > 0 && (
