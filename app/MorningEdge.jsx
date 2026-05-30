@@ -214,9 +214,7 @@ const YOGA_POSES = [
     sanskrit: "Tāḍāsana",
     english: "Mountain Pose",
     benefit: "Improves posture, balance, and groundedness. The foundation of all standing poses.",
-    imageUrls: [
-      "/tadasana.png",
-    ],
+    imageUrls: ["/tadasana.jpg", "/tadasana.png"],
     steps: [
       "Stand with feet together, big toes touching, heels slightly apart.",
       "Distribute weight evenly across both feet. Lift the arches.",
@@ -232,10 +230,8 @@ const YOGA_POSES = [
     slug: "adho-mukha-svanasana",
     sanskrit: "Adho Mukha Svānāsana",
     english: "Downward-Facing Dog",
-    benefit: "Stretches the entire back body. Strengthens arms and shoulders. Calms the mind.",
-    imageUrls: [
-      "/adho-mukha-svanasana.png",
-    ],
+    benefit: "Stretches spine, shoulders, and hamstrings. Strengthens arms and legs.",
+    imageUrls: ["/adho-mukha-svanasana.jpg", "/adho-mukha-svanasana.png"],
     steps: [
       "Begin on hands and knees. Wrists under shoulders, knees under hips.",
       "Tuck toes under. Lift knees off the floor.",
@@ -248,32 +244,11 @@ const YOGA_POSES = [
     holdSec: 30,
   },
   {
-    slug: "bhujangasana",
-    sanskrit: "Bhujaṅgāsana",
-    english: "Cobra Pose",
-    benefit: "Opens the chest and lungs. Strengthens the spine. Counteracts hours of sitting.",
-    imageUrls: [
-      "/bhujangasana.png",
-    ],
-    steps: [
-      "Lie face down. Legs extended, tops of feet on the floor.",
-      "Place palms flat on the floor under the shoulders. Elbows hugged close to ribs.",
-      "Press the pubic bone into the floor.",
-      "Inhale and gently lift the chest, using back muscles more than arms.",
-      "Keep shoulders rolled back and down — no shrugging.",
-      "Gaze slightly forward and up, but don't strain the neck.",
-      "Hold for 5 breaths. Lower slowly on an exhale.",
-    ],
-    holdSec: 20,
-  },
-  {
     slug: "balasana",
     sanskrit: "Bālāsana",
     english: "Child's Pose",
-    benefit: "Resting pose. Calms the nervous system. Gently stretches the back and hips.",
-    imageUrls: [
-      "/balasana.png",
-    ],
+    benefit: "Calms the mind. Gently stretches the back and hips. A true rest pose.",
+    imageUrls: ["/balasana.jpg", "/balasana.png"],
     steps: [
       "Kneel on the floor. Big toes touching, knees apart.",
       "Sit back on your heels. Fold forward, bringing the torso between the thighs.",
@@ -286,42 +261,157 @@ const YOGA_POSES = [
     holdSec: 60,
   },
   {
-    slug: "vrikshasana",
-    sanskrit: "Vṛkṣāsana",
-    english: "Tree Pose",
-    benefit: "Builds focus, balance, and concentration. Strengthens legs and core.",
-    imageUrls: [
-      "/vrikshasana.png",
-    ],
+    slug: "bhujangasana",
+    sanskrit: "Bhujaṅgāsana",
+    english: "Cobra Pose",
+    benefit: "Opens chest and shoulders. Strengthens the spine. Counteracts hours of sitting.",
+    imageUrls: ["/bhujangasana.jpg", "/bhujangasana.png"],
     steps: [
-      "Start in Mountain Pose. Shift weight onto the left foot.",
-      "Bend the right knee. Place the right foot on the inner left thigh (or calf — never on the knee).",
-      "Bring palms together in prayer at the heart.",
-      "Find a fixed gaze point ahead to help balance.",
-      "Press the foot and inner thigh into each other firmly.",
-      "Optional: raise arms overhead like tree branches.",
-      "Hold for 5 breaths. Switch sides.",
+      "Lie face down. Legs extended, tops of feet on the floor.",
+      "Place palms flat on the floor under the shoulders. Elbows hugged close to ribs.",
+      "Press the pubic bone into the floor.",
+      "Inhale and gently lift the chest, using back muscles more than arms.",
+      "Keep shoulders rolled back and down — no shrugging.",
+      "Gaze slightly forward and up, but don't strain the neck.",
+      "Hold for 5 breaths. Lower slowly on an exhale.",
+    ],
+    holdSec: 20,
+  },
+  {
+    slug: "virabhadrasana-right",
+    sanskrit: "Vīrabhadrāsana (Right)",
+    english: "Warrior — Right Side",
+    benefit: "Strengthens legs and core. Opens chest and hips. Builds focus and stamina.",
+    imageUrls: ["/virabhadrasana-right.jpg"],
+    steps: [
+      "From Mountain Pose, step the right foot forward about four feet.",
+      "Turn the back left foot 45 degrees outward, heel firmly grounded.",
+      "Bend the right knee to 90 degrees — knee tracking directly over the ankle.",
+      "Square the hips toward the front. Engage the core.",
+      "Extend both arms wide at shoulder height, palms facing down.",
+      "Gaze softly over the right hand. Lift the chest, relax shoulders.",
+      "Hold for 5 breaths. Sink deeper into the front leg with each exhale.",
     ],
     holdSec: 30,
   },
   {
-    slug: "padmasana",
-    sanskrit: "Padmāsana",
-    english: "Lotus Pose",
-    benefit: "Classic meditation seat. Opens the hips. Encourages stillness and deep breath.",
-    imageUrls: [
-      "/padmasana.png",
-    ],
+    slug: "virabhadrasana-left",
+    sanskrit: "Vīrabhadrāsana (Left)",
+    english: "Warrior — Left Side",
+    benefit: "Strengthens legs and core. Opens chest and hips. Builds focus and stamina.",
+    imageUrls: ["/virabhadrasana-left.jpg"],
     steps: [
-      "Sit on the floor with legs extended.",
-      "Bend the right knee. Place the right foot on the left thigh, sole facing up.",
-      "Bend the left knee. Place the left foot on the right thigh.",
-      "If full lotus is too intense, try Half Lotus (one foot on thigh, other tucked under).",
-      "Rest the hands on the knees, palms up or down.",
-      "Lengthen the spine. Soften the shoulders. Close eyes.",
-      "Breathe slowly for 1 minute or longer.",
+      "From Mountain Pose, step the left foot forward about four feet.",
+      "Turn the back right foot 45 degrees outward, heel firmly grounded.",
+      "Bend the left knee to 90 degrees — knee tracking directly over the ankle.",
+      "Square the hips toward the front. Engage the core.",
+      "Extend both arms wide at shoulder height, palms facing down.",
+      "Gaze softly over the left hand. Lift the chest, relax shoulders.",
+      "Hold for 5 breaths. Sink deeper into the front leg with each exhale.",
     ],
-    holdSec: 60,
+    holdSec: 30,
+  },
+  {
+    slug: "utthita-trikonasana-right",
+    sanskrit: "Utthita Trikoṇāsana (Right)",
+    english: "Triangle Pose — Right Side",
+    benefit: "Stretches hips, hamstrings, and spine. Opens chest. Builds balance.",
+    imageUrls: ["/utthita-trikonasana-right.jpg"],
+    steps: [
+      "Stand with feet wide apart, about four feet.",
+      "Turn the right foot 90 degrees out. Turn the left foot slightly in.",
+      "Extend both arms out wide at shoulder height.",
+      "Inhale, reach the right hand long over the right leg.",
+      "Exhale, fold sideways from the right hip. Right hand to shin, ankle, or floor.",
+      "Extend the left arm straight up toward the sky. Gaze upward.",
+      "Hold for 5 breaths. Keep the chest open, not collapsed forward.",
+    ],
+    holdSec: 25,
+  },
+  {
+    slug: "utthita-trikonasana-left",
+    sanskrit: "Utthita Trikoṇāsana (Left)",
+    english: "Triangle Pose — Left Side",
+    benefit: "Stretches hips, hamstrings, and spine. Opens chest. Builds balance.",
+    imageUrls: ["/utthita-trikonasana-left.jpg"],
+    steps: [
+      "Stand with feet wide apart, about four feet.",
+      "Turn the left foot 90 degrees out. Turn the right foot slightly in.",
+      "Extend both arms out wide at shoulder height.",
+      "Inhale, reach the left hand long over the left leg.",
+      "Exhale, fold sideways from the left hip. Left hand to shin, ankle, or floor.",
+      "Extend the right arm straight up toward the sky. Gaze upward.",
+      "Hold for 5 breaths. Keep the chest open, not collapsed forward.",
+    ],
+    holdSec: 25,
+  },
+  {
+    slug: "anjaneyasana-right",
+    sanskrit: "Añjaneyāsana (Right)",
+    english: "Low Crescent Lunge — Right Side",
+    benefit: "Stretches hip flexors and quads. Opens chest. Builds focus.",
+    imageUrls: ["/anjaneyasana-right.jpg"],
+    steps: [
+      "From Downward Dog, step the right foot forward between your hands.",
+      "Lower the left knee gently to the floor. Untuck the back toes.",
+      "Square the hips forward. Sink deeper into the front leg.",
+      "Inhale, sweep both arms overhead, palms touching or shoulder-width apart.",
+      "Lift the chest, gaze slightly upward. Lengthen through the spine.",
+      "Hips draw forward and down. Back leg presses into the floor.",
+      "Hold for 5 breaths. Breathe into the hip flexor stretch.",
+    ],
+    holdSec: 30,
+  },
+  {
+    slug: "anjaneyasana-left",
+    sanskrit: "Añjaneyāsana (Left)",
+    english: "Low Crescent Lunge — Left Side",
+    benefit: "Stretches hip flexors and quads. Opens chest. Builds focus.",
+    imageUrls: ["/anjaneyasana-left.jpg"],
+    steps: [
+      "From Downward Dog, step the left foot forward between your hands.",
+      "Lower the right knee gently to the floor. Untuck the back toes.",
+      "Square the hips forward. Sink deeper into the front leg.",
+      "Inhale, sweep both arms overhead, palms touching or shoulder-width apart.",
+      "Lift the chest, gaze slightly upward. Lengthen through the spine.",
+      "Hips draw forward and down. Back leg presses into the floor.",
+      "Hold for 5 breaths. Breathe into the hip flexor stretch.",
+    ],
+    holdSec: 30,
+  },
+  {
+    slug: "vrikshasana-right",
+    sanskrit: "Vṛkṣāsana (Right)",
+    english: "Tree Pose — Right Side",
+    benefit: "Builds balance, focus, and concentration. Strengthens legs and core.",
+    imageUrls: ["/vrikshasana-right.jpg", "/vrikshasana.png"],
+    steps: [
+      "Stand in Mountain Pose. Shift weight onto the left foot.",
+      "Bend the right knee. Place the right foot on the inner left thigh or calf — never on the knee.",
+      "Bring palms together in prayer at the heart.",
+      "Find a fixed gaze point ahead to help balance.",
+      "Press the foot and inner thigh into each other firmly.",
+      "Optional: raise arms overhead like tree branches.",
+      "Hold for 5 breaths. Stay rooted, breathe slow.",
+    ],
+    holdSec: 30,
+  },
+  {
+    slug: "vrikshasana-left",
+    sanskrit: "Vṛkṣāsana (Left)",
+    english: "Tree Pose — Left Side",
+    benefit: "Builds balance, focus, and concentration. Strengthens legs and core.",
+    imageUrls: ["/vrikshasana-left.jpg"],
+    steps: [
+      "Stand in Mountain Pose. Shift weight onto the right foot.",
+      "Bend the left knee. Place the left foot on the inner right thigh or calf — never on the knee.",
+      "Bring palms together in prayer at the heart.",
+      "Find a fixed gaze point ahead to help balance.",
+      "Press the foot and inner thigh into each other firmly.",
+      "Optional: raise arms overhead like tree branches.",
+      "Hold for 5 breaths. Stay rooted, breathe slow.",
+    ],
+    holdSec: 30,
   },
 ];
 
@@ -6268,8 +6358,9 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           borderRadius: "1rem 1rem 50% 50%",
                         }} />
                       <span className="relative text-[18px]">▶</span>
-                      <span className="relative">Start Guided Session · 4.5 min</span>
+                      <span className="relative">Start Guided Session · 9 min</span>
                     </button>
+                    {/* Portrait card grid — each card is a full poster with number, title, figure, anatomy labels, and benefits baked in. */}
                     <div className="grid grid-cols-2 gap-2.5">
                       {YOGA_POSES.map((pose, i) => (
                         <button
@@ -6277,14 +6368,13 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           onClick={() => setSelectedYogaPose(pose)}
                           className="relative rounded-xl overflow-hidden transition active:scale-[0.96] active:translate-y-0.5"
                           style={{
-                            aspectRatio: "1 / 1",
-                            background: "#FFFFFF",
-                            border: "1.5px solid #C4B5FD",
-                            boxShadow: "0 1.5px 0 #8B5CF6, 0 2px 4px rgba(139,92,246,0.20)",
+                            aspectRatio: "2 / 3",
+                            background: "#0A0A0F",
+                            border: "1.5px solid rgba(212,165,116,0.45)",
+                            boxShadow: "0 2px 0 rgba(180,130,80,0.35), 0 3px 8px rgba(0,0,0,0.30)",
                           }}>
-                          {/* The actual yoga pose image — fills the tile edge-to-edge so no inner frame is visible */}
-                          <YogaPoseImage pose={pose} style={{ objectFit: "contain", objectPosition: "center top" }} />
-                          {/* Pose name labels are baked into the image — no overlay needed */}
+                          {/* Full yoga card image — number, Sanskrit, English, figure, anatomy notes, and benefits all baked into the artwork */}
+                          <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center center" }} />
                         </button>
                       ))}
                     </div>
@@ -7859,32 +7949,9 @@ function YogaPoseModal({ pose, onClose }) {
           <YogaPoseImage pose={pose} style={{ objectFit: "contain", objectPosition: "center top" }} />
         </div>
 
-        {/* ── HEADER — Sanskrit + English name ── */}
-        <div className="px-5 pt-5 pb-3">
-          <p className="text-[11px] uppercase tracking-[0.3em] font-bold mb-1" style={{ color: "#7C3AED" }}>
-            Asana
-          </p>
-          <h2 className="text-[26px] font-bold italic mb-1" style={{ fontFamily: SERIF, color: "#2E1065" }}>
-            {pose.sanskrit}
-          </h2>
-          <p className="text-[15px] uppercase tracking-wider text-violet-700 font-bold">
-            {pose.english}
-          </p>
-        </div>
+        {/* HEADER REMOVED — Sanskrit + English are baked into the card image */}
 
-        {/* ── BENEFIT ── */}
-        <div className="mx-5 mb-4 rounded-2xl p-4"
-          style={{
-            background: "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)",
-            border: "1.5px solid #FCD34D",
-          }}>
-          <p className="text-[11px] uppercase tracking-wider text-amber-800 font-bold mb-1.5 flex items-center gap-1.5">
-            ✨ Benefit
-          </p>
-          <p className="text-[14px] text-slate-900 leading-snug italic" style={{ fontFamily: SERIF }}>
-            {pose.benefit}
-          </p>
-        </div>
+        {/* BENEFIT REMOVED — card image shows benefits */}
 
         {/* ── HOW TO DO IT ── */}
         <div className="px-5 pb-5">
@@ -9223,29 +9290,41 @@ function PlaybookColumnRow({ entry, onOpen }) {
           borderRight: `1.5px solid ${cellShade.border}`,
           boxShadow: `inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -2.5px 4px ${cellShade.shadow}`,
         }}>
-        {/* Glossy top specular — candy gloss shine */}
-        <span className="absolute top-0 left-1 right-1 h-[50%] pointer-events-none"
-          style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.12) 60%, rgba(255,255,255,0) 100%)" }} />
+        {/* Glossy top specular — stronger candy gloss for the polished brokerage look */}
+        <span className="absolute top-0 left-1 right-1 h-[55%] pointer-events-none"
+          style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0) 100%)" }} />
+        <span className="absolute bottom-0 left-2 right-2 h-[12%] pointer-events-none"
+          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0) 100%)" }} />
 
         {/* Logo (real or monogram fallback) — lazy load + async decode for fast initial CSV */}
         {(() => {
           const url = tickerLogoUrl(entry.symbol);
           if (url) {
             return (
-              <div className="relative flex-shrink-0 rounded-md overflow-hidden bg-white"
-                style={{ width: 22, height: 22, boxShadow: "0 1px 2px rgba(0,0,0,0.15)" }}>
+              <div className="relative flex-shrink-0 rounded-md overflow-hidden"
+                style={{
+                  width: 26, height: 26,
+                  background: "#FFFFFF",
+                  boxShadow: "0 1.5px 3px rgba(0,0,0,0.22), 0 0 0 0.5px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.95)",
+                }}>
+                <span className="absolute top-0 left-0 right-0 h-[40%] pointer-events-none rounded-t-md"
+                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)" }} />
                 <img
                   src={url}
                   alt={entry.symbol}
-                  width={22}
-                  height={22}
+                  width={26}
+                  height={26}
                   loading="lazy"
                   decoding="async"
-                  style={{ width: 22, height: 22, objectFit: "contain", display: "block" }}
+                  style={{
+                    width: 26, height: 26,
+                    objectFit: "contain", display: "block",
+                    imageRendering: "auto",
+                  }}
                   onError={(e) => {
                     const parent = e.currentTarget.parentElement;
                     if (parent) {
-                      parent.innerHTML = `<div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:#0B0F19;color:#fff;font-weight:800;font-size:9px;letter-spacing:0.03em;font-family:inherit;">${entry.symbol.slice(0,2)}</div>`;
+                      parent.innerHTML = `<div style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#1E293B 0%,#0B0F19 100%);color:#fff;font-weight:800;font-size:10px;letter-spacing:0.02em;font-family:inherit;border-radius:6px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.18);">${entry.symbol.slice(0,2)}</div>`;
                     }
                   }}
                 />
@@ -9253,14 +9332,17 @@ function PlaybookColumnRow({ entry, onOpen }) {
             );
           }
           return (
-            <div className="relative flex-shrink-0 rounded-md flex items-center justify-center"
+            <div className="relative flex-shrink-0 rounded-md flex items-center justify-center overflow-hidden"
               style={{
-                width: 22, height: 22,
-                background: "#0B0F19", color: "#FFFFFF",
-                fontWeight: 800, fontSize: 9, letterSpacing: "0.03em",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.15)",
+                width: 26, height: 26,
+                background: "linear-gradient(180deg, #1E293B 0%, #0B0F19 100%)",
+                color: "#FFFFFF",
+                fontWeight: 800, fontSize: 10, letterSpacing: "0.02em",
+                boxShadow: "0 1.5px 3px rgba(0,0,0,0.22), 0 0 0 0.5px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.18)",
               }}>
-              {entry.symbol.slice(0, 2)}
+              <span className="absolute top-0 left-0 right-0 h-[40%] pointer-events-none rounded-t-md"
+                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0) 100%)" }} />
+              <span className="relative">{entry.symbol.slice(0, 2)}</span>
             </div>
           );
         })()}
@@ -9269,8 +9351,13 @@ function PlaybookColumnRow({ entry, onOpen }) {
         <div className="relative flex flex-col items-start justify-center min-w-0 flex-1 gap-0.5">
           {/* Row 1: ticker (left) + chip (right) on SAME line */}
           <div className="flex items-center justify-between w-full gap-1">
-            <span className="text-[13px] font-extrabold tracking-tight leading-none truncate"
-              style={{ color: "#0B0F19", letterSpacing: "-0.01em" }}>
+            <span className="text-[14px] font-black tracking-tight leading-none truncate"
+              style={{
+                color: "#0B0F19",
+                letterSpacing: "-0.015em",
+                textShadow: "0 0.5px 0 rgba(255,255,255,0.65), 0 -0.5px 0 rgba(0,0,0,0.08)",
+                fontFeatureSettings: '"ss01", "tnum"',
+              }}>
               {entry.symbol}
             </span>
             <span
