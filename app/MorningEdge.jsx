@@ -6388,8 +6388,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                             style={{
                               width: 52, height: 72,
                               background: "#1A1A22",
-                              border: "1px solid rgba(212,165,116,0.55)",
-                              boxShadow: "inset 0 0 0 0.5px rgba(255,255,255,0.10), 0 1px 2px rgba(0,0,0,0.20)",
+                              boxShadow: "0 1px 2px rgba(0,0,0,0.20)",
                             }}>
                             <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center 38%" }} />
                           </div>
