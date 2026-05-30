@@ -6384,8 +6384,14 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               background: "#1A1A22",
                               boxShadow: "0 2px 4px rgba(0,0,0,0.28)",
                             }}>
-                            {/* objectPosition tuned to crop to the figure area — center on the body, not the title text or benefits */}
-                            <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center 42%" }} />
+                            {/* Image centered; title + BENEFITS text are masked by gradients below — no source re-crop needed */}
+                            <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center" }} />
+                            {/* Top gradient mask — hides pose-name title baked into source image */}
+                            <div className="absolute top-0 left-0 right-0 pointer-events-none"
+                              style={{ height: "30%", background: "linear-gradient(to bottom, #1A1A22 0%, rgba(26,26,34,0.88) 45%, rgba(26,26,34,0) 100%)" }} />
+                            {/* Bottom gradient mask — hides BENEFITS panel baked into source image */}
+                            <div className="absolute bottom-0 left-0 right-0 pointer-events-none"
+                              style={{ height: "26%", background: "linear-gradient(to top, #1A1A22 0%, rgba(26,26,34,0.88) 45%, rgba(26,26,34,0) 100%)" }} />
                           </div>
                           {/* Right side: Sanskrit + hold seconds */}
                           <div className="relative flex-1 min-w-0 flex flex-col justify-center">
@@ -7667,15 +7673,24 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
     masterGainRef.current.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.5);
   }, [session.isPaused]);
 
-  // Cancel in-progress voice narration when Pause is hit. Web Speech `pause()` is
-  // unreliable across browsers (esp. Chrome desktop), so we cancel cleanly. The
-  // next scheduled cue (8s, 20s, or 5s-remaining marks) will speak normally on resume.
+  // Cancel in-progress voice when Pause is hit; on Resume, re-speak the current
+  // step so the user gets immediate guidance instead of silence until the next
+  // 8s/20s/5s-remaining cue. Web Speech `pause()` is unreliable across browsers
+  // (esp. Chrome desktop), so we cancel + resynthesize for guaranteed continuity.
+  const wasPausedRef = React.useRef(false);
   React.useEffect(() => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
     if (session.isPaused) {
       try { window.speechSynthesis.cancel(); } catch (e) {}
+      wasPausedRef.current = true;
+    } else if (wasPausedRef.current && currentPose && selectedVoice) {
+      wasPausedRef.current = false;
+      const elapsed = holdPerPose - session.secondsLeft;
+      const stepIdx = elapsed < 8 ? 0 : elapsed < 20 ? 1 : 2;
+      const step = currentPose.steps[Math.min(stepIdx, currentPose.steps.length - 1)];
+      setTimeout(() => speak(step), 200);
     }
-  }, [session.isPaused]);
+  }, [session.isPaused]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Speak helper — uses Web Speech API. iOS requires user gesture (Start button).
   // CRITICAL: do NOT speak until the female voice has been selected — otherwise
