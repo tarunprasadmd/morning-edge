@@ -9396,6 +9396,42 @@ function ChatSheet({
     cashBalance != null ? String(cashBalance) : ""
   );
 
+  // Voice input: tap the crystal ball to dictate, transcript streams into the chat input.
+  // Uses Web Speech API — works on iOS Safari 14.5+, Chrome, Edge. Falls back silently if unavailable.
+  const [listening, setListening] = React.useState(false);
+  const recognitionRef = React.useRef(null);
+  const toggleVoiceInput = React.useCallback(() => {
+    if (typeof window === "undefined") return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      alert("Voice input isn't supported in this browser. Try Safari or Chrome.");
+      return;
+    }
+    if (listening && recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch (_e) {}
+      return;
+    }
+    const r = new SR();
+    r.lang = "en-US";
+    r.interimResults = true;
+    r.continuous = false;
+    let finalText = "";
+    r.onresult = (event) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const t = event.results[i][0].transcript;
+        if (event.results[i].isFinal) finalText += t;
+        else interim += t;
+      }
+      setInput((finalText + interim).trim());
+    };
+    r.onend = () => { setListening(false); recognitionRef.current = null; };
+    r.onerror = () => { setListening(false); recognitionRef.current = null; };
+    recognitionRef.current = r;
+    setListening(true);
+    try { r.start(); } catch (_e) { setListening(false); }
+  }, [listening, setInput]);
+
   // Auto-scroll to bottom when new messages arrive
   React.useEffect(() => {
     if (scrollRef.current) {
@@ -9512,36 +9548,75 @@ function ChatSheet({
             }}
           />
           <div className="relative flex items-center gap-2.5 min-w-0 flex-1">
-            {/* Crystal ball — radial gradient simulates light refraction, multiple
-                highlight layers create the glassy/orb effect. Sparkles glows inside. */}
-            <div
-              className="relative w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
+            <style>{`
+              @keyframes crystalPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+              @keyframes starThrob { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(0.92); } }
+            `}</style>
+            {/* Crystal ball — tappable for voice input. When listening, ball pulses
+                with a teal glow and the star inside throbs. Multiple gradient layers
+                simulate refraction; iridescent ring + rainbow rim for the glassy orb feel. */}
+            <button
+              onClick={toggleVoiceInput}
+              aria-label={listening ? "Listening — tap to stop voice input" : "Tap the crystal ball to ask by voice"}
+              title={listening ? "Listening… tap to stop" : "Tap to ask by voice"}
+              className="relative w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden transition active:scale-[0.94]"
               style={{
-                background: "radial-gradient(circle at 35% 28%, #FFFFFF 0%, #EDE9FE 12%, #C4B5FD 30%, #8B5CF6 60%, #5B21B6 90%, #3B0764 100%)",
-                border: "1.5px solid #4C1D95",
-                boxShadow: "0 2px 0 #4C1D95, 0 0 22px rgba(167,139,250,0.70), 0 0 10px rgba(255,255,255,0.35), inset 0 2px 4px rgba(255,255,255,0.50), inset 0 -2px 5px rgba(59,7,100,0.45)",
+                background: listening
+                  ? "radial-gradient(circle at 35% 28%, #FFFFFF 0%, #CFFAFE 10%, #67E8F9 28%, #06B6D4 55%, #0E7490 85%, #164E63 100%)"
+                  : "radial-gradient(circle at 35% 28%, #FFFFFF 0%, #F5F3FF 8%, #DDD6FE 20%, #A78BFA 42%, #7C3AED 70%, #4C1D95 92%, #2E1065 100%)",
+                border: listening ? "1.5px solid #155E75" : "1.5px solid #3B0764",
+                boxShadow: listening
+                  ? "0 2px 0 #155E75, 0 0 28px rgba(103,232,249,0.85), 0 0 14px rgba(255,255,255,0.45), inset 0 2px 5px rgba(255,255,255,0.60), inset 0 -2px 6px rgba(14,116,144,0.50)"
+                  : "0 2px 0 #3B0764, 0 0 28px rgba(167,139,250,0.75), 0 0 14px rgba(255,255,255,0.40), inset 0 2px 5px rgba(255,255,255,0.55), inset 0 -2px 6px rgba(46,16,101,0.50)",
+                animation: listening ? "crystalPulse 1.4s ease-in-out infinite" : undefined,
               }}
             >
+              {/* Iridescent rainbow rim — visible only on edges, simulates prism dispersion */}
+              <span className="absolute inset-0 pointer-events-none rounded-full"
+                style={{
+                  background: "conic-gradient(from 220deg, rgba(244,114,182,0.20), rgba(167,139,250,0.20), rgba(125,211,252,0.20), rgba(134,239,172,0.18), rgba(253,224,71,0.18), rgba(244,114,182,0.20))",
+                  mixBlendMode: "overlay",
+                  opacity: 0.85,
+                }} />
               {/* Primary top-arc highlight — main glass reflection */}
-              <span className="absolute top-0.5 left-1 right-1 h-[45%] pointer-events-none rounded-t-full"
-                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.20) 60%, rgba(255,255,255,0) 100%)" }} />
-              {/* Concentrated upper-left specular highlight — the bright "key light" point */}
+              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)" }} />
+              {/* Concentrated upper-left specular highlight — the bright "key light" */}
               <span className="absolute pointer-events-none"
                 style={{
-                  top: "14%", left: "18%", width: "28%", height: "28%",
-                  background: "radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.50) 35%, rgba(255,255,255,0) 70%)",
+                  top: "12%", left: "16%", width: "32%", height: "32%",
+                  background: "radial-gradient(circle, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.55) 32%, rgba(255,255,255,0) 70%)",
                   borderRadius: "50%", filter: "blur(0.5px)",
                 }} />
-              {/* Subtle bottom rim glow — iridescent return light */}
+              {/* Secondary smaller highlight — adds depth */}
               <span className="absolute pointer-events-none"
                 style={{
-                  bottom: "8%", left: "22%", right: "22%", height: "14%",
-                  background: "radial-gradient(ellipse, rgba(196,181,253,0.55) 0%, rgba(196,181,253,0) 75%)",
+                  top: "22%", left: "44%", width: "10%", height: "10%",
+                  background: "radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 70%)",
+                  borderRadius: "50%",
+                }} />
+              {/* Bottom rim iridescent glow — return light */}
+              <span className="absolute pointer-events-none"
+                style={{
+                  bottom: "6%", left: "20%", right: "20%", height: "16%",
+                  background: "radial-gradient(ellipse, rgba(196,181,253,0.65) 0%, rgba(196,181,253,0) 78%)",
                   filter: "blur(1px)",
                 }} />
-              <Sparkles className="w-5 h-5 text-white relative" strokeWidth={2.5}
-                style={{ filter: "drop-shadow(0 0 5px rgba(255,255,255,0.85)) drop-shadow(0 1px 1px rgba(0,0,0,0.30))" }} />
-            </div>
+              {/* Equatorial dark band — adds 3D refraction depth */}
+              <span className="absolute pointer-events-none"
+                style={{
+                  top: "62%", left: "5%", right: "5%", height: "8%",
+                  background: "radial-gradient(ellipse, rgba(46,16,101,0.30) 0%, rgba(46,16,101,0) 70%)",
+                  filter: "blur(1.5px)",
+                }} />
+              <Sparkles className="w-6 h-6 text-white relative" strokeWidth={2.5}
+                style={{
+                  filter: listening
+                    ? "drop-shadow(0 0 7px rgba(207,250,254,1)) drop-shadow(0 0 3px rgba(255,255,255,0.95)) drop-shadow(0 1px 1px rgba(0,0,0,0.30))"
+                    : "drop-shadow(0 0 6px rgba(255,255,255,0.95)) drop-shadow(0 0 2px rgba(255,255,255,0.7)) drop-shadow(0 1px 1px rgba(0,0,0,0.30))",
+                  animation: listening ? "starThrob 1.4s ease-in-out infinite" : undefined,
+                }} />
+            </button>
             <div className="min-w-0 flex-1">
               <p className="text-[14px] font-bold text-violet-900 truncate leading-tight" style={{ fontFamily: SERIF }}>
                 Ask Morning Edge
