@@ -267,25 +267,6 @@ const YOGA_POSES = [
     holdSec: 20,
   },
   {
-    slug: "vrikshasana",
-    sanskrit: "Vṛkṣāsana",
-    english: "Tree Pose",
-    benefit: "Builds focus, balance, and concentration. Strengthens legs and core.",
-    imageUrls: [
-      "/vrikshasana.png",
-    ],
-    steps: [
-      "Start in Mountain Pose. Shift weight onto the left foot.",
-      "Bend the right knee. Place the right foot on the inner left thigh (or calf — never on the knee).",
-      "Bring palms together in prayer at the heart.",
-      "Find a fixed gaze point ahead to help balance.",
-      "Press the foot and inner thigh into each other firmly.",
-      "Optional: raise arms overhead like tree branches.",
-      "Hold for 5 breaths. Switch sides.",
-    ],
-    holdSec: 30,
-  },
-  {
     slug: "balasana",
     sanskrit: "Bālāsana",
     english: "Child's Pose",
@@ -303,6 +284,25 @@ const YOGA_POSES = [
       "To exit, walk hands back and lift up slowly.",
     ],
     holdSec: 60,
+  },
+  {
+    slug: "vrikshasana",
+    sanskrit: "Vṛkṣāsana",
+    english: "Tree Pose",
+    benefit: "Builds focus, balance, and concentration. Strengthens legs and core.",
+    imageUrls: [
+      "/vrikshasana.png",
+    ],
+    steps: [
+      "Start in Mountain Pose. Shift weight onto the left foot.",
+      "Bend the right knee. Place the right foot on the inner left thigh (or calf — never on the knee).",
+      "Bring palms together in prayer at the heart.",
+      "Find a fixed gaze point ahead to help balance.",
+      "Press the foot and inner thigh into each other firmly.",
+      "Optional: raise arms overhead like tree branches.",
+      "Hold for 5 breaths. Switch sides.",
+    ],
+    holdSec: 30,
   },
   {
     slug: "padmasana",
@@ -5341,7 +5341,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         ).filter((t) => t && typeof t === "string" && !/^DATA_UNAVAIL|^N\/?A$|^NONE$|^UNKNOWN$/i.test(t.trim())).slice(0, 2).map((tkr, i) => (
                           <button
                             key={i}
-                            onClick={() => openLinkInBrowser(`https://www.dataroma.com/m/stock.php?sym=${tkr.toUpperCase()}`)}
+                            onClick={() => openLinkInBrowser(`https://www.quiverquant.com/stocks/${tkr.toUpperCase()}`)}
                             className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-1.5 overflow-hidden text-left transition active:scale-[0.97] active:translate-y-0.5 min-w-0"
                             style={{
                               background: "linear-gradient(180deg, #D1FAE5 0%, #A7F3D0 50%, #6EE7B7 100%)",
@@ -5377,7 +5377,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         ).filter((t) => t && typeof t === "string" && !/^DATA_UNAVAIL|^N\/?A$|^NONE$|^UNKNOWN$/i.test(t.trim())).slice(0, 2).map((tkr, i) => (
                           <button
                             key={i}
-                            onClick={() => openLinkInBrowser(`https://www.dataroma.com/m/stock.php?sym=${tkr.toUpperCase()}`)}
+                            onClick={() => openLinkInBrowser(`https://www.quiverquant.com/stocks/${tkr.toUpperCase()}`)}
                             className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-1.5 overflow-hidden text-left transition active:scale-[0.97] active:translate-y-0.5 min-w-0"
                             style={{
                               background: "linear-gradient(180deg, #FEE2E2 0%, #FECACA 50%, #FCA5A5 100%)",
@@ -10253,7 +10253,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                   </p>
                 </a>
                 <a
-                  href={`https://www.dataroma.com/m/stock.php?sym=${data.ticker.toUpperCase()}`}
+                  href={`https://www.quiverquant.com/stocks/${data.ticker.toUpperCase()}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="relative block w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
@@ -10269,10 +10269,54 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                       borderRadius: "1rem 1rem 50% 50%",
                     }} />
                   <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
-                    Dataroma — {data.ticker} superinvestor holdings
+                    QuiverQuant — {data.ticker} alt-data dashboard
                   </p>
                   <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
-                    Curated list of Buffett, Ackman, Burry and other top investors holding this stock.
+                    Congress trades, insider activity, lobbying, patents, government contracts — all on one page. Free to view, optional paid plan for deeper API access.
+                  </p>
+                </a>                <a
+                  href={`https://unusualwhales.com/stock/${data.ticker.toUpperCase()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative block w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
+                >
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "1rem 1rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
+                    Unusual Whales — {data.ticker} flow + dark pool
+                  </p>
+                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
+                    Options flow, dark-pool prints, insider trades, and Congress activity. Some panels are paywalled but the main stock page shows enough to be useful.
+                  </p>
+                </a>                <a
+                  href={`https://seekingalpha.com/symbol/${data.ticker.toUpperCase()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative block w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
+                >
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "1rem 1rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
+                    Seeking Alpha — {data.ticker} analyst views
+                  </p>
+                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
+                    Crowd-sourced bull/bear analysis from analysts and contributors. Limited free articles per month.
                   </p>
                 </a>
                 <a
@@ -10404,10 +10448,16 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
           primary: false,
         });
         list.push({
-          name: `Dataroma — ${tkr} superinvestor holdings`,
-          desc: `Buffett, Ackman, Burry and other curated top investors holding ${tkr}.`,
-          url: `https://www.dataroma.com/m/stock.php?sym=${tkr.toUpperCase()}`,
-          primary: false,
+          name: `QuiverQuant — ${tkr} alt-data dashboard`,
+          desc: `Congress trades, lobbying, contracts, and insider activity all on one page. Free to view.`,
+          url: `https://www.quiverquant.com/stocks/${tkr.toUpperCase()}`,
+          primary: true,
+        });
+        list.push({
+          name: `Unusual Whales — ${tkr} flow + Congress`,
+          desc: `Options flow, dark-pool prints, and Congress activity. Main stock page shows enough to be useful even without subscription.`,
+          url: `https://unusualwhales.com/stock/${tkr.toUpperCase()}`,
+          primary: true,
         });
         list.push({
           name: `Yahoo Finance — ${tkr} quote`,
@@ -10425,10 +10475,16 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
           primary: true,
         });
         list.push({
-          name: `Dataroma — ${tkr} superinvestor holdings`,
-          desc: `Buffett, Ackman, Burry and other curated top investors holding ${tkr}. Quality signal, ad-free.`,
-          url: `https://www.dataroma.com/m/stock.php?sym=${tkr.toUpperCase()}`,
-          primary: false,
+          name: `QuiverQuant — ${tkr} alt-data dashboard`,
+          desc: `Congress trades, insider activity, lobbying, patents, contracts — all on one page. Free to view.`,
+          url: `https://www.quiverquant.com/stocks/${tkr.toUpperCase()}`,
+          primary: true,
+        });
+        list.push({
+          name: `Unusual Whales — ${tkr} flow + dark pool`,
+          desc: `Options flow, dark-pool prints, and Congress activity for ${tkr}. Some panels paywalled, main page useful.`,
+          url: `https://unusualwhales.com/stock/${tkr.toUpperCase()}`,
+          primary: true,
         });
         list.push({
           name: `CapitolTrades — Congress activity`,
@@ -10453,10 +10509,16 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
           primary: true,
         });
         list.push({
-          name: `Dataroma — ${tkr} superinvestor holdings`,
-          desc: `Buffett, Ackman, Burry and other curated top investors holding ${tkr}. Quality signal, ad-free.`,
-          url: `https://www.dataroma.com/m/stock.php?sym=${tkr.toUpperCase()}`,
-          primary: false,
+          name: `QuiverQuant — ${tkr} alt-data dashboard`,
+          desc: `Congress trades, insider activity, lobbying, patents, contracts — all on one page. Free to view.`,
+          url: `https://www.quiverquant.com/stocks/${tkr.toUpperCase()}`,
+          primary: true,
+        });
+        list.push({
+          name: `Unusual Whales — ${tkr} flow + dark pool`,
+          desc: `Options flow, dark-pool prints, and Congress activity for ${tkr}. Some panels paywalled, main page useful.`,
+          url: `https://unusualwhales.com/stock/${tkr.toUpperCase()}`,
+          primary: true,
         });
         list.push({
           name: `CapitolTrades — Congress activity`,
@@ -11074,7 +11136,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                   </p>
                 </a>
                 <a
-                  href={`https://www.dataroma.com/m/stock.php?sym=${parsed.ticker.toUpperCase()}`}
+                  href={`https://www.quiverquant.com/stocks/${parsed.ticker.toUpperCase()}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="relative block w-full text-left rounded-xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
@@ -11090,10 +11152,54 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                       borderRadius: "0.6rem 0.6rem 50% 50%",
                     }} />
                   <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
-                    Dataroma — {parsed.ticker} superinvestor holdings
+                    QuiverQuant — {parsed.ticker} alt-data dashboard
                   </p>
                   <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
-                    Buffett, Ackman, Burry and other top investors holding this stock.
+                    Congress trades, insider activity, lobbying, patents, contracts — all on one page. Free to view.
+                  </p>
+                </a>                <a
+                  href={`https://unusualwhales.com/stock/${parsed.ticker.toUpperCase()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative block w-full text-left rounded-xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
+                >
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "0.6rem 0.6rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
+                    Unusual Whales — {parsed.ticker} flow + dark pool
+                  </p>
+                  <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
+                    Options flow, dark-pool prints, insider trades, and Congress activity.
+                  </p>
+                </a>                <a
+                  href={`https://seekingalpha.com/symbol/${parsed.ticker.toUpperCase()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative block w-full text-left rounded-xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
+                >
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "0.6rem 0.6rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
+                    Seeking Alpha — {parsed.ticker} analyst views
+                  </p>
+                  <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
+                    Crowd-sourced bull/bear analysis from analysts and contributors.
                   </p>
                 </a>
                 <a
