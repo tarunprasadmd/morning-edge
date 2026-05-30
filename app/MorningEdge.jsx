@@ -3325,7 +3325,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         <div className="grid grid-cols-2 gap-2">
           {/* GENERATE BRIEF — compact */}
           <button
-            onClick={generateBrief}
+            onClick={() => generateBrief({ fresh: !!brief })}
             disabled={loading}
             className="relative rounded-2xl overflow-hidden text-left active:scale-[0.97] active:translate-y-0.5 transition disabled:opacity-60"
             style={{
@@ -3342,15 +3342,15 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               }} />
             <div className="absolute top-0 left-0 right-0 h-[1.5px] z-10"
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            <div className="relative z-10 px-3.5 py-2 flex items-center gap-2.5 min-h-[46px]">
-              <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center relative overflow-hidden"
+            <div className="relative z-10 px-4 py-2.5 flex items-center gap-3 min-h-[54px]">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center relative overflow-hidden"
                 style={{
                   background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
                   boxShadow: "0 1px 0 #92400E, inset 0 1px 1.5px rgba(255,255,255,0.85)",
                 }}>
-                <Sparkles className="w-3.5 h-3.5 relative" style={{ color: "#451A03" }} strokeWidth={2.5} />
+                <Sparkles className="w-4 h-4 relative" style={{ color: "#451A03" }} strokeWidth={2.5} />
               </div>
-              <p className="text-[14px] leading-tight truncate flex-1"
+              <p className="text-[15px] leading-tight truncate flex-1"
                 style={{ fontFamily: SERIF, fontWeight: 600, color: "#FFFFFF", textShadow: "0 1px 1.5px rgba(0,0,0,0.55)" }}>
                 {loading ? "Reading…" : brief ? "Regenerate" : "Generate Brief"}
               </p>
@@ -3383,15 +3383,15 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
               }} />
             <div className="absolute top-0 left-0 right-0 h-[1.5px] z-10"
               style={{ background: "linear-gradient(90deg, transparent 0%, #D4A574 30%, #F5D08C 50%, #D4A574 70%, transparent 100%)" }} />
-            <div className="relative z-10 px-3.5 py-2 flex items-center gap-2.5 min-h-[46px]">
-              <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center relative overflow-hidden"
+            <div className="relative z-10 px-4 py-2.5 flex items-center gap-3 min-h-[54px]">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center relative overflow-hidden"
                 style={{
                   background: "linear-gradient(180deg, #FEF3C7 0%, #FCD34D 50%, #D4A574 100%)",
                   boxShadow: "0 1px 0 #92400E, inset 0 1px 1.5px rgba(255,255,255,0.85)",
                 }}>
-                <Briefcase className="w-3.5 h-3.5 relative" style={{ color: "#451A03" }} strokeWidth={2.5} />
+                <Briefcase className="w-4 h-4 relative" style={{ color: "#451A03" }} strokeWidth={2.5} />
               </div>
-              <p className="text-[14px] leading-tight truncate flex-1"
+              <p className="text-[15px] leading-tight truncate flex-1"
                 style={{ fontFamily: SERIF, fontWeight: 600, color: "#FFFFFF", textShadow: "0 1px 1.5px rgba(0,0,0,0.55)" }}>
                 {holdings.length > 0 ? `Sync · ${holdings.length}` : "Sync Portfolio"}
               </p>
