@@ -443,7 +443,8 @@ async function generateLayerAMarket(name: string, tickers: string, date: string)
 Use web_search up to 2 times. Watchlist: ${tickers}.
 Return ONLY this JSON:
 { "market_pulse": { "tone": "X", "summary": "max 14 words", "key_levels": [ { "text": "max 14 words with NUMBER", "deep_context": "60-90 words" } ] }, "todays_edge_market": { "binary_catalysts": [], "risk_flags": [] }, "radar_candidates": [ { "ticker": "X", "theme": "tag", "headline": "max 14 words", "why_now": "max 18 words", "deep_reasoning": "130-180 words" } ] }
-key_levels 6-8 bullets each with specific number. radar 8-10.`;
+key_levels 6-8 bullets each with specific number.
+RADAR 8-10 — DIVERSIFICATION MANDATE: do NOT bias toward user's existing themes. Mix: ~3 candidates aligned with user's themes (AI infra/semis/quantum/crypto-HPC/nuclear/rare-earths/biotech), ~5-7 candidates from DIFFERENT sectors filling gaps (consumer staples, utilities, healthcare ex-biotech, financials, materials, real estate, industrials, energy ex-mining, transportation, REITs). The WATCHING column is for diversification, NOT confirmation bias.`;
   return callJsonChunk(prompt, { search: true, maxTokens: 4500, maxSearches: 2, label: "layerA-market" });
 }
 
