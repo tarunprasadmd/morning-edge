@@ -10704,10 +10704,29 @@ function InteractiveBreathGuide({ name, pattern, description, rounds }) {
       {/* Animated circle — tap to start/pause */}
       <button
         onClick={handleToggle}
-        className="relative w-full flex flex-col items-center justify-center py-5 select-none transition active:scale-[0.98]"
+        className="relative w-full flex flex-col items-center justify-center py-5 select-none transition active:scale-[0.98] overflow-hidden rounded-2xl"
         style={{ minHeight: 220 }}
         aria-label={running ? "Pause breath practice" : "Start breath practice"}
       >
+        {/* Himalayas backdrop — calming mountain scene behind the breath ball */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: "url('/himalayas.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: 0.60,
+          }}
+        />
+        {/* Soft radial vignette so the violet ball stays the focal point */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "radial-gradient(circle at center, rgba(15,23,42,0.15) 25%, rgba(15,23,42,0.50) 100%)",
+          }}
+        />
         {/* Outer ring (decorative pulse) */}
         <div
           aria-hidden
@@ -10716,7 +10735,7 @@ function InteractiveBreathGuide({ name, pattern, description, rounds }) {
             width: 200,
             height: 200,
             borderRadius: "50%",
-            border: "1.5px dashed rgba(139, 92, 246, 0.30)",
+            border: "1.5px dashed rgba(255, 255, 255, 0.45)",
           }}
         />
         {/* Main breathing circle — Candy Crush glossy */}
