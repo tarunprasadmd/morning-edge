@@ -6386,11 +6386,12 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                           {/* Card thumbnail — bigger so figure is visible. Slight inner ring lifts it off the violet block. */}
                           <div className="relative flex-shrink-0 rounded-md overflow-hidden"
                             style={{
-                              width: 52, height: 72,
+                              width: 84, height: 116,
                               background: "#1A1A22",
-                              boxShadow: "0 1px 2px rgba(0,0,0,0.20)",
+                              boxShadow: "0 2px 4px rgba(0,0,0,0.28)",
                             }}>
-                            <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center 38%" }} />
+                            {/* objectPosition tuned to crop to the figure area — center on the body, not the title text or benefits */}
+                            <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center 42%" }} />
                           </div>
                           {/* Right side: Sanskrit + hold seconds */}
                           <div className="relative flex-1 min-w-0 flex flex-col justify-center">
@@ -7787,8 +7788,8 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: "92%",
-            height: "92%",
+            width: "98%",
+            height: "98%",
             objectFit: "contain",
             objectPosition: "center center",
             userSelect: "none",
