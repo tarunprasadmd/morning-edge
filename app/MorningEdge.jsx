@@ -325,6 +325,82 @@ const YOGA_POSES = [
   },
 ];
 
+// Daily yoga themes — same 6 poses every day, just gentle cosmetic variation
+// so the page doesn't feel identical. Background tint + intention + icon rotate.
+// Subtle, not overpowering — yoga is about consistency, the visuals are seasoning.
+const YOGA_DAILY_THEMES = [
+  // Sunday — Anandam (joy / fullness)
+  {
+    intentionSanskrit: "Anandam",
+    intentionEnglish: "Joy fills the practice today",
+    tintTop: "#FEF3C7",
+    tintBottom: "#FDE68A",
+    accent: "#92400E",
+    border: "rgba(180,83,9,0.30)",
+    icon: "☀",
+  },
+  // Monday — Sthira (steadiness)
+  {
+    intentionSanskrit: "Sthira sukham āsanam",
+    intentionEnglish: "Steady and at ease",
+    tintTop: "#EEF2FF",
+    tintBottom: "#E0E7FF",
+    accent: "#3730A3",
+    border: "rgba(79,70,229,0.28)",
+    icon: "☽",
+  },
+  // Tuesday — Tapas (inner fire / discipline)
+  {
+    intentionSanskrit: "Tapas",
+    intentionEnglish: "Inner fire moves through me",
+    tintTop: "#FEF2F2",
+    tintBottom: "#FECACA",
+    accent: "#9F1239",
+    border: "rgba(190,18,60,0.28)",
+    icon: "🔥",
+  },
+  // Wednesday — Santosha (contentment)
+  {
+    intentionSanskrit: "Santosha",
+    intentionEnglish: "Contentment with what is",
+    tintTop: "#ECFDF5",
+    tintBottom: "#D1FAE5",
+    accent: "#065F46",
+    border: "rgba(5,150,105,0.28)",
+    icon: "☘",
+  },
+  // Thursday — Saucha (clarity / purity)
+  {
+    intentionSanskrit: "Saucha",
+    intentionEnglish: "Clarity in body and mind",
+    tintTop: "#F5F3FF",
+    tintBottom: "#EDE9FE",
+    accent: "#5B21B6",
+    border: "rgba(139,92,246,0.30)",
+    icon: "✨",
+  },
+  // Friday — Tejas (radiance)
+  {
+    intentionSanskrit: "Tejas",
+    intentionEnglish: "Light from within",
+    tintTop: "#FFFBEB",
+    tintBottom: "#FEF3C7",
+    accent: "#B45309",
+    border: "rgba(217,119,6,0.30)",
+    icon: "🔆",
+  },
+  // Saturday — Shanti (peace)
+  {
+    intentionSanskrit: "Shanti",
+    intentionEnglish: "Peace settles into the breath",
+    tintTop: "#EFF6FF",
+    tintBottom: "#DBEAFE",
+    accent: "#1E3A8A",
+    border: "rgba(37,99,235,0.28)",
+    icon: "🕊",
+  },
+];
+
 const SERIF = `'Cormorant Garamond', 'Playfair Display', ui-serif, Georgia, serif`;
 const SANS = `'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`;
 
@@ -1173,6 +1249,8 @@ export default function MorningEdge() {
   const [routineDays, setRoutineDays] = useState({}); // { "2026-04-29": true }
   // Which day-of-week is currently being previewed/selected in the week strip
   const [selectedDayIdx, setSelectedDayIdx] = useState(() => new Date().getDay());
+  // Yoga day index — independent from workout day so user can switch yoga theme without affecting workout
+  const [selectedYogaDayIdx, setSelectedYogaDayIdx] = useState(() => new Date().getDay());
   // Compute date key (YYYY-MM-DD) for a given day-of-week within the current week
   const dateKeyForDay = (dayIdx) => {
     const now = new Date();
@@ -6109,15 +6187,69 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                   </div>
                 )}
 
-                {/* YOGA expanded panel — grid of pose cards, each tap opens modal */}
-                {expandedMindset === "yoga" && (
+                {/* YOGA expanded panel — same poses every day, gentle daily cosmetic variation.
+                    7-day strip lets user preview any day's theme. IIFE wraps the panel so it can
+                    pull from YOGA_DAILY_THEMES without bloating the parent scope. */}
+                {expandedMindset === "yoga" && (() => {
+                  const yt = YOGA_DAILY_THEMES[selectedYogaDayIdx] || YOGA_DAILY_THEMES[0];
+                  return (
                   <div className="p-4 rounded-2xl border-2"
                     style={{
-                      background: "linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 100%)",
-                      borderColor: "rgba(139,92,246,0.30)",
+                      background: `linear-gradient(180deg, ${yt.tintTop} 0%, ${yt.tintBottom} 100%)`,
+                      borderColor: yt.border,
                       boxShadow: "inset 0 1.5px 2px rgba(255,255,255,0.85)",
                     }}>
-                    <p className="text-[12px] text-violet-800 italic leading-snug mb-3">
+                    {/* 7-day strip — same pattern as workout, day-specific theme tint */}
+                    <div className="mb-3">
+                      <p className="text-[10px] uppercase tracking-wider font-bold mb-1.5"
+                        style={{ color: yt.accent }}>This week</p>
+                      <div className="flex gap-1">
+                        {["SUN","MON","TUE","WED","THU","FRI","SAT"].map((label, idx) => {
+                          const todayDow = new Date().getDay();
+                          const isToday = idx === todayDow;
+                          const isSelected = idx === selectedYogaDayIdx;
+                          const t = YOGA_DAILY_THEMES[idx] || YOGA_DAILY_THEMES[0];
+                          return (
+                            <button key={idx} onClick={() => setSelectedYogaDayIdx(idx)}
+                              className="flex-1 flex flex-col items-center justify-center rounded-xl py-1.5 transition active:scale-[0.95]"
+                              style={{
+                                background: isSelected
+                                  ? `linear-gradient(180deg, ${t.tintTop} 0%, ${t.tintBottom} 100%)`
+                                  : "rgba(255,255,255,0.55)",
+                                border: isSelected ? `1.5px solid ${t.accent}` : "1px solid rgba(0,0,0,0.08)",
+                                boxShadow: isSelected
+                                  ? `0 1.5px 0 ${t.accent}, inset 0 1px 0 rgba(255,255,255,0.85)`
+                                  : "inset 0 1px 0 rgba(255,255,255,0.85)",
+                              }}>
+                              <span className="text-[10px] uppercase tracking-wider font-bold"
+                                style={{ color: isSelected ? t.accent : "rgba(0,0,0,0.55)" }}>
+                                {label}
+                              </span>
+                              {isToday && (
+                                <span className="text-[8px] mt-0.5 italic"
+                                  style={{ color: isSelected ? t.accent : "rgba(0,0,0,0.50)" }}>
+                                  today
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    {/* Daily intention — sanskrit serif italic + english below */}
+                    <div className="mb-3 px-1">
+                      <p className="text-[18px] font-bold italic leading-tight"
+                        style={{ color: yt.accent, fontFamily: SERIF }}>
+                        <span style={{ marginRight: 8 }}>{yt.icon}</span>
+                        {yt.intentionSanskrit}
+                      </p>
+                      <p className="text-[11px] italic leading-tight mt-1"
+                        style={{ color: yt.accent, opacity: 0.75 }}>
+                        {yt.intentionEnglish}
+                      </p>
+                    </div>
+                    <p className="text-[12px] italic leading-snug mb-3"
+                      style={{ color: yt.accent, opacity: 0.70 }}>
                       Tap any pose to see the schematic and how to do it. Hold each for 5 deep breaths.
                     </p>
                     {/* START GUIDED SESSION BUTTON — voice + timer walkthrough */}
@@ -6157,7 +6289,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       ))}
                     </div>
                   </div>
-                )}
+                  );
+                })()}
 
                 {/* Routine completion + streak */}
                 <div className="pt-4 border-t border-slate-100">
