@@ -9968,20 +9968,33 @@ function ChatSheet({
         >
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center py-4">
-              {/* Subtle refined orb */}
-              <div
-                className="relative w-14 h-14 rounded-full flex items-center justify-center mb-3 overflow-hidden"
+              {/* Crystal-ball empty-state orb — now tappable for voice input.
+                  Reuses toggleVoiceInput from ChatSheet scope.
+                  Listening: teal glow + pulse. Idle: refined violet orb. */}
+              <button
+                onClick={toggleVoiceInput}
+                aria-label={listening ? "Listening — tap to stop voice input" : "Tap to ask by voice"}
+                title={listening ? "Listening… tap to stop" : "Tap to ask by voice"}
+                className="relative w-14 h-14 rounded-full flex items-center justify-center mb-3 overflow-hidden transition active:scale-[0.94]"
                 style={{
-                  background:
-                    "radial-gradient(ellipse 70% 60% at 30% 25%, rgba(255,255,255,0.85) 0%, rgba(221,214,254,0.35) 35%, transparent 65%), " +
-                    "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
-                  border: "1.5px solid rgba(255,255,255,0.45)",
-                  boxShadow:
-                    "0 4px 14px rgba(139,92,246,0.40), 0 0 28px rgba(196,181,253,0.40), inset 0 1.5px 3px rgba(255,255,255,0.55)",
+                  background: listening
+                    ? "radial-gradient(ellipse 70% 60% at 30% 25%, rgba(255,255,255,0.92) 0%, rgba(207,250,254,0.45) 30%, transparent 65%), linear-gradient(180deg, #67E8F9 0%, #06B6D4 50%, #0E7490 100%)"
+                    : "radial-gradient(ellipse 70% 60% at 30% 25%, rgba(255,255,255,0.85) 0%, rgba(221,214,254,0.35) 35%, transparent 65%), linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
+                  border: listening ? "1.5px solid rgba(207,250,254,0.65)" : "1.5px solid rgba(255,255,255,0.45)",
+                  boxShadow: listening
+                    ? "0 4px 14px rgba(6,182,212,0.55), 0 0 32px rgba(103,232,249,0.65), inset 0 1.5px 3px rgba(255,255,255,0.65)"
+                    : "0 4px 14px rgba(139,92,246,0.40), 0 0 28px rgba(196,181,253,0.40), inset 0 1.5px 3px rgba(255,255,255,0.55)",
+                  animation: listening ? "crystalPulse 1.4s ease-in-out infinite" : undefined,
                 }}
               >
-                <Sparkles className="w-6 h-6 text-white relative" strokeWidth={2.25} />
-              </div>
+                <Sparkles className="w-6 h-6 text-white relative" strokeWidth={2.25}
+                  style={{
+                    filter: listening
+                      ? "drop-shadow(0 0 6px rgba(207,250,254,1)) drop-shadow(0 1px 1px rgba(0,0,0,0.30))"
+                      : "drop-shadow(0 0 4px rgba(255,255,255,0.65))",
+                    animation: listening ? "starThrob 1.4s ease-in-out infinite" : undefined,
+                  }} />
+              </button>
               <p
                 className="text-[14px] text-violet-800/80 italic max-w-[280px] leading-relaxed"
                 style={{ fontFamily: SERIF }}
@@ -10479,7 +10492,8 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                   <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
                     Congress trades, insider activity, lobbying, patents, government contracts — all on one page. Free to view, optional paid plan for deeper API access.
                   </p>
-                </a>                <a
+                </a>
+                <a
                   href={`https://unusualwhales.com/stock/${data.ticker.toUpperCase()}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -10501,7 +10515,8 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                   <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
                     Options flow, dark-pool prints, insider trades, and Congress activity. Some panels are paywalled but the main stock page shows enough to be useful.
                   </p>
-                </a>                <a
+                </a>
+                <a
                   href={`https://seekingalpha.com/symbol/${data.ticker.toUpperCase()}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -11362,7 +11377,8 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                   <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
                     Congress trades, insider activity, lobbying, patents, contracts — all on one page. Free to view.
                   </p>
-                </a>                <a
+                </a>
+                <a
                   href={`https://unusualwhales.com/stock/${parsed.ticker.toUpperCase()}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -11384,7 +11400,8 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                   <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
                     Options flow, dark-pool prints, insider trades, and Congress activity.
                   </p>
-                </a>                <a
+                </a>
+                <a
                   href={`https://seekingalpha.com/symbol/${parsed.ticker.toUpperCase()}`}
                   target="_blank"
                   rel="noopener noreferrer"
