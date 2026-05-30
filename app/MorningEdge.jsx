@@ -9512,17 +9512,35 @@ function ChatSheet({
             }}
           />
           <div className="relative flex items-center gap-2.5 min-w-0 flex-1">
+            {/* Crystal ball — radial gradient simulates light refraction, multiple
+                highlight layers create the glassy/orb effect. Sparkles glows inside. */}
             <div
-              className="relative w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
+              className="relative w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
               style={{
-                background: "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
+                background: "radial-gradient(circle at 35% 28%, #FFFFFF 0%, #EDE9FE 12%, #C4B5FD 30%, #8B5CF6 60%, #5B21B6 90%, #3B0764 100%)",
                 border: "1.5px solid #4C1D95",
-                boxShadow: "0 2px 0 #4C1D95, 0 0 14px rgba(167,139,250,0.55), inset 0 1.5px 2px rgba(255,255,255,0.60)",
+                boxShadow: "0 2px 0 #4C1D95, 0 0 22px rgba(167,139,250,0.70), 0 0 10px rgba(255,255,255,0.35), inset 0 2px 4px rgba(255,255,255,0.50), inset 0 -2px 5px rgba(59,7,100,0.45)",
               }}
             >
-              <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
-                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)" }} />
-              <Sparkles className="w-4 h-4 text-white relative" strokeWidth={2.5} />
+              {/* Primary top-arc highlight — main glass reflection */}
+              <span className="absolute top-0.5 left-1 right-1 h-[45%] pointer-events-none rounded-t-full"
+                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.20) 60%, rgba(255,255,255,0) 100%)" }} />
+              {/* Concentrated upper-left specular highlight — the bright "key light" point */}
+              <span className="absolute pointer-events-none"
+                style={{
+                  top: "14%", left: "18%", width: "28%", height: "28%",
+                  background: "radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.50) 35%, rgba(255,255,255,0) 70%)",
+                  borderRadius: "50%", filter: "blur(0.5px)",
+                }} />
+              {/* Subtle bottom rim glow — iridescent return light */}
+              <span className="absolute pointer-events-none"
+                style={{
+                  bottom: "8%", left: "22%", right: "22%", height: "14%",
+                  background: "radial-gradient(ellipse, rgba(196,181,253,0.55) 0%, rgba(196,181,253,0) 75%)",
+                  filter: "blur(1px)",
+                }} />
+              <Sparkles className="w-5 h-5 text-white relative" strokeWidth={2.5}
+                style={{ filter: "drop-shadow(0 0 5px rgba(255,255,255,0.85)) drop-shadow(0 1px 1px rgba(0,0,0,0.30))" }} />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[14px] font-bold text-violet-900 truncate leading-tight" style={{ fontFamily: SERIF }}>
