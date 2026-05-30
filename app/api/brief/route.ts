@@ -551,8 +551,9 @@ async function generatePulseAndEdge(name: string, watchlist: string[], holdings:
   const prompt = `${COMMON_PREAMBLE(name, date)}
 Use web_search up to 2 times. Watchlist: ${tickers}.${ownedNote}
 Return ONLY: { "market_pulse": { "tone": "X", "summary": "max 14 words", "key_levels": [ { "text": "max 14 words", "deep_context": "60-90 words" } ] }, "todays_edge": { "earnings_alerts": [], "binary_catalysts": [], "risk_flags": [] }, "radar_watch": [ { "ticker": "X", "theme": "tag", "headline": "max 14 words", "why_now": "max 18 words", "deep_reasoning": "130-180 words" } ] }
-4-6 radar NOT in holdings.`;
-  return callJsonChunk(prompt, { search: true, maxTokens: 2800, maxSearches: 2, label: "pulse" });
+RADAR 4-6 NOT in holdings — DIVERSIFICATION: do NOT bias toward user's existing themes. Mix: 1-2 candidates aligned with user themes (AI/semis/quantum/nuclear/rare-earths/biotech), 3-4 from DIFFERENT sectors (consumer staples, utilities, healthcare ex-biotech, financials, materials, real estate, industrials, energy ex-mining). NEVER return empty radar — if uncertain, suggest diversified large-caps with mild current catalysts.`;
+  // maxTokens bumped from 2800 → 5500 — the old budget was truncating JSON mid-output, leaving radar_watch undefined.
+  return callJsonChunk(prompt, { search: true, maxTokens: 5500, maxSearches: 2, label: "pulse" });
 }
 
 async function generateConvictionAndOpportunity(name: string, watchlist: string[], holdings: any[], date: string) {
@@ -562,8 +563,9 @@ async function generateConvictionAndOpportunity(name: string, watchlist: string[
   const prompt = `${COMMON_PREAMBLE(name, date)}
 Use web_search up to 2 times.${ownedNote}\nFocus: ${focusTickers.join(", ")}.
 Return ONLY: { "conviction_watch": [ { "ticker": "X", "signal": "add/hold/trim", "why_now": "max 25 words", "note": "max 8 words", "action": "OPTIONAL max 12 words", "deep_reasoning": "130-180 words" } ], "opportunity_watch": [ { "ticker": "NOT held", "theme": "tag", "fits_gap": "max 14 words", "headline": "max 14 words", "deep_reasoning": "180-220 words" } ] }
-conviction 8-10. opportunity 6-8 NOT held.`;
-  return callJsonChunk(prompt, { search: true, maxTokens: 8000, maxSearches: 2, label: "conv-opp" });
+conviction 8-10. opportunity 6-8 NOT held — DIVERSIFICATION: do NOT bias toward user's themes. Spread across multiple sectors (consumer staples, utilities, healthcare ex-biotech, financials, materials, real estate, industrials, energy ex-mining). NEVER return empty opportunity_watch — if uncertain, suggest diversified large-caps with mild current catalysts.`;
+  // maxTokens bumped 8000 → 12000 — needed for 8-10 conviction + 6-8 opportunity each with 130-220 word deep_reasoning.
+  return callJsonChunk(prompt, { search: true, maxTokens: 12000, maxSearches: 2, label: "conv-opp" });
 }
 
 function formatHoldingsBlock(holdings: any[], accounts: any[] | undefined, holdingsAgeDays: number | null) {
