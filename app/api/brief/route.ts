@@ -549,11 +549,25 @@ async function generatePulseAndEdge(name: string, watchlist: string[], holdings:
   const ownedSet = new Set((holdings || []).map((h: any) => (h.symbol || "").toUpperCase()));
   const ownedNote = ownedSet.size > 0 ? `\nUser's holdings: ${Array.from(ownedSet).join(", ")}.` : "";
   const prompt = `${COMMON_PREAMBLE(name, date)}
-Use web_search up to 2 times. Watchlist: ${tickers}.${ownedNote}
-Return ONLY: { "market_pulse": { "tone": "X", "summary": "max 14 words", "key_levels": [ { "text": "max 14 words", "deep_context": "60-90 words" } ] }, "todays_edge": { "earnings_alerts": [], "binary_catalysts": [], "risk_flags": [] }, "radar_watch": [ { "ticker": "X", "theme": "tag", "headline": "max 14 words", "why_now": "max 18 words", "deep_reasoning": "130-180 words" } ] }
-RADAR 4-6 NOT in holdings — QUALITY BAR (no filler): each pick MUST have (a) specific catalyst with date or recent timeframe, (b) institutional/insider/congressional/options flow citation or recent earnings/guidance change, (c) concrete price level or entry trigger in deep_reasoning. DIVERSIFICATION: mix 1-2 aligned with user's themes (AI/semis/quantum/nuclear/rare-earths/biotech) with 3-4 from DIFFERENT sectors (consumer staples, utilities, healthcare ex-biotech, financials, materials, real estate, industrials, energy ex-mining). If <4 picks meet the quality bar today, return only those that DO — never pad with mediocre large-caps. Empty radar with a real reason beats empty calories.`;
-  // maxTokens bumped from 2800 → 5500 — the old budget was truncating JSON mid-output, leaving radar_watch undefined.
-  return callJsonChunk(prompt, { search: true, maxTokens: 5500, maxSearches: 2, label: "pulse" });
+Use web_search up to 3 times. Watchlist: ${tickers}.${ownedNote}
+
+YOUR TASK: Generate market pulse + radar watchlist for ${date}.
+
+OUTPUT SCHEMA (return ONLY this JSON, no prose, no markdown):
+{
+  "market_pulse": { "tone": "bullish|bearish|neutral", "summary": "max 14 words", "key_levels": [ { "text": "max 14 words with NUMBER", "deep_context": "60-90 words" } ] },
+  "todays_edge": { "earnings_alerts": [], "binary_catalysts": [], "risk_flags": [] },
+  "radar_watch": [ { "ticker": "X", "theme": "tag", "headline": "max 14 words", "why_now": "max 18 words", "deep_reasoning": "130-180 words covering catalyst + flow + price level" } ]
+}
+
+CRITICAL — RADAR_WATCH REQUIREMENTS (this section MUST be populated):
+1. Return EXACTLY 5-6 picks. MINIMUM 5. NEVER fewer.
+2. Tickers must NOT be in user's holdings.
+3. Each pick needs: (a) a current catalyst (earnings within 30d, FDA event, M&A rumor, congressional buying, options flow), (b) a specific price level or entry trigger, (c) WHY institutional/smart money cares right now.
+4. DIVERSIFY sectors — NOT all AI/semis. Include picks from: consumer staples, utilities, healthcare ex-biotech, financials, materials, real estate, industrials, energy ex-mining, transportation.
+5. Quiet markets ALWAYS have catalysts somewhere. Find them. Use web_search if needed.
+6. Returning fewer than 5 radar picks is FAILURE.`;
+  return callJsonChunk(prompt, { search: true, maxTokens: 8000, maxSearches: 3, label: "pulse" });
 }
 
 async function generateConvictionAndOpportunity(name: string, watchlist: string[], holdings: any[], date: string) {
@@ -561,12 +575,26 @@ async function generateConvictionAndOpportunity(name: string, watchlist: string[
   const ownedNote = ownedSet.size > 0 ? `\nUser's holdings: ${Array.from(ownedSet).join(", ")}.` : "";
   const focusTickers = (holdings && holdings.length > 0) ? (holdings as any[]).slice(0, 5).map((h: any) => h.symbol) : (watchlist || []).slice(0, 5);
   const prompt = `${COMMON_PREAMBLE(name, date)}
-Use web_search up to 2 times.${ownedNote}\nFocus: ${focusTickers.join(", ")}.
-Return ONLY: { "conviction_watch": [ { "ticker": "X", "signal": "add/hold/trim", "why_now": "max 25 words", "note": "max 8 words", "action": "OPTIONAL max 12 words", "deep_reasoning": "130-180 words" } ], "opportunity_watch": [ { "ticker": "NOT held", "theme": "tag", "fits_gap": "max 14 words", "headline": "max 14 words", "deep_reasoning": "180-220 words" } ] }
-conviction 8-10 — focus on user's actual holdings with concrete signals (smart-money flow, catalyst within hold window, technical level).
-opportunity 6-8 NOT held — QUALITY BAR (no filler): each pick MUST have (a) specific catalyst with date or recent timeframe, (b) institutional/insider/congressional/options flow citation or recent earnings/guidance change, (c) concrete price level or entry trigger in deep_reasoning. DIVERSIFICATION: spread across multiple sectors (consumer staples, utilities, healthcare ex-biotech, financials, materials, real estate, industrials, energy ex-mining, transportation). If <6 picks meet the quality bar today, return only those that DO — never pad with mediocre large-caps.`;
-  // maxTokens bumped 8000 → 12000 — needed for 8-10 conviction + 6-8 opportunity each with 130-220 word deep_reasoning.
-  return callJsonChunk(prompt, { search: true, maxTokens: 12000, maxSearches: 2, label: "conv-opp" });
+Use web_search up to 3 times.${ownedNote}\nFocus tickers (user's top holdings): ${focusTickers.join(", ")}.
+
+YOUR TASK: Generate conviction watchlist + opportunity watchlist for ${date}.
+
+OUTPUT SCHEMA (return ONLY this JSON, no prose, no markdown):
+{
+  "conviction_watch": [ { "ticker": "X", "signal": "add|hold|trim", "why_now": "max 25 words", "note": "max 8 words", "action": "OPTIONAL max 12 words", "deep_reasoning": "130-180 words" } ],
+  "opportunity_watch": [ { "ticker": "NOT held", "theme": "tag", "fits_gap": "max 14 words", "headline": "max 14 words", "deep_reasoning": "180-220 words covering catalyst + flow + price level" } ]
+}
+
+CONVICTION_WATCH: Return 8-10 entries on user's holdings. Each needs concrete signal: smart-money flow, catalyst within hold window, technical level.
+
+CRITICAL — OPPORTUNITY_WATCH REQUIREMENTS (this section MUST be populated):
+1. Return EXACTLY 6-8 picks. MINIMUM 6. NEVER fewer.
+2. Tickers must NOT be in user's holdings.
+3. Each pick needs: (a) a current catalyst, (b) a specific price level or entry trigger, (c) WHY institutional/smart money cares right now.
+4. DIVERSIFY sectors — NOT all AI/semis. Include: consumer staples, utilities, healthcare ex-biotech, financials, materials, real estate, industrials, energy ex-mining, transportation.
+5. Quiet markets ALWAYS have catalysts somewhere. Find them.
+6. Returning fewer than 6 opportunity picks is FAILURE.`;
+  return callJsonChunk(prompt, { search: true, maxTokens: 16000, maxSearches: 3, label: "conv-opp" });
 }
 
 function formatHoldingsBlock(holdings: any[], accounts: any[] | undefined, holdingsAgeDays: number | null) {
@@ -754,6 +782,37 @@ function streamFreshBrief(opts: any): Response {
       // v5 FIX: smart_money/market_pulse fields can only be set by their authoritative task
       const wired = tasks.map((t) => t.promise.then((val) => { if (val) { const v: any = { ...val }; if (t.name !== "smart_money") delete v.smart_money; if (t.name !== "pulse") delete v.market_pulse; Object.assign(merged, v); send("chunk", { chunkName: t.name, fields: v }); } }, (err) => { failures.push(`${t.name}: ${err?.message}`); send("error", { chunkName: t.name, message: err?.message }); }));
       await Promise.all(wired);
+
+      // ─── DEFENSIVE FALLBACK ──────────────────────────────────────
+      // If the main tasks produced empty radar_watch or opportunity_watch,
+      // call a secondary prompt to populate them. Guarantees Discovery
+      // never shows empty when the user pays for picks.
+      const radarEmpty = !Array.isArray(merged.radar_watch) || merged.radar_watch.length === 0;
+      const oppEmpty = !Array.isArray(merged.opportunity_watch) || merged.opportunity_watch.length === 0;
+      if (radarEmpty || oppEmpty) {
+        try {
+          const ownedSet = new Set((holdings || []).map((h: any) => (h.symbol || "").toUpperCase()));
+          const ownedList = Array.from(ownedSet).join(", ") || "(none)";
+          const needRadar = radarEmpty ? '"radar_watch": [ { "ticker": "X", "theme": "tag", "headline": "max 14 words", "why_now": "max 18 words", "deep_reasoning": "130-180 words covering catalyst + flow + price level" } ]' : "";
+          const needOpp = oppEmpty ? '"opportunity_watch": [ { "ticker": "X", "theme": "tag", "fits_gap": "max 14 words", "headline": "max 14 words", "deep_reasoning": "180-220 words covering catalyst + flow + price level" } ]' : "";
+          const need = [needRadar, needOpp].filter(Boolean).join(",\n  ");
+          const radarMin = radarEmpty ? "MUST include 5-6 radar_watch picks." : "";
+          const oppMin = oppEmpty ? "MUST include 6-8 opportunity_watch picks." : "";
+          const fallbackPrompt = "Generate ONLY this JSON for " + date + ":\n{\n  " + need + "\n}\n\nUser holds (DO NOT suggest these): " + ownedList + "\n\nRequirements:\n- " + radarMin + " " + oppMin + "\n- Each pick must have a real current catalyst (earnings, M&A, FDA, congressional/insider buying, options flow).\n- DIVERSIFY across sectors: consumer staples, utilities, healthcare ex-biotech, financials, materials, real estate, industrials, energy ex-mining, transportation. NOT all AI/semis.\n- Use web_search 2 times to find current catalysts.\n- Return at least the minimum count. NEVER return empty arrays.";
+          const fallback = await callJsonChunk(fallbackPrompt, { search: true, maxTokens: 10000, maxSearches: 2, label: "discovery-fallback" });
+          if (radarEmpty && Array.isArray(fallback?.radar_watch) && fallback.radar_watch.length > 0) {
+            merged.radar_watch = fallback.radar_watch;
+            send("chunk", { chunkName: "discovery-fallback", fields: { radar_watch: fallback.radar_watch } });
+          }
+          if (oppEmpty && Array.isArray(fallback?.opportunity_watch) && fallback.opportunity_watch.length > 0) {
+            merged.opportunity_watch = fallback.opportunity_watch;
+            send("chunk", { chunkName: "discovery-fallback", fields: { opportunity_watch: fallback.opportunity_watch } });
+          }
+        } catch (fallbackErr: any) {
+          console.warn(`[brief ${requestId}] discovery-fallback failed:`, fallbackErr?.message || fallbackErr);
+        }
+      }
+
       if (Object.keys(merged).length === 0) { send("error", { fatal: true, message: `All chunks failed: ${failures.join("; ")}` }); }
       else {
         await cacheWriteBrief(cacheKey, merged);
