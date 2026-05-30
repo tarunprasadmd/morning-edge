@@ -7763,7 +7763,7 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           height: "min(42vh, 360px)",
           background: "#F8F4ED",
         }}>
-          <YogaPoseImage pose={currentPose} style={{ objectFit: "contain", objectPosition: "center top" }} />
+          <YogaPoseImage pose={currentPose} style={{ objectFit: "cover", objectPosition: "center center" }} />
         </div>
 
         {/* Pose name */}
@@ -7941,12 +7941,13 @@ function YogaPoseModal({ pose, onClose }) {
           <X className="w-5 h-5 text-slate-800 relative" />
         </button>
 
-        {/* ── SCHEMATIC FIRST — full-width hero image of the pose, edge-to-edge ── */}
+        {/* ── HERO IMAGE — full poster card. Portrait 2:3 matches new yoga card art. */}
         <div className="relative w-full overflow-hidden"
           style={{
-            aspectRatio: "1 / 1",
+            aspectRatio: "2 / 3",
+            background: "#0A0A0F",
           }}>
-          <YogaPoseImage pose={pose} style={{ objectFit: "contain", objectPosition: "center top" }} />
+          <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center center" }} />
         </div>
 
         {/* HEADER REMOVED — Sanskrit + English are baked into the card image */}
