@@ -5338,7 +5338,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         ).filter((t) => t && typeof t === "string" && !/^DATA_UNAVAIL|^N\/?A$|^NONE$|^UNKNOWN$/i.test(t.trim())).slice(0, 2).map((tkr, i) => (
                           <button
                             key={i}
-                            onClick={() => openLinkInBrowser(`https://fintel.io/so/us/${tkr.toLowerCase()}`)}
+                            onClick={() => openLinkInBrowser(`https://www.dataroma.com/m/stock.php?sym=${tkr.toUpperCase()}`)}
                             className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-1.5 overflow-hidden text-left transition active:scale-[0.97] active:translate-y-0.5 min-w-0"
                             style={{
                               background: "linear-gradient(180deg, #D1FAE5 0%, #A7F3D0 50%, #6EE7B7 100%)",
@@ -5374,7 +5374,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                         ).filter((t) => t && typeof t === "string" && !/^DATA_UNAVAIL|^N\/?A$|^NONE$|^UNKNOWN$/i.test(t.trim())).slice(0, 2).map((tkr, i) => (
                           <button
                             key={i}
-                            onClick={() => openLinkInBrowser(`https://fintel.io/so/us/${tkr.toLowerCase()}`)}
+                            onClick={() => openLinkInBrowser(`https://www.dataroma.com/m/stock.php?sym=${tkr.toUpperCase()}`)}
                             className="relative w-full flex items-center gap-2 rounded-xl px-2.5 py-1.5 overflow-hidden text-left transition active:scale-[0.97] active:translate-y-0.5 min-w-0"
                             style={{
                               background: "linear-gradient(180deg, #FEE2E2 0%, #FECACA 50%, #FCA5A5 100%)",
@@ -10111,52 +10111,6 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
               </p>
               <div className="space-y-2">
                 <a
-                  href={`https://www.investing.com/search/?q=${data.ticker}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative block w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
-                  style={{
-                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
-                    border: "1.5px solid #94A3B8",
-                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
-                  }}
-                >
-                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
-                    style={{
-                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
-                      borderRadius: "1rem 1rem 50% 50%",
-                    }} />
-                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
-                    Investing.com — {data.ticker}
-                  </p>
-                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
-                    Full quote, charts, news, technical analysis, and earnings — clean dashboard.
-                  </p>
-                </a>
-                <a
-                  href={`https://seekingalpha.com/symbol/${data.ticker}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative block w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
-                  style={{
-                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
-                    border: "1.5px solid #94A3B8",
-                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
-                  }}
-                >
-                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
-                    style={{
-                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
-                      borderRadius: "1rem 1rem 50% 50%",
-                    }} />
-                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
-                    Seeking Alpha — {data.ticker}
-                  </p>
-                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
-                    Analyst articles, earnings analysis, bull/bear takes (some content paywalled).
-                  </p>
-                </a>
-                <a
                   href={`https://finance.yahoo.com/quote/${data.ticker}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -10180,7 +10134,7 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                   </p>
                 </a>
                 <a
-                  href={`https://fintel.io/so/us/${data.ticker.toLowerCase()}`}
+                  href={`https://whalewisdom.com/stock/${data.ticker.toLowerCase()}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="relative block w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
@@ -10196,10 +10150,56 @@ function CardReadingPage({ data, onClose, onAskAboutThis }) {
                       borderRadius: "1rem 1rem 50% 50%",
                     }} />
                   <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
-                    Fintel — {data.ticker} institutional ownership
+                    WhaleWisdom — {data.ticker} institutional holders
                   </p>
                   <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
-                    See which hedge funds and institutions hold this stock. Clean ownership data.
+                    Every 13F filer holding this stock, ranked by position size. The gold standard for hedge fund tracking.
+                  </p>
+                </a>
+                <a
+                  href={`https://www.dataroma.com/m/stock.php?sym=${data.ticker.toUpperCase()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative block w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
+                >
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "1rem 1rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
+                    Dataroma — {data.ticker} superinvestor holdings
+                  </p>
+                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
+                    Curated list of Buffett, Ackman, Burry and other top investors holding this stock.
+                  </p>
+                </a>
+                <a
+                  href="https://www.capitoltrades.com/trades"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative block w-full text-left rounded-2xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.12), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
+                >
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "1rem 1rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
+                    CapitolTrades — Congress activity
+                  </p>
+                  <p className="text-[12px] text-slate-800 leading-snug mt-0.5">
+                    Search by ticker to see which politicians are trading this stock. Free congressional disclosures.
                   </p>
                 </a>
               </div>
@@ -10294,31 +10294,23 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
     const list = [];
 
     if (category === "congress") {
-      if (tkr) {
-        list.push({
-          name: "Quiver Quant — Congressional trades",
-          desc: `See every disclosed congressional trade in ${tkr}, including this one. Free, no login.`,
-          url: `https://www.quiverquant.com/congresstrading/stock/${tkr}`,
-          primary: true,
-        });
-      }
       list.push({
-        name: "House Stock Watcher",
-        desc: "Searchable archive of House STOCK Act disclosures by name or ticker.",
-        url: "https://housestockwatcher.com/",
-        primary: false,
+        name: "CapitolTrades — Congress activity",
+        desc: "Free, well-designed tracker for U.S. politician trades. Sourced from Senate eFD and House Clerk disclosures. No signup.",
+        url: "https://www.capitoltrades.com/trades",
+        primary: true,
       });
       if (tkr) {
         list.push({
-          name: `Investing.com — ${tkr}`,
-          desc: "Full quote, charts, news, and analysis for context on the stock.",
-          url: `https://www.investing.com/search/?q=${tkr}`,
+          name: `WhaleWisdom — ${tkr} institutional holders`,
+          desc: `Every 13F filer holding ${tkr} with position sizes. Cross-reference what institutions are doing alongside Congress.`,
+          url: `https://whalewisdom.com/stock/${tkr.toLowerCase()}`,
           primary: false,
         });
         list.push({
-          name: `Seeking Alpha — ${tkr}`,
-          desc: "Analyst takes and earnings coverage (some content paywalled).",
-          url: `https://seekingalpha.com/symbol/${tkr}`,
+          name: `Dataroma — ${tkr} superinvestor holdings`,
+          desc: `Buffett, Ackman, Burry and other curated top investors holding ${tkr}.`,
+          url: `https://www.dataroma.com/m/stock.php?sym=${tkr.toUpperCase()}`,
           primary: false,
         });
         list.push({
@@ -10331,27 +10323,21 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
     } else if (category === "whale") {
       if (tkr) {
         list.push({
-          name: `Fintel — ${tkr} institutional holders`,
-          desc: `Clean view of every 13F filer holding ${tkr}, ranked by position size. Less ad-heavy than WhaleWisdom.`,
-          url: `https://fintel.io/so/us/${tkr.toLowerCase()}`,
+          name: `WhaleWisdom — ${tkr} institutional holders`,
+          desc: `Every 13F filer holding ${tkr}, ranked by position size. The gold standard for hedge fund tracking — completely free, no signup.`,
+          url: `https://whalewisdom.com/stock/${tkr.toLowerCase()}`,
           primary: true,
         });
         list.push({
-          name: `Investing.com — ${tkr}`,
-          desc: "Full quote, charts, news, technical analysis, and recent earnings — clean dashboard view.",
-          url: `https://www.investing.com/search/?q=${tkr}`,
+          name: `Dataroma — ${tkr} superinvestor holdings`,
+          desc: `Buffett, Ackman, Burry and other curated top investors holding ${tkr}. Quality signal, ad-free.`,
+          url: `https://www.dataroma.com/m/stock.php?sym=${tkr.toUpperCase()}`,
           primary: false,
         });
         list.push({
-          name: `Seeking Alpha — ${tkr}`,
-          desc: "Analyst articles, earnings analysis, and bull/bear takes (some content requires subscription).",
-          url: `https://seekingalpha.com/symbol/${tkr}`,
-          primary: false,
-        });
-        list.push({
-          name: "WhaleWisdom — backup view",
-          desc: `Same data as Fintel, more comprehensive but cluttered. Use if Fintel is missing data.`,
-          url: `https://whalewisdom.com/stock/${tkr}`,
+          name: `CapitolTrades — Congress activity`,
+          desc: `Search by ticker to see which politicians are trading. Free congressional disclosures from Senate eFD and House Clerk.`,
+          url: `https://www.capitoltrades.com/trades`,
           primary: false,
         });
         list.push({
@@ -10365,27 +10351,21 @@ function SourceDetailSheet({ data, onClose, onOpenLink }) {
       // hedge
       if (tkr) {
         list.push({
-          name: `Fintel — ${tkr} fund holders`,
-          desc: `Clean list of hedge funds holding ${tkr}. The named fund appears with its position size and changes.`,
-          url: `https://fintel.io/so/us/${tkr.toLowerCase()}`,
+          name: `WhaleWisdom — ${tkr} fund holders`,
+          desc: `Every 13F filer holding ${tkr} with position size and quarter-over-quarter changes. Gold standard for hedge fund tracking.`,
+          url: `https://whalewisdom.com/stock/${tkr.toLowerCase()}`,
           primary: true,
         });
         list.push({
-          name: `Investing.com — ${tkr}`,
-          desc: "Full quote, charts, news, technical analysis, and earnings.",
-          url: `https://www.investing.com/search/?q=${tkr}`,
+          name: `Dataroma — ${tkr} superinvestor holdings`,
+          desc: `Buffett, Ackman, Burry and other curated top investors holding ${tkr}. Quality signal, ad-free.`,
+          url: `https://www.dataroma.com/m/stock.php?sym=${tkr.toUpperCase()}`,
           primary: false,
         });
         list.push({
-          name: `Seeking Alpha — ${tkr}`,
-          desc: "Analyst takes, earnings coverage, and quant ratings (some content paywalled).",
-          url: `https://seekingalpha.com/symbol/${tkr}`,
-          primary: false,
-        });
-        list.push({
-          name: "HedgeFollow — fund profiles",
-          desc: "Search by fund name to see their full disclosed portfolio.",
-          url: "https://hedgefollow.com/",
+          name: `CapitolTrades — Congress activity`,
+          desc: `Free congressional trade disclosures. Search by ticker to see which politicians traded this stock.`,
+          url: `https://www.capitoltrades.com/trades`,
           primary: false,
         });
         list.push({
@@ -10951,52 +10931,6 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
               </p>
               <div className="space-y-2">
                 <a
-                  href={`https://www.investing.com/search/?q=${parsed.ticker}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative block w-full text-left rounded-xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
-                  style={{
-                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
-                    border: "1.5px solid #94A3B8",
-                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
-                  }}
-                >
-                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
-                    style={{
-                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
-                      borderRadius: "0.6rem 0.6rem 50% 50%",
-                    }} />
-                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
-                    Investing.com — {parsed.ticker}
-                  </p>
-                  <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
-                    Full quote, charts, news, technical analysis, and earnings — clean dashboard.
-                  </p>
-                </a>
-                <a
-                  href={`https://seekingalpha.com/symbol/${parsed.ticker}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative block w-full text-left rounded-xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
-                  style={{
-                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
-                    border: "1.5px solid #94A3B8",
-                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
-                  }}
-                >
-                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
-                    style={{
-                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
-                      borderRadius: "0.6rem 0.6rem 50% 50%",
-                    }} />
-                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
-                    Seeking Alpha — {parsed.ticker}
-                  </p>
-                  <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
-                    Analyst articles, earnings analysis, bull/bear takes (some content paywalled).
-                  </p>
-                </a>
-                <a
                   href={`https://finance.yahoo.com/quote/${parsed.ticker}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -11020,7 +10954,7 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                   </p>
                 </a>
                 <a
-                  href={`https://fintel.io/so/us/${parsed.ticker.toLowerCase()}`}
+                  href={`https://whalewisdom.com/stock/${parsed.ticker.toLowerCase()}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="relative block w-full text-left rounded-xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
@@ -11036,10 +10970,56 @@ function PlaybookDetailModal({ decision, idx, done, dismissed, onClose, onMarkDo
                       borderRadius: "0.6rem 0.6rem 50% 50%",
                     }} />
                   <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
-                    Fintel — {parsed.ticker} institutional ownership
+                    WhaleWisdom — {parsed.ticker} institutional holders
                   </p>
                   <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
-                    See which hedge funds and institutions hold this stock. Clean ownership data.
+                    Every 13F filer holding this stock, ranked by position size.
+                  </p>
+                </a>
+                <a
+                  href={`https://www.dataroma.com/m/stock.php?sym=${parsed.ticker.toUpperCase()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative block w-full text-left rounded-xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
+                >
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "0.6rem 0.6rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
+                    Dataroma — {parsed.ticker} superinvestor holdings
+                  </p>
+                  <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
+                    Buffett, Ackman, Burry and other top investors holding this stock.
+                  </p>
+                </a>
+                <a
+                  href="https://www.capitoltrades.com/trades"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative block w-full text-left rounded-xl px-3.5 py-3 overflow-hidden transition active:scale-[0.98] active:translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 50%, #E2E8F0 100%)",
+                    border: "1.5px solid #94A3B8",
+                    boxShadow: "0 2px 0 #64748B, 0 3px 7px rgba(15,23,42,0.15), inset 0 1.5px 2px rgba(255,255,255,1), inset 0 -1.5px 3px rgba(71,85,105,0.10)",
+                  }}
+                >
+                  <span className="absolute top-0.5 left-2 right-2 h-[50%] pointer-events-none"
+                    style={{
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0) 100%)",
+                      borderRadius: "0.6rem 0.6rem 50% 50%",
+                    }} />
+                  <p className="relative text-[14px] font-bold text-slate-900 leading-snug">
+                    CapitolTrades — Congress activity
+                  </p>
+                  <p className="relative text-[12px] text-slate-800 leading-snug mt-0.5">
+                    Search by ticker to see which politicians are trading this stock.
                   </p>
                 </a>
               </div>
