@@ -5963,23 +5963,33 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                       )}
                                     </div>
                                   </div>
-                                  {/* Middle: SLIM horizontal minute pill - number + MIN side by side */}
-                                  {b.minutes != null && (
-                                    <div className="flex-shrink-0 inline-flex flex-row items-center justify-center gap-1 w-[88px] h-[30px] rounded-full px-2"
-                                      style={{
-                                        marginRight: 12,
-                                        background: "linear-gradient(180deg, #FEF3C7 0%, #FDE68A 50%, #F59E0B 100%)",
-                                        border: "1.5px solid rgba(217,119,6,0.50)",
-                                        boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.90), inset 0 -1.5px 4px rgba(120,53,15,0.18), 0 1.5px 4px rgba(120,53,15,0.22)",
-                                      }}>
-                                      <span className="leading-none" style={{ fontSize: 18, fontWeight: 900, color: "#7C2D12", fontFamily: SERIF, letterSpacing: "-0.02em" }}>
-                                        {b.minutes}
-                                      </span>
-                                      <span className="leading-none" style={{ fontSize: 9, fontWeight: 800, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.12em" }}>
-                                        min
-                                      </span>
-                                    </div>
-                                  )}
+                                  {/* Middle: SLIM horizontal minute pill — color, brown text, mono font driven by segment kicker */}
+                                  {b.minutes != null && (() => {
+                                    const kickerThemes = {
+                                      "Loosen up": { bg: "linear-gradient(180deg, #FEF3C7 0%, #FDE68A 50%, #F59E0B 100%)", text: "#7C2D12", border: "rgba(217,119,6,0.55)", shadow: "rgba(120,53,15,0.22)" },
+                                      "Breathe":   { bg: "linear-gradient(180deg, #EDE9FE 0%, #DDD6FE 50%, #A78BFA 100%)", text: "#4C1D95", border: "rgba(124,58,237,0.55)", shadow: "rgba(76,29,149,0.22)" },
+                                      "Steady":    { bg: "linear-gradient(180deg, #FEE2E2 0%, #FECACA 50%, #F87171 100%)", text: "#7F1D1D", border: "rgba(220,38,38,0.55)", shadow: "rgba(127,29,29,0.22)" },
+                                      "Stretch":   { bg: "linear-gradient(180deg, #D1FAE5 0%, #A7F3D0 50%, #34D399 100%)", text: "#064E3B", border: "rgba(5,150,105,0.55)", shadow: "rgba(6,78,59,0.22)" },
+                                    };
+                                    const k = kickerThemes[b.name] || kickerThemes["Loosen up"];
+                                    const futuristicFont = '"SF Mono", "Menlo", "Consolas", ui-monospace, monospace';
+                                    return (
+                                      <div className="flex-shrink-0 inline-flex flex-row items-center justify-center gap-1 w-[88px] h-[30px] rounded-full px-2"
+                                        style={{
+                                          marginRight: 12,
+                                          background: k.bg,
+                                          border: `1.5px solid ${k.border}`,
+                                          boxShadow: `inset 0 1.5px 0 rgba(255,255,255,0.90), inset 0 -1.5px 4px rgba(0,0,0,0.12), 0 1.5px 4px ${k.shadow}`,
+                                        }}>
+                                        <span className="leading-none" style={{ fontSize: 18, fontWeight: 900, color: k.text, fontFamily: futuristicFont, letterSpacing: "-0.02em" }}>
+                                          {b.minutes}
+                                        </span>
+                                        <span className="leading-none" style={{ fontSize: 9, fontWeight: 800, color: k.text, fontFamily: futuristicFont, textTransform: "uppercase", letterSpacing: "0.12em" }}>
+                                          min
+                                        </span>
+                                      </div>
+                                    );
+                                  })()}
                                   {/* Right: glossy thumbnail */}
                                   {b.imgSlug && (
                                     <div className="flex-shrink-0 w-[68px] h-[68px] rounded-2xl overflow-hidden"
