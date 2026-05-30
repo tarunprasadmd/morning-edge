@@ -6275,18 +6275,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 {!(brief.mindset && (brief.mindset.gratitude || brief.mindset.focus)) &&
                  !(brief.clarity && (brief.clarity.breath_practice || brief.clarity.contemplation || brief.clarity.eastern_wisdom)) && (
                   <>
-                    {/* Default breath practice — uses the SAME interactive circle component */}
-                    <div className="pt-2">
-                      <p className="text-[12px] uppercase tracking-[0.2em] font-semibold mb-3 flex items-center gap-1.5" style={{ color: "#4338CA" }}>
-                        🫁 Breath Practice
-                      </p>
-                      <InteractiveBreathGuide
-                        name="4-7-8 Calm Breath"
-                        pattern="4-7-8"
-                        description="Inhale 4, hold 7, exhale 8. Calms the nervous system before market open."
-                        rounds={4}
-                      />
-                    </div>
+                    {/* Breath practice removed — Breath Cue card above already provides it.
+                        Avoids duplicate 🫁 icons and stacked breath widgets in the same view. */}
 
                     {/* Default contemplation quote */}
                     <div className="rounded-2xl p-5 relative overflow-hidden"
