@@ -6360,21 +6360,54 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       <span className="relative text-[18px]">▶</span>
                       <span className="relative">Start Guided Session · 9 min</span>
                     </button>
-                    {/* Portrait card grid — each card is a full poster with number, title, figure, anatomy labels, and benefits baked in. */}
-                    <div className="grid grid-cols-2 gap-2.5">
+                    {/* Workout-style horizontal blocks — small thumbnail + Sanskrit + English + hold sec pill.
+                        Matches the workout panel pattern. Tap any block to open the full card. */}
+                    <div className="space-y-1.5">
                       {YOGA_POSES.map((pose, i) => (
                         <button
                           key={i}
                           onClick={() => setSelectedYogaPose(pose)}
-                          className="relative rounded-xl overflow-hidden transition active:scale-[0.96] active:translate-y-0.5"
+                          className="w-full text-left active:scale-[0.98] transition flex items-center gap-2.5 rounded-xl px-2 py-1.5"
                           style={{
-                            aspectRatio: "2 / 3",
-                            background: "#0A0A0F",
-                            border: "1.5px solid rgba(212,165,116,0.45)",
-                            boxShadow: "0 2px 0 rgba(180,130,80,0.35), 0 3px 8px rgba(0,0,0,0.30)",
+                            background: "linear-gradient(180deg, #FFFFFF 0%, #F5F3FF 100%)",
+                            border: "1px solid rgba(139,92,246,0.30)",
+                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.85), 0 1px 2px rgba(91,33,182,0.10)",
                           }}>
-                          {/* Full yoga card image — number, Sanskrit, English, figure, anatomy notes, and benefits all baked into the artwork */}
-                          <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center center" }} />
+                          {/* Hold-time pill — yoga seconds (analog of workout minute pill) */}
+                          <div className="flex-shrink-0 flex flex-col items-center justify-center rounded-lg"
+                            style={{
+                              minWidth: 40, height: 38,
+                              background: "linear-gradient(180deg, #EDE9FE 0%, #DDD6FE 100%)",
+                              border: "1px solid #A78BFA",
+                              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.95)",
+                            }}>
+                            <span className="text-[15px] font-extrabold leading-none" style={{ color: "#4C1D95", fontFamily: 'ui-monospace, "SF Mono", Menlo' }}>
+                              {pose.holdSec || 30}
+                            </span>
+                            <span className="text-[7px] font-bold tracking-wider mt-0.5" style={{ color: "#5B21B6" }}>
+                              SEC
+                            </span>
+                          </div>
+                          {/* Small thumbnail — portrait crop of the card */}
+                          <div className="relative flex-shrink-0 rounded-md overflow-hidden"
+                            style={{
+                              width: 38, height: 52,
+                              background: "#0A0A0F",
+                              border: "1px solid rgba(212,165,116,0.35)",
+                            }}>
+                            <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center center" }} />
+                          </div>
+                          {/* Pose name */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[13px] font-bold italic leading-tight truncate" style={{ fontFamily: SERIF, color: "#4C1D95" }}>
+                              {pose.sanskrit}
+                            </p>
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-violet-700 mt-0.5 truncate">
+                              {pose.english}
+                            </p>
+                          </div>
+                          {/* Chevron right — tap-to-open hint */}
+                          <span className="flex-shrink-0 text-[16px] text-violet-400 pr-1">›</span>
                         </button>
                       ))}
                     </div>
@@ -7758,12 +7791,14 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           </div>
         </div>
 
-        {/* Pose image — cream coverer matches modal top so there's NO visible frame */}
-        <div className="relative w-full" style={{
-          height: "min(42vh, 360px)",
-          background: "#F8F4ED",
+        {/* Pose image — full card visible (contain not cover) on dark background.
+            Portrait card aspect 2:3 is preserved, letterbox bars are dark to match the card. */}
+        <div className="relative w-full flex items-center justify-center" style={{
+          height: "min(48vh, 420px)",
+          background: "#0A0A0F",
+          padding: "8px",
         }}>
-          <YogaPoseImage pose={currentPose} style={{ objectFit: "cover", objectPosition: "center center" }} />
+          <YogaPoseImage pose={currentPose} style={{ objectFit: "contain", objectPosition: "center center" }} />
         </div>
 
         {/* Pose name */}
@@ -7941,13 +7976,13 @@ function YogaPoseModal({ pose, onClose }) {
           <X className="w-5 h-5 text-slate-800 relative" />
         </button>
 
-        {/* ── HERO IMAGE — full poster card. Portrait 2:3 matches new yoga card art. */}
+        {/* ── HERO IMAGE — full poster card, 2:3 portrait. Contain so no clipping. */}
         <div className="relative w-full overflow-hidden"
           style={{
             aspectRatio: "2 / 3",
             background: "#0A0A0F",
           }}>
-          <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center center" }} />
+          <YogaPoseImage pose={pose} style={{ objectFit: "contain", objectPosition: "center center" }} />
         </div>
 
         {/* HEADER REMOVED — Sanskrit + English are baked into the card image */}
