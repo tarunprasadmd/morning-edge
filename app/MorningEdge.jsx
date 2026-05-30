@@ -193,8 +193,10 @@ function YogaPoseImage({ pose, className = "", style = {} }) {
     <img
       src={urls[urlIdx]}
       alt={pose.english}
+      draggable={false}
+      onContextMenu={(e) => e.preventDefault()}
       className={`absolute inset-0 w-full h-full ${className}`}
-      style={{ objectFit: "contain", ...style }}
+      style={{ objectFit: "contain", userSelect: "none", WebkitUserSelect: "none", pointerEvents: "none", ...style }}
       onError={() => {
         if (urlIdx < urls.length - 1) {
           setUrlIdx(urlIdx + 1);
@@ -7522,40 +7524,85 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           </p>
         </div>
 
-        {/* Control buttons */}
-        <div className="px-5 pb-5 flex items-center justify-center gap-3 relative z-[2]">
-          {/* Pause/Resume */}
+        {/* Control buttons — Reset, Back, Pause/Resume, Next (matches workout flow) */}
+        <div className="px-3 pb-5 flex items-center gap-2 relative z-[2]">
+          {/* Reset — restart current pose */}
+          <button
+            onClick={() => {
+              try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch(e){}
+              onUpdate({ ...session, secondsLeft: holdPerPose });
+              setTimeout(() => speak(`${currentPose.english}. ${currentPose.steps[0]}`), 120);
+            }}
+            style={{
+              minWidth: 72, padding: "12px 10px", borderRadius: 16,
+              background: "linear-gradient(180deg, #F87171 0%, #DC2626 50%, #991B1B 100%)",
+              border: "1.5px solid #7F1D1D", color: "#FFFFFF",
+              fontSize: 13, fontWeight: 800, cursor: "pointer",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.30), 0 2px 5px rgba(127,29,29,0.40)",
+              textShadow: "0 1px 1px rgba(0,0,0,0.30)"
+            }}>
+            Reset
+          </button>
+          {/* Back — go to previous pose */}
+          <button
+            onClick={() => {
+              if (session.poseIdx > 0) {
+                const prev = poses[session.poseIdx - 1];
+                try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch(e){}
+                onUpdate({ ...session, poseIdx: session.poseIdx - 1, secondsLeft: holdPerPose });
+                setTimeout(() => speak(`${prev.english}. ${prev.steps[0]}`), 120);
+              }
+            }}
+            disabled={session.poseIdx === 0}
+            style={{
+              minWidth: 72, padding: "12px 10px", borderRadius: 16,
+              background: "linear-gradient(180deg, #475569 0%, #1E293B 45%, #020617 100%)",
+              border: "1.5px solid #0F172A", color: "#F1F5F9",
+              fontSize: 13, fontWeight: 800, cursor: "pointer",
+              boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.30), inset 0 -2px 5px rgba(0,0,0,0.40), 0 2px 5px rgba(0,0,0,0.40)",
+              textShadow: "0 1px 1px rgba(0,0,0,0.40)",
+              opacity: session.poseIdx === 0 ? 0.35 : 1
+            }}>
+            Back
+          </button>
+          {/* Pause / Resume */}
           <button
             onClick={() => onUpdate({ ...session, isPaused: !session.isPaused })}
-            className="relative px-4 py-2.5 rounded-xl text-white text-[13px] font-extrabold overflow-hidden transition active:scale-[0.95] inline-flex items-center justify-center gap-1.5"
             style={{
+              flex: 1, padding: "12px 10px", borderRadius: 16,
               background: session.isPaused
-                ? "linear-gradient(180deg, #66DD7E 0%, #00C800 50%, #007F00 100%)"
-                : "linear-gradient(180deg, #FFA500 0%, #F59E0B 50%, #B45309 100%)",
-              border: `1.5px solid ${session.isPaused ? "#005000" : "#92400E"}`,
-              boxShadow: `0 2px 0 ${session.isPaused ? "#005000" : "#92400E"}, inset 0 2px 3px rgba(255,255,255,0.55)`,
-              textShadow: "0 1px 1.5px rgba(0,0,0,0.40)",
-              minWidth: 100,
+                ? "linear-gradient(180deg, rgba(255,255,255,0.30) 0%, transparent 45%, rgba(0,0,0,0.22) 100%), #7C3AED"
+                : "linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.08) 100%)",
+              border: `2px solid #7C3AED`,
+              color: "#fff", fontSize: 14, fontWeight: 900, cursor: "pointer",
+              boxShadow: session.isPaused
+                ? "inset 0 1.5px 0 rgba(255,255,255,0.45), inset 0 -2px 5px rgba(0,0,0,0.20), 0 2px 6px rgba(0,0,0,0.30), 0 0 16px rgba(124,58,237,0.55)"
+                : "inset 0 1.5px 0 rgba(255,255,255,0.20)",
+              textShadow: "0 1px 2px rgba(0,0,0,0.30)"
             }}>
-            {session.isPaused ? "▶ Resume" : "⏸ Pause"}
+            {session.isPaused ? "Resume" : "Pause"}
           </button>
-          {/* Skip */}
+          {/* Next — skip to next pose (or finish) */}
           <button
             onClick={() => {
               if (session.poseIdx < totalPoses - 1) {
+                const next = poses[session.poseIdx + 1];
+                try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch(e){}
                 onUpdate({ ...session, poseIdx: session.poseIdx + 1, secondsLeft: holdPerPose });
+                setTimeout(() => speak(`${next.english}. ${next.steps[0]}`), 120);
               } else {
                 onClose();
               }
             }}
-            className="relative px-4 py-2.5 rounded-xl text-[13px] font-extrabold overflow-hidden transition active:scale-[0.95] inline-flex items-center justify-center gap-1.5"
             style={{
-              background: "linear-gradient(180deg, #DDD6FE 0%, #C4B5FD 50%, #A78BFA 100%)",
-              border: "1.5px solid #7C3AED",
-              boxShadow: "0 2px 0 #7C3AED, inset 0 1.5px 2px rgba(255,255,255,0.85)",
-              color: "#4C1D95",
+              minWidth: 72, padding: "12px 10px", borderRadius: 16,
+              background: "linear-gradient(180deg, rgba(255,255,255,0.30) 0%, transparent 45%, rgba(0,0,0,0.22) 100%), #7C3AED",
+              border: "2px solid #7C3AED", color: "#fff",
+              fontSize: 13, fontWeight: 800, cursor: "pointer",
+              boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.45), inset 0 -2px 5px rgba(0,0,0,0.20), 0 2px 5px rgba(0,0,0,0.30)",
+              textShadow: "0 1px 1px rgba(0,0,0,0.30)"
             }}>
-            Skip ›
+            {session.poseIdx >= totalPoses - 1 ? "Done" : "Next"}
           </button>
         </div>
       </div>
