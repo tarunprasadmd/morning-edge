@@ -7753,99 +7753,94 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
   const poseStroke = C - (poseProgress / 100) * C;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ background: "rgba(46,16,101,0.85)", backdropFilter: "blur(10px)" }}>
-      <div className="relative w-full max-w-md rounded-3xl overflow-hidden flex flex-col"
-        style={{
-          background: "linear-gradient(180deg, #F8F4ED 0%, #F2EBDB 60%, #EDE9FE 100%)",
-          border: "3px solid #7C3AED",
-          boxShadow: "0 12px 40px rgba(76,29,149,0.50), inset 0 2px 4px rgba(255,255,255,0.85)",
-          maxHeight: "92vh",
-        }}>
-        {/* Glossy top specular */}
-        <span className="absolute top-0 left-4 right-4 h-[12%] pointer-events-none z-[1]"
-          style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)", borderRadius: "1.5rem 1.5rem 50% 50%" }} />
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, background: "#0B1120", display: "flex", flexDirection: "column" }}>
 
-        {/* Header — progress bar through full session */}
-        <div className="relative px-5 pt-4 pb-3 border-b border-violet-200 z-[2]">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] uppercase tracking-[0.2em] font-extrabold text-violet-700">
-              Pose {session.poseIdx + 1} of {totalPoses}
-            </p>
-            <button onClick={onClose} className="text-violet-700 active:scale-90 transition"
-              style={{ fontSize: 18 }} title="End session">✕</button>
-          </div>
-          {/* Overall session progress bar */}
-          <div className="w-full h-1.5 bg-violet-200 rounded-full overflow-hidden">
-            <div className="h-full rounded-full transition-all duration-1000 ease-linear"
-              style={{
-                width: `${overallPct}%`,
-                background: "linear-gradient(90deg, #A78BFA, #7C3AED, #4C1D95)",
-              }} />
-          </div>
-        </div>
-
-        {/* Pose image — full card visible (contain not cover) on dark background.
-            Portrait card aspect 2:3 is preserved, letterbox bars are dark to match the card. */}
-        <div className="relative w-full flex items-center justify-center" style={{
-          height: "min(48vh, 420px)",
-          background: "#0A0A0F",
-          padding: "8px",
-        }}>
-          <YogaPoseImage pose={currentPose} style={{ objectFit: "contain", objectPosition: "center center" }} />
-        </div>
-
-        {/* Pose name */}
-        <div className="px-5 py-3 text-center">
-          <p className="text-[20px] font-extrabold italic leading-tight" style={{ fontFamily: "Georgia, serif", color: "#4C1D95" }}>
+      {/* HEADER — pose name + close button */}
+      <div style={{ flexShrink: 0, padding: "12px 16px 8px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0B1120" }}>
+        <div style={{ minWidth: 0, flex: 1, paddingRight: 12 }}>
+          <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 700, color: "#A78BFA", margin: 0 }}>
+            Yoga · Pose {session.poseIdx + 1}/{totalPoses}
+          </p>
+          <p style={{ fontSize: "16px", fontWeight: 800, color: "rgba(255,255,255,0.95)", margin: "2px 0 0", fontStyle: "italic", fontFamily: "Georgia, serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {currentPose.sanskrit}
           </p>
-          <p className="text-[12px] uppercase tracking-[0.18em] font-bold text-violet-700 mt-0.5">
-            {currentPose.english}
-          </p>
         </div>
+        <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+          <X style={{ width: 18, height: 18, color: "rgba(255,255,255,0.80)" }} />
+        </button>
+      </div>
 
-        {/* Circular countdown timer */}
-        <div className="flex items-center justify-center pb-3">
-          <div className="relative" style={{ width: 130, height: 130 }}>
-            <svg width="130" height="130" viewBox="0 0 130 130">
-              {/* Background circle */}
-              <circle cx="65" cy="65" r={R} fill="none" stroke="#DDD6FE" strokeWidth="9" />
-              {/* Progress circle */}
+      {/* PROGRESS BAR — one segment per pose */}
+      <div style={{ flexShrink: 0, display: "flex", gap: 3, padding: "0 16px 8px" }}>
+        {poses.map((_, i) => (
+          <div key={i} style={{ flex: 1, height: 3, borderRadius: 99, overflow: "hidden", background: "rgba(255,255,255,0.12)" }}>
+            <div style={{ height: "100%", transition: "width 0.3s", width: i < session.poseIdx ? "100%" : i === session.poseIdx ? `${poseProgress}%` : "0%", background: "linear-gradient(90deg, #A78BFA, #7C3AED, #4C1D95)" }} />
+          </div>
+        ))}
+      </div>
+
+      {/* IMAGE AREA — fills all available space, like workout */}
+      <div style={{ flex: 1, position: "relative", minHeight: 0, background: "#0B1120" }}>
+        <YogaPoseImage
+          pose={currentPose}
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "92%",
+            height: "92%",
+            objectFit: "contain",
+            objectPosition: "center center",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Pose counter — top-left chip */}
+        <div style={{ position: "absolute", top: 8, left: 12, background: "rgba(0,0,0,0.60)", border: "1px solid rgba(167,139,250,0.45)", borderRadius: 99, padding: "2px 8px", fontSize: 11, fontWeight: 700, color: "#C4B5FD", backdropFilter: "blur(4px)" }}>
+          {session.poseIdx + 1}/{totalPoses}
+        </div>
+      </div>
+
+      {/* BOTTOM CONTROLS — name + timer + step + buttons */}
+      <div style={{ flexShrink: 0, padding: "12px 16px 18px", background: "#0B1120", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+
+        <p style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.18em", fontWeight: 700, color: "#C4B5FD", textAlign: "center", margin: "0 0 8px" }}>
+          {currentPose.english}
+        </p>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+          {/* Circular countdown timer */}
+          <div style={{ position: "relative", width: 80, height: 80, flexShrink: 0 }}>
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="6" />
               <circle
-                cx="65"
-                cy="65"
-                r={R}
+                cx="40" cy="40" r="34"
                 fill="none"
-                stroke="url(#yogaGrad)"
-                strokeWidth="9"
+                stroke="url(#yogaSessGrad)"
+                strokeWidth="6"
                 strokeLinecap="round"
-                strokeDasharray={C}
-                strokeDashoffset={poseStroke}
-                transform="rotate(-90 65 65)"
+                strokeDasharray={2 * Math.PI * 34}
+                strokeDashoffset={2 * Math.PI * 34 - (poseProgress / 100) * 2 * Math.PI * 34}
+                transform="rotate(-90 40 40)"
                 style={{ transition: "stroke-dashoffset 1s linear" }}
               />
               <defs>
-                <linearGradient id="yogaGrad" x1="0" y1="0" x2="1" y2="1">
+                <linearGradient id="yogaSessGrad" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0%" stopColor="#A78BFA" />
                   <stop offset="100%" stopColor="#4C1D95" />
                 </linearGradient>
               </defs>
             </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <p className="text-[32px] font-extrabold leading-none" style={{ color: "#4C1D95", fontFamily: "Georgia, serif" }}>
-                {session.secondsLeft}
-              </p>
-              <p className="text-[9px] uppercase tracking-wider font-bold text-violet-600 mt-1">
-                seconds
-              </p>
+            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+              <p style={{ fontSize: 22, fontWeight: 800, color: "#FFFFFF", margin: 0, lineHeight: 1, fontFamily: "Georgia, serif" }}>{session.secondsLeft}</p>
+              <p style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700, color: "#A78BFA", marginTop: 2 }}>sec</p>
             </div>
           </div>
-        </div>
 
-        {/* Current instruction step */}
-        <div className="px-5 pb-3">
-          <p className="text-[13px] text-center leading-snug" style={{ color: "#3B0764" }}>
+          <p style={{ flex: 1, fontSize: 13, color: "rgba(255,255,255,0.85)", margin: 0, lineHeight: 1.4 }}>
             {(() => {
               const elapsed = holdPerPose - session.secondsLeft;
               const stepIdx = elapsed < 8 ? 0 : elapsed < 20 ? 1 : 2;
@@ -7854,26 +7849,16 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
           </p>
         </div>
 
-        {/* Control buttons — Reset, Back, Pause/Resume, Next (matches workout flow) */}
-        <div className="px-3 pb-5 flex items-center gap-2 relative z-[2]">
-          {/* Reset — restart current pose */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <button
             onClick={() => {
               try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch(e){}
               onUpdate({ ...session, secondsLeft: holdPerPose });
               setTimeout(() => speak(`${currentPose.english}. ${currentPose.steps[0]}`), 120);
             }}
-            style={{
-              minWidth: 72, padding: "12px 10px", borderRadius: 16,
-              background: "linear-gradient(180deg, #F87171 0%, #DC2626 50%, #991B1B 100%)",
-              border: "1.5px solid #7F1D1D", color: "#FFFFFF",
-              fontSize: 13, fontWeight: 800, cursor: "pointer",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.30), 0 2px 5px rgba(127,29,29,0.40)",
-              textShadow: "0 1px 1px rgba(0,0,0,0.30)"
-            }}>
+            style={{ minWidth: 64, padding: "10px 8px", borderRadius: 12, background: "linear-gradient(180deg, #F87171 0%, #DC2626 50%, #991B1B 100%)", border: "1.5px solid #7F1D1D", color: "#FFFFFF", fontSize: 12, fontWeight: 800, cursor: "pointer", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.30), 0 2px 5px rgba(127,29,29,0.40)", textShadow: "0 1px 1px rgba(0,0,0,0.30)" }}>
             Reset
           </button>
-          {/* Back — go to previous pose */}
           <button
             onClick={() => {
               if (session.poseIdx > 0) {
@@ -7884,35 +7869,14 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
               }
             }}
             disabled={session.poseIdx === 0}
-            style={{
-              minWidth: 72, padding: "12px 10px", borderRadius: 16,
-              background: "linear-gradient(180deg, #475569 0%, #1E293B 45%, #020617 100%)",
-              border: "1.5px solid #0F172A", color: "#F1F5F9",
-              fontSize: 13, fontWeight: 800, cursor: "pointer",
-              boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.30), inset 0 -2px 5px rgba(0,0,0,0.40), 0 2px 5px rgba(0,0,0,0.40)",
-              textShadow: "0 1px 1px rgba(0,0,0,0.40)",
-              opacity: session.poseIdx === 0 ? 0.35 : 1
-            }}>
+            style={{ minWidth: 64, padding: "10px 8px", borderRadius: 12, background: "linear-gradient(180deg, #475569 0%, #1E293B 45%, #020617 100%)", border: "1.5px solid #0F172A", color: "#F1F5F9", fontSize: 12, fontWeight: 800, cursor: "pointer", boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.30), inset 0 -2px 5px rgba(0,0,0,0.40), 0 2px 5px rgba(0,0,0,0.40)", textShadow: "0 1px 1px rgba(0,0,0,0.40)", opacity: session.poseIdx === 0 ? 0.35 : 1 }}>
             Back
           </button>
-          {/* Pause / Resume */}
           <button
             onClick={() => onUpdate({ ...session, isPaused: !session.isPaused })}
-            style={{
-              flex: 1, padding: "12px 10px", borderRadius: 16,
-              background: session.isPaused
-                ? "linear-gradient(180deg, rgba(255,255,255,0.30) 0%, transparent 45%, rgba(0,0,0,0.22) 100%), #7C3AED"
-                : "linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.08) 100%)",
-              border: `2px solid #7C3AED`,
-              color: "#fff", fontSize: 14, fontWeight: 900, cursor: "pointer",
-              boxShadow: session.isPaused
-                ? "inset 0 1.5px 0 rgba(255,255,255,0.45), inset 0 -2px 5px rgba(0,0,0,0.20), 0 2px 6px rgba(0,0,0,0.30), 0 0 16px rgba(124,58,237,0.55)"
-                : "inset 0 1.5px 0 rgba(255,255,255,0.20)",
-              textShadow: "0 1px 2px rgba(0,0,0,0.30)"
-            }}>
+            style={{ flex: 1, padding: "10px 8px", borderRadius: 12, background: session.isPaused ? "linear-gradient(180deg, rgba(255,255,255,0.30) 0%, transparent 45%, rgba(0,0,0,0.22) 100%), #7C3AED" : "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)", border: "2px solid #7C3AED", color: "#fff", fontSize: 13, fontWeight: 900, cursor: "pointer", boxShadow: session.isPaused ? "inset 0 1.5px 0 rgba(255,255,255,0.45), 0 2px 6px rgba(0,0,0,0.30), 0 0 16px rgba(124,58,237,0.55)" : "inset 0 1.5px 0 rgba(255,255,255,0.20)", textShadow: "0 1px 2px rgba(0,0,0,0.30)" }}>
             {session.isPaused ? "Resume" : "Pause"}
           </button>
-          {/* Next — skip to next pose (or finish) */}
           <button
             onClick={() => {
               if (session.poseIdx < totalPoses - 1) {
@@ -7924,14 +7888,7 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
                 onClose();
               }
             }}
-            style={{
-              minWidth: 72, padding: "12px 10px", borderRadius: 16,
-              background: "linear-gradient(180deg, rgba(255,255,255,0.30) 0%, transparent 45%, rgba(0,0,0,0.22) 100%), #7C3AED",
-              border: "2px solid #7C3AED", color: "#fff",
-              fontSize: 13, fontWeight: 800, cursor: "pointer",
-              boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.45), inset 0 -2px 5px rgba(0,0,0,0.20), 0 2px 5px rgba(0,0,0,0.30)",
-              textShadow: "0 1px 1px rgba(0,0,0,0.30)"
-            }}>
+            style={{ minWidth: 64, padding: "10px 8px", borderRadius: 12, background: "linear-gradient(180deg, rgba(255,255,255,0.30) 0%, transparent 45%, rgba(0,0,0,0.22) 100%), #7C3AED", border: "2px solid #7C3AED", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.45), inset 0 -2px 5px rgba(0,0,0,0.20), 0 2px 5px rgba(0,0,0,0.30)", textShadow: "0 1px 1px rgba(0,0,0,0.30)" }}>
             {session.poseIdx >= totalPoses - 1 ? "Done" : "Next"}
           </button>
         </div>
