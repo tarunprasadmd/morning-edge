@@ -7349,13 +7349,15 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
   }, [session.isPaused]);
 
   // Speak helper — uses Web Speech API. iOS requires user gesture (Start button).
-  // Voice + slower rate + slightly lower pitch = more soothing for yoga.
+  // CRITICAL: do NOT speak until the female voice has been selected — otherwise
+  // the browser falls back to its default (often male on Windows: Microsoft David).
   const speak = React.useCallback((text) => {
     try {
       if (typeof window === "undefined" || !window.speechSynthesis) return;
+      if (!selectedVoice) return; // wait for female voice to load — prevents male-then-female switch
       window.speechSynthesis.cancel();
       const utterance = new window.SpeechSynthesisUtterance(text);
-      if (selectedVoice) utterance.voice = selectedVoice;
+      utterance.voice = selectedVoice;
       utterance.rate = 0.82;   // Slower for calm guidance
       utterance.pitch = 0.95;  // Slightly lower for warmth
       utterance.volume = 0.95;
@@ -7366,13 +7368,14 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
   }, [selectedVoice]);
 
   // On mount, and when poseIdx changes, speak the new pose intro
+  // Waits for selectedVoice (female) to load before speaking — fixes male-voice-on-first-pose bug
   React.useEffect(() => {
-    if (!currentPose) return;
+    if (!currentPose || !selectedVoice) return;
     if (session.justStarted) {
       speak(`Let's begin. First pose: ${currentPose.english}. ${currentPose.steps[0]}`);
       onUpdate({ ...session, justStarted: false });
     }
-  }, [session.poseIdx]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [session.poseIdx, selectedVoice]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Countdown timer
   React.useEffect(() => {
