@@ -2092,6 +2092,7 @@ export default function MorningEdge() {
     await Store.del("me-progress");
     await Store.del("me-holdings");
     await Store.del("me-briefs"); await Store.del("me-accounts");
+    await Store.del("me-cash"); // clear manually-set cash to deploy
     // Clear ALL chat conversations (one localStorage key per card: me-chat-{id})
     try {
       const toDelete = [];
@@ -2103,6 +2104,7 @@ export default function MorningEdge() {
     } catch (_e) { /* ignore */ }
     setName(""); setPortfolio([]); setHoldings([]); setAccountsState([]); setHoldingsRefreshedAt(null);
     setBrief(null); setCompletedDecisions({}); setRoutineDays({});
+    setCashBalance(null); // reset manually-set cash to deploy too
     setTempName(""); setTempPortfolio([]);
     setShowSettings(false); setPhase("onboard-1");
   };
@@ -2304,6 +2306,7 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
         setHoldingsRefreshedAt(Date.now());
         setPortfolio((prev) => Array.from(new Set([...prev, ...Array.from(tickers)])));
         setCashBalance(null);
+        Store.del("me-cash").catch(() => {}); // clear stored cash too — so next reload doesn't repopulate the old value
         setCsvImportMessage({
           type: "ok",
           text: `Added ${newHoldings.length} position${newHoldings.length === 1 ? "" : "s"} under "${label}"${withQty ? ` · ${withQty} with shares` : ""}.`,
