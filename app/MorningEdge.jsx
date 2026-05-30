@@ -10688,7 +10688,7 @@ function InteractiveBreathGuide({ name, pattern, description, rounds }) {
         style={{ minHeight: 220 }}
         aria-label={running ? "Pause breath practice" : "Start breath practice"}
       >
-        {/* Himalayas backdrop — calming mountain scene behind the breath ball */}
+        {/* Himalayas backdrop — BRIGHTENED to opacity 0.95 + saturate/contrast/brightness filters */}
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none"
@@ -10696,15 +10696,16 @@ function InteractiveBreathGuide({ name, pattern, description, rounds }) {
             backgroundImage: "url('/himalayas.png')",
             backgroundSize: "cover",
             backgroundPosition: "center",
-            opacity: 0.60,
+            opacity: 0.95,
+            filter: "saturate(1.25) contrast(1.08) brightness(1.05)",
           }}
         />
-        {/* Soft radial vignette so the violet ball stays the focal point */}
+        {/* Edge-only vignette so the violet ball stays the focal point but image stays vivid */}
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: "radial-gradient(circle at center, rgba(15,23,42,0.15) 25%, rgba(15,23,42,0.50) 100%)",
+            background: "radial-gradient(circle at center, rgba(15,23,42,0) 55%, rgba(15,23,42,0.28) 100%)",
           }}
         />
         {/* Outer ring (decorative pulse) */}
