@@ -1214,6 +1214,42 @@ export default function MorningEdge() {
   const [chatLoading, setChatLoading] = useState(false);
   const [chatError, setChatError] = useState(null);
   const [heroInput, setHeroInput] = useState(""); // Phase B: input on the Ask Morning Edge hero card
+
+  // Voice input for the hero crystal ball — same Web Speech API as ChatSheet.
+  // Tap the ball to dictate, transcript streams live into heroInput.
+  const [heroListening, setHeroListening] = React.useState(false);
+  const heroRecognitionRef = React.useRef(null);
+  const toggleHeroVoiceInput = React.useCallback(() => {
+    if (typeof window === "undefined") return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      alert("Voice input isn't supported in this browser. Try Safari or Chrome.");
+      return;
+    }
+    if (heroListening && heroRecognitionRef.current) {
+      try { heroRecognitionRef.current.stop(); } catch (_e) {}
+      return;
+    }
+    const r = new SR();
+    r.lang = "en-US";
+    r.interimResults = true;
+    r.continuous = false;
+    let finalText = "";
+    r.onresult = (event) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const t = event.results[i][0].transcript;
+        if (event.results[i].isFinal) finalText += t;
+        else interim += t;
+      }
+      setHeroInput((finalText + interim).trim());
+    };
+    r.onend = () => { setHeroListening(false); heroRecognitionRef.current = null; };
+    r.onerror = () => { setHeroListening(false); heroRecognitionRef.current = null; };
+    heroRecognitionRef.current = r;
+    setHeroListening(true);
+    try { r.start(); } catch (_e) { setHeroListening(false); }
+  }, [heroListening]);
   const [cashBalance, setCashBalance] = useState(null); // optional user-entered cash to deploy
 
   // Auto-detect cash from cash-sweep money market positions in holdings.
@@ -3931,24 +3967,60 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                 <div className="relative px-4 pt-3.5 pb-3">
                   {/* Header row — orb + title */}
                   <div className="flex items-center gap-2.5 mb-2.5">
-                    <div
-                      className="relative flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center overflow-hidden"
+                    <style>{`
+                      @keyframes heroCrystalPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+                      @keyframes heroStarThrob { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(0.92); } }
+                    `}</style>
+                    {/* Crystal ball — tappable for voice input. Matches the chat ball.
+                        Listening: teal glow + pulse. Idle: violet + iridescent rim. */}
+                    <button
+                      onClick={toggleHeroVoiceInput}
+                      aria-label={heroListening ? "Listening — tap to stop voice input" : "Tap the crystal ball to ask by voice"}
+                      title={heroListening ? "Listening… tap to stop" : "Tap to ask by voice"}
+                      className="relative flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center overflow-hidden transition active:scale-[0.94]"
                       style={{
-                        background: "linear-gradient(180deg, #A78BFA 0%, #8B5CF6 50%, #5B21B6 100%)",
-                        border: "1.5px solid #4C1D95",
-                        boxShadow:
-                          "0 1.5px 0 #4C1D95, inset 0 1.5px 2px rgba(255,255,255,0.55)",
+                        background: heroListening
+                          ? "radial-gradient(circle at 35% 28%, #FFFFFF 0%, #CFFAFE 10%, #67E8F9 28%, #06B6D4 55%, #0E7490 85%, #164E63 100%)"
+                          : "radial-gradient(circle at 35% 28%, #FFFFFF 0%, #F5F3FF 8%, #DDD6FE 20%, #A78BFA 42%, #7C3AED 70%, #4C1D95 92%, #2E1065 100%)",
+                        border: heroListening ? "1.5px solid #155E75" : "1.5px solid #3B0764",
+                        boxShadow: heroListening
+                          ? "0 2px 0 #155E75, 0 0 22px rgba(103,232,249,0.85), 0 0 12px rgba(255,255,255,0.45), inset 0 2px 4px rgba(255,255,255,0.60), inset 0 -2px 5px rgba(14,116,144,0.50)"
+                          : "0 2px 0 #3B0764, 0 0 22px rgba(167,139,250,0.70), 0 0 10px rgba(255,255,255,0.40), inset 0 2px 4px rgba(255,255,255,0.55), inset 0 -2px 5px rgba(46,16,101,0.50)",
+                        animation: heroListening ? "heroCrystalPulse 1.4s ease-in-out infinite" : undefined,
                       }}
                     >
-                      <span
-                        className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none rounded-t-full"
+                      {/* Iridescent rainbow rim */}
+                      <span className="absolute inset-0 pointer-events-none rounded-full"
                         style={{
-                          background:
-                            "linear-gradient(to bottom, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)",
-                        }}
-                      />
-                      <Sparkles className="w-4 h-4 text-white relative" strokeWidth={2.5} />
-                    </div>
+                          background: "conic-gradient(from 220deg, rgba(244,114,182,0.20), rgba(167,139,250,0.20), rgba(125,211,252,0.20), rgba(134,239,172,0.18), rgba(253,224,71,0.18), rgba(244,114,182,0.20))",
+                          mixBlendMode: "overlay",
+                          opacity: 0.85,
+                        }} />
+                      {/* Primary top-arc reflection */}
+                      <span className="absolute top-0.5 left-1 right-1 h-[48%] pointer-events-none rounded-t-full"
+                        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0) 100%)" }} />
+                      {/* Upper-left key highlight */}
+                      <span className="absolute pointer-events-none"
+                        style={{
+                          top: "13%", left: "17%", width: "30%", height: "30%",
+                          background: "radial-gradient(circle, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.55) 32%, rgba(255,255,255,0) 70%)",
+                          borderRadius: "50%", filter: "blur(0.5px)",
+                        }} />
+                      {/* Bottom rim glow */}
+                      <span className="absolute pointer-events-none"
+                        style={{
+                          bottom: "7%", left: "21%", right: "21%", height: "15%",
+                          background: "radial-gradient(ellipse, rgba(196,181,253,0.60) 0%, rgba(196,181,253,0) 78%)",
+                          filter: "blur(1px)",
+                        }} />
+                      <Sparkles className="w-5 h-5 text-white relative" strokeWidth={2.5}
+                        style={{
+                          filter: heroListening
+                            ? "drop-shadow(0 0 6px rgba(207,250,254,1)) drop-shadow(0 0 2px rgba(255,255,255,0.95)) drop-shadow(0 1px 1px rgba(0,0,0,0.30))"
+                            : "drop-shadow(0 0 5px rgba(255,255,255,0.90)) drop-shadow(0 1px 1px rgba(0,0,0,0.30))",
+                          animation: heroListening ? "heroStarThrob 1.4s ease-in-out infinite" : undefined,
+                        }} />
+                    </button>
                     <div className="flex-1 min-w-0">
                       <p className="text-[12px] uppercase tracking-[0.2em] font-bold text-violet-800 leading-none mb-1">
                         Ask Morning Edge
