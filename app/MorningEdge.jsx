@@ -7667,6 +7667,16 @@ function YogaSessionModal({ session, poses, onUpdate, onClose }) {
     masterGainRef.current.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.5);
   }, [session.isPaused]);
 
+  // Cancel in-progress voice narration when Pause is hit. Web Speech `pause()` is
+  // unreliable across browsers (esp. Chrome desktop), so we cancel cleanly. The
+  // next scheduled cue (8s, 20s, or 5s-remaining marks) will speak normally on resume.
+  React.useEffect(() => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    if (session.isPaused) {
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+  }, [session.isPaused]);
+
   // Speak helper — uses Web Speech API. iOS requires user gesture (Start button).
   // CRITICAL: do NOT speak until the female voice has been selected — otherwise
   // the browser falls back to its default (often male on Windows: Microsoft David).
