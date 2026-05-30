@@ -5963,19 +5963,19 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                                       )}
                                     </div>
                                   </div>
-                                  {/* Middle: BIG rectangular minute badge - sits central */}
+                                  {/* Middle: SLIM horizontal minute pill - number + MIN side by side */}
                                   {b.minutes != null && (
-                                    <div className="flex-shrink-0 flex flex-col items-center justify-center w-[92px] h-[56px] rounded-2xl"
+                                    <div className="flex-shrink-0 inline-flex flex-row items-center justify-center gap-1 w-[88px] h-[30px] rounded-full px-2"
                                       style={{
-                                        marginRight: 6,
+                                        marginRight: 12,
                                         background: "linear-gradient(180deg, #FEF3C7 0%, #FDE68A 50%, #F59E0B 100%)",
                                         border: "1.5px solid rgba(217,119,6,0.50)",
-                                        boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.90), inset 0 -2px 5px rgba(120,53,15,0.18), 0 2px 5px rgba(120,53,15,0.22)",
+                                        boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.90), inset 0 -1.5px 4px rgba(120,53,15,0.18), 0 1.5px 4px rgba(120,53,15,0.22)",
                                       }}>
-                                      <span className="leading-none" style={{ fontSize: 26, fontWeight: 900, color: "#7C2D12", fontFamily: SERIF, letterSpacing: "-0.03em" }}>
+                                      <span className="leading-none" style={{ fontSize: 18, fontWeight: 900, color: "#7C2D12", fontFamily: SERIF, letterSpacing: "-0.02em" }}>
                                         {b.minutes}
                                       </span>
-                                      <span className="leading-none mt-0.5" style={{ fontSize: 9, fontWeight: 800, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.10em" }}>
+                                      <span className="leading-none" style={{ fontSize: 9, fontWeight: 800, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.12em" }}>
                                         min
                                       </span>
                                     </div>
