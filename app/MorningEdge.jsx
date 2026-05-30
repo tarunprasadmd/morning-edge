@@ -6732,7 +6732,7 @@ function MountainScene() {
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <img src={WATER_PAINTING} alt=""
         className="w-full h-full"
-        style={{ objectFit: "contain", objectPosition: "center", opacity: 0.55 }} />
+        style={{ objectFit: "cover", objectPosition: "center", opacity: 0.55 }} />
       <div className="absolute inset-0" style={{
         background: "linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.15) 40%, rgba(255,255,255,0.05) 70%, rgba(255,255,255,0.25) 100%)",
       }} />
