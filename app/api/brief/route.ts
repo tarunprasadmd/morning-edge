@@ -483,10 +483,11 @@ NO web_search. 8-10 entries.`;
   const opportunityPrompt = `${COMMON_PREAMBLE(name, date)}
 MARKET CONTEXT: ${JSON.stringify(contextSlice, null, 2)}${ownedNote}
 Return ONLY: { "opportunity_watch": [ { "ticker": "NOT held", "theme": "tag", "fits_gap": "max 14 words", "headline": "max 14 words", "deep_reasoning": "180-220 words" } ] }
-NO web_search. 6-8 NOT held.`;
+Use web_search up to 2 times to find FRESH tickers with current catalysts. 6-8 NOT held — MUST be diversified across sectors (NOT just AI/semis/quantum).`;
   const [convResult, oppResult] = await Promise.allSettled([
     callJsonChunk(convictionPrompt, { search: false, maxTokens: 4500, model: "claude-haiku-4-5", label: "conviction-only" }),
-    callJsonChunk(opportunityPrompt, { search: false, maxTokens: 4500, model: "claude-haiku-4-5", label: "opportunity-only" }),
+    // Opportunity NOW uses web_search — without it, Haiku struggles to produce 6-8 fresh tickers and often returns empty
+    callJsonChunk(opportunityPrompt, { search: true, maxTokens: 4500, maxSearches: 2, model: "claude-sonnet-4-5", label: "opportunity-only" }),
   ]);
   const merged: any = {};
   if (convResult.status === "fulfilled" && convResult.value?.conviction_watch) merged.conviction_watch = convResult.value.conviction_watch;
@@ -517,6 +518,17 @@ async function generateLayerB(opts: any): Promise<any> {
   if (Array.isArray(merged.opportunity_watch) && Array.isArray(merged.radar_watch)) {
     const oppT = new Set(merged.opportunity_watch.map((o: any) => (o.symbol || o.ticker || "").toUpperCase()));
     merged.radar_watch = merged.radar_watch.filter((r: any) => !oppT.has((r.symbol || r.ticker || "").toUpperCase()));
+  }
+  // SAFETY NET: if radar got dedup'd to zero, restore from layerA.radar_candidates (full list, not the
+  // pre-trimmed slice). This prevents Discovery from showing empty when there's actually data available.
+  if (Array.isArray(merged.radar_watch) && merged.radar_watch.length === 0 && Array.isArray(layerA?.radar_candidates)) {
+    const ownedSet2 = new Set((holdings || []).map((h: any) => (h.symbol || "").toUpperCase()));
+    const oppT2 = new Set(Array.isArray(merged.opportunity_watch) ? merged.opportunity_watch.map((o: any) => (o.symbol || o.ticker || "").toUpperCase()) : []);
+    const fallback = layerA.radar_candidates.filter((c: any) => {
+      const t = (c?.ticker || "").toUpperCase();
+      return t && !ownedSet2.has(t) && !oppT2.has(t);
+    });
+    if (fallback.length > 0) merged.radar_watch = fallback.slice(0, 6);
   }
   return merged;
 }
