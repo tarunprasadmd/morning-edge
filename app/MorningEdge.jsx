@@ -8894,12 +8894,12 @@ function tickerLogoUrl(symbol) {
 }
 
 function PlaybookColumnRow({ entry, onOpen }) {
-  // Subtle, calm action-chip colors. Flat fills, darker text for visibility.
+  // Vibrant 3D action chips — saturated gradients with dark borders so white text reads clearly.
   const actionStyle = {
-    TRIM:  { bg: "#FEE2E2", fg: "#7F1D1D", border: "#F87171" },
-    ADD:   { bg: "#DCFCE7", fg: "#064E3B", border: "#4ADE80" },
-    HOLD:  { bg: "#FEF3C7", fg: "#78350F", border: "#FBBF24" },
-    WATCH: { bg: "#FEF3C7", fg: "#78350F", border: "#FBBF24" },
+    TRIM:  { bg: "linear-gradient(180deg, #FF8080 0%, #DC2626 50%, #991B1B 100%)", fg: "#FFFFFF", border: "#7F1D1D" },
+    ADD:   { bg: "linear-gradient(180deg, #6EE7B7 0%, #059669 50%, #047857 100%)", fg: "#FFFFFF", border: "#064E3B" },
+    HOLD:  { bg: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #B45309 100%)", fg: "#FFFFFF", border: "#78350F" },
+    WATCH: { bg: "linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #B45309 100%)", fg: "#FFFFFF", border: "#78350F" },
   };
   const a = actionStyle[entry.action] || actionStyle.HOLD;
 
@@ -10696,16 +10696,15 @@ function InteractiveBreathGuide({ name, pattern, description, rounds }) {
             backgroundImage: "url('/himalayas.png')",
             backgroundSize: "cover",
             backgroundPosition: "center",
-            opacity: 0.95,
-            filter: "saturate(1.25) contrast(1.08) brightness(1.05)",
+            opacity: 0.60,
           }}
         />
-        {/* Light edge-only vignette so the violet ball stays the focal point but image stays vivid */}
+        {/* Soft radial vignette so the violet ball stays the focal point */}
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: "radial-gradient(circle at center, rgba(15,23,42,0) 55%, rgba(15,23,42,0.28) 100%)",
+            background: "radial-gradient(circle at center, rgba(15,23,42,0.15) 25%, rgba(15,23,42,0.50) 100%)",
           }}
         />
         {/* Outer ring (decorative pulse) */}
