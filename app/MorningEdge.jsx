@@ -6360,54 +6360,48 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                       <span className="relative text-[18px]">▶</span>
                       <span className="relative">Start Guided Session · 9 min</span>
                     </button>
-                    {/* Workout-style horizontal blocks — small thumbnail + Sanskrit + English + hold sec pill.
-                        Matches the workout panel pattern. Tap any block to open the full card. */}
-                    <div className="space-y-1.5">
+                    {/* 2-col grid of compact glossy blocks. Tap to open the full card.
+                        Bigger thumbnail (52x72) so the figure is actually visible at this size.
+                        Lighter inner background lifts the dark cards off the block. */}
+                    <div className="grid grid-cols-2 gap-1.5">
                       {YOGA_POSES.map((pose, i) => (
                         <button
                           key={i}
                           onClick={() => setSelectedYogaPose(pose)}
-                          className="w-full text-left active:scale-[0.98] transition flex items-center gap-2.5 rounded-xl px-2 py-1.5"
+                          className="relative flex items-center gap-1.5 px-1.5 py-1.5 rounded-xl overflow-hidden transition active:scale-[0.97] active:translate-y-0.5"
                           style={{
-                            background: "linear-gradient(180deg, #FFFFFF 0%, #F5F3FF 100%)",
-                            border: "1px solid rgba(139,92,246,0.30)",
-                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.85), 0 1px 2px rgba(91,33,182,0.10)",
+                            background: "linear-gradient(180deg, #FFFFFF 0%, #F5F3FF 50%, #DDD6FE 100%)",
+                            border: "1.5px solid #A78BFA",
+                            boxShadow: "0 2px 0 #7C3AED, 0 3px 6px rgba(91,33,182,0.20), inset 0 1.5px 2px rgba(255,255,255,0.95), inset 0 -1.5px 3px rgba(91,33,182,0.10)",
                           }}>
-                          {/* Hold-time pill — yoga seconds (analog of workout minute pill) */}
-                          <div className="flex-shrink-0 flex flex-col items-center justify-center rounded-lg"
+                          {/* Glossy top specular — candy gloss */}
+                          <span className="absolute top-0.5 left-1 right-1 h-[50%] pointer-events-none"
                             style={{
-                              minWidth: 40, height: 38,
-                              background: "linear-gradient(180deg, #EDE9FE 0%, #DDD6FE 100%)",
-                              border: "1px solid #A78BFA",
-                              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.95)",
-                            }}>
-                            <span className="text-[15px] font-extrabold leading-none" style={{ color: "#4C1D95", fontFamily: 'ui-monospace, "SF Mono", Menlo' }}>
-                              {pose.holdSec || 30}
-                            </span>
-                            <span className="text-[7px] font-bold tracking-wider mt-0.5" style={{ color: "#5B21B6" }}>
-                              SEC
-                            </span>
-                          </div>
-                          {/* Small thumbnail — portrait crop of the card */}
+                              background: "linear-gradient(to bottom, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0) 100%)",
+                              borderRadius: "0.6rem 0.6rem 50% 50%",
+                            }} />
+                          {/* Tiny bottom reflection — micro-highlight for the polished look */}
+                          <span className="absolute bottom-0.5 left-[28%] right-[28%] h-[12%] pointer-events-none"
+                            style={{ background: "linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 100%)", borderRadius: "9999px" }} />
+                          {/* Card thumbnail — bigger so figure is visible. Slight inner ring lifts it off the violet block. */}
                           <div className="relative flex-shrink-0 rounded-md overflow-hidden"
                             style={{
-                              width: 38, height: 52,
-                              background: "#0A0A0F",
-                              border: "1px solid rgba(212,165,116,0.35)",
+                              width: 52, height: 72,
+                              background: "#1A1A22",
+                              border: "1px solid rgba(212,165,116,0.55)",
+                              boxShadow: "inset 0 0 0 0.5px rgba(255,255,255,0.10), 0 1px 2px rgba(0,0,0,0.20)",
                             }}>
-                            <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center center" }} />
+                            <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center 38%" }} />
                           </div>
-                          {/* Pose name */}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[13px] font-bold italic leading-tight truncate" style={{ fontFamily: SERIF, color: "#4C1D95" }}>
+                          {/* Right side: Sanskrit + hold seconds */}
+                          <div className="relative flex-1 min-w-0 flex flex-col justify-center">
+                            <p className="text-[11.5px] font-bold italic leading-tight truncate" style={{ fontFamily: SERIF, color: "#3B0764" }}>
                               {pose.sanskrit}
                             </p>
-                            <p className="text-[10px] uppercase tracking-wider font-semibold text-violet-700 mt-0.5 truncate">
-                              {pose.english}
+                            <p className="text-[9px] uppercase tracking-wider font-bold text-violet-700 mt-0.5 truncate">
+                              {pose.holdSec || 30}s hold
                             </p>
                           </div>
-                          {/* Chevron right — tap-to-open hint */}
-                          <span className="flex-shrink-0 text-[16px] text-violet-400 pr-1">›</span>
                         </button>
                       ))}
                     </div>
