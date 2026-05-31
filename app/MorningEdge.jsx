@@ -6384,14 +6384,8 @@ const gainCol = findCol(/total.*gain.*(%|percent|pct)|gain.*loss.*(%|percent|pct
                               background: "#1A1A22",
                               boxShadow: "0 2px 4px rgba(0,0,0,0.28)",
                             }}>
-                            {/* Image centered; title + BENEFITS text are masked by gradients below — no source re-crop needed */}
+                            {/* Source JPGs are pre-cropped per-pose to remove title + BENEFITS panel — no CSS mask needed */}
                             <YogaPoseImage pose={pose} style={{ objectFit: "cover", objectPosition: "center" }} />
-                            {/* Top gradient mask — hides pose-name title baked into source image */}
-                            <div className="absolute top-0 left-0 right-0 pointer-events-none"
-                              style={{ height: "30%", background: "linear-gradient(to bottom, #1A1A22 0%, rgba(26,26,34,0.88) 45%, rgba(26,26,34,0) 100%)" }} />
-                            {/* Bottom gradient mask — hides BENEFITS panel baked into source image */}
-                            <div className="absolute bottom-0 left-0 right-0 pointer-events-none"
-                              style={{ height: "26%", background: "linear-gradient(to top, #1A1A22 0%, rgba(26,26,34,0.88) 45%, rgba(26,26,34,0) 100%)" }} />
                           </div>
                           {/* Right side: Sanskrit + hold seconds */}
                           <div className="relative flex-1 min-w-0 flex flex-col justify-center">
